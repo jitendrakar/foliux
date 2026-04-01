@@ -251,7 +251,7 @@
         </div>
     </div>
 
-    <h4 class="fw-bold mb-4 mt-5" style="color: #334155;">Other Assets & Liabilities</h4>
+    <h4 class="fw-bold mb-4 mt-4" style="color: #334155;">Other Assets & Liabilities</h4>
 
     <div class="bg-white rounded-4 shadow-sm border overflow-hidden">
         <div class="table-responsive">
@@ -319,7 +319,7 @@
     </div>
 
     <!-- Alert Signals Section -->
-    <div class="mt-5 animate__animated animate__fadeInUp">
+    <div class="mt-4 animate__animated animate__fadeInUp">
         <h4 class="fw-bold mb-4" style="color: #334155;">
             <i class="fas fa-bell text-warning me-2"></i> Actionable Signals
         </h4>
@@ -373,8 +373,85 @@
                 </div>
             </div>
             
-            <!-- Other Asset Placeholders Note (Hidden) -->
-            <!-- MF, NPS, and Coin signal cards will be added here in the future -->
+            <!-- MF Cue Alerts -->
+            <div class="col-md-6 col-lg-4">
+                <div class="bg-white rounded-4 shadow-sm border p-4 position-relative overflow-hidden h-100">
+                    <!-- Top accent line -->
+                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #16a34a, #22c55e);"></div>
+                    
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="icon-wrapper me-3" style="width: 48px; height: 48px; font-size: 1.25rem; background: rgba(34, 197, 94, 0.1); color: #16a34a; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-leaf"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0" style="color: #1e293b;">MF Cue</h5>
+                            <small class="text-muted">Portfolio Rebalancing</small>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex flex-column gap-3">
+                        <a href="{% url 'mf_dashboard' %}" class="text-decoration-none d-flex justify-content-between align-items-center p-3 rounded-3 hover-lift" style="background: rgba(34, 197, 94, 0.05); border: 1px solid rgba(34, 197, 94, 0.2); transition: all 0.2s ease;">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas fa-plus-circle text-success"></i>
+                                <span class="fw-semibold text-success" style="font-size: 0.95rem;">BUY / TOP-UP</span>
+                            </div>
+                            <span class="badge bg-success rounded-pill px-3 py-2 fs-6 shadow-sm">{{ mf_buy_count|default:"0" }}</span>
+                        </a>
+                        
+                        <a href="{% url 'mf_dashboard' %}" class="text-decoration-none d-flex justify-content-between align-items-center p-3 rounded-3 hover-lift" style="background: rgba(30, 41, 59, 0.03); border: 1px solid rgba(30, 41, 59, 0.1); transition: all 0.2s ease;">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas fa-minus-circle text-secondary"></i>
+                                <span class="fw-semibold text-secondary" style="font-size: 0.95rem;">REDEMPTION</span>
+                            </div>
+                            <span class="badge bg-secondary rounded-pill px-3 py-2 fs-6 shadow-sm">{{ mf_redemption_count|default:"0" }}</span>
+                        </a>
+                    </div>
+                    
+                    <div class="mt-4 text-center">
+                        <a href="{% url 'mf_dashboard' %}" class="btn btn-outline-success btn-sm rounded-pill px-4 fw-bold">View MF Portfolio <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Coin (Crypto) Alerts -->
+            <div class="col-md-6 col-lg-4">
+                <div class="bg-white rounded-4 shadow-sm border p-4 position-relative overflow-hidden h-100">
+                    <!-- Top accent line -->
+                    <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #f59e0b, #fbbf24);"></div>
+                    
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="icon-wrapper me-3" style="width: 48px; height: 48px; font-size: 1.25rem; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fab fa-bitcoin"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0" style="color: #1e293b;">Coin (Crypto)</h5>
+                            <small class="text-muted">Market Signals</small>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex flex-column gap-3">
+                        <a href="{% url 'coin_dashboard' %}" class="text-decoration-none d-flex justify-content-between align-items-center p-3 rounded-3 hover-lift" style="background: rgba(245, 158, 11, 0.05); border: 1px solid rgba(245, 158, 11, 0.2); transition: all 0.2s ease;">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas fa-arrow-trend-up text-warning"></i>
+                                <span class="fw-semibold text-warning" style="font-size: 0.95rem;">ACCUMULATE</span>
+                            </div>
+                            <span class="badge bg-warning text-dark rounded-pill px-3 py-2 fs-6 shadow-sm">{{ coin_buy_count|default:"0" }}</span>
+                        </a>
+                        
+                        <a href="{% url 'coin_dashboard' %}" class="text-decoration-none d-flex justify-content-between align-items-center p-3 rounded-3 hover-lift" style="background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); transition: all 0.2s ease;">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas fa-arrow-trend-down text-danger"></i>
+                                <span class="fw-semibold text-danger" style="font-size: 0.95rem;">PROFIT BOOKING</span>
+                            </div>
+                            <span class="badge bg-danger rounded-pill px-3 py-2 fs-6 shadow-sm">{{ coin_sell_count|default:"0" }}</span>
+                        </a>
+                    </div>
+                    
+                    <div class="mt-4 text-center">
+                        <a href="{% url 'coin_dashboard' %}" class="btn btn-outline-warning text-dark btn-sm rounded-pill px-4 fw-bold">Market Hub <i class="fas fa-arrow-right ms-1"></i></a>
+                    </div>
+                </div>
+            </div>
             
             {% if upcoming_emis_count > 0 %}
             <!-- Loan & Liabilities Alerts -->

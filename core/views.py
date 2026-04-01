@@ -1139,6 +1139,12 @@ def portfolio(request):
         'loan_taken': loan_taken,
         'loan_outstanding': loan_outstanding,
         'upcoming_emis_count': upcoming_emis_count,
+        
+        # Actionable Signals Placeholders
+        'mf_buy_count': 0,
+        'mf_redemption_count': 0,
+        'coin_buy_count': 0,
+        'coin_sell_count': 0,
     }
     return render(request, 'core/portfolio.html', context)
 def etf_guide(request):
