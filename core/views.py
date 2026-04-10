@@ -1836,11 +1836,11 @@ def delete_portfolio_item(request, pk):
 def edit_profile(request):
     profile, created = Profile.objects.get_or_create(user=request.user)
     if request.method == 'POST':
-        form = ProfileForm(request.POST, instance=profile)
+        form = ProfileForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             form.save()
             messages.success(request, "Profile updated successfully.")
-            return redirect('dashboard')
+            return redirect('edit_profile')
     else:
         form = ProfileForm(instance=profile)
     
@@ -2214,7 +2214,9 @@ def transaction_history(request):
         'current_fy_data': current_fy_data[0] if current_fy_data else None,
         'past_fy_data': past_fy_data,
         'history_data_json': json.dumps(history_data),
-        'portfolio_history': history.order_by('-date')
+        'portfolio_history': history.order_by('-date'),
+        'target_user': target_user,
+        'is_family_view': is_family_view
     })
 
 @login_required
@@ -2457,11 +2459,11 @@ def sync_data_api(request):
     sync_key = 'last_sync_timestamp'
     lock_key = 'sync_in_progress'
     
-    # Rate limit: 2 hours (7200 seconds)
+    # Rate limit: 10 minutes (600 seconds)
     last_sync = cache.get(sync_key)
     now = timezone.now().timestamp()
     
-    if last_sync is not None and (now - last_sync) < 7200:
+    if last_sync is not None and (now - last_sync) < 600:
         return JsonResponse({'status': 'skipped', 'message': 'Recently synced'})
     
     if cache.get(lock_key):
@@ -2555,15 +2557,18 @@ def index_data_api(request):
 
         if period == '1d':
             # Proper 1-day change: relative to previous day's close
-            # Avoid using ticker.info as it is unreliable and slow. Use history instead.
+            # Use fast_info for real-time accuracy, fallback to history
             try:
-                hist_daily = ticker.history(period='5d', interval='1d')
-                if len(hist_daily) >= 2:
-                    prev_price = float(hist_daily['Close'].iloc[-2])
-                else:
-                    prev_price = float(hist_daily['Close'].iloc[-1]) if not hist_daily.empty else prices[0]
+                prev_price = float(ticker.fast_info['previous_close'])
             except:
-                prev_price = prices[0] # Fallback to open
+                try:
+                    hist_daily = ticker.history(period='5d', interval='1d')
+                    if len(hist_daily) >= 2:
+                        prev_price = float(hist_daily['Close'].iloc[-2])
+                    else:
+                        prev_price = float(hist_daily['Close'].iloc[-1]) if not hist_daily.empty else prices[0]
+                except:
+                    prev_price = prices[0] # Fallback to open
         else:
             prev_price = prices[0]
 
@@ -2751,15 +2756,18 @@ def stock_history_api(request):
         current_price = prices[-1]
 
         if period == '1d':
-            # Avoid using ticker.info as it is unreliable and slow. Use history instead.
+            # Use fast_info for real-time accuracy, fallback to history
             try:
-                hist_daily = ticker.history(period='5d', interval='1d')
-                if len(hist_daily) >= 2:
-                    prev_price = float(hist_daily['Close'].iloc[-2])
-                else:
-                    prev_price = float(hist_daily['Close'].iloc[-1]) if not hist_daily.empty else prices[0]
+                prev_price = float(ticker.fast_info['previous_close'])
             except:
-                prev_price = prices[0]
+                try:
+                    hist_daily = ticker.history(period='5d', interval='1d')
+                    if len(hist_daily) >= 2:
+                        prev_price = float(hist_daily['Close'].iloc[-2])
+                    else:
+                        prev_price = float(hist_daily['Close'].iloc[-1]) if not hist_daily.empty else prices[0]
+                except:
+                    prev_price = prices[0]
         else:
             prev_price = prices[0]
 
@@ -3314,6 +3322,8 @@ def add_other_asset(request):
             current_value = Decimal(request.POST.get('current_value', '0'))
             monthly_rent = Decimal(request.POST.get('monthly_rent', '0'))
             purchase_date = pd.to_datetime(purchase_date_str).date() if purchase_date_str else timezone.now().date()
+            holder_name = request.POST.get('holder_name', '').strip()
+            asset_id = request.POST.get('asset_id', '').strip()
         except (ValueError, TypeError, InvalidOperation):
             messages.error(request, "Invalid numeric or date values provided.")
             return redirect('add_other_asset')
@@ -3329,7 +3339,9 @@ def add_other_asset(request):
             purchase_date=purchase_date,
             purchase_price=purchase_price,
             current_value=current_value,
-            monthly_rent=monthly_rent
+            monthly_rent=monthly_rent,
+            holder_name=holder_name,
+            asset_id=asset_id
         )
         messages.success(request, f"Added Asset: {name}.")
         return redirect('other_assets_dashboard')
@@ -3352,6 +3364,8 @@ def edit_other_asset(request, pk):
             asset.monthly_rent = Decimal(request.POST.get('monthly_rent', str(asset.monthly_rent)))
             if purchase_date_str:
                 asset.purchase_date = pd.to_datetime(purchase_date_str).date()
+            asset.holder_name = request.POST.get('holder_name', '').strip()
+            asset.asset_id = request.POST.get('asset_id', '').strip()
         except (ValueError, TypeError, InvalidOperation):
             messages.error(request, "Invalid numeric or date values provided.")
             return redirect('edit_other_asset', pk=pk)

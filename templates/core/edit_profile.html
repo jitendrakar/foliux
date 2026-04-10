@@ -1,126 +1,434 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
 
+{% block extra_css %}
+<!-- Cropper.js CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+<style>
+    :root {
+        --profile-size: 180px;
+        --glass-bg: rgba(255, 255, 255, 0.9);
+        --accent-gradient: linear-gradient(135deg, #003D7C, #0056b3);
+    }
+    
+    .profile-card {
+        border-radius: 30px;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        margin-top: 60px;
+        position: relative;
+    }
+
+    .profile-header-bg {
+        height: 160px;
+        background: var(--accent-gradient);
+        position: relative;
+    }
+
+    .profile-photo-section {
+        position: relative;
+        text-align: center;
+        margin-top: -90px;
+        margin-bottom: 30px;
+        z-index: 10;
+    }
+
+    .profile-pic-wrapper {
+        width: var(--profile-size);
+        height: var(--profile-size);
+        margin: 0 auto;
+        border-radius: 50%;
+        border: 8px solid #fff;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        overflow: hidden;
+        background: #f8fafc;
+        position: relative;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .profile-pic-wrapper:hover {
+        transform: scale(1.05);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.25);
+    }
+
+    .profile-pic-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .upload-trigger {
+        position: absolute;
+        bottom: 10px;
+        right: calc(50% - 85px);
+        background: #fff;
+        color: var(--primary-color);
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: none;
+        box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+        transition: all 0.3s ease;
+        z-index: 12;
+    }
+
+    .upload-trigger:hover {
+        background: var(--primary-color);
+        color: #fff;
+        transform: rotate(90deg);
+    }
+
+    .crop-container {
+        max-height: 500px;
+        width: 100%;
+        background-color: #f8fafc;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    #cropImage {
+        max-width: 100%;
+        display: block;
+    }
+
+    .modal-content {
+        border-radius: 24px;
+        border: none;
+        overflow: hidden;
+    }
+
+    .modal-header {
+        background: var(--accent-gradient);
+        color: white;
+        border: none;
+        padding: 20px 30px;
+    }
+
+    .modal-title {
+        font-weight: 700;
+        letter-spacing: -0.02em;
+    }
+
+    .section-header {
+        position: relative;
+        padding-bottom: 12px;
+        margin-bottom: 24px;
+        color: var(--primary-color);
+        font-weight: 800;
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .section-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 40px;
+        height: 3px;
+        background: var(--primary-color);
+        border-radius: 2px;
+    }
+
+    .form-section {
+        background: #f8fafc;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 24px;
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s ease;
+    }
+
+    .btn-premium {
+        padding: 14px 30px;
+        font-weight: 700;
+        border-radius: 14px;
+        transition: all 0.3s ease;
+    }
+
+    #id_profile_picture {
+        position: absolute;
+        opacity: 0;
+        width: 1px;
+        height: 1px;
+    }
+
+    .preview-placeholder {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        color: #cbd5e1;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center py-5">
-    <div class="col-md-6">
-        <div class="card shadow-sm border-0 rounded-4">
-            <div class="card-body p-5">
-                <div class="text-center mb-4">
-                    <div class="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-circle mb-3"
-                        style="width: 64px; height: 64px;">
-                        <i class="fas fa-user-edit fa-lg"></i>
-                    </div>
-                    <h3 class="fw-bold">Edit Profile</h3>
-                    <p class="text-muted small">Update your name and mobile number</p>
+<div class="row justify-content-center pb-5">
+    <div class="col-lg-10 animate__animated animate__fadeIn">
+        <div class="profile-card">
+            <div class="profile-header-bg"></div>
+            
+            <div class="profile-photo-section">
+                <div class="profile-pic-wrapper" id="picWrapper" onclick="document.getElementById('id_profile_picture').click();">
+                    {% if form.instance.profile_picture %}
+                        <img src="{{ form.instance.profile_picture.url }}?v={% now 'U' %}" alt="Profile" id="mainProfilePic">
+                    {% else %}
+                        <div class="preview-placeholder">
+                            <i class="fas fa-user-circle fa-6x"></i>
+                            <span class="mt-2 fw-bold text-muted small">CLICK TO UPLOAD</span>
+                        </div>
+                    {% endif %}
+                </div>
+                <button type="button" class="upload-trigger" onclick="document.getElementById('id_profile_picture').click();">
+                    <i class="fas fa-camera"></i>
+                </button>
+            </div>
+
+            <div class="px-4 px-md-5 pb-5">
+                <div class="text-center mb-5">
+                    <h2 class="fw-bold text-dark mb-1">{{ user.profile.full_name|default:user.username }}</h2>
+                    <p class="text-muted">{{ user.email }}</p>
                 </div>
 
-                <form method="post">
+                <form method="post" enctype="multipart/form-data" id="profileForm">
                     {% csrf_token %}
-                    <h5 class="fw-bold mb-3 border-bottom pb-2"><i class="fas fa-info-circle me-2"></i>Basic Information</h5>
+                    <!-- Real File Input (Hidden) -->
+                    <input type="file" name="profile_picture" accept="image/*" id="id_profile_picture">
+                    
                     <div class="row">
-                        <div class="col-md-6">{{ form.full_name|as_crispy_field }}</div>
-                        <div class="col-md-6">{{ form.mobile_number|as_crispy_field }}</div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">{{ form.date_of_birth|as_crispy_field }}</div>
-                        <div class="col-md-6">{{ form.gender|as_crispy_field }}</div>
-                    </div>
-                    {{ form.investor_type|as_crispy_field }}
+                        <div class="col-md-7">
+                            <div class="form-section shadow-sm">
+                                <h5 class="section-header">Personal Information</h5>
+                                <div class="row g-3">
+                                    <div class="col-12">{{ form.full_name|as_crispy_field }}</div>
+                                    <div class="col-md-6">{{ form.mobile_number|as_crispy_field }}</div>
+                                    <div class="col-md-6">{{ form.gender|as_crispy_field }}</div>
+                                    <div class="col-md-6">{{ form.date_of_birth|as_crispy_field }}</div>
+                                    <div class="col-md-6">{{ form.investor_type|as_crispy_field }}</div>
+                                </div>
+                            </div>
 
-                    <h5 class="fw-bold mt-4 mb-3 border-bottom pb-2"><i class="fas fa-chart-line me-2"></i>Investment Settings</h5>
-                    {{ form.initial_investment_limit|as_crispy_field }}
-                    <div class="row">
-                        <div class="col-md-6">{{ form.mf_investment_limit|as_crispy_field }}</div>
-                        <div class="col-md-6">{{ form.coin_investment_limit|as_crispy_field }}</div>
-                    </div>
+                            <div class="form-section shadow-sm">
+                                <h5 class="section-header">Investment Limits</h5>
+                                <div class="row g-3">
+                                    <div class="col-12">{{ form.initial_investment_limit|as_crispy_field }}</div>
+                                    <div class="col-md-6">{{ form.mf_investment_limit|as_crispy_field }}</div>
+                                    <div class="col-md-6">{{ form.coin_investment_limit|as_crispy_field }}</div>
+                                </div>
+                            </div>
+                        </div>
 
-                    <h5 class="fw-bold mt-4 mb-3 border-bottom pb-2"><i class="fas fa-tag me-2"></i>Brokerage Settings (Delivery)</h5>
-                    <div class="row">
-                        <div class="col-md-6">{{ form.equity_fixed_charge|as_crispy_field }}</div>
-                        <div class="col-md-6">{{ form.equity_brokerage_pct|as_crispy_field }}</div>
-                    </div>
+                        <div class="col-md-5">
+                            <div class="form-section shadow-sm">
+                                <h5 class="section-header">Brokerage Configurations</h5>
+                                <div class="mb-4">
+                                    <h6 class="text-muted small fw-bold mb-3">EQUITY DELIVERY</h6>
+                                    {{ form.equity_fixed_charge|as_crispy_field }}
+                                    {{ form.equity_brokerage_pct|as_crispy_field }}
+                                </div>
+                                <hr class="my-4 opacity-10">
+                                <div>
+                                    <h6 class="text-muted small fw-bold mb-3">INTRADAY TRADING</h6>
+                                    {{ form.intraday_fixed_charge|as_crispy_field }}
+                                    {{ form.intraday_brokerage_pct|as_crispy_field }}
+                                </div>
+                            </div>
 
-                    <h5 class="fw-bold mt-4 mb-3 border-bottom pb-2"><i class="fas fa-bolt me-2"></i>Intraday Transaction Charges</h5>
-                    <div class="row">
-                        <div class="col-md-6">{{ form.intraday_fixed_charge|as_crispy_field }}</div>
-                        <div class="col-md-6">{{ form.intraday_brokerage_pct|as_crispy_field }}</div>
-                    </div>
-                    <div class="d-grid gap-2 mt-4">
-                        <button type="submit" class="btn btn-primary py-2 fw-bold shadow-sm">
-                            Save Changes <i class="fas fa-check ms-2"></i>
-                        </button>
-                        <a href="{% url 'password_change' %}" class="btn btn-outline-info py-2 fw-bold">
-                            <i class="fas fa-key me-2"></i>Change Password
-                        </a>
-                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary py-2 fw-bold">Cancel</a>
+                            <div class="d-grid gap-3 mt-4">
+                                <button type="submit" class="btn btn-primary btn-premium shadow-lg">
+                                    Update Profile <i class="fas fa-save ms-2"></i>
+                                </button>
+                                <a href="{% url 'password_change' %}" class="btn btn-outline-info btn-premium">
+                                    <i class="fas fa-lock me-2"></i>Change Password
+                                </a>
+                                <a href="{% url 'dashboard' %}" class="btn btn-link text-muted fw-bold text-decoration-none">Cancel & Return</a>
+                            </div>
+                        </div>
                     </div>
                 </form>
 
-                <div class="mt-5 pt-4 border-top">
-                    <h4 class="fw-bold mb-3"><i class="fas fa-users me-2"></i>Linked Family Accounts</h4>
-                    <p class="text-muted small mb-4">Link another registered NPITS account to view their portfolio data separately.</p>
-
-                    {% if linked_family %}
-                    <div class="list-group mb-4">
+                {% if linked_family or pending_family %}
+                <hr class="my-5 opacity-10">
+                <div class="family-section">
+                    <h5 class="fw-bold mb-4">Family Connections</h5>
+                    <div class="row g-3">
                         {% for link in linked_family %}
-                        <div class="list-group-item d-flex justify-content-between align-items-center rounded-3 mb-2 border-0 shadow-sm px-4 py-3">
-                            <div>
-                                <h6 class="mb-0 fw-bold">{{ link.family_user.profile.full_name|default:link.family_user.username }}</h6>
-                                <small class="text-muted">{{ link.family_user.email }}</small>
-                            </div>
-                            <div>
-                                <a href="{% url 'portfolio' %}?user_id={{ link.family_user.id }}" class="btn btn-sm btn-outline-primary me-2">
-                                    <i class="fas fa-chart-pie me-1"></i> View Portfolio
-                                </a>
-                                <a href="{% url 'unlink_family' link.pk %}" class="btn btn-sm btn-link text-danger text-decoration-none" 
-                                   onclick="return confirm('Are you sure you want to unlink this family account?')">
-                                    <i class="fas fa-unlink"></i>
-                                </a>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-white border rounded-4 d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-3">
+                                        {% if link.family_user.profile.profile_picture %}
+                                            <img src="{{ link.family_user.profile.profile_picture.url }}" class="rounded-circle" style="width: 45px; height: 45px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                                                <i class="fas fa-user text-primary"></i>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold">{{ link.family_user.profile.full_name|default:link.family_user.username }}</div>
+                                        <div class="text-success small fw-bold"><i class="fas fa-check-circle me-1"></i>Linked</div>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <a href="{% url 'portfolio' %}?user_id={{ link.family_user.id }}" class="btn btn-sm btn-light border rounded-pill px-3">View</a>
+                                    <a href="{% url 'unlink_family' link.pk %}" class="btn btn-sm btn-outline-danger border-0 rounded-circle" onclick="return confirm('Remove access?')"><i class="fas fa-times"></i></a>
+                                </div>
                             </div>
                         </div>
                         {% endfor %}
                     </div>
-                    {% else %}
-                    <div class="alert alert-light border-dashed text-center py-4 mb-4">
-                        <i class="fas fa-user-friends fa-2x text-muted mb-2 opacity-50"></i>
-                        <p class="mb-0 text-muted">No family accounts linked yet.</p>
-                    </div>
-                    {% endif %}
-
-                    {% if pending_family %}
-                    <h6 class="fw-bold mb-3 text-warning">Pending Verification</h6>
-                    <div class="list-group mb-4">
-                        {% for link in pending_family %}
-                        <div class="list-group-item d-flex justify-content-between align-items-center rounded-3 mb-2 bg-light border-0 px-4 py-3">
-                            <div>
-                                <h6 class="mb-0">{{ link.family_user.profile.full_name|default:link.family_user.username }}</h6>
-                                <small class="text-muted">Awaiting OTP verification</small>
-                            </div>
-                            <a href="{% url 'verify_family_otp' %}" class="btn btn-sm btn-warning fw-bold">
-                                Enter OTP
-                            </a>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-
-                    <form action="{% url 'link_family_id' %}" method="post" class="mt-4 p-4 bg-light rounded-4 border">
-                        {% csrf_token %}
-                        <h6 class="fw-bold mb-3">Link New Family ID</h6>
-                        <div class="input-group">
-                            <input type="text" name="family_id" class="form-control" placeholder="Enter Email or Mobile Number" required>
-                            <button class="btn btn-primary px-4 fw-bold" type="submit">
-                                Request OTP <i class="fas fa-paper-plane ms-2"></i>
-                            </button>
-                        </div>
-                        <p class="small text-muted mt-2 mb-0">
-                            <i class="fas fa-info-circle me-1"></i> An OTP will be sent to the family member's registered email for authorization.
-                        </p>
-                    </form>
                 </div>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
+
+<!-- Cropper Modal -->
+<div class="modal fade" id="cropModal" data-bs-backdrop="static" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-crop-alt me-2"></i>Adjust Profile Photo</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="alert alert-info border-0 rounded-4 small mb-4">
+                    <i class="fas fa-info-circle me-2"></i>Drag the box to select the area you want to show in your profile.
+                </div>
+                <div class="crop-container">
+                    <img id="cropImage" src="">
+                </div>
+            </div>
+            <div class="modal-footer border-0 p-4 pt-0">
+                <button type="button" class="btn btn-light btn-premium" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary btn-premium px-5" id="cropApplyBtn">
+                    Apply & Select <i class="fas fa-check ms-2"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Full Photo Viewer -->
+<div class="modal fade" id="fullViewModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-transparent">
+            <div class="modal-body p-0 text-center">
+                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" style="z-index: 100;"></button>
+                <img src="" id="fullViewImg" class="img-fluid rounded-4 shadow-lg" style="max-height: 90vh;">
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- Cropper.js JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<script>
+    const fileInput = document.getElementById('id_profile_picture');
+    const cropModal = new bootstrap.Modal(document.getElementById('cropModal'));
+    const cropImage = document.getElementById('cropImage');
+    const applyBtn = document.getElementById('cropApplyBtn');
+    const mainPic = document.getElementById('mainProfilePic');
+    const picWrapper = document.getElementById('picWrapper');
+    
+    let cropper = null;
+
+    // Handle File Selection
+    fileInput.addEventListener('change', function(e) {
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                cropImage.src = event.target.result;
+                cropModal.show();
+            };
+            reader.readAsDataURL(this.files[0]);
+        }
+    });
+
+    // Initialize Cropper when modal shows
+    document.getElementById('cropModal').addEventListener('shown.bs.modal', function() {
+        if (cropper) {
+            cropper.destroy();
+        }
+        cropper = new Cropper(cropImage, {
+            aspectRatio: 1,
+            viewMode: 1,
+            dragMode: 'move',
+            autoCropArea: 0.8,
+            restore: false,
+            guides: true,
+            center: true,
+            highlight: false,
+            cropBoxMovable: true,
+            cropBoxResizable: true,
+            toggleDragModeOnDblclick: false,
+        });
+    });
+
+    // Apply Crop
+    applyBtn.addEventListener('click', function() {
+        if (!cropper) return;
+
+        // Get cropped canvas
+        const canvas = cropper.getCroppedCanvas({
+            width: 600,
+            height: 600,
+            imageSmoothingEnabled: true,
+            imageSmoothingQuality: 'high',
+        });
+
+        // Convert to blob and update preview
+        canvas.toBlob(function(blob) {
+            const url = URL.createObjectURL(blob);
+            
+            // Update Preview
+            let img = document.getElementById('mainProfilePic');
+            if (img) {
+                img.src = url;
+            } else {
+                picWrapper.innerHTML = `<img src="${url}" id="mainProfilePic">`;
+            }
+
+            // Replace file input content using DataTransfer
+            const croppedFile = new File([blob], "profile_pic.jpg", { type: "image/jpeg" });
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(croppedFile);
+            fileInput.files = dataTransfer.files;
+
+            cropModal.hide();
+            
+            // Auto scroll to save button to show changes pending
+            document.querySelector('.btn-premium').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 'image/jpeg', 0.9);
+    });
+
+    // Full view functionality
+    const fullViewModal = new bootstrap.Modal(document.getElementById('fullViewModal'));
+    picWrapper.addEventListener('click', function(e) {
+        // Prevent trigger if they clicked exactly on the pen/camera icon which is outside but near
+        if (e.target.closest('.upload-trigger')) return;
+        
+        const img = document.getElementById('mainProfilePic');
+        if (img && img.src && !img.src.startsWith('blob:')) {
+            document.getElementById('fullViewImg').src = img.src;
+            fullViewModal.show();
+        }
+    });
+</script>
 {% endblock %}

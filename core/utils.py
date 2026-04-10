@@ -17,6 +17,24 @@ from django.db.models.functions import Upper
 from django.db import transaction
 from core.models import Instrument
 
+def clean_float(val, default=0.0):
+    """Robustly convert a value to float, handling commas and currency symbols."""
+    if val is None or val == '' or (isinstance(val, float) and math.isnan(val)):
+        return default
+    if isinstance(val, (int, float)):
+        return float(val)
+    if isinstance(val, str):
+        # Remove commas, currency symbols, and whitespace
+        clean_val = val.replace(',', '').replace('₹', '').replace('$', '').strip()
+        try:
+            return float(clean_val)
+        except ValueError:
+            return default
+    try:
+        return float(val)
+    except (ValueError, TypeError):
+        return default
+
 def resolve_instrument(symbol_or_name):
     """
     Tries to resolve an Instrument object from a symbol or name.
@@ -78,23 +96,21 @@ def perform_sync():
                         if isinstance(price_val, str) and price_val.lower() == 'nan':
                             continue
                         try:
-                            price = float(price_val)
-                            if math.isnan(price):
+                            price = clean_float(price_val, default=None)
+                            if price is None:
                                 continue
                                 
                             try:
-                                if isinstance(change, str) and change.lower() == 'nan':
-                                    change_val = 0
-                                else:
-                                    change_val = float(change)
-                                    if math.isnan(change_val):
-                                        change_val = 0
-                            except (ValueError, TypeError):
+                                change_val = clean_float(change, default=0.0)
+                            except Exception:
                                 change_val = 0
+                            
+                            prev_price = price - change_val
+                            pct_val = (change_val / prev_price * 100) if prev_price else 0
                             
                             MarketTicker.objects.update_or_create(
                                 name=name,
-                                defaults={'price': price, 'change': change_val, 'percent_change': change_val}
+                                defaults={'price': price, 'change': change_val, 'percent_change': pct_val}
                             )
                             seen_tickers.add(name)
                         except (ValueError, TypeError):
@@ -114,7 +130,22 @@ def perform_sync():
             seen_tickers.add(name)
             try:
                 ticker = yf.Ticker(sym)
-                # Use period='5d' to overcome holiday/gap issues occasionally seen with '2d'
+                # Use fast_info for real-time price and previous close, much more reliable than history during market hours
+                try:
+                    cp = float(ticker.fast_info['last_price'])
+                    pc = float(ticker.fast_info['previous_close'])
+                    if cp and pc:
+                        change_val = round(cp - pc, 2)
+                        pct = round((change_val / pc) * 100, 2)
+                        MarketTicker.objects.update_or_create(
+                            name=name,
+                            defaults={'price': round(cp, 2), 'change': change_val, 'percent_change': pct}
+                        )
+                        continue # Success with fast_info
+                except Exception:
+                    pass
+
+                # Fallback to history if fast_info fails
                 hist = ticker.history(period='5d')
                 if not hist.empty:
                     cp = float(hist['Close'].iloc[-1])
@@ -154,62 +185,28 @@ def perform_sync():
                 
                 ltp_val = row.iloc[4]
                 if pd.isna(ltp_val): continue
-                try:
-                    ltp = float(ltp_val)
-                    if math.isnan(ltp): continue
-                except (ValueError, TypeError):
+                ltp = clean_float(ltp_val, default=None)
+                if ltp is None or ltp == 0:
                     continue
+
+                # Priority Day Change and % from Sheet (Index 5 and 6)
+                change_val = clean_float(row.iloc[5], default=0.0) if len(row) > 5 else 0.0
+                pct_val = clean_float(row.iloc[6], default=0.0) if len(row) > 6 else 0.0
 
                 # Special Case: Update NIFTY 50 if found in Instrument Sheet
                 if "NIFTY_50" in symbol or "NIFTY 50" in symbol:
                     MarketTicker.objects.update_or_create(
                         name='NIFTY 50',
-                        defaults={'price': ltp}
+                        defaults={'price': ltp, 'change': change_val, 'percent_change': pct_val}
                     )
                 
-                change_val = 0
-                if len(row) > 5:
-                    try:
-                        cv = row.iloc[5]
-                        if pd.notna(cv):
-                            change_val = float(cv)
-                            if math.isnan(change_val):
-                                change_val = 0
-                    except (ValueError, TypeError):
-                        pass
+                pe_val = clean_float(row.iloc[9], default=None) if len(row) > 9 else None
+                lh_diff_val = clean_float(row.iloc[10], default=None) if len(row) > 10 else None
+                high_52w_val = clean_float(row.iloc[8], default=None) if len(row) > 8 else None
 
-                pe_val = None
-                if len(row) > 9:
-                    try:
-                        # Index 9 is PE in 'n2g' sheet
-                        pv = row.iloc[9]
-                        if pd.notna(pv):
-                            pe_val = float(pv)
-                    except (ValueError, TypeError):
-                        pass
-                
-                lh_diff_val = None
-                if len(row) > 10:
-                    try:
-                        # Index 10 is 'Differ %' if available
-                        lv = row.iloc[10]
-                        if pd.notna(lv):
-                            lh_diff_val = float(lv)
-                    except (ValueError, TypeError):
-                        pass
-
-                high_52w_val = None
-                if len(row) > 8:
-                    try:
-                        # Index 8 is 51W HIGH in 'n2g' sheet
-                        hv = row.iloc[8]
-                        if pd.notna(hv):
-                            high_52w_val = float(hv)
-                    except (ValueError, TypeError):
-                        pass
-
-                if ltp > 0:
-                    ltp_map[symbol] = (ltp, change_val, pe_val, lh_diff_val, high_52w_val)
+                if ltp and ltp > 0:
+                    # Map: (ltp, change, pe, lh_diff, h52, pct)
+                    ltp_map[symbol] = (ltp, change_val, pe_val, lh_diff_val, high_52w_val, pct_val)
             except (ValueError, TypeError, IndexError):
                 continue
         
@@ -245,8 +242,11 @@ def perform_sync():
                                     m[4] = h52
                                     ltp_map[s_clean] = tuple(m)
                                 else:
-                                    # Placeholder ltp/change if not in sheet map
-                                    ltp_map[s_clean] = (0, 0, None, None, h52)
+                                    # Placeholder ltp/change if not in sheet map - use existing LTP if available
+                                    inst_obj = Instrument.objects.filter(symbol=s_clean).first()
+                                    existing_ltp = float(inst_obj.last_price) if inst_obj else 0
+                                    # Map: (ltp, change, pe, lh_diff, h52, pct)
+                                    ltp_map[s_clean] = (existing_ltp, 0, None, None, h52, 0)
         except Exception as ey:
             logger.error(f"Error fetching real 52W High via yfinance: {ey}")
 
@@ -255,9 +255,17 @@ def perform_sync():
                 # Update Instruments
                 instruments = Instrument.objects.filter(symbol__in=ltp_map.keys())
                 for inst in instruments:
-                    ltp, change, pe, lh_diff, h52 = ltp_map[inst.symbol]
+                    m_data = ltp_map[inst.symbol]
+                    ltp = m_data[0]
+                    change = m_data[1]
+                    pe = m_data[2]
+                    lh_diff = m_data[3]
+                    h52 = m_data[4]
+                    pct = m_data[5] if len(m_data) > 5 else 0
+                    
                     inst.last_price = ltp
                     inst.price_change = change
+                    # Prioritize exact previous close calculation if change is from sheet
                     inst.previous_close = ltp - change
                     inst.pe_ratio = pe
                     inst.diff_from_lh_pct = lh_diff
@@ -370,14 +378,10 @@ def sync_mutual_funds_from_sheet():
                 symbol = str(row.iloc[1]).strip() if len(row) > 1 else raw_name
                 
                 # Column C is NAV Price
-                try:
-                    sheet_nav = float(row.iloc[2]) if len(row) > 2 else 0
-                except (ValueError, TypeError): sheet_nav = 0
+                sheet_nav = clean_float(row.iloc[2], default=0.0) if len(row) > 2 else 0
                 
                 # Column D is % Changes
-                try:
-                    sheet_change = float(row.iloc[3]) if len(row) > 3 else 0
-                except (ValueError, TypeError): sheet_change = 0
+                sheet_change = clean_float(row.iloc[3], default=0.0) if len(row) > 3 else 0
 
                 target_nav = sheet_nav
                 
@@ -436,11 +440,7 @@ def sync_nps_from_sheet():
                 name = str(name_val).strip()
                 if not name or name.lower() == 'nan': continue
                 
-                try:
-                    nav_val = row.iloc[1]
-                    nav = float(nav_val) if pd.notna(nav_val) else 0
-                except (ValueError, TypeError): 
-                    nav = 0
+                nav = clean_float(row.iloc[1], default=0.0) if len(row) > 1 else 0
 
                 # Update or create NPSFund record
                 fund, created = NPSFund.objects.get_or_create(name=name)
@@ -523,19 +523,7 @@ def sync_coins_from_sheet():
                         if '-' not in symbol:
                             symbol = f"{symbol}-INR"
 
-                try:
-                    price_val = row.iloc[1]
-                    if pd.isna(price_val):
-                        price = 0
-                    else:
-                        # Clean if it's a string with commas
-                        if isinstance(price_val, str):
-                            price_val = price_val.replace(',', '').replace('₹', '').replace('$', '').strip()
-                        price = float(price_val)
-                        if math.isnan(price): price = 0
-                except (ValueError, TypeError): 
-                    price = 0
-
+                price = clean_float(row.iloc[1], default=0.0) if len(row) > 1 else 0
                 if price <= 0: continue
 
                 # Update or create Coin record
@@ -589,12 +577,9 @@ def fetch_live_ltp():
                 ltp_val = row.iloc[4]
                 
                 if pd.notna(symbol) and pd.notna(ltp_val):
-                    try:
-                        price = float(ltp_val)
-                        if not math.isnan(price):
-                            ltp_map[symbol] = price
-                    except (ValueError, TypeError):
-                        continue
+                    price = clean_float(ltp_val, default=0.0)
+                    if price > 0:
+                        ltp_map[symbol] = price
             except Exception:
                 continue
                 

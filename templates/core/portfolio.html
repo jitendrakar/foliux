@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
+{% load indian_numbers %}
+
 
 {% block extra_css %}
 <style>
@@ -207,6 +209,11 @@
         <div class="row align-items-center">
             <div class="col-lg-7">
                 <div class="d-flex align-items-center flex-wrap gap-3 mb-4">
+                    {% if target_user.profile.profile_picture %}
+                        <div class="rounded-circle overflow-hidden border border-2 border-white shadow-sm" style="width: 48px; height: 48px;">
+                            <img src="{{ target_user.profile.profile_picture.url }}" alt="" class="w-100 h-100 object-fit-cover">
+                        </div>
+                    {% endif %}
                     <div class="live-badge">
                         <span class="live-dot"></span>
                         Live Portfolio Status
@@ -217,16 +224,17 @@
                     </a>
                     {% endif %}
                 </div>
+
                 <div class="hero-label">Your Net Worth</div>
-                <div class="hero-value mb-4">₹ {{ total_latest_value|floatformat:2|default:"0.00" }}</div>
+                <div class="hero-value mb-4">₹ {{ total_latest_value|inr_format }}</div>
                 <div class="d-flex gap-4">
                     <div>
                         <div class="text-muted small mb-1">Total Invested</div>
-                        <div class="fw-bold fs-5">₹ {{ total_investment_cost|floatformat:2|default:"0.00" }}</div>
+                        <div class="fw-bold fs-5">₹ {{ total_investment_cost|inr_format }}</div>
                     </div>
                     <div class="border-start ps-4 border-secondary opacity-50">
                         <div class="text-muted small mb-1">Realized Profit</div>
-                        <div class="fw-bold fs-5 text-info">₹ {{ total_realized_gain|floatformat:2|default:"0.00" }}</div>
+                        <div class="fw-bold fs-5 text-info">₹ {{ total_realized_gain|inr_format }}</div>
                     </div>
                 </div>
             </div>
@@ -248,7 +256,7 @@
                     <i class="fas fa-wallet"></i>
                 </div>
                 <div class="stat-label-small">Initial Capital</div>
-                <div class="stat-value-large">₹ {{ total_investment_cost|floatformat:2|default:"0.00" }}</div>
+                <div class="stat-value-large">₹ {{ total_investment_cost|inr_format }}</div>
             </div>
         </div>
 
@@ -260,7 +268,7 @@
                 </div>
                 <div class="stat-label-small">Unrealized P&L</div>
                 <div class="stat-value-large {% if total_unrealized_gain >= 0 %}text-success{% else %}text-danger{% endif %}">
-                    {% if total_unrealized_gain > 0 %}+{% endif %}₹ {{ total_unrealized_gain|floatformat:2|default:"0.00" }}
+                    {% if total_unrealized_gain > 0 %}+{% endif %}₹ {{ total_unrealized_gain|inr_format }}
                 </div>
             </div>
         </div>
@@ -272,7 +280,7 @@
                     <i class="fas fa-hand-holding-usd"></i>
                 </div>
                 <div class="stat-label-small">Total Realized</div>
-                <div class="stat-value-large text-info">₹ {{ total_realized_gain|floatformat:2|default:"0.00" }}</div>
+                <div class="stat-value-large text-info">₹ {{ total_realized_gain|inr_format }}</div>
             </div>
         </div>
 
@@ -283,7 +291,7 @@
                     <i class="fas fa-file-invoice-dollar"></i>
                 </div>
                 <div class="stat-label-small">Liabilities (Loans)</div>
-                <div class="stat-value-large text-muted">₹ {{ loan_outstanding|floatformat:2|default:"0.00" }}</div>
+                <div class="stat-value-large text-muted">₹ {{ loan_outstanding|inr_format }}</div>
             </div>
         </div>
     </div>
@@ -314,12 +322,12 @@
                                 <div class="fw-bold" style="color: #1e293b; font-size: 1.05rem;">Stocks & ETFs</div>
                             </div>
                         </td>
-                        <td class="fw-semibold" style="font-size: 1rem;">₹ {{ stocks_invested|floatformat:2|default:"0.00" }}</td>
-                        <td class="fw-semibold" style="font-size: 1rem;">₹ {{ stocks_current|floatformat:2|default:"0.00" }}</td>
+                        <td class="fw-semibold" style="font-size: 1rem;">₹ {{ stocks_invested|inr_format }}</td>
+                        <td class="fw-semibold" style="font-size: 1rem;">₹ {{ stocks_current|inr_format }}</td>
                         <td class="fw-bold {% if stocks_unrealized >= 0 %}text-success{% else %}text-danger{% endif %}" style="font-size: 1rem;">
-                            {% if stocks_unrealized > 0 %}+{% endif %}₹ {{ stocks_unrealized|floatformat:2|default:"0.00" }}
+                            {% if stocks_unrealized > 0 %}+{% endif %}₹ {{ stocks_unrealized|inr_format }}
                         </td>
-                        <td class="fw-bold text-primary pe-4" style="font-size: 1rem;">₹ {{ stocks_realized|floatformat:2|default:"0.00" }}</td>
+                        <td class="fw-bold text-primary pe-4" style="font-size: 1rem;">₹ {{ stocks_realized|inr_format }}</td>
                     </tr>
 
                     <!-- MF Cue -->
@@ -332,12 +340,12 @@
                                 <div class="fw-bold" style="color: #1e293b; font-size: 1.05rem;">MF Cue</div>
                             </div>
                         </td>
-                        <td class="fw-semibold" style="font-size: 1rem;">₹ {{ mf_invested|floatformat:2|default:"0.00" }}</td>
-                        <td class="fw-semibold" style="font-size: 1rem;">₹ {{ mf_current|floatformat:2|default:"0.00" }}</td>
+                        <td class="fw-semibold" style="font-size: 1rem;">₹ {{ mf_invested|inr_format }}</td>
+                        <td class="fw-semibold" style="font-size: 1rem;">₹ {{ mf_current|inr_format }}</td>
                         <td class="fw-bold {% if mf_unrealized >= 0 %}text-success{% else %}text-danger{% endif %}" style="font-size: 1rem;">
-                            {% if mf_unrealized > 0 %}+{% endif %}₹ {{ mf_unrealized|floatformat:2|default:"0.00" }}
+                            {% if mf_unrealized > 0 %}+{% endif %}₹ {{ mf_unrealized|inr_format }}
                         </td>
-                        <td class="fw-bold text-primary pe-4" style="font-size: 1rem;">₹ {{ mf_realized|floatformat:2|default:"0.00" }}</td>
+                        <td class="fw-bold text-primary pe-4" style="font-size: 1rem;">₹ {{ mf_realized|inr_format }}</td>
                     </tr>
 
                     <!-- Coin -->
@@ -350,12 +358,12 @@
                                 <div class="fw-bold" style="color: #1e293b; font-size: 1.05rem;">Coin</div>
                             </div>
                         </td>
-                        <td class="fw-semibold" style="font-size: 1rem;">₹ {{ coin_invested|floatformat:2|default:"0.00" }}</td>
-                        <td class="fw-semibold" style="font-size: 1rem;">₹ {{ coin_current|floatformat:2|default:"0.00" }}</td>
+                        <td class="fw-semibold" style="font-size: 1rem;">₹ {{ coin_invested|inr_format }}</td>
+                        <td class="fw-semibold" style="font-size: 1rem;">₹ {{ coin_current|inr_format }}</td>
                         <td class="fw-bold {% if coin_unrealized >= 0 %}text-success{% else %}text-danger{% endif %}" style="font-size: 1rem;">
-                            {% if coin_unrealized > 0 %}+{% endif %}₹ {{ coin_unrealized|floatformat:2|default:"0.00" }}
+                            {% if coin_unrealized > 0 %}+{% endif %}₹ {{ coin_unrealized|inr_format }}
                         </td>
-                        <td class="fw-bold text-primary pe-4" style="font-size: 1rem;">₹ {{ coin_realized|floatformat:2|default:"0.00" }}</td>
+                        <td class="fw-bold text-primary pe-4" style="font-size: 1rem;">₹ {{ coin_realized|inr_format }}</td>
                     </tr>
 
                     <!-- NPS -->
@@ -368,12 +376,12 @@
                                 <div class="fw-bold" style="color: #1e293b; font-size: 1.05rem;">NPS</div>
                             </div>
                         </td>
-                        <td class="fw-semibold" style="font-size: 1rem;">₹ {{ nps_invested|floatformat:2|default:"0.00" }}</td>
-                        <td class="fw-semibold" style="font-size: 1rem;">₹ {{ nps_current|floatformat:2|default:"0.00" }}</td>
+                        <td class="fw-semibold" style="font-size: 1rem;">₹ {{ nps_invested|inr_format }}</td>
+                        <td class="fw-semibold" style="font-size: 1rem;">₹ {{ nps_current|inr_format }}</td>
                         <td class="fw-bold {% if nps_unrealized >= 0 %}text-success{% else %}text-danger{% endif %}" style="font-size: 1rem;">
-                            {% if nps_unrealized > 0 %}+{% endif %}₹ {{ nps_unrealized|floatformat:2|default:"0.00" }}
+                            {% if nps_unrealized > 0 %}+{% endif %}₹ {{ nps_unrealized|inr_format }}
                         </td>
-                        <td class="fw-bold text-primary pe-4" style="font-size: 1rem;">₹ {{ nps_realized|floatformat:2|default:"0.00" }}</td>
+                        <td class="fw-bold text-primary pe-4" style="font-size: 1rem;">₹ {{ nps_realized|inr_format }}</td>
                     </tr>
 
                 </tbody>
@@ -406,10 +414,10 @@
                                 <div class="fw-bold" style="color: #1e293b; font-size: 1.05rem;">Fixed Assets</div>
                             </div>
                         </td>
-                        <td class="fw-semibold" style="font-size: 1rem;">₹ {{ fd_invested|floatformat:2|default:"0.00" }}</td>
-                        <td class="fw-semibold" style="font-size: 1rem;">₹ {{ fd_current|floatformat:2|default:"0.00" }}</td>
-                        <td class="fw-bold {% if fd_percentage >= 0 %}text-success{% else %}text-danger{% endif %}" style="font-size: 1rem;">{% if fd_percentage >= 0 %}+{% endif %}{{ fd_percentage|floatformat:2|default:"0.00" }}%</td>
-                        <td class="fw-bold {% if fd_unrealized >= 0 %}text-success{% else %}text-danger{% endif %} pe-4" style="font-size: 1rem;">{% if fd_unrealized >= 0 %}+{% endif %}₹ {{ fd_unrealized|floatformat:2|default:"0.00" }}</td>
+                        <td class="fw-semibold" style="font-size: 1rem;">₹ {{ fd_invested|inr_format }}</td>
+                        <td class="fw-semibold" style="font-size: 1rem;">₹ {{ fd_current|inr_format }}</td>
+                        <td class="fw-bold {% if fd_percentage >= 0 %}text-success{% else %}text-danger{% endif %}" style="font-size: 1rem;">{% if fd_percentage >= 0 %}+{% endif %}{{ fd_percentage|inr_format }}%</td>
+                        <td class="fw-bold {% if fd_unrealized >= 0 %}text-success{% else %}text-danger{% endif %} pe-4" style="font-size: 1rem;">{% if fd_unrealized >= 0 %}+{% endif %}₹ {{ fd_unrealized|inr_format }}</td>
                     </tr>
 
                     <!-- Other Assets -->
@@ -422,10 +430,10 @@
                                 <div class="fw-bold" style="color: #1e293b; font-size: 1.05rem;">Other Assets</div>
                             </div>
                         </td>
-                        <td class="fw-semibold" style="font-size: 1rem;">₹ {{ other_invested|floatformat:2|default:"0.00" }}</td>
-                        <td class="fw-semibold" style="font-size: 1rem;">₹ {{ other_current|floatformat:2|default:"0.00" }}</td>
-                        <td class="fw-bold {% if other_percentage >= 0 %}text-success{% else %}text-danger{% endif %}" style="font-size: 1rem;">{% if other_percentage >= 0 %}+{% endif %}{{ other_percentage|floatformat:2|default:"0.00" }}%</td>
-                        <td class="fw-bold {% if other_unrealized >= 0 %}text-success{% else %}text-danger{% endif %} pe-4" style="font-size: 1rem;">{% if other_unrealized >= 0 %}+{% endif %}₹ {{ other_unrealized|floatformat:2|default:"0.00" }}</td>
+                        <td class="fw-semibold" style="font-size: 1rem;">₹ {{ other_invested|inr_format }}</td>
+                        <td class="fw-semibold" style="font-size: 1rem;">₹ {{ other_current|inr_format }}</td>
+                        <td class="fw-bold {% if other_percentage >= 0 %}text-success{% else %}text-danger{% endif %}" style="font-size: 1rem;">{% if other_percentage >= 0 %}+{% endif %}{{ other_percentage|inr_format }}%</td>
+                        <td class="fw-bold {% if other_unrealized >= 0 %}text-success{% else %}text-danger{% endif %} pe-4" style="font-size: 1rem;">{% if other_unrealized >= 0 %}+{% endif %}₹ {{ other_unrealized|inr_format }}</td>
                     </tr>
 
                     <!-- Loans -->
@@ -438,8 +446,8 @@
                                 <div class="fw-bold" style="color: #1e293b; font-size: 1.05rem;">Loans</div>
                             </div>
                         </td>
-                        <td class="fw-semibold" style="font-size: 1rem;">₹ {{ loan_taken|floatformat:2|default:"0.00" }}</td>
-                        <td class="fw-semibold text-danger" style="font-size: 1rem;">₹ {{ loan_outstanding|floatformat:2|default:"0.00" }}</td>
+                        <td class="fw-semibold" style="font-size: 1rem;">₹ {{ loan_taken|inr_format }}</td>
+                        <td class="fw-semibold text-danger" style="font-size: 1rem;">₹ {{ loan_outstanding|inr_format }}</td>
                         <td class="fw-bold text-muted" style="font-size: 1rem;">Lability</td>
                         <td class="fw-bold text-muted pe-4" style="font-size: 1rem;">₹ 0.00</td>
                     </tr>

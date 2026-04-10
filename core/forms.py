@@ -34,11 +34,20 @@ class CustomUserCreationForm(UserCreationForm):
             profile.save()
         return user
 
+GENDER_CHOICES = [
+    ('', '--- Select Gender ---'),
+    ('MALE', 'Male'),
+    ('FEMALE', 'Female'),
+    ('OTHER', 'Other'),
+]
+
 class ProfileForm(forms.ModelForm):
+    gender = forms.ChoiceField(choices=GENDER_CHOICES, widget=forms.Select(attrs={'class': 'form-control'}), required=False)
+
     class Meta:
         model = Profile
         fields = [
-            'full_name', 'mobile_number', 'date_of_birth', 'gender', 
+            'full_name', 'profile_picture', 'mobile_number', 'date_of_birth', 'gender', 
             'investor_type', 'initial_investment_limit',
             'mf_investment_limit', 'coin_investment_limit',
             'equity_fixed_charge', 'equity_brokerage_pct',
@@ -46,6 +55,7 @@ class ProfileForm(forms.ModelForm):
         ]
         labels = {
             'full_name': 'Full Name',
+            'profile_picture': 'Profile Photo',
             'mobile_number': 'Mobile Number',
             'date_of_birth': 'Date of Birth',
             'gender': 'Gender',
@@ -60,9 +70,9 @@ class ProfileForm(forms.ModelForm):
         }
         widgets = {
             'full_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter your full name'}),
+            'profile_picture': forms.ClearableFileInput(attrs={'class': 'form-control'}),
             'mobile_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter mobile number'}),
             'date_of_birth': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
-            'gender': forms.Select(attrs={'class': 'form-control'}),
             'investor_type': forms.Select(attrs={'class': 'form-control'}),
             'initial_investment_limit': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'mf_investment_limit': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),

@@ -80,6 +80,7 @@ class Profile(models.Model):
     mobile_number = EncryptedCharField(max_length=15, null=True, blank=True)
     date_of_birth = EncryptedDateField(null=True, blank=True)
     gender = EncryptedCharField(max_length=10, null=True, blank=True)
+    profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
     investor_type = models.CharField(max_length=20, choices=[('conservative','Conservative'),('moderate','Moderate'),('growth','Growth'),('aggressive','Aggressive')], default='moderate')
     initial_investment_limit = models.DecimalField(max_digits=15, decimal_places=2, default=15000.00)
     mf_investment_limit = models.DecimalField(max_digits=15, decimal_places=2, default=100000.00)
@@ -88,6 +89,34 @@ class Profile(models.Model):
     equity_brokerage_pct = models.DecimalField(max_digits=10, decimal_places=4, default=0.0200, null=True, blank=True) # Percentage (e.g., 0.02%)
     intraday_fixed_charge = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, null=True, blank=True)
     intraday_brokerage_pct = models.DecimalField(max_digits=10, decimal_places=4, default=0.0200, null=True, blank=True) # Percentage (e.g., 0.2%)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.profile_picture:
+            try:
+                from PIL import Image
+                img = Image.open(self.profile_picture.path)
+                
+                # Crop to square
+                width, height = img.size
+                if width != height:
+                    min_dim = min(width, height)
+                    left = (width - min_dim) / 2
+                    top = (height - min_dim) / 2
+                    right = (width + min_dim) / 2
+                    bottom = (height + min_dim) / 2
+                    img = img.crop((left, top, right, bottom))
+
+                # Resize to high quality
+                if img.height > 600 or img.width > 600:
+                    output_size = (600, 600)
+                    img.thumbnail(output_size, Image.Resampling.LANCZOS)
+                
+                img.save(self.profile_picture.path, quality=95, optimize=True)
+            except Exception as e:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Error processing profile picture: {e}")
 
     def __str__(self):
         return f"{self.user.username}'s Profile"
@@ -610,6 +639,11 @@ class OtherAsset(models.Model):
     purchase_price = models.DecimalField(max_digits=20, decimal_places=2)
     current_value = models.DecimalField(max_digits=20, decimal_places=2)
     monthly_rent = models.DecimalField(max_digits=20, decimal_places=2, default=0)
+    
+    # New fields for identification
+    holder_name = EncryptedCharField(max_length=100, null=True, blank=True)
+    asset_id = EncryptedCharField(max_length=50, null=True, blank=True)
+    
     created_at = models.DateTimeField(auto_now_add=True)
     
     @property

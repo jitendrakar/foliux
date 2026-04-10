@@ -116,7 +116,16 @@
                     {% for item in other_holdings %}
                     <tr>
                         <td class="ps-4">
-                            <div class="fw-700 text-other">{{ item.name }}</div>
+                            <div class="fw-700 text-other"
+                                 {% if item.asset_id or item.holder_name %}
+                                 data-bs-toggle="tooltip" 
+                                 data-bs-placement="top"
+                                 data-bs-html="true"
+                                 title="<strong>Asset ID:</strong> {{ item.asset_id|default:'N/A' }}<br><strong>Holder:</strong> {{ item.holder_name|default:'N/A' }}"
+                                 style="cursor: help;"
+                                 {% endif %}>
+                                {{ item.name }}
+                            </div>
                         </td>
                         <td><span class="badge bg-soft-other text-other border border-warning">{{ item.get_asset_type_display }}</span></td>
                         <td class="fw-600 text-muted">{{ item.purchase_date|date:"d M, Y" }}</td>
@@ -165,4 +174,15 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    });
+</script>
 {% endblock %}

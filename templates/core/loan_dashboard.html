@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
+{% load indian_numbers %}
+
 
 {% block extra_css %}
 <style>
@@ -78,19 +80,19 @@
         <div class="row g-4 text-center">
             <div class="col-6 col-md-3">
                 <div class="stat-label">Total Loan Taken</div>
-                <div class="stat-value">₹ {{ total_loan_amount|floatformat:2 }}</div>
+                <div class="stat-value">₹ {{ total_loan_amount|inr_format }}</div>
             </div>
             <div class="col-6 col-md-3 border-start border-secondary border-opacity-25">
                 <div class="stat-label">Total Outstanding</div>
-                <div class="stat-value text-danger">₹ {{ total_outstanding|floatformat:2 }}</div>
+                <div class="stat-value text-danger">₹ {{ total_outstanding|inr_format }}</div>
             </div>
             <div class="col-6 col-md-3 border-start border-secondary border-opacity-25">
                 <div class="stat-label">Interest Paid</div>
-                <div class="stat-value text-warning">₹ {{ total_interest_paid|floatformat:2 }}</div>
+                <div class="stat-value text-warning">₹ {{ total_interest_paid|inr_format }}</div>
             </div>
             <div class="col-6 col-md-3 border-start border-secondary border-opacity-25">
                 <div class="stat-label">Total Paid (P+I)</div>
-                <div class="stat-value text-success">₹ {{ total_paid|floatformat:2 }}</div>
+                <div class="stat-value text-success">₹ {{ total_paid|inr_format }}</div>
             </div>
         </div>
     </div>
@@ -123,14 +125,14 @@
                 <div class="mb-4">
                     <div class="d-flex justify-content-between align-items-end mb-1">
                         <span class="text-muted small">Outstanding Balance</span>
-                        <span class="fw-bold text-danger">₹ {{ loan.current_outstanding|floatformat:2 }}</span>
+                        <span class="fw-bold text-danger">₹ {{ loan.current_outstanding|inr_format }}</span>
                     </div>
                     <div class="progress">
                         <div class="progress-bar" role="progressbar" style="width: {{ loan.progress_percentage }}%"></div>
                     </div>
                     <div class="d-flex justify-content-between mt-1">
                         <small class="text-muted">{{ loan.progress_percentage|floatformat:1 }}% Paid</small>
-                        <small class="text-muted">₹ {{ loan.loan_amount|floatformat:0 }} Total</small>
+                        <small class="text-muted">₹ {{ loan.loan_amount|inr_format }} Total</small>
                     </div>
                 </div>
 
@@ -138,7 +140,7 @@
                     <div class="col-6">
                         <div class="bg-light p-2 rounded-3 text-center">
                             <div class="small text-muted" style="font-size: 0.7rem;">MONTHLY EMI</div>
-                            <div class="fw-bold">₹ {{ loan.emi_amount|floatformat:0 }}</div>
+                            <div class="fw-bold">₹ {{ loan.emi_amount|inr_format }}</div>
                         </div>
                     </div>
                     <div class="col-6">

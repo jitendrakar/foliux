@@ -111,7 +111,7 @@
         </div>
         
         <div class="content">
-            <p>Hi <strong>{{ user.profile.full_name|default:user.username }}</strong>,</p>
+            <p><strong>{{ user.profile.full_name|default:user.username }}</strong>,</p>
             <p>There has been a change in your portfolio recommendations. Here is the latest summary of investment signals based on your current holdings:</p>
             
             <div class="alert-box">

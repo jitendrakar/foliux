@@ -394,6 +394,8 @@
                         <li><a href="#backtester">18.5 Strategic Simulation Lab</a></li>
                         <li><a href="#frameworks">18.6 Multi-Framework Strategy Index</a></li>
                         <li><a href="#ui-premium">18.7 Institutional-Grade UI Overhaul</a></li>
+                        <li><a href="#inr-formatting">18.8 Indian Numbering System (Lakh/Crore)</a></li>
+                        <li><a href="#family-linked">18.9 Family & Linked Portfolio Views</a></li>
                     </ul>
                 </li>
                 <li><a href="#sqlstats">19. Database SQL Structure & Queries</a></li>
@@ -414,7 +416,7 @@
                 <p class="lead">Net Profit Investment Tracking System</p>
                 <div class="mt-4">
                     <span class="badge bg-primary px-3 py-2">About Project Documentation</span>
-                    <span class="ms-2 text-muted">Version 1.7.0 | April 2026</span>
+                    <span class="ms-2 text-muted">Version 1.7.5 | April 2026</span>
                 </div>
             </div>
 
@@ -1087,6 +1089,7 @@ CREATE INDEX "core_transaction_user_id" ON "core_transaction" ("user_id");
                 <h3>12.3 Data Encryption & Secure Communication</h3>
                 <ul>
                     <li><strong>At-Rest Encryption</strong>: Production MySQL environment supports TDE (Transparent Data Encryption).</li>
+                    <li><strong>Application-level Field Encryption</strong>: Critical personal data (Mobile, DOB) and financial details (Loan amounts, Bank names) utilize `EncryptedCharField`, ensuring data is encrypted before it even reaches the database.</li>
                     <li><strong>In-Transit Encryption</strong>: HTTPS enforced for all client-server communication.</li>
                     <li><strong>Password Hashing</strong>: Django's PBKDF2 algorithm with SHA256 hashing for password storage.</li>
                 </ul>
@@ -1368,14 +1371,29 @@ class MFSIP(models.Model):
                 <div class="code-block">
 {% verbatim %}class FixedAsset(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    instrument_name = models.CharField(max_length=100)
+    instrument_name = EncryptedCharField(max_length=100)
     asset_type = models.CharField(max_length=20, choices=ASSET_TYPES)
-    invested_amount = models.DecimalField(max_digits=20, decimal_places=2)
-    interest_rate = models.DecimalField(max_digits=5, decimal_places=2)
+    invested_amount = EncryptedCharField(max_length=50) # Decimal as string
+    interest_rate = EncryptedCharField(max_length=20) # Percentage as string
+    holder_name = EncryptedCharField(max_length=100, null=True, blank=True)
+    fd_id = EncryptedCharField(max_length=50, null=True, blank=True)
     maturity_date = models.DateField(null=True, blank=True)
     monthly_deposit = models.DecimalField(max_digits=20, decimal_places=2, default=0){% endverbatim %}
                 </div>
-                <p class="text-muted small"><strong>Use of this code:</strong> Manages non-market linked assets. The `RD` type utilizes the `monthly_deposit` and `interest_rate` to calculate future value with compounding.</p>
+                <p class="text-muted small"><strong>Use of this code:</strong> Manages non-market linked assets. The `RD` type utilizes the `monthly_deposit` and `interest_rate` to calculate future value with compounding. All sensitive financial values and owner names are encrypted at the database level.</p>
+
+                <h3>16.6.1 Other Physical Assets</h3>
+                <div class="code-block">
+{% verbatim %}class OtherAsset(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=100)
+    asset_type = models.CharField(max_length=50, choices=ASSET_TYPES)
+    purchase_price = models.DecimalField(max_digits=20, decimal_places=2)
+    current_value = models.DecimalField(max_digits=20, decimal_places=2)
+    holder_name = EncryptedCharField(max_length=100, null=True, blank=True)
+    asset_id = EncryptedCharField(max_length=50, null=True, blank=True){% endverbatim %}
+                </div>
+                <p class="text-muted small"><strong>Use of this code:</strong> Tracks real estate, gold, and other physical holdings. Similar to Fixed Assets, it supports holder identification and unique ID tracking for diverse portfolios.</p>
 
                 <h3>16.7 Loan & Liability Model</h3>
                 <div class="code-block">
@@ -1499,6 +1517,16 @@ def upload_portfolio(request):
                     <li><strong>Absolute Overlays</strong>: Search suggestions and UI components now utilize z-index layering to prevent layout shifting during interaction.</li>
                     <li><strong>Dynamic Dark Modes</strong>: The Simulation Lab and high-impact analytics sections use a darker, focus-oriented color palette (`#0F172A`) to reduce visual fatigue during deep data analysis.</li>
                 </ul>
+
+                <h3 id="inr-formatting">18.8 Indian Numbering System (Lakh/Crore) Integration</h3>
+                <p>Recognizing the significance of the domestic investment landscape, NPITS v1.7.5 introduces a custom **Indian Numbering Engine** (`inr_format`). This filter overrides the standard Western digit grouping (millions/billions) to provide the familiar Lakh and Crore grouping (e.g., `1,00,00,000.00` instead of `10,000,000.00`).</p>
+                <ul>
+                    <li><strong>Contextual Formatting</strong>: Automatically applied to all high-value metrics including Net Worth, Total Invested, and Realized Profits.</li>
+                    <li><strong>Precision Handling</strong>: Maintains two-decimal accuracy while intelligently placing commas at the thousand, lakh, and crore intervals.</li>
+                </ul>
+
+                <h3 id="family-linked">18.9 Family & Linked Portfolio Views</h3>
+                <p>To support holistic family wealth management, the system now enables **Linked Account Switching**. Users can securely link family member IDs (with OTP-verified consent) and switch between a "Self" and "Family" view directly from the dashboard. This allows for consolidated monitoring while maintaining individual data privacy and FIFO ledger boundaries.</p>
             </section>
 
             <!-- SECTION 19: DATABASE SQL STRUCTURE & QUERIES -->
@@ -1531,13 +1559,14 @@ CREATE TABLE "core_mfsip" (
                 <div class="code-block">
 CREATE TABLE "core_fixedasset" (
     "id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "instrument_name" varchar(100) NOT NULL,
+    "instrument_name" text NOT NULL, -- Encrypted
     "asset_type" varchar(20) NOT NULL,
-    "invested_amount" decimal NOT NULL,
-    "interest_rate" decimal NOT NULL,
+    "invested_amount" text NOT NULL, -- Encrypted Decimal
+    "interest_rate" text NOT NULL, -- Encrypted Decimal
+    "holder_name" text NULL, -- Encrypted Char
+    "fd_id" text NULL, -- Encrypted Char
     "maturity_date" date NULL,
     "monthly_deposit" decimal NOT NULL DEFAULT 0,
-    "next_deposit_date" date NULL,
     "user_id" integer NOT NULL REFERENCES "auth_user" ("id")
 );
                 </div>
@@ -1583,6 +1612,9 @@ CREATE TABLE "core_loanpayment" (
                 <h3>20.4 Unified Net-Worth Dashboard</h3>
                 <p>All assets and liabilities are aggregated into a single **Portfolio Dashboard**, which presents a real-time 'True Net Worth' by subtracting total liabilities (Loans) from total assets (Equity, MF, NPS, Crypto, Fixed, Other). This provides the ultimate financial health metric for the user.</p>
 
+                <h3>20.4.1 Asset ID & Holder Tracking</h3>
+                <p>With the expansion in v1.7.2, every Fixed Deposit and 'Other Asset' now supports granular **Holder Name** and **Asset ID** tracking. This ensures that assets spread across different banks or family members can be identified individually, facilitating smoother reconciliation and renewal management.</p>
+
                 <h3>20.5 Cryptocurrency Dashboard & Global Price Sync</h3>
                 <p>The Cryptocurrency module provides real-time tracking of digital assets. Unlike traditional markets, crypto operates 24/7. NPITS uses a specialized <strong>global price synchronization engine</strong> that pulls latest BTC, ETH, and other coin valuations from high-reliability financial data sources. It implements high-precision <code>Decimal(20, 8)</code> arithmetic to handle fractional units common in crypto transactions and calculates both realized and unrealized P&L using the standard FIFO methodology.</p>
 
@@ -1591,6 +1623,12 @@ CREATE TABLE "core_loanpayment" (
 
                 <h3 id="ipo-module">20.7 IPO Activity Tracker</h3>
                 <p>The **IPO Module** (formerly Donation) is being re-engineered to track Initial Public Offerings. While currently acting as a strategic placeholder in the navigation bar, its future roadmap includes automated subscription alerts, listing-gain analytics, and post-listing performance tracking for new entries in the Indian market.</p>
+
+                <h3>20.8 Dividend Tracking & Yield Analytics</h3>
+                <p>The **Dividend Module** allows users to log cash inflows from their equity holdings. It provides automated calculations for **Portfolio Yield** (Dividend as a percentage of Invested Value) and tracking of cumulative passive income per instrument.</p>
+
+                <h3>20.9 Goal-Based Investment Planning</h3>
+                <p>NPITS enables users to define specific **Financial Goals** (e.g., Retirement, Education, Property). The system maps current asset valuation against these targets, provided real-time progress indicators and estimated time-to-completion based on current contribution rates.</p>
             </section>
 
             <!-- SECTION 21: HOW IT WORKS: THE USER JOURNEY -->

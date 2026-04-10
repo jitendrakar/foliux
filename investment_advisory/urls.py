@@ -17,6 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from core import views as core_views
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,6 +30,14 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
     # Fallback: Django built-in auth URLs (logout, password change)
     path('accounts/', include('django.contrib.auth.urls')),
+]
+
+from django.urls import re_path
+from django.views.static import serve
+
+urlpatterns += [
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+    re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
 ]
 
 

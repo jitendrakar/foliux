@@ -10,9 +10,14 @@
                     <h5 class="mb-0 fw-bold" style="color: #003366;"><i class="fas fa-history me-2"></i>NPS Transaction History</h5>
                     <p class="text-muted small mb-0">Record of your retirement fund buys and sells</p>
                 </div>
-                <a href="{% url 'nps_dashboard' %}" class="btn btn-light btn-sm rounded-pill border">
-                    <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
-                </a>
+                <div class="d-flex align-items-center gap-2">
+                    <button id="toggleTxBtn" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold" onclick="toggleTxHistory()" style="display: none;">
+                        <i class="fas fa-chevron-down me-1"></i> Open full data
+                    </button>
+                    <a href="{% url 'nps_dashboard' %}" class="btn btn-light btn-sm rounded-pill border">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+                    </a>
+                </div>
             </div>
             <div class="card-body p-4">
                 
@@ -98,16 +103,27 @@
 </div>
 
 <script>
+let isTxExpanded = true;
+const TX_LIMIT = 1;
+
+function toggleTxHistory() {
+    isTxExpanded = !isTxExpanded;
+    applyFilters();
+}
+
 function applyFilters() {
     const dateFrom = document.getElementById('filterDateFrom').value;
     const dateTo = document.getElementById('filterDateTo').value;
     const transType = document.getElementById('filterType').value;
     const instrument = document.getElementById('filterInstrument').value.toUpperCase();
+    const hasActiveFilters = dateFrom || dateTo || transType !== 'ALL' || instrument;
 
     const rows = document.querySelectorAll('.transaction-row');
+    const btn = document.getElementById('toggleTxBtn');
     let visibleCount = 0;
+    let firstDate = null;
 
-    rows.forEach(row => {
+    rows.forEach((row, index) => {
         const rowDate = row.dataset.date;
         const rowType = row.dataset.type;
         const rowSymbol = row.dataset.symbol.toUpperCase();
@@ -119,9 +135,32 @@ function applyFilters() {
         if (transType !== 'ALL' && rowType !== transType) show = false;
         if (instrument && !rowSymbol.includes(instrument)) show = false;
 
+        // If no filters are active, respect the expansion state
+        if (show && !hasActiveFilters && !isTxExpanded) {
+            if (firstDate === null) firstDate = rowDate;
+            if (rowDate !== firstDate) {
+                show = false;
+            }
+        }
+
         row.style.display = show ? '' : 'none';
         if (show) visibleCount++;
     });
+
+    // Update button visibility and text
+    if (btn) {
+        if (!hasActiveFilters && !isTxExpanded && rows.length > visibleCount) {
+            btn.style.display = 'block';
+            btn.className = "btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold";
+            btn.innerHTML = `<i class="fas fa-chevron-down me-1"></i> Open full data (${rows.length})`;
+        } else if (!hasActiveFilters && isTxExpanded && rows.length > 0) {
+            btn.style.display = 'block';
+            btn.className = "btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold";
+            btn.innerHTML = '<i class="fas fa-chevron-up me-1"></i> Close';
+        } else {
+            btn.style.display = 'none';
+        }
+    }
 
     const noResultsRow = document.getElementById('noResultsRow');
     if (noResultsRow) {
@@ -136,5 +175,8 @@ function resetFilters() {
     document.getElementById('filterInstrument').value = '';
     applyFilters();
 }
+
+// Initial call
+document.addEventListener('DOMContentLoaded', applyFilters);
 </script>
 {% endblock %}

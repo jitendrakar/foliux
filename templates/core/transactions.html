@@ -72,207 +72,205 @@
                 <div class="mb-5 animate__animated animate__fadeIn">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h6 class="mb-0 fw-bold"><i class="fas fa-chart-line me-2 text-primary"></i>Portfolio Performance History</h6>
-                        <button id="toggleHistoryBtn" class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="toggleHistoryTable()" style="display: none;">
-                            <i class="fas fa-eye me-1"></i> Open full data
+                        <button class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#portfolioHistoryCollapse" aria-expanded="false">
+                            <i class="fas fa-chevron-down me-1"></i> Open full data
                         </button>
                     </div>
-                    <div class="card p-3 border shadow-sm rounded-4 bg-white mb-3" style="background: linear-gradient(to bottom right, #ffffff, #f8fafc);">
+                    <div class="card p-4 border shadow-sm rounded-4 bg-white mb-4 animate__animated animate__fadeIn" style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);">
                         <div style="height: 350px; width: 100%;">
                             <canvas id="portfolioHistoryChart"></canvas>
                         </div>
                     </div>
                     
-                    <div class="table-responsive">
-                        <table class="table table-sm table-bordered align-middle bg-white" id="historyTable" style="font-size: 0.85rem;">
-                            <thead class="bg-light">
-                                <tr>
-                                    <th class="text-uppercase small fw-bold text-muted">Date</th>
-                                    <th class="text-uppercase small fw-bold text-muted text-end">Initial Capital (₹)</th>
-                                    <th class="text-uppercase small fw-bold text-muted text-end">Current Value (₹)</th>
-                                    <th class="text-uppercase small fw-bold text-muted text-end">Profit/Loss (₹)</th>
-                                    <th class="text-uppercase small fw-bold text-muted text-end">Growth %</th>
-                                    <th class="text-uppercase small fw-bold text-muted text-end">NIFTY Price</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <script>
-                                    // Populate table via JS from the same data source to ensure consistency
-                                    let allHistoryItems = [];
-                                    let isHistoryExpanded = false;
+                    <div class="collapse" id="portfolioHistoryCollapse">
+                        <div class="card border-0 shadow-none mb-3">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered align-middle bg-white" id="historyTable" style="font-size: 0.85rem;">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th class="text-uppercase small fw-bold text-muted">Date</th>
+                                        <th class="text-uppercase small fw-bold text-muted text-end">Initial Capital (₹)</th>
+                                        <th class="text-uppercase small fw-bold text-muted text-end">Current Value (₹)</th>
+                                        <th class="text-uppercase small fw-bold text-muted text-end">Profit/Loss (₹)</th>
+                                        <th class="text-uppercase small fw-bold text-muted text-end">Growth %</th>
+                                        <th class="text-uppercase small fw-bold text-muted text-end">NIFTY Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <script>
+                                        // Populate table via JS from the same data source to ensure consistency
+                                        let allHistoryItems = [];
 
-                                    function renderHistoryTableRows(items, expand) {
-                                        const tbody = document.querySelector('#historyTable tbody');
-                                        if (!tbody) return;
-                                        tbody.innerHTML = '';
-                                        
-                                        // Show only last 5 days if not expanded
-                                        const displayItems = expand ? items : items.slice(0, 5);
-                                        
-                                        displayItems.forEach(item => {
-                                            const pnl = (item.current || item.net_worth) - item.invested;
-                                            const pct = item.invested > 0 ? (pnl / item.invested * 100) : 0;
-                                            const tr = document.createElement('tr');
-                                            tr.innerHTML = `
-                                                <td>${item.date}</td>
-                                                <td class="text-end">₹${item.invested.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                                                <td class="text-end fw-bold text-primary">₹${item.net_worth.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                                                <td class="text-end fw-bold ${pnl >= 0 ? 'text-success' : 'text-danger'}">₹${pnl.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
-                                                <td class="text-end fw-bold ${pnl >= 0 ? 'text-success' : 'text-danger'}">${pct.toFixed(2)}%</td>
-                                                <td class="text-end text-muted small">${item.nifty ? '₹' + item.nifty.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '-'}</td>
-                                            `;
-                                            tbody.appendChild(tr);
-                                        });
-
-                                        const btn = document.getElementById('toggleHistoryBtn');
-                                        if (btn) {
-                                            if (items.length <= 5) {
-                                                btn.style.display = 'none';
-                                            } else {
-                                                btn.style.display = 'block';
-                                                btn.innerHTML = expand ? 
-                                                    '<i class="fas fa-eye-slash me-1"></i> Close' : 
-                                                    `<i class="fas fa-eye me-1"></i> Open full data (${items.length})`;
-                                            }
-                                        }
-                                    }
-
-                                    window.toggleHistoryTable = function() {
-                                        isHistoryExpanded = !isHistoryExpanded;
-                                        renderHistoryTableRows(allHistoryItems, isHistoryExpanded);
-                                    };
-
-                                    window.addEventListener('DOMContentLoaded', () => {
-                                        const rawData = '{{ history_data_json|safe }}';
-                                        if (rawData) {
-                                            const historyData = JSON.parse(rawData);
+                                        function renderHistoryTableRows(items) {
                                             const tbody = document.querySelector('#historyTable tbody');
-                                            if (historyData.dates && historyData.dates.length > 0) {
-                                                // Sort dates descending
-                                                allHistoryItems = historyData.dates.map((date, i) => ({
-                                                    date: date,
-                                                    invested: historyData.invested[i],
-                                                    current: historyData.current[i],
-                                                    net_worth: historyData.net_worth[i],
-                                                    nifty: historyData.nifty ? historyData.nifty[i] : null
-                                                })).reverse();
+                                            if (!tbody) return;
+                                            tbody.innerHTML = '';
+                                            
+                                            // Show ALL items in the history table
+                                            items.forEach(item => {
+                                                const pnl = (item.current || item.net_worth) - item.invested;
+                                                const pct = item.invested > 0 ? (pnl / item.invested * 100) : 0;
+                                                const tr = document.createElement('tr');
+                                                tr.innerHTML = `
+                                                    <td>${item.date}</td>
+                                                    <td class="text-end">₹${item.invested.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                                    <td class="text-end fw-bold text-primary">₹${item.net_worth.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                                    <td class="text-end fw-bold ${pnl >= 0 ? 'text-success' : 'text-danger'}">₹${pnl.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                                                    <td class="text-end fw-bold ${pnl >= 0 ? 'text-success' : 'text-danger'}">${pct.toFixed(2)}%</td>
+                                                    <td class="text-end text-muted small">${item.nifty ? '₹' + item.nifty.toLocaleString('en-IN', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : '-'}</td>
+                                                `;
+                                                tbody.appendChild(tr);
+                                            });
+                                        }
+
+                                        window.addEventListener('DOMContentLoaded', () => {
+                                            const rawData = '{{ history_data_json|safe }}';
+                                            if (!rawData) return;
+                                            
+                                            const historyData = JSON.parse(rawData);
+                                            if (!historyData.dates || historyData.dates.length === 0) {
+                                                const tbody = document.querySelector('#historyTable tbody');
+                                                if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">No history data available. Snapshot is recorded automatically daily and during sync.</td></tr>';
+                                                return;
+                                            }
+
+                                            // Sort dates descending for table
+                                            allHistoryItems = historyData.dates.map((date, i) => ({
+                                                date: date,
+                                                invested: historyData.invested[i],
+                                                current: historyData.current[i],
+                                                net_worth: historyData.net_worth[i],
+                                                nifty: historyData.nifty ? historyData.nifty[i] : null
+                                            })).reverse();
+                                            
+                                            renderHistoryTableRows(allHistoryItems);
+
+                                            // Setup the Chart
+                                            try {
+                                                const ctx = document.getElementById('portfolioHistoryChart').getContext('2d');
                                                 
-                                                renderHistoryTableRows(allHistoryItems, false);
-
-                                                // Setup the Chart
-                                                try {
-                                                    const ctx = document.getElementById('portfolioHistoryChart').getContext('2d');
-                                                    
-                                                    // Scaling Nifty for comparison: Match first net worth point
-                                                    let scaledNifty = [];
-                                                    if (historyData.nifty && historyData.nifty.length > 0 && historyData.net_worth.length > 0) {
-                                                        const firstNW = historyData.net_worth[0];
-                                                        const firstNifty = historyData.nifty[0];
-                                                        if (firstNifty && firstNW) {
-                                                            const ratio = firstNW / firstNifty;
-                                                            scaledNifty = historyData.nifty.map(n => n ? n * ratio : null);
-                                                        }
+                                                // Scaling Nifty for comparison: Match first net worth point
+                                                let scaledNifty = [];
+                                                if (historyData.nifty && historyData.nifty.length > 0 && historyData.net_worth.length > 0) {
+                                                    const firstNW = historyData.net_worth[0];
+                                                    const firstNifty = historyData.nifty[0];
+                                                    if (firstNifty && firstNW) {
+                                                        const ratio = firstNW / firstNifty;
+                                                        scaledNifty = historyData.nifty.map(n => n ? n * ratio : null);
                                                     }
+                                                }
 
-                                                    // Gradients
-                                                    const netWorthGradient = ctx.createLinearGradient(0, 0, 0, 350);
-                                                    netWorthGradient.addColorStop(0, 'rgba(34, 197, 94, 0.2)');
-                                                    netWorthGradient.addColorStop(1, 'rgba(34, 197, 94, 0)');
-                                                    
-                                                    const capitalGradient = ctx.createLinearGradient(0, 0, 0, 350);
-                                                    capitalGradient.addColorStop(0, 'rgba(37, 99, 235, 0.15)');
-                                                    capitalGradient.addColorStop(1, 'rgba(37, 99, 235, 0)');
+                                                // Gradients
+                                                const netWorthGradient = ctx.createLinearGradient(0, 0, 0, 350);
+                                                netWorthGradient.addColorStop(0, 'rgba(34, 197, 94, 0.2)');
+                                                netWorthGradient.addColorStop(1, 'rgba(34, 197, 94, 0)');
+                                                
+                                                const capitalGradient = ctx.createLinearGradient(0, 0, 0, 350);
+                                                capitalGradient.addColorStop(0, 'rgba(37, 99, 235, 0.15)');
+                                                capitalGradient.addColorStop(1, 'rgba(37, 99, 235, 0)');
 
-                                                    new Chart(ctx, {
-                                                        type: 'line',
-                                                        data: {
-                                                            labels: historyData.dates,
-                                                            datasets: [
-                                                                {
-                                                                    label: 'Current Value',
-                                                                    data: historyData.net_worth,
-                                                                    borderColor: '#22c55e',
-                                                                    backgroundColor: netWorthGradient,
-                                                                    fill: true,
-                                                                    tension: 0.3,
-                                                                    pointRadius: 2,
-                                                                    borderWidth: 3
-                                                                },
-                                                                {
-                                                                    label: 'Initial Capital',
-                                                                    data: historyData.invested,
-                                                                    borderColor: '#2563eb',
-                                                                    backgroundColor: capitalGradient,
-                                                                    fill: true,
-                                                                    tension: 0.3,
-                                                                    pointRadius: 2,
-                                                                    borderWidth: 2
-                                                                },
-                                                                {
-                                                                    label: 'NIFTY (Benchmark)',
-                                                                    data: scaledNifty,
-                                                                    borderColor: '#eab308',
-                                                                    borderDash: [5, 5],
-                                                                    pointRadius: 0,
-                                                                    fill: false,
-                                                                    tension: 0.3,
-                                                                    borderWidth: 2
-                                                                }
-                                                            ]
-                                                        },
-                                                        options: {
-                                                            responsive: true,
-                                                            maintainAspectRatio: false,
-                                                            interaction: { mode: 'index', intersect: false },
-                                                            plugins: {
-                                                                legend: { position: 'top', labels: { usePointStyle: true, padding: 20 } },
-                                                                tooltip: {
-                                                                    padding: 12,
-                                                                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                                                                    callbacks: {
-                                                                        label: (ctx) => {
-                                                                            if (ctx.dataset.label.includes('NIFTY')) {
-                                                                                const originalPrice = historyData.nifty[ctx.dataIndex];
-                                                                                return `NIFTY Price: ₹${originalPrice ? originalPrice.toLocaleString('en-IN') : '-'}`;
-                                                                            }
-                                                                            return `${ctx.dataset.label}: ₹${ctx.raw.toLocaleString('en-IN')}`;
+                                                new Chart(ctx, {
+                                                    type: 'line',
+                                                    data: {
+                                                        labels: historyData.dates,
+                                                        datasets: [
+                                                            {
+                                                                label: 'Current Value',
+                                                                data: historyData.net_worth,
+                                                                borderColor: '#22c55e',
+                                                                backgroundColor: netWorthGradient,
+                                                                fill: true,
+                                                                tension: 0.3,
+                                                                pointRadius: 2,
+                                                                borderWidth: 3
+                                                            },
+                                                            {
+                                                                label: 'Initial Capital',
+                                                                data: historyData.invested,
+                                                                borderColor: '#2563eb',
+                                                                backgroundColor: capitalGradient,
+                                                                fill: true,
+                                                                tension: 0.3,
+                                                                pointRadius: 2,
+                                                                borderWidth: 2
+                                                            },
+                                                            {
+                                                                label: 'NIFTY (Benchmark)',
+                                                                data: scaledNifty,
+                                                                borderColor: '#eab308',
+                                                                borderDash: [5, 5],
+                                                                pointRadius: 0,
+                                                                fill: false,
+                                                                tension: 0.3,
+                                                                borderWidth: 2
+                                                            }
+                                                        ]
+                                                    },
+                                                    options: {
+                                                        responsive: true,
+                                                        maintainAspectRatio: false,
+                                                        interaction: { mode: 'index', intersect: false },
+                                                        plugins: {
+                                                            legend: { position: 'top', labels: { usePointStyle: true, padding: 20 } },
+                                                            tooltip: {
+                                                                padding: 12,
+                                                                backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                                                callbacks: {
+                                                                    label: (ctx) => {
+                                                                        if (ctx.dataset.label.includes('NIFTY')) {
+                                                                            const originalPrice = historyData.nifty[ctx.dataIndex];
+                                                                            return `NIFTY Price: ₹${originalPrice ? originalPrice.toLocaleString('en-IN') : '-'}`;
                                                                         }
+                                                                        return `${ctx.dataset.label}: ₹${ctx.raw.toLocaleString('en-IN')}`;
                                                                     }
+                                                                }
+                                                            }
+                                                        },
+                                                        scales: {
+                                                            y: {
+                                                                beginAtZero: false,
+                                                                grid: { color: 'rgba(0,0,0,0.05)' },
+                                                                ticks: { 
+                                                                    callback: (val) => '₹' + (val/1000).toFixed(0) + 'K', 
+                                                                    font: { weight: '500' } 
                                                                 }
                                                             },
-                                                            scales: {
-                                                                y: {
-                                                                    beginAtZero: false,
-                                                                    grid: { color: 'rgba(0,0,0,0.05)' },
-                                                                    ticks: { 
-                                                                        callback: (val) => '₹' + (val/1000).toFixed(0) + 'K', 
-                                                                        font: { weight: '500' } 
-                                                                    }
-                                                                },
-                                                                x: { grid: { display: false } }
-                                                            }
+                                                            x: { grid: { display: false } }
                                                         }
-                                                    });
-                                                } catch (e) {
-                                                    console.error("Error drawing history chart:", e);
-                                                }
-                                            } else {
-                                                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4 text-muted">No history data available. Snapshot is recorded automatically daily and during sync.</td></tr>';
+                                                    }
+                                                });
+                                            } catch (e) {
+                                                console.error("Error drawing history chart:", e);
                                             }
-                                        }
-                                    });
-                                </script>
-                            </tbody>
-                        </table>
+                                        });
+
+                                        // Collapse Toggle listener
+                                        window.addEventListener('DOMContentLoaded', () => {
+                                            const collapseElement = document.getElementById('portfolioHistoryCollapse');
+                                            const toggleBtn = document.querySelector('[data-bs-target="#portfolioHistoryCollapse"]');
+                                            
+                                            if (collapseElement && toggleBtn) {
+                                                collapseElement.addEventListener('show.bs.collapse', function () {
+                                                    toggleBtn.innerHTML = '<i class="fas fa-chevron-up me-1"></i> Close';
+                                                });
+                                                collapseElement.addEventListener('hide.bs.collapse', function () {
+                                                    toggleBtn.innerHTML = '<i class="fas fa-chevron-down me-1"></i> Open full data';
+                                                });
+                                            }
+                                        });
+                                    </script>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
-
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-4 mt-5">
                     <div>
-                        <h5 class="mb-0 fw-bold"><i class="fas fa-history me-2 text-primary"></i>Transaction History</h5>
+                        <h6 class="mb-0 fw-bold"><i class="fas fa-history me-2 text-primary"></i>Transaction History</h6>
                         <p class="text-muted small mb-0">Record of your buy and sell activities</p>
                     </div>
-                    <button id="toggleTxBtn" class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="toggleTxHistory()" style="display: none;">
-                        <i class="fas fa-eye me-1"></i> Open full history
+                    <button id="toggleTxBtn" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold" onclick="toggleTxHistory()">
+                        <i class="fas fa-chevron-down me-1"></i> Open full data
                     </button>
                 </div>
 
@@ -359,8 +357,8 @@
 </div>
 
 <script>
-let isTxExpanded = false;
-const TX_LIMIT = 5;
+let isTxExpanded = true;
+const TX_LIMIT = 1;
 
 function toggleTxHistory() {
     isTxExpanded = !isTxExpanded;
@@ -368,52 +366,74 @@ function toggleTxHistory() {
 }
 
 function applyFilters() {
-    const dateFrom = document.getElementById('filterDateFrom').value;
-    const dateTo = document.getElementById('filterDateTo').value;
-    const transType = document.getElementById('filterType').value;
-    const instrument = document.getElementById('filterInstrument').value.toUpperCase();
-    const hasActiveFilters = dateFrom || dateTo || transType !== 'ALL' || instrument;
+    console.log("Applying filters...");
+    try {
+        const dateFrom = document.getElementById('filterDateFrom')?.value || '';
+        const dateTo = document.getElementById('filterDateTo')?.value || '';
+        const transType = document.getElementById('filterType')?.value || 'ALL';
+        const instrument = (document.getElementById('filterInstrument')?.value || '').toUpperCase();
+        const hasActiveFilters = dateFrom || dateTo || transType !== 'ALL' || instrument;
 
-    const rows = document.querySelectorAll('.transaction-row');
-    const btn = document.getElementById('toggleTxBtn');
-    let visibleCount = 0;
+        const rows = document.querySelectorAll('.transaction-row');
+        const btn = document.getElementById('toggleTxBtn');
+        let visibleCount = 0;
+        let firstDate = null;
 
-    rows.forEach((row, index) => {
-        const rowDate = row.dataset.date;
-        const rowType = row.dataset.type;
-        const rowSymbol = row.dataset.symbol.toUpperCase();
-
-        let show = true;
-
-        if (dateFrom && rowDate < dateFrom) show = false;
-        if (dateTo && rowDate > dateTo) show = false;
-        if (transType !== 'ALL' && rowType !== transType) show = false;
-        if (instrument && !rowSymbol.includes(instrument)) show = false;
-
-        // If no filters are active, respect the expansion state
-        if (show && !hasActiveFilters && !isTxExpanded && visibleCount >= TX_LIMIT) {
-            show = false;
+        if (!rows.length) {
+            if (btn) btn.style.display = 'none';
+            return;
         }
 
-        row.style.display = show ? '' : 'none';
-        if (show) visibleCount++;
-    });
+        const SHOW_DEFAULT_LIMIT = 10;
+        
+        rows.forEach((row, index) => {
+            try {
+                const rowDate = row.dataset.date || "";
+                const rowType = row.dataset.type || "";
+                const rowSymbol = (row.dataset.symbol || "").toUpperCase();
 
-    // Update button visibility and text
-    if (btn) {
-        if (rows.length > TX_LIMIT && !hasActiveFilters) {
-            btn.style.display = 'block';
-            btn.innerHTML = isTxExpanded ? 
-                '<i class="fas fa-eye-slash me-1"></i> Close' : 
-                `<i class="fas fa-eye me-1"></i> Open full history (${rows.length})`;
-        } else {
-            btn.style.display = 'none';
+                let show = true;
+
+                if (dateFrom && rowDate < dateFrom) show = false;
+                if (dateTo && rowDate > dateTo) show = false;
+                if (transType !== 'ALL' && rowType !== transType) show = false;
+                if (instrument && !rowSymbol.includes(instrument)) show = false;
+
+                // Default collapse logic (show top 10)
+                if (show && !hasActiveFilters && !isTxExpanded) {
+                    if (visibleCount >= SHOW_DEFAULT_LIMIT) {
+                        show = false;
+                    }
+                }
+
+                row.style.display = show ? '' : 'none';
+                if (show) visibleCount++;
+            } catch (err) {
+                console.warn("Row filter error:", err);
+            }
+        });
+
+        // Update button visibility and text
+        if (btn) {
+            if (hasActiveFilters) {
+                btn.style.display = 'none';
+            } else if (isTxExpanded) {
+                btn.style.display = 'block';
+                btn.innerHTML = '<i class="fas fa-chevron-up me-1"></i> Close';
+            } else if (rows.length > SHOW_DEFAULT_LIMIT) {
+                btn.style.display = 'block';
+                btn.innerHTML = `<i class="fas fa-chevron-down me-1"></i> Open full data (${rows.length})`;
+            } else {
+                btn.style.display = 'none';
+            }
         }
-    }
 
-    const noResultsRow = document.getElementById('noResultsRow');
-    if (noResultsRow) {
-        noResultsRow.style.display = (visibleCount === 0 && rows.length > 0) ? '' : 'none';
+        const noResultsRow = document.getElementById('noResultsRow');
+        if (noResultsRow) {
+            noResultsRow.style.display = (visibleCount === 0 && rows.length > 0) ? '' : 'none';
+        }
+    } catch (e) {
+        console.error("Critical: applyFilters crashed", e);
     }
 }
 

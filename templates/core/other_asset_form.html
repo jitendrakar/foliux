@@ -71,6 +71,17 @@
                         </select>
                     </div>
                 </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <label for="holder_name" class="form-label">Asset Holder Name & Relation</label>
+                        <input type="text" name="holder_name" id="holder_name" class="form-control" placeholder="e.g. Name (Self)" value="{{ asset.holder_name|default:'' }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="asset_id" class="form-label">Asset ID</label>
+                        <input type="text" name="asset_id" id="asset_id" class="form-control" placeholder="Unique ID/Folio" value="{{ asset.asset_id|default:'' }}">
+                    </div>
+                </div>
                 
                 <div class="row mb-4">
                     <div class="col-md-6">
