@@ -2276,51 +2276,54 @@ def sell_stock(request):
             messages.error(request, f"Insufficient quantity to sell. Target has {portfolio.quantity} units.")
             return redirect('dashboard')
             
-        # 1. Intraday Logic: Check for a matching BUY today with same volume
-        intraday_buy = Transaction.objects.filter(
-            user=target_user,
-            instrument=inst,
-            transaction_type='BUY',
-            date=exit_date,
-            quantity=quantity_to_sell,
-            remaining_quantity=quantity_to_sell
-        ).first()
-
+        # Unified Priority Logic: Intraday (Same Day) First, then FIFO (Older Lots)
         total_buy_value = Decimal('0')
         remaining_to_deduct = quantity_to_sell
         first_entry_date = None
+        is_intraday = False
 
-        if intraday_buy:
-            total_buy_value = Decimal(str(quantity_to_sell)) * intraday_buy.price
-            first_entry_date = intraday_buy.date
-            intraday_buy.remaining_quantity = 0
-            intraday_buy.save()
-            remaining_to_deduct = 0
-        else:
-            # 2. FIFO Logic: Fetch active buy transactions
-            buy_txs = Transaction.objects.filter(
-                user=target_user,
-                instrument=inst,
-                transaction_type='BUY',
-                remaining_quantity__gt=0
-            ).order_by('date', 'created_at')
+        # 1. Gather all active BUYS for this instrument
+        all_buys = Transaction.objects.filter(
+            user=target_user,
+            instrument=inst,
+            transaction_type='BUY',
+            remaining_quantity__gt=0
+        ).order_by('date', 'created_at')
+
+        # 2. Prioritize Same-Day (Intraday) Lots
+        intraday_lots = [tx for tx in all_buys if tx.date == exit_date]
+        other_lots = [tx for tx in all_buys if tx.date != exit_date]
+
+        # Use Intraday lots first
+        for tx in intraday_lots:
+            if remaining_to_deduct <= 0:
+                break
+            is_intraday = True # Mark as intraday if we use any same-day lot
+            if first_entry_date is None:
+                first_entry_date = tx.date
             
-            for tx in buy_txs:
-                if remaining_to_deduct <= 0:
-                    break
-                
-                if first_entry_date is None:
-                    first_entry_date = tx.date
-                    
-                deduct = min(tx.remaining_quantity, remaining_to_deduct)
-                total_buy_value += Decimal(str(deduct)) * tx.price
-                tx.remaining_quantity -= deduct
-                tx.save()
-                remaining_to_deduct -= deduct
+            deduct = min(tx.remaining_quantity, remaining_to_deduct)
+            total_buy_value += Decimal(str(deduct)) * tx.price
+            tx.remaining_quantity -= deduct
+            tx.save()
+            remaining_to_deduct -= deduct
+
+        # 3. Use other lots (FIFO) if still needed
+        for tx in other_lots:
+            if remaining_to_deduct <= 0:
+                break
+            if first_entry_date is None:
+                first_entry_date = tx.date
+            
+            deduct = min(tx.remaining_quantity, remaining_to_deduct)
+            total_buy_value += Decimal(str(deduct)) * tx.price
+            tx.remaining_quantity -= deduct
+            tx.save()
+            remaining_to_deduct -= deduct
             
         # Calculate Brokerage for SELL
         profile, _ = Profile.objects.get_or_create(user=target_user)
-        if intraday_buy:
+        if is_intraday:
             fixed_charge = profile.intraday_fixed_charge or Decimal('0')
             pct_charge = profile.intraday_brokerage_pct or Decimal('0')
         else:
