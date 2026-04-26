@@ -235,3 +235,13 @@ class LoanPaymentForm(forms.ModelForm):
             'principal_component': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'interest_component': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
         }
+
+from .models import UserReview
+class UserReviewForm(forms.ModelForm):
+    class Meta:
+        model = UserReview
+        fields = ['rating', 'comment']
+        widgets = {
+            'rating': forms.Select(choices=[(i, f"{i} Stars") for i in range(5, 0, -1)], attrs={'class': 'form-select rounded-pill'}),
+            'comment': forms.Textarea(attrs={'class': 'form-control rounded-4', 'rows': 4, 'placeholder': 'Tell us about your experience with FOLIUX...'}),
+        }

@@ -136,19 +136,19 @@
     <div class="row g-3 mb-5 row-cols-2 row-cols-md-5">
         <div class="col">
             <div class="mf-card p-4 h-100 animate__animated animate__fadeInUp">
-                <div class="stats-label mb-2">Invested</div>
+                <div class="stats-label mb-2">Invested Amount</div>
                 <div class="stats-value text-nowrap">₹ {{ total_invested|inr_format }}</div>
             </div>
         </div>
         <div class="col">
             <div class="mf-card p-4 h-100 animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
-                <div class="stats-label mb-2">Current</div>
+                <div class="stats-label mb-2">Current Value</div>
                 <div class="stats-value text-nowrap">₹ {{ total_current_value|inr_format }}</div>
             </div>
         </div>
         <div class="col">
             <div class="mf-card p-4 h-100 animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
-                <div class="stats-label mb-2">Day Δ</div>
+                <div class="stats-label mb-2">Day Change</div>
                 <div class="stats-value {% if total_day_change >= 0 %}text-success{% else %}text-danger{% endif %} text-nowrap">
                     ₹ {{ total_day_change|inr_format }}
                 </div>
@@ -156,7 +156,7 @@
         </div>
         <div class="col">
             <div class="mf-card p-4 h-100 animate__animated animate__fadeInUp" style="animation-delay: 0.3s;">
-                <div class="stats-label mb-2">P&L</div>
+                <div class="stats-label mb-2">Unrealized P&L</div>
                 <div class="stats-value {% if total_unrealized_pnl >= 0 %}text-success{% else %}text-danger{% endif %} text-nowrap">
                     ₹ {{ total_unrealized_pnl|inr_format }}
                 </div>
@@ -164,7 +164,7 @@
         </div>
         <div class="col">
             <div class="mf-card p-4 h-100 animate__animated animate__fadeInUp" style="animation-delay: 0.4s;">
-                <div class="stats-label mb-2">Realized</div>
+                <div class="stats-label mb-2">Realized Profit</div>
                 <div class="stats-value text-primary text-nowrap">
                     ₹ {{ total_realized_profit|inr_format }}
                 </div>
@@ -177,23 +177,25 @@
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
                 <thead class="bg-light">
-                    <tr class="text-nowrap">
-                        <th class="ps-4 py-2 border-0">Scheme Name</th>
-                        <th class="py-2 border-0">Units</th>
-                        <th class="py-2 border-0">Avg NAV</th>
-                        <th class="py-2 border-0">Current NAV</th>
-                        <th class="py-2 border-0">Invested</th>
-                        <th class="py-2 border-0">Current</th>
-                        <th class="py-2 border-0">P&L / Ret</th>
-                        <th class="py-2 border-0">Realized</th>
-                        <th class="py-3 border-0 text-center pe-4">Advice & Action</th>
+                    <tr>
+                        <th class="ps-4 py-3 border-0">Scheme Name</th>
+                        <th class="py-3 border-0">Units</th>
+                        <th class="py-3 border-0">Avg NAV</th>
+                        <th class="py-3 border-0">Current NAV</th>
+                        <th class="py-3 border-0">Invested Val</th>
+                        <th class="py-3 border-0">Current Val</th>
+                        <th class="py-3 border-0">P&L & Returns</th>
+                        <th class="py-3 border-0">Realized Profit</th>
+                        <th class="py-3 border-0 text-center pe-4">Action & Advice</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for item in mf_holdings %}
                     <tr>
                         <td class="ps-4">
-                            <div class="fw-700 text-primary-dark" style="font-size: 0.9rem;">{{ item.fund.name }}</div>
+                            <a href="{% url 'mf_detail' item.fund.id %}" class="text-decoration-none hover-lift">
+                                <div class="fw-700 text-primary-dark" style="font-size: 0.9rem;">{{ item.fund.name }}</div>
+                            </a>
                             {% if item.active_sip %}
                             <div class="small mt-1 animate__animated animate__pulse animate__infinite" style="--animate-duration: 4s;">
                                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1" style="font-size: 0.6rem;" title="Automated SIP Active">
@@ -218,33 +220,31 @@
                             </div>
                         </td>
                         <td class="fw-600 text-primary">₹ {{ item.realized_profit|inr_format }}</td>
-                        <td class="pe-4 py-1" style="min-width: 150px;">
+                        <td class="pe-4 py-2" style="min-width: 140px;">
                             <div class="d-flex flex-column align-items-center">
                                 {% for adv in item.advice %}
-                                    <div class="mb-1 text-center w-100">
-                                        <div class="d-flex align-items-center justify-content-center gap-1">
-                                            <span class="badge rounded-pill {% if adv.type == 'SELL' %}bg-danger{% elif adv.type == 'BUY' %}bg-success{% else %}bg-warning text-dark{% endif %}" style="font-size: 0.55rem; padding: 0.15rem 0.4rem;">
-                                                {% if adv.type == 'BUY' %}BUY{% elif adv.type == 'SELL' %}SELL{% else %}{{ adv.type }}{% endif %}
-                                            </span>
-                                            <span class="text-muted text-truncate" style="font-size: 0.6rem; line-height: 1; max-width: 90px;" title="{{ adv.reason }}">
-                                                {{ adv.reason }}
-                                            </span>
+                                    <div class="mb-2 text-center">
+                                        <div class="badge rounded-pill {% if adv.type == 'SELL' %}bg-danger{% elif adv.type == 'BUY' %}bg-success{% else %}bg-warning text-dark{% endif %} mb-1" style="font-size: 0.6rem; padding: 0.2rem 0.6rem;">
+                                            {% if adv.type == 'BUY' %}BUY / TOP-UP{% elif adv.type == 'SELL' %}REDEMPTION{% else %}{{ adv.type }}{% endif %}
+                                        </div>
+                                        <div class="text-muted" style="font-size: 0.6rem; line-height: 1.1; max-width: 130px;">
+                                            {{ adv.reason }}
                                         </div>
                                     </div>
                                 {% endfor %}
                                 
                                 {% if not is_consolidated %}
-                                <div class="d-flex gap-1 w-100 mt-1">
-                                    <a href="{% url 'add_mf_portfolio' %}?symbol={{ item.fund.symbol }}{% if is_family_view %}&user_id={{ target_user.id }}{% endif %}" class="btn btn-sm btn-success flex-grow-1 py-0 px-1" style="border-radius: 6px; font-size: 0.65rem;" title="Buy / Add More">
+                                <div class="d-flex gap-1 w-100">
+                                    <a href="{% url 'add_mf_portfolio' %}?symbol={{ item.fund.symbol }}{% if is_family_view %}&user_id={{ target_user.id }}{% endif %}" class="btn btn-sm btn-success flex-grow-1 py-1" style="border-radius: 8px; font-size: 0.7rem;" title="Buy / Add More">
                                         <i class="fas fa-plus"></i>
                                     </a>
-                                    <a href="{% url 'sell_mf_portfolio' item.id %}{% if is_family_view %}?user_id={{ target_user.id }}{% endif %}" class="btn btn-sm btn-danger flex-grow-1 py-0 px-1" style="border-radius: 6px; font-size: 0.65rem;" title="Sell / Redeem">
+                                    <a href="{% url 'sell_mf_portfolio' item.id %}{% if is_family_view %}?user_id={{ target_user.id }}{% endif %}" class="btn btn-sm btn-danger flex-grow-1 py-1" style="border-radius: 8px; font-size: 0.7rem;" title="Sell / Redeem">
                                         <i class="fas fa-minus"></i>
                                     </a>
                                 </div>
                                 {% if not is_family_view %}
-                                <a href="{% url 'delete_mf_portfolio' item.id %}" class="text-muted x-small mt-1 opacity-50 text-decoration-none" 
-                                   onclick="return confirm('Remove this fund from your portfolio?')" style="font-size: 0.5rem; letter-spacing: 0.3px;">
+                                <a href="{% url 'delete_mf_portfolio' item.id %}" class="text-muted x-small mt-2 opacity-50 text-decoration-none" 
+                                   onclick="return confirm('Remove this fund from your portfolio?')" style="font-size: 0.55rem; letter-spacing: 0.5px;">
                                     REMOVE
                                 </a>
                                 {% endif %}

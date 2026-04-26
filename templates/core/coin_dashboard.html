@@ -188,7 +188,9 @@
                     {% for item in coin_holdings %}
                     <tr>
                         <td class="ps-4">
-                            <div class="fw-700 text-coin" style="font-size: 0.9rem;">{{ item.coin.name }}</div>
+                            <a href="{% url 'coin_detail' item.coin.id %}" class="text-decoration-none hover-lift">
+                                <div class="fw-700 text-coin" style="font-size: 0.9rem;">{{ item.coin.name }}</div>
+                            </a>
                             <div class="x-small text-muted" style="font-size: 0.7rem;">{{ item.coin.symbol }}</div>
                         </td>
                         <td>{{ item.units|floatformat:8 }}</td>

@@ -319,3 +319,8 @@ REST_FRAMEWORK = {
 # Fernet AES-128-CBC symmetric key – stored in .env as FIELD_ENCRYPTION_KEY
 # ---------------------------------------------------------------------
 FIELD_ENCRYPTION_KEY = os.environ.get('FIELD_ENCRYPTION_KEY', '')
+
+# ---------------------------------------------------------------------
+# Google Sheets Configuration
+# ---------------------------------------------------------------------
+MASTER_SHEET_ID = "12eLJHTlHO1naQgJ-dzf-UTgUbasVv02tgwlHKofG2Y4"

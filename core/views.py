@@ -26,13 +26,13 @@ from .models import (
     NPSFund, NPSPortfolio, NPSTransaction, FixedAsset, OtherAsset,
     Loan, LoanPayment, IPO, ChatbotKnowledge, Watchlist, Dividend,
     InvestmentGoal, SignalNotificationState, FamilyLink, FinancialYearData,
-    MFSIP, PortfolioValueHistory, HiddenSignal
+    MFSIP, PortfolioValueHistory, HiddenSignal, UserReview
 )
 from .forms import (
     UploadFileForm, PortfolioForm, ManualPortfolioForm, 
     CustomUserCreationForm, ProfileForm, ForgotPasswordForm, 
     VerifyOTPForm, SetPasswordForm, EditLotForm,
-    LoanForm, LoanPaymentForm
+    LoanForm, LoanPaymentForm, UserReviewForm
 )
 from .utils import fetch_live_ltp, perform_sync, get_recommendations, fetch_strategy_stocks, get_target_user
 
@@ -416,9 +416,24 @@ def landing(request):
         'market_data': market_data,
         'nse_news': landing_data.get('nse_news', []),
         'financial_news': landing_data.get('financial_news', []),
+        'reviews': UserReview.objects.filter(is_public=True)[:6],
         'last_updated': datetime.datetime.now(),
     }
     return render(request, 'core/landing.html', context)
+
+@login_required
+def submit_review(request):
+    if request.method == 'POST':
+        form = UserReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.user = request.user
+            review.save()
+            messages.success(request, "Thank you for your feedback! It will be visible once approved.")
+            return redirect('landing')
+    else:
+        form = UserReviewForm()
+    return render(request, 'core/feedback.html', {'form': form})
 
 @ensure_csrf_cookie
 def strategy(request):
@@ -671,6 +686,35 @@ def mf_dashboard(request):
     return render(request, 'core/mf_dashboard.html', context)
 
 @login_required
+def mf_detail(request, pk):
+    """View details and performance graph for a mutual fund."""
+    fund = get_object_or_404(MutualFund, pk=pk)
+    
+    # If no scheme_code, try to find it by name if it's a new integration
+    if not fund.scheme_code:
+        from .mf_utils import search_mf_schemes
+        search_results = search_mf_schemes(fund.name)
+        if search_results:
+            # Pick the best match (simple heuristic: first result)
+            fund.scheme_code = search_results[0]['schemeCode']
+            fund.save()
+            
+    history = fund.get_nav_history()
+    
+    # Prepare data for Chart.js
+    chart_data = {
+        'labels': [h['date'] for h in reversed(history[:250])], # Last 250 days
+        'navs': [float(h['nav']) for h in reversed(history[:250])]
+    }
+    
+    context = {
+        'fund': fund,
+        'chart_data': json.dumps(chart_data),
+        'latest_nav': history[0] if history else None,
+    }
+    return render(request, 'core/mf_detail.html', context)
+
+@login_required
 def add_mf_portfolio(request):
     """Add a mutual fund holding manually."""
     if request.method == 'POST':
@@ -690,26 +734,51 @@ def add_mf_portfolio(request):
             return redirect('mf_dashboard')
             
         # Try to find or create MutualFund
-        fund, created = MutualFund.objects.get_or_create(symbol=symbol)
+        fund = MutualFund.objects.filter(symbol=symbol).first()
+        if not fund:
+            # Check if symbol is a numeric scheme code
+            if symbol.isdigit():
+                fund = MutualFund.objects.filter(scheme_code=symbol).first()
+        
+        if not fund:
+            fund = MutualFund(symbol=symbol)
+            if symbol.isdigit():
+                fund.scheme_code = symbol
+            fund.save()
+            created = True
+        else:
+            created = False
+
         if created or fund.nav == 0:
-            # Try to fetch initial NAV
-            try:
-                import yfinance as yf
-                ticker = yf.Ticker(symbol)
-                info = ticker.info
-                nav_val = info.get('regularMarketPrice') or info.get('navPrice') or info.get('previousClose')
-                if nav_val:
-                    fund.nav = Decimal(str(nav_val))
-                else:
-                    fund.nav = avg_nav # Fallback to avg_nav
-                fund.name = info.get('longName') or symbol
-                fund.save()
-            except Exception as e:
-                logger.error(f"Error fetching NAV for {symbol}: {e}")
-                if created: 
-                    fund.name = symbol
-                    fund.nav = avg_nav
+            # Try mfapi.in first if it's a numeric code
+            if fund.scheme_code:
+                from .mf_utils import get_mf_details
+                details = get_mf_details(fund.scheme_code)
+                if details and details.get('data'):
+                    fund.nav = Decimal(str(details['data'][0]['nav']))
+                    fund.name = details.get('meta', {}).get('scheme_name', fund.name)
+                    fund.amc = details.get('meta', {}).get('fund_house', fund.amc)
                     fund.save()
+            
+            # Fallback to yfinance if NAV still 0
+            if fund.nav == 0:
+                try:
+                    import yfinance as yf
+                    ticker = yf.Ticker(symbol)
+                    info = ticker.info
+                    nav_val = info.get('regularMarketPrice') or info.get('navPrice') or info.get('previousClose')
+                    if nav_val:
+                        fund.nav = Decimal(str(nav_val))
+                    else:
+                        fund.nav = avg_nav # Fallback to avg_nav
+                    fund.name = info.get('longName') or fund.name or symbol
+                    fund.save()
+                except Exception as e:
+                    logger.error(f"Error fetching NAV for {symbol}: {e}")
+                    if created: 
+                        fund.name = fund.name or symbol
+                        fund.nav = avg_nav
+                        fund.save()
 
         # Update or create MFPortfolio item
         portfolio_item, p_created = MFPortfolio.objects.get_or_create(
@@ -997,6 +1066,26 @@ def coin_dashboard(request):
         'last_updated': timezone.now(),
     }
     return render(request, 'core/coin_dashboard.html', context)
+
+@login_required
+def coin_detail(request, pk):
+    """View details and performance graph for a cryptocurrency."""
+    coin = get_object_or_404(Coin, pk=pk)
+    history = coin.get_price_history()
+    
+    # Prepare data for Chart.js
+    chart_data = {
+        'labels': [h['date'] for h in history],
+        'prices': [h['price'] for h in history]
+    }
+    
+    context = {
+        'coin': coin,
+        'chart_data': json.dumps(chart_data),
+        'latest_price': history[-1] if history else None,
+    }
+    return render(request, 'core/coin_detail.html', context)
+
 
 @login_required
 def add_coin(request):
@@ -1510,7 +1599,7 @@ def dashboard(request):
         last_updated = last_ticker_update
     
     if not last_updated:
-        last_updated = datetime.datetime.now()
+        last_updated = datetime.now()
 
     context = {
         'recommendations': recommendations,
@@ -3408,6 +3497,34 @@ def nps_dashboard(request):
     return render(request, 'core/nps_dashboard.html', context)
 
 @login_required
+def nps_detail(request, pk):
+    """View details and performance graph for an NPS fund."""
+    fund = get_object_or_404(NPSFund, pk=pk)
+    
+    # Heuristic for scheme_code if missing
+    if not fund.scheme_code:
+        # We might need a lookup table or search logic.
+        # For now, we'll try to find it by name from a list or just inform user.
+        # Actually, let's just use the npsnav.in API if we can find it.
+        pass
+
+    history = fund.get_nav_history()
+    
+    # Prepare data for Chart.js
+    chart_data = {
+        'labels': [h['date'] for h in history],
+        'navs': [float(h['nav']) for h in history]
+    }
+    
+    context = {
+        'fund': fund,
+        'chart_data': json.dumps(chart_data),
+        'latest_nav': history[-1] if history else None,
+    }
+    return render(request, 'core/nps_detail.html', context)
+
+
+@login_required
 def add_nps(request):
     target_user, is_family_view, is_consolidated = get_target_user(request)
     if request.method == 'POST':
@@ -4191,9 +4308,9 @@ def chatbot_response(request):
                 
                 # Asset Classes
                 "stocks": "The Stock Dashboard tracks your equity investments, providing real-time P&L, signal badges, and allocation charts.",
-                "mutual funds": "MF Cue helps you track Mutual Funds, SIPs, and goal-based investments with automated sell-trigger alerts.",
-                "mf": "Mutual Fund Cue provides advice on when to sell (at 22% profit target) and tracks your monthly SIP executions automatically.",
-                "nps": "NPS Cue tracks your National Pension System funds and NAVs across various fund managers (Scheme E, C, G).",
+                "mutual funds": "MF helps you track Mutual Funds, SIPs, and goal-based investments with automated sell-trigger alerts.",
+                "mf": "Mutual Fund provides advice on when to sell (at 22% profit target) and tracks your monthly SIP executions automatically.",
+                "nps": "NPS tracks your National Pension System funds and NAVs across various fund managers (Scheme E, C, G).",
                 "coin": "The Coin Dashboard tracks digital assets and cryptocurrencies with live price updates and transaction history.",
                 "fd": "The FD module tracks Fixed Deposits, showing maturity dates, interest rates, and total monthly interest income.",
                 "loan": "The Loan module manages your EMIs, tracking how much of each payment goes toward principal versus interest.",

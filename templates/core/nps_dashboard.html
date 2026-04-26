@@ -188,7 +188,9 @@
                     {% for item in nps_holdings %}
                     <tr>
                         <td class="ps-4">
-                            <div class="fw-700 text-nps" style="font-size: 0.9rem;">{{ item.fund.name }}</div>
+                            <a href="{% url 'nps_detail' item.fund.id %}" class="text-decoration-none hover-lift">
+                                <div class="fw-700 text-nps" style="font-size: 0.9rem;">{{ item.fund.name }}</div>
+                            </a>
                         </td>
                         <td>{{ item.units|floatformat:4 }}</td>
                         <td>₹ {{ item.avg_nav|floatformat:4 }}</td>

@@ -4,6 +4,7 @@ import io
 import logging
 from django.core.cache import cache
 import yfinance as yf
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +79,7 @@ def perform_sync():
     logger.info("Starting background sync process...")
     
     # 1. Sync Market Ticker Data
-    market_url = "https://docs.google.com/spreadsheets/d/12eLJHTlHO1naQgJ-dzf-UTgUbasVv02tgwlHKofG2Y4/gviz/tq?tqx=out:csv&sheet=market"
+    market_url = f"https://docs.google.com/spreadsheets/d/{settings.MASTER_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=market"
     try:
         response = requests.get(market_url, timeout=10)
         response.raise_for_status()
@@ -169,7 +170,7 @@ def perform_sync():
         logger.error(f"Error fetching market data: {e}")
 
     # 2. Sync Instrument LTP Data (from 'n2g' sheet)
-    ltp_url = "https://docs.google.com/spreadsheets/d/12eLJHTlHO1naQgJ-dzf-UTgUbasVv02tgwlHKofG2Y4/gviz/tq?tqx=out:csv&sheet=n2g"
+    ltp_url = f"https://docs.google.com/spreadsheets/d/{settings.MASTER_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=n2g"
     try:
         response = requests.get(ltp_url, timeout=10)
         response.raise_for_status()
@@ -294,11 +295,11 @@ def perform_sync():
         'pyramid': ('Pyramiding', 'Pyramiding'),
         'growth': ('ReinvestX', 'Reinvest X'),
     }
-    SHEET_ID = "12eLJHTlHO1naQgJ-dzf-UTgUbasVv02tgwlHKofG2Y4"
+    # Using settings.MASTER_SHEET_ID instead of hardcoded SHEET_ID
     
     from core.models import Strategy, StrategyStock
     for strategy_key, (tab_name, display_name) in STRATEGY_SHEET_TABS.items():
-        url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet={tab_name}"
+        url = f"https://docs.google.com/spreadsheets/d/{settings.MASTER_SHEET_ID}/gviz/tq?tqx=out:csv&sheet={tab_name}"
         try:
             response = requests.get(url, timeout=10)
             response.raise_for_status()
@@ -561,7 +562,7 @@ def fetch_live_ltp():
     if data is not None:
         return data
 
-    url = "https://docs.google.com/spreadsheets/d/12eLJHTlHO1naQgJ-dzf-UTgUbasVv02tgwlHKofG2Y4/export?format=csv"
+    url = f"https://docs.google.com/spreadsheets/d/{settings.MASTER_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=n2g"
     try:
         response = requests.get(url, timeout=10)
         response.raise_for_status()
@@ -618,12 +619,31 @@ def record_portfolio_value_history(user):
     from core.models import (
         Portfolio, MFPortfolio, CoinPortfolio, NPSPortfolio, 
         FixedAsset, OtherAsset, PortfolioValueHistory,
-        PnLStatement, Loan
+        PnLStatement, Loan, Transaction
     )
     from django.utils import timezone
     from decimal import Decimal
-    from django.db.models import Sum
+    from django.db.models import Sum, F
     
+    # --- Self-Healing Sync: Ensure Portfolio matches Transaction lots ---
+    active_lots = Transaction.objects.filter(user=user, transaction_type='BUY', remaining_quantity__gt=0).values('instrument').annotate(
+        total_qty=Sum('remaining_quantity'),
+        total_cost=Sum(F('remaining_quantity') * F('price'))
+    )
+    active_ids = set()
+    for lot in active_lots:
+        iid = lot['instrument']
+        t_qty = lot['total_qty']
+        a_cost = lot['total_cost'] / t_qty if t_qty > 0 else 0
+        active_ids.add(iid)
+        p_item, created = Portfolio.objects.get_or_create(user=user, instrument_id=iid, defaults={'quantity': t_qty, 'avg_cost': a_cost})
+        if not created and (p_item.quantity != t_qty or abs(p_item.avg_cost - a_cost) > 0.01):
+            p_item.quantity = t_qty
+            p_item.avg_cost = a_cost
+            p_item.save(update_fields=['quantity', 'avg_cost'])
+    Portfolio.objects.filter(user=user).exclude(instrument_id__in=active_ids).delete()
+    # --------------------------------------------------------------------
+
     today = timezone.now().date()
     
     # 1. Stocks/ETFs
@@ -703,9 +723,10 @@ def get_recommendations(user, is_consolidated=False):
     """
     Calculate buy/sell recommendations for a given user or consolidated family portfolio.
     """
-    from core.models import Portfolio, PnLStatement, Instrument, Profile, FamilyLink
+    from core.models import Portfolio, PnLStatement, Instrument, Profile, FamilyLink, Transaction
     from django.db.models.functions import Upper
-    from django.db.models import Sum
+    from django.db.models import Sum, Count
+    from django.db import models
     from django.contrib.auth.models import User
     
     if is_consolidated:
@@ -726,6 +747,18 @@ def get_recommendations(user, is_consolidated=False):
         total_profit=Sum('realized_profit')
     )
     realized_profits = {item['symbol_upper'].upper(): float(item['total_profit']) for item in realized_profits_qs}
+
+    # Count lots per instrument
+    lot_counts_qs = Transaction.objects.filter(
+        user_id__in=user_list if is_consolidated else [user.id],
+        transaction_type='BUY',
+        remaining_quantity__gt=0
+    ).annotate(
+        symbol_upper=Upper('instrument__symbol')
+    ).values('symbol_upper').annotate(
+        count=Count('id')
+    )
+    lot_counts = {item['symbol_upper'].upper(): item['count'] for item in lot_counts_qs}
 
     # Aggregate Portfolio items across all target users
     # We group by instrument symbol
@@ -856,6 +889,7 @@ def get_recommendations(user, is_consolidated=False):
             'reduce_gap': round(reduce_gap, 2),
             'realized_profit': realized_profit,
             'in_portfolio': True if quantity > 0 else False,
+            'lot_count': lot_counts.get(symbol, 0),
             'notes': data.get('notes', ''),
         })
     
@@ -884,7 +918,6 @@ def get_recommendations(user, is_consolidated=False):
             buy_gap = buy_gap_formula if action == 'BUY' else 0
             reduce_gap = abs(buy_gap_formula) if action == 'REDUCE' else 0
 
-            # Day Change Calculations
             absolute_change = float(inst.price_change or 0)
             previous_close = float(inst.previous_close or 0)
             if previous_close <= 0:
@@ -901,7 +934,7 @@ def get_recommendations(user, is_consolidated=False):
                 'current_value': 0,
                 'unrealized_pnl': 0,
                 'pnl_percent': 0,
-                'day_change': 0,
+                'day_change': round(absolute_change, 2),
                 'day_change_pct': round(day_change_pct, 2),
                 'action': action,
                 'buy_gap': round(buy_gap, 2),
@@ -960,7 +993,7 @@ def get_recommendations(user, is_consolidated=False):
                 'current_value': 0,
                 'unrealized_pnl': 0,
                 'pnl_percent': 0,
-                'day_change': 0,
+                'day_change': round(absolute_change, 2),
                 'day_change_pct': round(day_change_pct, 2),
                 'action': action,
                 'buy_gap': round(buy_gap, 2),

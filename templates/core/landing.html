@@ -806,8 +806,201 @@
         pointer-events: none;
     }
 
+    /* ===== REVIEWS SECTION ===== */
+    .reviews-section {
+        margin: 2rem 0;
+        padding: 1rem 0;
+        background-color: #0a0f1e;
+        background: linear-gradient(135deg, #0a0f1e 0%, #1a1f3c 50%, #0d1635 100%);
+        border-radius: 48px;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .reviews-section::before {
+        content: '';
+        position: absolute;
+        top: -100px;
+        left: -100px;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(37, 99, 235, 0.1) 0%, transparent 70%);
+        pointer-events: none;
+    }
+    .reviews-header {
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+    .reviews-header h2 {
+        font-weight: 800;
+        font-size: 1.5rem;
+        color: #fff;
+        letter-spacing: -0.02em;
+        margin-bottom: 0.5rem;
+    }
+    .reviews-header p {
+        color: #94a3b8;
+        font-size: 0.85rem;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    .review-card {
+        background: rgba(255, 255, 255, 0.03);
+        backdrop-filter: blur(10px);
+        border-radius: 24px;
+        padding: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        height: 100%;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        z-index: 1;
+    }
+    .review-card:hover {
+        transform: translateY(-8px);
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(37, 99, 235, 0.4);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    }
+    .review-rating {
+        color: #fbbf24;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+    .review-text {
+        color: #cbd5e1;
+        font-size: 1rem;
+        line-height: 1.7;
+        margin-bottom: 2rem;
+        font-style: italic;
+        position: relative;
+        z-index: 2;
+    }
+    .review-author {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-top: auto;
+    }
+    .author-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #2563eb, #7c3aed);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: 800;
+        font-size: 1rem;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    }
+    .author-info h6 {
+        margin: 0;
+        font-weight: 700;
+        color: #f8fafc;
+        font-size: 0.95rem;
+    }
+    .author-info span {
+        font-size: 0.75rem;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    .review-quote {
+        display: none;
+    }
+    .btn-review-outline {
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
+        padding: 0.8rem 2.2rem;
+        border-radius: 100px;
+        font-weight: 700;
+        transition: all 0.3s;
+        background: rgba(255, 255, 255, 0.02);
+    }
+    .btn-review-outline:hover {
+        background: #fff;
+        color: #0f172a;
+        transform: scale(1.05);
+        border-color: #fff;
+    }
+
+    /* ===== MARQUEE REVIEWS (ULTRA COMPACT) ===== */
+    .marquee-reviews-wrapper {
+        height: 80px;
+        overflow: hidden;
+        position: relative;
+        max-width: 600px; /* More narrow to match feature box feel */
+        margin: 0 auto;
+        padding: 5px 0;
+        mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+        -webkit-mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+    }
+    .marquee-reviews-track {
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1);
+    }
+    .review-slide {
+        height: 70px;
+        flex-shrink: 0;
+        display: flex;
+        padding: 8px;
+        width: 100%;
+    }
+    .review-slide .review-card {
+        width: 100%;
+        margin: 0;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+        padding: 0 1rem;
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 12px;
+    }
+    .review-text {
+        font-size: 0.8rem !important;
+        margin: 0 !important;
+        color: #fff !important;
+        font-style: normal !important;
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .review-author {
+        gap: 8px;
+        margin: 0 !important;
+        flex-shrink: 0;
+    }
+    .author-avatar {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+    .author-info h6 {
+        font-size: 0.85rem;
+    }
+    .review-rating {
+        display: flex !important;
+        gap: 2px;
+        font-size: 0.6rem !important;
+        color: #fbbf24 !important;
+        margin: 0 !important;
+    }
+    .author-info span {
+        display: none !important;
+    }
+    .review-quote {
+        font-size: 2rem;
+        top: 15px;
+        right: 20px;
+    }
+
     /* ===== BOTTOM CTA SECTION ===== */
     .cta-section {
+        background-color: #0a0f1e;
         background: linear-gradient(135deg, #0a0f1e 0%, #1a1f3c 50%, #0d1635 100%);
         border-radius: 28px;
         padding: 3rem;
@@ -1189,7 +1382,8 @@
 
     <!-- Modern CTA Section (Moved Branding here) -->
     <div class="cta-section animate-in animate-delay-2 mb-5">
-        <div class="row align-items-center g-5">
+        <div class="container">
+            <div class="row align-items-center g-5">
             <div class="col-lg-7">
                 <h2 class="cta-title">Intelligent Portfolio Management</h2>
                 <p class="cta-sub mb-4">Upload your portfolio and P&L to get rule-based optimization signals
@@ -1234,7 +1428,84 @@
                 </div>
             </div>
         </div>
+        </div>
     </div>
+
+    <!-- User Reviews Section -->
+    {% if reviews %}
+    <div class="reviews-section animate-in animate-delay-2 mb-5">
+        <div class="container">
+            <div class="reviews-header text-center mb-5">
+            <h2>What Our Users Say</h2>
+            <p>Join investors engineering their wealth with FOLIUX.</p>
+        </div>
+        <div class="marquee-reviews-wrapper">
+            <div class="marquee-reviews-track" id="reviewTrack">
+                {% for review in reviews %}
+                <div class="review-slide">
+                    <div class="review-card">
+                        <div class="review-quote"><i class="fas fa-quote-right"></i></div>
+                        <p class="review-text">"{{ review.comment }}"</p>
+                        <div class="review-author">
+                            <div class="author-avatar">
+                                {{ review.user.profile.full_name|slice:":1"|default:review.user.username|slice:":1"|upper }}
+                            </div>
+                            <div class="author-info">
+                                <div class="d-flex align-items-center gap-2">
+                                    <h6>{{ review.user.profile.full_name|default:review.user.username }}</h6>
+                                    <div class="review-rating">
+                                        {% with ''|center:review.rating as range %}
+                                        {% for _ in range %}
+                                            <i class="fas fa-star"></i>
+                                        {% endfor %}
+                                        {% endwith %}
+                                    </div>
+                                </div>
+                                <span>Verified Investor</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                <!-- Clone first review for seamless loop -->
+                {% if reviews|length > 0 %}
+                <div class="review-slide">
+                    {% with reviews|first as review %}
+                    <div class="review-card">
+                        <div class="review-quote"><i class="fas fa-quote-right"></i></div>
+                        <p class="review-text">"{{ review.comment }}"</p>
+                        <div class="review-author">
+                            <div class="author-avatar">
+                                {{ review.user.profile.full_name|slice:":1"|default:review.user.username|slice:":1"|upper }}
+                            </div>
+                            <div class="author-info">
+                                <div class="d-flex align-items-center gap-2">
+                                    <h6>{{ review.user.profile.full_name|default:review.user.username }}</h6>
+                                    <div class="review-rating">
+                                        {% with ''|center:review.rating as range %}
+                                        {% for _ in range %}
+                                            <i class="fas fa-star"></i>
+                                        {% endfor %}
+                                        {% endwith %}
+                                    </div>
+                                </div>
+                                <span>Verified Investor</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endwith %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="text-center mt-5">
+            <a href="{% url 'feedback' %}" class="btn btn-review-outline">
+                <i class="fas fa-pen-nib me-2"></i>Write a Review
+            </a>
+        </div>
+        </div>
+    </div>
+    {% endif %}
 </div>
 
 </div>
@@ -1904,6 +2175,35 @@
                 });
             }
         }
+        // --- Review Marquee Logic ---
+        function initReviewMarquee() {
+            const track = document.getElementById('reviewTrack');
+            if (!track) return;
+            const slides = track.querySelectorAll('.review-slide');
+            if (slides.length <= 1) return;
+
+            let currentIndex = 0;
+            const slideHeight = 70; // Ultra-compact micro-tile height
+            const totalSlides = slides.length;
+
+            function nextSlide() {
+                currentIndex++;
+                track.style.transition = 'transform 0.8s cubic-bezier(0.65, 0, 0.35, 1)';
+                track.style.transform = `translateY(-${currentIndex * slideHeight}px)`;
+
+                if (currentIndex === totalSlides - 1) {
+                    setTimeout(() => {
+                        track.style.transition = 'none';
+                        currentIndex = 0;
+                        track.style.transform = `translateY(0)`;
+                    }, 800); // Wait for transition to finish
+                }
+            }
+
+            setInterval(nextSlide, 3500); // 3.5 seconds per slide
+        }
+
+        initReviewMarquee();
     }); // End of DOMContentLoaded
 </script>
 
@@ -1923,7 +2223,7 @@
 
                   <!-- Premium Video Preview -->
                   <div class="video-preview-wrapper mb-4 position-relative mx-auto rounded-4 overflow-hidden shadow-lg shimmer-loading" style="max-width: 340px; aspect-ratio: 16/9; background: radial-gradient(circle at center, #ffffff 0%, #f8fafc 100%); border: 1px solid #f1f5f9;">
-                      <a href="https://youtu.be/kq7X2Dr7fpE?si=TD0JBiGtHhk_0hkY" target="_blank" class="d-flex align-items-center justify-content-center h-100 w-100 text-decoration-none group">
+                      <a href="https://youtu.be/eMZwKoO8u_I" target="_blank" class="d-flex align-items-center justify-content-center h-100 w-100 text-decoration-none group">
                           <img src="{% static 'images/logo.png' %}" class="img-fluid p-5" style="max-height: 90%; object-fit: contain; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); filter: drop-shadow(0 8px 12px rgba(0,0,0,0.03)); z-index: 1;" alt="FOLIUX Logo">
                           
                           <!-- Branded YouTube Play Icon -->
@@ -1947,7 +2247,7 @@
                   </div>
 
                   <div class="action-footer d-flex flex-column gap-2 mb-2">
-                      <a href="https://youtu.be/kq7X2Dr7fpE?si=TD0JBiGtHhk_0hkY" target="_blank" class="btn btn-primary btn-sm rounded-pill py-2 fw-black shadow-sm transform-hover w-100" style="font-size: 0.85rem; letter-spacing: 0.8px; background: linear-gradient(135deg, #003d7c, #0056b3); border: none;">
+                      <a href="https://youtu.be/eMZwKoO8u_I" target="_blank" class="btn btn-primary btn-sm rounded-pill py-2 fw-black shadow-sm transform-hover w-100" style="font-size: 0.85rem; letter-spacing: 0.8px; background: linear-gradient(135deg, #003d7c, #0056b3); border: none;">
                           <i class="fas fa-play-circle me-1"></i> WATCH INTRO
                       </a>
                       <button type="button" class="btn btn-link text-muted btn-sm text-decoration-none fw-bold x-small opacity-75" data-bs-dismiss="modal">Skip to Dashboard</button>
