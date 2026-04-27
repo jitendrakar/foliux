@@ -5,7 +5,7 @@
 # ================================================================= #
 
 # Configuration - Update these to match your VPS settings
-PROJECT_DIR="/home/ubuntu/foliux"
+PROJECT_DIR="/home/foliux"
 VENV_PATH="$PROJECT_DIR/venv"
 SERVICE_NAME="foliux"  # Name of your systemd service file (e.g., foliux.service)
 
