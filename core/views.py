@@ -1601,6 +1601,12 @@ def dashboard(request):
     if not last_updated:
         last_updated = datetime.now()
 
+    from .models import PortfolioValueHistory
+    history = PortfolioValueHistory.objects.filter(user=request.user).order_by('-date')[:30][::-1]
+    history_labels = [h.date.strftime('%d %b') for h in history]
+    history_values = [float(h.net_worth) for h in history]
+    history_invested = [float(h.invested_value) for h in history]
+
     context = {
         'recommendations': recommendations,
         'sell_recommendations': sell_recommendations,
@@ -1618,6 +1624,9 @@ def dashboard(request):
         'target_user': target_user,
         'is_family_view': is_family_view,
         'is_consolidated': is_consolidated,
+        'history_labels': history_labels,
+        'history_values': history_values,
+        'history_invested': history_invested,
     }
 
     # Record current value history for users

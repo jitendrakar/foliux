@@ -311,6 +311,25 @@
                     <a href="{% url 'watchlist' %}{% if is_family_view %}?user_id={{ target_user.id }}{% endif %}" class="btn btn-outline-info btn-sm rounded-pill border-info px-3 py-1">
                         <i class="fas fa-eye me-1 text-primary"></i>Watchlist
                     </a>
+
+                    <!-- 9. Portfolio Hub (Quick Add) -->
+                    <div class="dropdown ms-auto">
+                        <button class="btn btn-dark btn-sm rounded-pill px-3 py-1 fw-bold shadow-sm" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-plus-circle me-1 text-warning"></i>Add New Asset
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 p-2" style="min-width: 200px;">
+                            <li class="dropdown-header text-uppercase small fw-bold text-primary">Financial Assets</li>
+                            <li><a class="dropdown-item py-2 rounded-2" href="{% url 'add_portfolio_item' %}{% if is_family_view %}?user_id={{ target_user.id }}{% endif %}"><i class="fas fa-chart-line me-2 text-primary"></i>Stock / ETF</a></li>
+                            <li><a class="dropdown-item py-2 rounded-2" href="{% url 'mf_dashboard' %}{% if is_family_view %}?user_id={{ target_user.id }}{% endif %}"><i class="fas fa-piggy-bank me-2 text-success"></i>Mutual Fund</a></li>
+                            <li><a class="dropdown-item py-2 rounded-2" href="{% url 'add_nps' %}{% if is_family_view %}?user_id={{ target_user.id }}{% endif %}"><i class="fas fa-university me-2 text-warning"></i>NPS Retirement</a></li>
+                            <li><a class="dropdown-item py-2 rounded-2" href="{% url 'add_fd' %}{% if is_family_view %}?user_id={{ target_user.id }}{% endif %}"><i class="fas fa-file-invoice-dollar me-2 text-info"></i>FD / RD / PPF</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li class="dropdown-header text-uppercase small fw-bold text-danger">Real Assets & Others</li>
+                            <li><a class="dropdown-item py-2 rounded-2" href="{% url 'add_other_asset' %}{% if is_family_view %}?user_id={{ target_user.id }}{% endif %}"><i class="fas fa-home me-2 text-danger"></i>Plot / Flat / Gold</a></li>
+                            <li><a class="dropdown-item py-2 rounded-2" href="{% url 'add_coin' %}{% if is_family_view %}?user_id={{ target_user.id }}{% endif %}"><i class="fab fa-bitcoin me-2 text-warning"></i>Crypto / Coin</a></li>
+                            <li><a class="dropdown-item py-2 rounded-2" href="{% url 'add_loan' %}{% if is_family_view %}?user_id={{ target_user.id }}{% endif %}"><i class="fas fa-hand-holding-usd me-2 text-secondary"></i>Loans / Liabilities</a></li>
+                        </ul>
+                    </div>
                 </div>
 
                 <h5 class="mb-4 fw-bold" id="portfolio-view-title">
@@ -495,11 +514,24 @@
     </div>
 </div>
 
-<!-- Chart Placeholder -->
-<div class="row mt-4 mb-4 justify-content-center align-items-center w-100 m-0">
-    <div class="col-12 col-md-6 d-flex justify-content-center">
-        <div class="card p-3 w-100">
-            <canvas id="allocationChart"></canvas>
+<!-- Charts Section -->
+<div class="row g-4 mb-5">
+    <!-- Allocation Chart -->
+    <div class="col-12 col-lg-5">
+        <div class="stat-card-premium shadow-sm p-4 h-100">
+            <h6 class="fw-bold text-uppercase small text-muted mb-4"><i class="fas fa-chart-pie me-2"></i>Folio Allocation</h6>
+            <div style="height: 300px; position: relative;">
+                <canvas id="allocationChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <!-- Net Worth Trend Chart -->
+    <div class="col-12 col-lg-7">
+        <div class="stat-card-premium shadow-sm p-4 h-100">
+            <h6 class="fw-bold text-uppercase small text-muted mb-4"><i class="fas fa-chart-line me-2"></i>Net Worth Trend (30D)</h6>
+            <div style="height: 300px; position: relative;">
+                <canvas id="trendChart"></canvas>
+            </div>
         </div>
     </div>
 </div>
@@ -524,25 +556,97 @@
 {% block extra_js %}
 <script>
     // Placeholder chart logic - popuate with real data in Views
-    const ctx = document.getElementById('allocationChart').getContext('2d');
-    const allocationChart = new Chart(ctx, {
+    // Allocation Doughnut Chart
+    const ctxAlloc = document.getElementById('allocationChart').getContext('2d');
+    new Chart(ctxAlloc, {
         type: 'doughnut',
         data: {
-            labels: [{% for item in recommendations %}'{{ item.symbol }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
-    datasets: [{
-        data: [{% for item in recommendations %}{{ item.current_value|default:0 }}{% if not forloop.last %}, {% endif %}{% endfor %}],
-        backgroundColor: [
-            '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b'
-        ],
+            labels: [{% for item in recommendations %}{% if item.in_portfolio %}'{{ item.symbol }}'{% if not forloop.last %}, {% endif %}{% endif %}{% endfor %}],
+            datasets: [{
+                data: [{% for item in recommendations %}{% if item.in_portfolio %}{{ item.current_value|default:0 }}{% if not forloop.last %}, {% endif %}{% endif %}{% endfor %}],
+                backgroundColor: [
+                    '#2563eb', '#10b981', '#f59e0b', '#0ea5e9', '#ef4444', '#8b5cf6', '#ec4899', '#64748b'
+                ],
+                borderWidth: 2,
+                borderColor: '#ffffff',
+                hoverOffset: 15
             }]
         },
-    options: {
-        responsive: true,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
             plugins: {
-            legend: { position: 'bottom' },
-            title: { display: true, text: 'Folio Allocation' }
+                legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20, font: { size: 11, weight: '600' } } },
+                tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', padding: 12, cornerRadius: 10 }
+            },
+            cutout: '70%'
         }
-    }
+    });
+
+    // Net Worth Trend Chart
+    const ctxTrend = document.getElementById('trendChart').getContext('2d');
+    const gradient = ctxTrend.createLinearGradient(0, 0, 0, 300);
+    gradient.addColorStop(0, 'rgba(37, 99, 235, 0.1)');
+    gradient.addColorStop(1, 'rgba(37, 99, 235, 0)');
+
+    new Chart(ctxTrend, {
+        type: 'line',
+        data: {
+            labels: {{ history_labels|safe }},
+            datasets: [
+                {
+                    label: 'Net Worth',
+                    data: {{ history_values|safe }},
+                    borderColor: '#2563eb',
+                    backgroundColor: gradient,
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#2563eb',
+                    pointBorderColor: '#ffffff',
+                    pointBorderWidth: 2,
+                },
+                {
+                    label: 'Invested',
+                    data: {{ history_invested|safe }},
+                    borderColor: '#94a3b8',
+                    borderDash: [5, 5],
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.1,
+                    pointRadius: 0,
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top', align: 'end', labels: { usePointStyle: true, font: { size: 11, weight: '600' } } },
+                tooltip: { 
+                    mode: 'index', 
+                    intersect: false, 
+                    backgroundColor: 'rgba(15, 23, 42, 0.9)', 
+                    padding: 12, 
+                    cornerRadius: 10,
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ₹' + context.parsed.y.toLocaleString('en-IN');
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false },
+                    ticks: { font: { size: 10 }, callback: value => '₹' + (value/100000).toFixed(1) + 'L' }
+                },
+                x: {
+                    grid: { display: false }
+                }
+            }
+        }
     });
 
     // Auto-refresh the page every 10 minutes (600,000 ms)

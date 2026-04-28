@@ -124,7 +124,8 @@ def perform_sync():
             'NIFTY 50': '^NSEI',
             'SENSEX': '^BSESN',
             'NIFTY BANK': '^NSEBANK',
-            'NIFTY IT': '^CNXIT'
+            'GOLD': 'GC=F',
+            'SILVER': 'SI=F'
         }
         
         for name, sym in major_indices.items():
