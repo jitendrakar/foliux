@@ -400,9 +400,17 @@ def sync_mutual_funds_from_sheet():
                 # Update or create MutualFund record
                 fund, created = MutualFund.objects.get_or_create(symbol=symbol)
                 
-                # Store previous nav for day change calculation if it was already in DB
+                # Store previous nav for day change calculation
                 if not created:
                     fund.prev_nav = fund.nav
+                else:
+                    # For new records, try to estimate previous NAV from sheet's percentage change if available
+                    if sheet_change != 0:
+                        # sheet_change is usually a percentage (e.g., 1.5 for 1.5%)
+                        prev_est = float(target_nav) / (1 + (sheet_change / 100))
+                        fund.prev_nav = Decimal(str(round(prev_est, 4)))
+                    else:
+                        fund.prev_nav = Decimal(str(target_nav))
                 
                 fund.name = clean_name
                 fund.nav = Decimal(str(target_nav))
@@ -528,21 +536,21 @@ def sync_coins_from_sheet():
                 if price <= 0: continue
 
                 # Update or create Coin record
-                coin, created = Coin.objects.update_or_create(
-                    symbol=symbol,
-                    defaults={
-                        'name': raw_name,
-                        'price': Decimal(str(price)),
-                        'last_updated': timezone.now()
-                    }
-                )
-                
-                # Note: We don't store previous price as easily with update_or_create 
-                # but we can try to save it if not created
-                if not created:
-                    # Actually we should handle prev_price BEFORE saving the new price
-                    pass 
-                
+                coin = Coin.objects.filter(symbol=symbol).first()
+                if coin:
+                    coin.prev_price = coin.price
+                    coin.price = Decimal(str(price))
+                    coin.name = raw_name
+                    coin.last_updated = timezone.now()
+                    coin.save()
+                else:
+                    coin = Coin.objects.create(
+                        symbol=symbol,
+                        name=raw_name,
+                        price=Decimal(str(price)),
+                        prev_price=Decimal(str(price)),
+                        last_updated=timezone.now()
+                    )
                 count += 1
             except Exception as e:
                 logger.error(f"Error processing Coin row: {e}")
@@ -866,7 +874,8 @@ def get_recommendations(user, is_consolidated=False):
         if previous_close <= 0:
             previous_close = ltp - absolute_change
             
-        day_change = absolute_change * quantity
+        day_change = absolute_change
+        total_day_change_item = absolute_change * quantity
         day_change_pct = (absolute_change / previous_close * 100) if previous_close > 0 else 0
 
         recommendations.append({
@@ -880,6 +889,7 @@ def get_recommendations(user, is_consolidated=False):
             'unrealized_pnl': round(unrealized, 2),
             'pnl_percent': round(unrealized_pct, 2),
             'day_change': round(day_change, 2),
+            'total_day_change': round(total_day_change_item, 2),
             'day_change_pct': round(day_change_pct, 2),
             'previous_close': round(previous_close, 2),
             'action': action,

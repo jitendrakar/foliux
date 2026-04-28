@@ -68,8 +68,8 @@ def _auto_update_mf():
         from .models import MutualFund
         from .utils import sync_mutual_funds_from_sheet
         
-        ten_mins_ago = timezone.now() - timedelta(minutes=10)
-        stale_funds = MutualFund.objects.filter(last_updated__lt=ten_mins_ago)
+        two_hours_ago = timezone.now() - timedelta(minutes=120)
+        stale_funds = MutualFund.objects.filter(last_updated__lt=two_hours_ago)
         if stale_funds.exists():
             # This function syncs names and data from Google Sheets
             sync_mutual_funds_from_sheet()
@@ -83,8 +83,8 @@ def _auto_update_coin():
         from .models import Coin
         from .utils import sync_coins_from_sheet
         
-        ten_mins_ago = timezone.now() - timedelta(minutes=10)
-        stale_coins = Coin.objects.filter(last_updated__lt=ten_mins_ago)
+        two_hours_ago = timezone.now() - timedelta(minutes=120)
+        stale_coins = Coin.objects.filter(last_updated__lt=two_hours_ago)
         if stale_coins.exists():
             sync_coins_from_sheet()
     except Exception as e:
@@ -97,8 +97,8 @@ def _auto_update_nps():
         from .models import NPSFund
         from .utils import sync_nps_from_sheet
         
-        ten_mins_ago = timezone.now() - timedelta(minutes=10)
-        stale_funds = NPSFund.objects.filter(last_updated__lt=ten_mins_ago)
+        two_hours_ago = timezone.now() - timedelta(minutes=120)
+        stale_funds = NPSFund.objects.filter(last_updated__lt=two_hours_ago)
         if stale_funds.exists():
             sync_nps_from_sheet()
     except Exception as e:
@@ -416,7 +416,7 @@ def landing(request):
         'market_data': market_data,
         'nse_news': landing_data.get('nse_news', []),
         'financial_news': landing_data.get('financial_news', []),
-        'reviews': UserReview.objects.filter(is_public=True)[:6],
+        'reviews': UserReview.objects.filter(is_public=True),
         'last_updated': datetime.datetime.now(),
     }
     return render(request, 'core/landing.html', context)
@@ -429,7 +429,7 @@ def submit_review(request):
             review = form.save(commit=False)
             review.user = request.user
             review.save()
-            messages.success(request, "Thank you for your feedback! It will be visible once approved.")
+            messages.success(request, "Thank you for your feedback!")
             return redirect('landing')
     else:
         form = UserReviewForm()
@@ -1561,7 +1561,7 @@ def dashboard(request):
     if total_invested > 0:
         total_unrealized_pnl_percent = (total_unrealized_pnl / total_invested) * 100
     
-    total_day_change = sum(r.get('day_change', 0) for r in recommendations if r.get('in_portfolio'))
+    total_day_change = sum(r.get('total_day_change', 0) for r in recommendations if r.get('in_portfolio'))
     total_day_change_percent = 0
     previous_total_value = total_current_value - total_day_change
     if previous_total_value > 0:

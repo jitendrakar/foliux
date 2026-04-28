@@ -157,7 +157,7 @@ else:
             "NAME": os.environ.get("DB_NAME", "FOLIUX"),
             "USER": os.environ.get("DB_USER", "foliux"),
             "PASSWORD": os.environ.get("DB_PASSWORD", "Test@123"),
-            "HOST": os.environ.get("DB_HOST", "foliux.com"),
+            "HOST": os.environ.get("DB_HOST", "158.220.101.59"),
             "PORT": os.environ.get("DB_PORT", "3306"),
             "OPTIONS": {
                 "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
