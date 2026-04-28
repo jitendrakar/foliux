@@ -228,6 +228,12 @@
     <a class="nav-link" href="{% url 'strategy' %}{% if is_family_view %}?user_id={{ target_user.id }}{% elif is_consolidated %}?user_id=consolidated{% endif %}">Strategy</a>
 </li>
 <li class="nav-item">
+    <a class="nav-link" href="/sitemap.xml">Sitemap</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{% url 'feedback' %}">Feedback</a>
+</li>
+<li class="nav-item">
     <a class="nav-link nav-item-dashboard" href="{% url 'dashboard' %}{% if is_family_view %}?user_id={{ target_user.id }}{% elif is_consolidated %}?user_id=consolidated{% endif %}">Stock Etf</a>
 </li>
 <li class="nav-item">
@@ -360,6 +366,7 @@
       <div class="d-flex justify-content-center gap-4 mb-4">
         <a href="{% url 'landing' %}" class="text-decoration-none text-muted small fw-bold text-uppercase">Home</a>
         <a href="{% url 'strategy' %}" class="text-decoration-none text-muted small fw-bold text-uppercase">Strategy</a>
+        <a href="/sitemap.xml" class="text-decoration-none text-muted small fw-bold text-uppercase">Sitemap</a>
         <a href="{% url 'feedback' %}" class="text-decoration-none text-muted small fw-bold text-uppercase">Feedback</a>
       </div>
       <hr class="my-4 opacity-25" style="max-width: 800px; margin: 0 auto;">
