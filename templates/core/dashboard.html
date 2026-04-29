@@ -440,8 +440,8 @@
                                 <td>{{ item.quantity }}</td>
                                 <td>&#8377;{{ item.avg_cost|inr_format }}</td>
                                 <td class="fw-semibold">&#8377;{{ item.ltp|inr_format }}</td>
-                                <td class="fw-semibold text-center {% if item.day_change >= 0 %}text-success{% else %}text-danger{% endif %} text-nowrap">
-                                    {% if item.day_change > 0 %}<span class="sign-small">+</span>{% endif %}&#8377;{{ item.day_change|inr_format }}</td>
+                                <td class="fw-semibold text-center {% if item.total_day_change >= 0 %}text-success{% else %}text-danger{% endif %} text-nowrap">
+                                    {% if item.total_day_change > 0 %}<span class="sign-small">+</span>{% endif %}&#8377;{{ item.total_day_change|inr_format }}</td>
                                 <td class="fw-semibold text-center {% if item.day_change_pct >= 0 %}text-success{% else %}text-danger{% endif %} text-nowrap">
                                     {% if item.day_change_pct > 0 %}<span class="sign-small">+</span>{% endif %}{{ item.day_change_pct|inr_format }}%</td>
                                 <td class="text-center">&#8377;{{ item.invested_amount|inr_format }}</td>
