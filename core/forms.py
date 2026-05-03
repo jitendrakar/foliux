@@ -139,7 +139,7 @@ class ManualPortfolioForm(forms.Form):
     )
     date = forms.DateField(
         label='PURCHASE DATE',
-        required=False,
+        required=True,
         widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'})
     )
     notes = forms.CharField(
@@ -191,7 +191,7 @@ class ManualSellForm(forms.Form):
     )
     date = forms.DateField(
         label='EXIT DATE',
-        required=False,
+        required=True,
         widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'})
     )
     notes = forms.CharField(

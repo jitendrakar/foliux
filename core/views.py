@@ -1680,7 +1680,7 @@ def add_portfolio_item(request):
                     date = form.cleaned_data.get('date')
                     notes = form.cleaned_data.get('notes')
                     
-                    if symbol and quantity and avg_cost:
+                    if symbol and quantity and avg_cost and date:
                         inst = resolve_instrument(symbol)
                         if inst:
                             execute_stock_buy(target_user, inst, quantity, avg_cost, date, notes)
@@ -1724,7 +1724,7 @@ def sell_portfolio_item(request):
                     exit_date = form.cleaned_data.get('date')
                     notes = form.cleaned_data.get('notes')
 
-                    if symbol and quantity and price:
+                    if symbol and quantity and price and exit_date:
                         inst = resolve_instrument(symbol)
                         if inst:
                             try:
