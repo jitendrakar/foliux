@@ -18,115 +18,145 @@
                     <span class="text-primary">{{ instrument.symbol }}</span> <span class="text-muted fw-light">Lot
                         Breakdown</span>
                 </h2>
-                <p class="text-muted mb-0">{% if is_consolidated %}Detailed Family View (FIFO).{% else %}Detailed First-In, First-Out (FIFO) view of your active holdings.{% endif %}</p>
+                <p class="text-muted mb-0">{% if is_consolidated %}Detailed Family View (FIFO).{% else %}Detailed First-In, First-Out (FIFO) view of your holdings & sell history.{% endif %}</p>
             </div>
             <a href="{% url 'dashboard' %}{% if is_family_view %}?user_id={{ target_user.id }}{% elif is_consolidated %}?user_id=consolidated{% endif %}" class="btn btn-outline-primary rounded-pill px-4">
                 <i class="fas fa-arrow-left me-2"></i>Dashboard
             </a>
         </div>
 
-        <div class="row mb-4 h-100">
-            <!-- Summary Stats Cards -->
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm h-100 bg-primary text-white overflow-hidden"
-                    style="min-height: 120px;">
-                    <div class="card-body d-flex flex-column justify-content-center position-relative">
-                        <i class="fas fa-layer-group position-absolute opacity-10"
-                            style="font-size: 5rem; right: -10px; top: 10px;"></i>
-                        <div class="small text-uppercase opacity-75 fw-bold mb-1">Total Quantity</div>
-                        <h2 class="mb-0 fw-bold">{{ total_quantity }}</h2>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm h-100 bg-dark text-white overflow-hidden"
-                    style="min-height: 120px;">
-                    <div class="card-body d-flex flex-column justify-content-center position-relative">
-                        <i class="fas fa-wallet position-absolute opacity-10"
-                            style="font-size: 5rem; right: -10px; top: 10px;"></i>
-                        <div class="small text-uppercase opacity-75 fw-bold mb-1">Total Invested</div>
-                        <h2 class="mb-0 fw-bold">&#8377;{{ total_invested|floatformat:2 }}</h2>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm h-100 bg-white overflow-hidden" style="min-height: 120px;">
-                    <div class="card-body d-flex flex-column justify-content-center position-relative">
-                        <i class="fas fa-chart-line position-absolute text-success opacity-10"
-                            style="font-size: 5rem; right: -10px; top: 10px;"></i>
-                        <div class="small text-uppercase text-muted fw-bold mb-1">Current Price (LTP)</div>
-                        <h2 class="mb-0 fw-bold text-success">&#8377;{{ lots.0.ltp|floatformat:2 }}</h2>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm h-100 bg-white overflow-hidden" style="min-height: 120px;">
-                    <div class="card-body d-flex flex-column justify-content-center position-relative">
-                        <i class="fas fa-tag position-absolute text-info opacity-10"
-                            style="font-size: 5rem; right: -10px; top: 10px;"></i>
-                        <div class="small text-uppercase text-muted fw-bold mb-1">Average Cost</div>
-                        <h2 class="mb-0 fw-bold text-info">&#8377;{{ avg_cost|floatformat:2 }}</h2>
-                    </div>
-                </div>
+        <!-- Compact Summary Stats Bar (Table-aligned Layout) -->
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4 animate__animated animate__fadeInUp">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="bg-light border-0">
+                        <tr>
+                            <th class="ps-4 text-uppercase extra-small fw-bold text-muted border-0" style="width: 35%;">Unrealized P&L</th>
+                            <th class="text-uppercase extra-small fw-bold text-muted border-0 text-center">Holding Qty</th>
+                            <th class="text-uppercase extra-small fw-bold text-muted border-0 text-center">Total Invested</th>
+                            <th class="text-uppercase extra-small fw-bold text-muted border-0 text-center">LTP / Avg Cost</th>
+                            <th class="pe-4 text-uppercase extra-small fw-bold text-muted border-0 text-end" style="width: 20%;">P&L (Realized)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="border-0">
+                        <tr>
+                            <td class="ps-4 border-0">
+                                <div class="h5 mb-0 fw-bold {% if total_unrealized_pnl >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                    {% if total_unrealized_pnl >= 0 %}+{% endif %}₹{{ total_unrealized_pnl|floatformat:2 }}
+                                    <span class="small fw-normal">({{ total_unrealized_pnl_pct|floatformat:2 }}%)</span>
+                                </div>
+                                <p class="text-muted extra-small mb-0">Current holding performance</p>
+                            </td>
+                            <td class="text-center border-0">
+                                <div class="small fw-bold text-dark">{{ total_quantity }} <span class="text-muted fw-normal">Units</span></div>
+                            </td>
+                            <td class="text-center border-0">
+                                <div class="small fw-bold text-dark">₹{{ total_invested|floatformat:2 }}</div>
+                            </td>
+                            <td class="text-center border-0">
+                                <div class="small fw-bold text-primary">₹{{ ltp|floatformat:2 }}</div>
+                                <div class="text-muted extra-small">Avg: ₹{{ avg_cost|floatformat:2 }}</div>
+                            </td>
+                            <td class="pe-4 text-end border-0">
+                                <div class="small fw-bold {% if total_realized_pnl >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                    {% if total_realized_pnl >= 0 %}+{% endif %}₹{{ total_realized_pnl|floatformat:2 }}
+                                </div>
+                                <div class="extra-small text-muted">{{ total_sell_quantity }} Units Sold</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
 
-        <!-- Lots Table -->
+        <!-- Unified Buy & Sell Timeline -->
         <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
             <div class="card-header bg-white py-3 border-0">
-                <h5 class="mb-0 fw-bold"><i class="fas fa-list-ul me-2 text-primary"></i>Active Purchase Lots</h5>
+                <h5 class="mb-0 fw-bold"><i class="fas fa-exchange-alt me-2 text-primary"></i>Buy & Sell History</h5>
             </div>
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="bg-light border-0">
                         <tr>
-                            <th class="ps-4 text-uppercase small fw-bold text-muted border-0">Purchase Date</th>
+                            <th class="ps-4 text-uppercase small fw-bold text-muted border-0">Type</th>
+                            <th class="text-uppercase small fw-bold text-muted border-0">Date</th>
                             {% if is_consolidated %}
                             <th class="text-uppercase small fw-bold text-muted border-0">Owner</th>
                             {% endif %}
-                            <th class="text-uppercase small fw-bold text-muted border-0">Holding Period</th>
-                            <th class="text-uppercase small fw-bold text-muted text-end border-0">Quantity</th>
-                            <th class="text-uppercase small fw-bold text-muted text-end border-0">Buy Price</th>
-                            <th class="text-uppercase small fw-bold text-muted text-end border-0">Market Value</th>
-                            <th class="text-uppercase small fw-bold text-muted text-end border-0">Unrealized P&L</th>
+                            <th class="text-uppercase small fw-bold text-muted border-0">Holding</th>
+                            <th class="text-uppercase small fw-bold text-muted text-end border-0">Qty</th>
+                            <th class="text-uppercase small fw-bold text-muted text-end border-0">Price</th>
+                            <th class="text-uppercase small fw-bold text-muted text-end border-0">P&L</th>
                             <th class="text-uppercase small fw-bold text-muted text-center border-0">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="border-0">
-                        {% for lot in lots %}
+                        {% for rec in records %}
+                        <tr class="{% if rec.type == 'SELL' %}table-light{% elif rec.type == 'BUY' and rec.remaining_quantity == 0 %}opacity-50 text-muted bg-light{% endif %}">
                             <td class="ps-4">
-                                <div class="fw-bold">{{ lot.date|date:"d M Y" }}</div>
-                                <div class="text-muted extra-small">Lot ID: #{{ lot.id }}</div>
+                                {% if rec.type == 'BUY' %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill">BUY</span>
+                                {% else %}
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 rounded-pill">SELL</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="fw-bold">{{ rec.date|date:"d M Y" }}</div>
+                                {% if rec.type == 'SELL' and rec.entry_date %}
+                                <div class="text-muted extra-small">Entry: {{ rec.entry_date|date:"d M Y" }}</div>
+                                {% endif %}
+                                {% if rec.type == 'BUY' %}
+                                <div class="text-muted extra-small">Lot #{{ rec.id }}</div>
+                                {% endif %}
                             </td>
                             {% if is_consolidated %}
-                            <td><span class="badge bg-soft-blue text-primary border">{{ lot.owner }}</span></td>
+                            <td><span class="badge bg-soft-blue text-primary border">{{ rec.owner }}</span></td>
                             {% endif %}
                             <td>
+                                {% if rec.type == 'BUY' %}
                                 <span class="badge rounded-pill bg-light text-dark fw-normal border">
-                                    {{ lot.days_held }} days
+                                    {{ rec.days_held }} days
                                 </span>
+                                {% elif rec.holding_days is not None %}
+                                <span class="badge rounded-pill bg-light text-dark fw-normal border">
+                                    {{ rec.holding_days }} days
+                                </span>
+                                {% else %}
+                                <span class="text-muted">—</span>
+                                {% endif %}
                             </td>
-                            <td class="text-end fw-bold">{{ lot.quantity }}</td>
-                            <td class="text-end text-muted">₹{{ lot.price|floatformat:2 }}</td>
-                            <td class="text-end fw-bold">₹{% widthratio lot.quantity 1 lot.ltp %}</td>
+                            <td class="text-end fw-bold">
+                                {{ rec.quantity }}
+                            </td>
                             <td class="text-end">
+                                <div class="text-muted">₹{{ rec.price|floatformat:2 }}</div>
+                                {% if rec.type == 'SELL' %}
+                                <div class="text-muted extra-small">Buy: ₹{{ rec.buy_price|floatformat:2 }}</div>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                {% if rec.pnl is not None %}
                                 <div
-                                    class="fw-bold {% if lot.unrealized_pnl >= 0 %}text-success{% else %}text-danger{% endif %}">
-                                    {% if lot.unrealized_pnl >= 0 %}+{% endif %}₹{{ lot.unrealized_pnl|floatformat:2 }}
+                                    class="fw-bold {% if rec.pnl >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                    {% if rec.pnl >= 0 %}+{% endif %}₹{{ rec.pnl|floatformat:2 }}
                                 </div>
                                 <div
-                                    class="small {% if lot.pnl_pct >= 0 %}text-success{% else %}text-danger{% endif %}">
-                                    {{ lot.pnl_pct|floatformat:2 }}%
+                                    class="small {% if rec.pnl_pct >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                    {{ rec.pnl_pct|floatformat:2 }}%
                                 </div>
+                                {% else %}
+                                <span class="text-muted">—</span>
+                                {% endif %}
                             </td>
                             <td class="text-center">
+                                {% if rec.type == 'BUY' and rec.remaining_quantity > 0 %}
                                 <div class="btn-group">
                                     {% if not is_family_view and not is_consolidated %}
-                                    <a href="{% url 'edit_lot' lot.id %}"
+                                    <a href="{% url 'edit_lot' rec.id %}"
                                         class="btn btn-sm btn-light border rounded-pill me-2" title="Edit Lot">
                                         <i class="fas fa-edit text-primary"></i>
                                     </a>
-                                    <a href="{% url 'delete_lot' lot.id %}"
+                                    <a href="{% url 'delete_lot' rec.id %}"
                                         class="btn btn-sm btn-light border rounded-pill" title="Delete Lot"
                                         onclick="return confirm('Delete this lot? Total holdings will decrease.')">
                                         <i class="fas fa-trash text-danger"></i>
@@ -135,18 +165,24 @@
                                     <span class="text-muted small"><i class="fas fa-lock opacity-50"></i></span>
                                     {% endif %}
                                 </div>
+                                {% elif rec.type == 'BUY' %}
+                                <span class="text-muted extra-small">Closed</span>
+                                {% else %}
+                                <span class="text-muted small"><i class="fas fa-check-circle text-success opacity-50" title="Completed"></i></span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-5">
+                                <i class="fas fa-box-open mb-3 opacity-25" style="font-size: 4rem;"></i>
+                                <h5 class="text-muted">No buy or sell records found for this instrument.</h5>
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-            {% if not lots %}
-            <div class="text-center py-5">
-                <i class="fas fa-box-open mb-3 opacity-25" style="font-size: 4rem;"></i>
-                <h5 class="text-muted">No active lots found for this instrument.</h5>
-            </div>
-            {% endif %}
         </div>
     </div>
 </div>
@@ -154,6 +190,11 @@
 <style>
     .extra-small {
         font-size: 0.7rem;
+    }
+    @media (min-width: 768px) {
+        .border-end-md {
+            border-right: 1px solid #dee2e6 !important;
+        }
     }
     .table thead th {
         position: sticky;
@@ -183,4 +224,15 @@
         font-weight: 500;
     }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+    });
+</script>
 {% endblock %}

@@ -75,7 +75,7 @@
                 {% if is_family_view %}
                     {{ target_user.profile.full_name|default:target_user.username }}
                 {% elif is_consolidated %}
-                    Combined Family Portfolio
+                    Combined Family Folio
                 {% else %}
                     My Account
                 {% endif %}
@@ -110,7 +110,7 @@
     <!-- Header Area -->
     <div class="d-flex justify-content-between align-items-center mb-5">
         <div>
-            <h1 class="fw-800 text-primary-dark mb-1">Mutual Fund Portfolio</h1>
+            <h1 class="fw-800 text-primary-dark mb-1">Mutual Fund Folio</h1>
             <p class="text-muted mb-0">Track your mutual fund investments with real-time NAV updates</p>
         </div>
         <div class="d-flex gap-2">
@@ -133,17 +133,17 @@
     </div>
 
     <!-- Summary Stats -->
-    <div class="row g-4 mb-5">
+    <div class="row g-3 mb-5 row-cols-2 row-cols-md-5">
         <div class="col">
             <div class="mf-card p-4 h-100 animate__animated animate__fadeInUp">
                 <div class="stats-label mb-2">Invested Amount</div>
-                <div class="stats-value">₹ {{ total_invested|inr_format }}</div>
+                <div class="stats-value text-nowrap">₹ {{ total_invested|inr_format }}</div>
             </div>
         </div>
         <div class="col">
             <div class="mf-card p-4 h-100 animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
                 <div class="stats-label mb-2">Current Value</div>
-                <div class="stats-value">₹ {{ total_current_value|inr_format }}</div>
+                <div class="stats-value text-nowrap">₹ {{ total_current_value|inr_format }}</div>
             </div>
         </div>
         <div class="col">
@@ -193,7 +193,9 @@
                     {% for item in mf_holdings %}
                     <tr>
                         <td class="ps-4">
-                            <div class="fw-700 text-primary-dark" style="font-size: 0.9rem;">{{ item.fund.name }}</div>
+                            <a href="{% url 'mf_detail' item.fund.id %}" class="text-decoration-none hover-lift">
+                                <div class="fw-700 text-primary-dark" style="font-size: 0.9rem;">{{ item.fund.name }}</div>
+                            </a>
                             {% if item.active_sip %}
                             <div class="small mt-1 animate__animated animate__pulse animate__infinite" style="--animate-duration: 4s;">
                                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1" style="font-size: 0.6rem;" title="Automated SIP Active">

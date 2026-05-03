@@ -71,7 +71,7 @@
                 <!-- Portfolio Value History Graph -->
                 <div class="mb-5 animate__animated animate__fadeIn">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="mb-0 fw-bold"><i class="fas fa-chart-line me-2 text-primary"></i>Portfolio Performance History</h6>
+                        <h6 class="mb-0 fw-bold"><i class="fas fa-chart-line me-2 text-primary"></i>Folio Performance History</h6>
                         <button class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#portfolioHistoryCollapse" aria-expanded="false">
                             <i class="fas fa-chevron-down me-1"></i> Open full data
                         </button>
@@ -231,6 +231,7 @@
                                                                 beginAtZero: false,
                                                                 grid: { color: 'rgba(0,0,0,0.05)' },
                                                                 ticks: { 
+                                                                    display: false,
                                                                     callback: (val) => '₹' + (val/1000).toFixed(0) + 'K', 
                                                                     font: { weight: '500' } 
                                                                 }

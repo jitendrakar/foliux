@@ -339,20 +339,20 @@
 
         <!-- Main Content -->
         <main class="report-content">
-            <span class="page-indicator">DOCUMENT_REF: NPITS_v2.0_FINAL</span>
+            <span class="page-indicator">DOCUMENT_REF: FOLIUX_v2.0_FINAL</span>
             
             <!-- SECTION 1: TITLE & OVERVIEW -->
             <section id="title" class="report-section">
                 <h2>1. Project Title & Overview</h2>
                 <div class="text-center py-5">
-                    <h1 class="display-1 fw-black text-primary mb-2" style="letter-spacing: -4px;">NPITS</h1>
-                    <p class="h3 text-muted fw-light mb-5">Net Profit Investment Tracking System</p>
+                    <h1 class="display-1 fw-black text-primary mb-2" style="letter-spacing: -4px;">FOLIUX</h1>
+                    <p class="h3 text-muted fw-light mb-5">FOLIUX Investment Tracking System</p>
                     <div class="info-callout mx-auto" style="max-width: 800px;">
                         <p class="mb-0">A comprehensive financial engineering platform for granular lot-based tracking, multi-asset aggregation, and rule-based advisory automation in the Indian Capital Markets.</p>
                     </div>
                 </div>
                 <h3>1.1 Project Classification</h3>
-                <p>NPITS is classified as a <strong>Financial Technology (FinTech)</strong> middleware application, utilizing an <strong>Event-Driven Micro-Architecture</strong> on the frontend and a <strong>Relational FIFO Ledger</strong> on the backend. It falls under the category of Advanced Wealth Management Systems (AWMS).</p>
+                <p>FOLIUX is classified as a <strong>Financial Technology (FinTech)</strong> middleware application, utilizing an <strong>Event-Driven Micro-Architecture</strong> on the frontend and a <strong>Relational FIFO Ledger</strong> on the backend. It falls under the category of Advanced Wealth Management Systems (AWMS).</p>
             </section>
 
             <!-- SECTION 2: INTRODUCTION & OBJECTIVES -->
@@ -360,7 +360,7 @@
                 <h2>2. Introduction & Objectives</h2>
                 <h3>2.1 Introduction</h3>
                 <p>The contemporary investment landscape is characterized by high-frequency data and fragmented reporting. While Indian brokerages have democratized access to markets, they have lagged in sophisticated reporting protocols. Most investors are presented with "Average Prices"—a simplified metric that fails to capture the fiscal reality of long-term vs. short-term gains, tax-loss harvesting opportunities, and specific lot exits.</p>
-                <p>NPITS (Net Profit Investment Tracking System) fulfills the urgent requirement for a secondary verification layer. It acts as a "Single Source of Truth" that operates independently of any brokerage, allowing the user to port their transaction history across platforms while maintaining a absolute historical record of every unit owned and its specific realization path.</p>
+                <p>FOLIUX (FOLIUX Investment Tracking System) fulfills the urgent requirement for a secondary verification layer. It acts as a "Single Source of Truth" that operates independently of any brokerage, allowing the user to port their transaction history across platforms while maintaining a absolute historical record of every unit owned and its specific realization path.</p>
                 
                 <h3>2.2 Core Objectives</h3>
                 <div class="row g-4 mb-4">
@@ -398,7 +398,7 @@
                 <p>The "Aggregation Paradox" in retail investing refers to the erosion of actionable data when multiple purchase lots of a single instrument are merged into a weighted average. When an investor sees an average cost of ₹2,500 on a stock currently at ₹2,600, they might feel profitable. However, they may actually have lots bought at ₹2,100 (ready for exit) and lots bought at ₹2,850 (averaging candidates). Average pricing obscures these critical exit and re-entry points.</p>
                 
                 <h3>3.2 Requirements Analysis</h3>
-                <p>To solve this, NPITS requires:</p>
+                <p>To solve this, FOLIUX requires:</p>
                 <ul>
                     <li>An immutable transaction ledger capable of tracking <code>remaining_quantity</code> at the record level.</li>
                     <li>A high-concurrency sync job for market price retrieval.</li>
@@ -411,10 +411,10 @@
             <section id="need" class="report-section">
                 <h2>4. Identification of Need</h2>
                 <h3>4.1 User Persona: The Multi-Portfolio Investor</h3>
-                <p>Modern investors no longer hold just a few blue-chip stocks. They manage SIPs, crypto-wallets, and corporate NPS accounts. Identifying the total financial health across these silos is a significant cognitive burden. NPITS identifies the need for a <strong>Consolidated Financial Dashboard</strong> that provides a 4-second "Glanceability" score for net worth.</p>
+                <p>Modern investors no longer hold just a few blue-chip stocks. They manage SIPs, crypto-wallets, and corporate NPS accounts. Identifying the total financial health across these silos is a significant cognitive burden. FOLIUX identifies the need for a <strong>Consolidated Financial Dashboard</strong> that provides a 4-second "Glanceability" score for net worth.</p>
                 
                 <h3>4.2 Market Gap: Professional Grade Tools for Retail Users</h3>
-                <p>Tools like Bloomberg Terminals or professional hedge-fund software provide "Lot Breakdown" analytics, but they cost thousands of dollars. NPITS democratizes these "exit-first" strategies for the individual retail investor.</p>
+                <p>Tools like Bloomberg Terminals or professional hedge-fund software provide "Lot Breakdown" analytics, but they cost thousands of dollars. FOLIUX democratizes these "exit-first" strategies for the individual retail investor.</p>
             </section>
 
             <!-- SECTION 5: PLANNING & SCHEDULING -->
@@ -424,7 +424,7 @@
                 <div class="diagram-box">
                     <div class="mermaid">
 gantt
-    title NPITS v2.0 Development Lifecycle
+    title FOLIUX v2.0 Development Lifecycle
     dateFormat  YYYY-MM-DD
     section Analysis
     System Study           :a1, 2025-12-01, 14d
@@ -474,7 +474,7 @@ gantt
             <section id="paradigm" class="report-section">
                 <h2>7. Software Engineering Paradigms</h2>
                 <h3>7.1 Applied Methodology: Agile-Scrum</h3>
-                <p>NPITS followed a strictly iterative approach. This allowed the project to deliver a "Stock-Only" MVP early and then include "Mutual Funds", "Crypto", and "Loans" in subsequent 2-week sprints. This mitigated the risk of "Big Bang" failure where a system is too complex to launch.</p>
+                <p>FOLIUX followed a strictly iterative approach. This allowed the project to deliver a "Stock-Only" MVP early and then include "Mutual Funds", "Crypto", and "Loans" in subsequent 2-week sprints. This mitigated the risk of "Big Bang" failure where a system is too complex to launch.</p>
                 
                 <h3>7.2 Architectural Pattern: Domain-Driven Design (DDD)</h3>
                 <p>The code is structured around business domains:
@@ -594,7 +594,7 @@ sequenceDiagram
             <section id="design" class="report-section">
                 <h2>10. System & Modular Design</h2>
                 <h3>10.1 Modularisation Details</h3>
-                <p>NPITS is architected using <strong>High Cohesion / Low Coupling</strong>:</p>
+                <p>FOLIUX is architected using <strong>High Cohesion / Low Coupling</strong>:</p>
                 <ul>
                     <li><strong>Module A: Auth & Identity</strong> - Manages OTP and Social tokens.</li>
                     <li><strong>Module B: Accounting & FIFO</strong> - Pure mathematics engine for financial logic.</li>
@@ -740,7 +740,7 @@ def dashboard(request):
             <section id="security" class="report-section">
                 <h2>17. Security Implementation</h2>
                 <h3>17.1 Database/Data Security</h3>
-                <p>NPITS uses <strong>EncryptedCharField</strong> for all sensitive financial IDs and bank names. This ensures that even if the database file is physically stolen, the data remains unreadable without the system secret key.</p>
+                <p>FOLIUX uses <strong>EncryptedCharField</strong> for all sensitive financial IDs and bank names. This ensures that even if the database file is physically stolen, the data remains unreadable without the system secret key.</p>
                 
                 <h3>17.2 Access Rights Matrix</h3>
                 <table class="test-case-table">

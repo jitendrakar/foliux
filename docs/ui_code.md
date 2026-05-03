@@ -1,10 +1,10 @@
-# NPITS UI Code Documentation
+# FOLIUX UI Code Documentation
 
-This document serves as a comprehensive guide to understanding the UI architecture and code utilized in the NPITS (Net Profit Investment Tracking System) application. It details the core technologies, design systems, and provides code snippets outlining how to use specific UI components.
+This document serves as a comprehensive guide to understanding the UI architecture and code utilized in the FOLIUX (Net Profit Investment Tracking System) application. It details the core technologies, design systems, and provides code snippets outlining how to use specific UI components.
 
 ## Core UI Technologies
 
-The NPITS frontend is built on a responsive and modern stack:
+The FOLIUX frontend is built on a responsive and modern stack:
 
 1.  **Bootstrap 5.3.0**: The primary CSS framework used for grid layouts, typography, and pre-built components (navbars, modals, buttons, alerts).
 2.  **Custom CSS (Vanilla)**: Overrides and enhancements to Bootstrap, focusing on a premium aesthetic (glassmorphism, specific brand colors, and micro-animations).
@@ -208,7 +208,7 @@ Located at the bottom of `base.html`, this snippet ensures the platform checks f
 ```javascript
 (function () {
   const SYNC_INTERVAL = 60 * 1000; // 1 minute
-  const LAST_SYNC_KEY = 'npits_last_sync_time';
+  const LAST_SYNC_KEY = 'foliux_last_sync_time';
   const now = Date.now();
   const lastSync = localStorage.getItem(LAST_SYNC_KEY);
 
@@ -273,4 +273,4 @@ Optimized for data density and horizontal scrolling.
 The `<div class="table-responsive">` wrapper is standard for mobile compatibility. Font sizes (`0.82rem`) and padding are intentionally reduced to fit more rows and columns on investment dashboards.
 
 ---
-*Generated as part of the NPITS UI Documentation initiative.*
+*Generated as part of the FOLIUX UI Documentation initiative.*

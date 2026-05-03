@@ -20,8 +20,16 @@ from core import views as core_views
 from django.conf import settings
 from django.conf.urls.static import static
 
+from django.contrib.sitemaps.views import sitemap
+from core.sitemaps import StaticViewSitemap
+
+sitemaps = {
+    'static': StaticViewSitemap,
+}
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('search-instruments/', core_views.search_instruments, name='search_instruments'),
     path('', include('core.urls')),
     # Custom password change view
@@ -35,7 +43,10 @@ urlpatterns = [
 from django.urls import re_path
 from django.views.static import serve
 
+from django.views.generic import TemplateView
+
 urlpatterns += [
+    path('robots.txt', TemplateView.as_view(template_name="robots.txt", content_type="text/plain")),
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
     re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
 ]

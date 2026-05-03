@@ -70,7 +70,7 @@
                 {% if is_family_view %}
                     {{ target_user.profile.full_name|default:target_user.username }}
                 {% elif is_consolidated %}
-                    Combined Family Portfolio
+                    Combined Family Folio
                 {% else %}
                     My Account
                 {% endif %}
@@ -105,7 +105,7 @@
     <!-- Header Area -->
     <div class="d-flex justify-content-between align-items-center mb-5">
         <div>
-            <h1 class="fw-800 text-nps mb-1">NPS Portfolio</h1>
+            <h1 class="fw-800 text-nps mb-1">NPS Folio</h1>
             <p class="text-muted mb-0">Track your National Pension System investments with live NAV sync</p>
         </div>
         <div class="d-flex gap-2">
@@ -128,22 +128,22 @@
     </div>
 
     <!-- Summary Stats -->
-    <div class="row g-4 mb-5">
+    <div class="row g-3 mb-5 row-cols-2 row-cols-md-5">
         <div class="col">
             <div class="nps-card p-4 h-100 animate__animated animate__fadeInUp">
-                <div class="stats-label mb-2">Total Invested</div>
-                <div class="stats-value">₹ {{ total_invested|inr_format }}</div>
+                <div class="stats-label mb-2">Invested</div>
+                <div class="stats-value text-nowrap">₹ {{ total_invested|inr_format }}</div>
             </div>
         </div>
         <div class="col">
             <div class="nps-card p-4 h-100 animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
-                <div class="stats-label mb-2">Current Value</div>
-                <div class="stats-value">₹ {{ total_current_value|inr_format }}</div>
+                <div class="stats-label mb-2">Current</div>
+                <div class="stats-value text-nowrap">₹ {{ total_current_value|inr_format }}</div>
             </div>
         </div>
         <div class="col">
             <div class="nps-card p-4 h-100 animate__animated animate__fadeInUp" style="animation-delay: 0.2s;">
-                <div class="stats-label mb-2">Day Change</div>
+                <div class="stats-label mb-2">Day Δ</div>
                 <div class="stats-value {% if total_day_change >= 0 %}text-success{% else %}text-danger{% endif %} text-nowrap">
                     ₹ {{ total_day_change|inr_format }}
                 </div>
@@ -151,7 +151,7 @@
         </div>
         <div class="col">
             <div class="nps-card p-4 h-100 animate__animated animate__fadeInUp" style="animation-delay: 0.3s;">
-                <div class="stats-label mb-2">Unrealized P&L</div>
+                <div class="stats-label mb-2">P&L</div>
                 <div class="stats-value {% if total_unrealized_pnl >= 0 %}text-success{% else %}text-danger{% endif %} text-nowrap">
                     ₹ {{ total_unrealized_pnl|inr_format }}
                 </div>
@@ -159,7 +159,7 @@
         </div>
         <div class="col">
             <div class="nps-card p-4 h-100 animate__animated animate__fadeInUp" style="animation-delay: 0.4s;">
-                <div class="stats-label mb-2">Realized Profit</div>
+                <div class="stats-label mb-2">Realized</div>
                 <div class="stats-value text-primary text-nowrap">
                     ₹ {{ total_realized_profit|inr_format }}
                 </div>
@@ -172,23 +172,25 @@
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
                 <thead class="bg-light">
-                    <tr>
-                        <th class="ps-4 py-3 border-0">Scheme Name</th>
-                        <th class="py-3 border-0">Units</th>
-                        <th class="py-3 border-0">Avg NAV</th>
-                        <th class="py-3 border-0">Current NAV</th>
-                        <th class="py-3 border-0">Invested Val</th>
-                        <th class="py-3 border-0">Current Val</th>
-                        <th class="py-3 border-0">P&L & Returns</th>
-                        <th class="py-3 border-0">Realized Profit</th>
-                        <th class="py-3 border-0 text-center pe-4">Actions</th>
+                    <tr class="text-nowrap">
+                        <th class="ps-4 py-2 border-0">Scheme Name</th>
+                        <th class="py-2 border-0">Units</th>
+                        <th class="py-2 border-0">Avg NAV</th>
+                        <th class="py-2 border-0">Current NAV</th>
+                        <th class="py-2 border-0">Invested</th>
+                        <th class="py-2 border-0">Current</th>
+                        <th class="py-2 border-0">P&L / Ret</th>
+                        <th class="py-2 border-0">Realized</th>
+                        <th class="py-2 border-0 text-center pe-4">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for item in nps_holdings %}
                     <tr>
                         <td class="ps-4">
-                            <div class="fw-700 text-nps" style="font-size: 0.9rem;">{{ item.fund.name }}</div>
+                            <a href="{% url 'nps_detail' item.fund.id %}" class="text-decoration-none hover-lift">
+                                <div class="fw-700 text-nps" style="font-size: 0.9rem;">{{ item.fund.name }}</div>
+                            </a>
                         </td>
                         <td>{{ item.units|floatformat:4 }}</td>
                         <td>₹ {{ item.avg_nav|floatformat:4 }}</td>
@@ -206,20 +208,20 @@
                             </div>
                         </td>
                         <td class="fw-600 text-primary">₹ {{ item.realized_profit|inr_format }}</td>
-                        <td class="pe-4 py-2" style="min-width: 140px;">
+                        <td class="pe-4 py-1" style="min-width: 140px;">
                             <div class="d-flex flex-column align-items-center">
                                 {% if not is_consolidated %}
                                 <div class="d-flex gap-1 w-100">
-                                    <a href="{% url 'add_nps' %}?fund={{ item.fund.name }}{% if is_family_view %}&user_id={{ target_user.id }}{% endif %}" class="btn btn-sm btn-success flex-grow-1 py-1" style="border-radius: 8px; font-size: 0.7rem;">
+                                    <a href="{% url 'add_nps' %}?fund={{ item.fund.name }}{% if is_family_view %}&user_id={{ target_user.id }}{% endif %}" class="btn btn-sm btn-success flex-grow-1 py-0 px-1" style="border-radius: 6px; font-size: 0.65rem;">
                                         <i class="fas fa-plus"></i>
                                     </a>
-                                    <a href="{% url 'sell_nps' item.id %}{% if is_family_view %}?user_id={{ target_user.id }}{% endif %}" class="btn btn-sm btn-danger flex-grow-1 py-1" style="border-radius: 8px; font-size: 0.7rem;">
+                                    <a href="{% url 'sell_nps' item.id %}{% if is_family_view %}?user_id={{ target_user.id }}{% endif %}" class="btn btn-sm btn-danger flex-grow-1 py-0 px-1" style="border-radius: 6px; font-size: 0.65rem;">
                                         <i class="fas fa-minus"></i>
                                     </a>
                                 </div>
                                 {% if not is_family_view %}
-                                <a href="{% url 'delete_nps_portfolio' item.id %}" class="text-muted x-small mt-2 opacity-50 text-decoration-none" 
-                                   onclick="return confirm('Remove this scheme from your portfolio?')" style="font-size: 0.55rem; letter-spacing: 0.5px;">
+                                <a href="{% url 'delete_nps_portfolio' item.id %}" class="text-muted x-small mt-1 opacity-50 text-decoration-none" 
+                                   onclick="return confirm('Remove this scheme from your portfolio?')" style="font-size: 0.5rem; letter-spacing: 0.3px;">
                                     REMOVE
                                 </a>
                                 {% endif %}

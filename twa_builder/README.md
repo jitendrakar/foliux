@@ -1,4 +1,4 @@
-# NPITS Android App Builder
+# FOLIUX Android App Builder
 
 I have prepared this folder so you can generate your Android app (.apk) in just a few clicks from your own computer.
 

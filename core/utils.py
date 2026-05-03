@@ -4,6 +4,7 @@ import io
 import logging
 from django.core.cache import cache
 import yfinance as yf
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +79,7 @@ def perform_sync():
     logger.info("Starting background sync process...")
     
     # 1. Sync Market Ticker Data
-    market_url = "https://docs.google.com/spreadsheets/d/12eLJHTlHO1naQgJ-dzf-UTgUbasVv02tgwlHKofG2Y4/gviz/tq?tqx=out:csv&sheet=market"
+    market_url = f"https://docs.google.com/spreadsheets/d/{settings.MASTER_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=market"
     try:
         response = requests.get(market_url, timeout=10)
         response.raise_for_status()
@@ -123,7 +124,8 @@ def perform_sync():
             'NIFTY 50': '^NSEI',
             'SENSEX': '^BSESN',
             'NIFTY BANK': '^NSEBANK',
-            'NIFTY IT': '^CNXIT'
+            'GOLD': 'GC=F',
+            'SILVER': 'SI=F'
         }
         
         for name, sym in major_indices.items():
@@ -169,7 +171,7 @@ def perform_sync():
         logger.error(f"Error fetching market data: {e}")
 
     # 2. Sync Instrument LTP Data (from 'n2g' sheet)
-    ltp_url = "https://docs.google.com/spreadsheets/d/12eLJHTlHO1naQgJ-dzf-UTgUbasVv02tgwlHKofG2Y4/gviz/tq?tqx=out:csv&sheet=n2g"
+    ltp_url = f"https://docs.google.com/spreadsheets/d/{settings.MASTER_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=n2g"
     try:
         response = requests.get(ltp_url, timeout=10)
         response.raise_for_status()
@@ -294,11 +296,11 @@ def perform_sync():
         'pyramid': ('Pyramiding', 'Pyramiding'),
         'growth': ('ReinvestX', 'Reinvest X'),
     }
-    SHEET_ID = "12eLJHTlHO1naQgJ-dzf-UTgUbasVv02tgwlHKofG2Y4"
+    # Using settings.MASTER_SHEET_ID instead of hardcoded SHEET_ID
     
     from core.models import Strategy, StrategyStock
     for strategy_key, (tab_name, display_name) in STRATEGY_SHEET_TABS.items():
-        url = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq?tqx=out:csv&sheet={tab_name}"
+        url = f"https://docs.google.com/spreadsheets/d/{settings.MASTER_SHEET_ID}/gviz/tq?tqx=out:csv&sheet={tab_name}"
         try:
             response = requests.get(url, timeout=10)
             response.raise_for_status()
@@ -399,9 +401,17 @@ def sync_mutual_funds_from_sheet():
                 # Update or create MutualFund record
                 fund, created = MutualFund.objects.get_or_create(symbol=symbol)
                 
-                # Store previous nav for day change calculation if it was already in DB
+                # Store previous nav for day change calculation
                 if not created:
                     fund.prev_nav = fund.nav
+                else:
+                    # For new records, try to estimate previous NAV from sheet's percentage change if available
+                    if sheet_change != 0:
+                        # sheet_change is usually a percentage (e.g., 1.5 for 1.5%)
+                        prev_est = float(target_nav) / (1 + (sheet_change / 100))
+                        fund.prev_nav = Decimal(str(round(prev_est, 4)))
+                    else:
+                        fund.prev_nav = Decimal(str(target_nav))
                 
                 fund.name = clean_name
                 fund.nav = Decimal(str(target_nav))
@@ -527,21 +537,21 @@ def sync_coins_from_sheet():
                 if price <= 0: continue
 
                 # Update or create Coin record
-                coin, created = Coin.objects.update_or_create(
-                    symbol=symbol,
-                    defaults={
-                        'name': raw_name,
-                        'price': Decimal(str(price)),
-                        'last_updated': timezone.now()
-                    }
-                )
-                
-                # Note: We don't store previous price as easily with update_or_create 
-                # but we can try to save it if not created
-                if not created:
-                    # Actually we should handle prev_price BEFORE saving the new price
-                    pass 
-                
+                coin = Coin.objects.filter(symbol=symbol).first()
+                if coin:
+                    coin.prev_price = coin.price
+                    coin.price = Decimal(str(price))
+                    coin.name = raw_name
+                    coin.last_updated = timezone.now()
+                    coin.save()
+                else:
+                    coin = Coin.objects.create(
+                        symbol=symbol,
+                        name=raw_name,
+                        price=Decimal(str(price)),
+                        prev_price=Decimal(str(price)),
+                        last_updated=timezone.now()
+                    )
                 count += 1
             except Exception as e:
                 logger.error(f"Error processing Coin row: {e}")
@@ -561,7 +571,7 @@ def fetch_live_ltp():
     if data is not None:
         return data
 
-    url = "https://docs.google.com/spreadsheets/d/12eLJHTlHO1naQgJ-dzf-UTgUbasVv02tgwlHKofG2Y4/export?format=csv"
+    url = f"https://docs.google.com/spreadsheets/d/{settings.MASTER_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=n2g"
     try:
         response = requests.get(url, timeout=10)
         response.raise_for_status()
@@ -618,12 +628,31 @@ def record_portfolio_value_history(user):
     from core.models import (
         Portfolio, MFPortfolio, CoinPortfolio, NPSPortfolio, 
         FixedAsset, OtherAsset, PortfolioValueHistory,
-        PnLStatement, Loan
+        PnLStatement, Loan, Transaction
     )
     from django.utils import timezone
     from decimal import Decimal
-    from django.db.models import Sum
+    from django.db.models import Sum, F
     
+    # --- Self-Healing Sync: Ensure Portfolio matches Transaction lots ---
+    active_lots = Transaction.objects.filter(user=user, transaction_type='BUY', remaining_quantity__gt=0).values('instrument').annotate(
+        total_qty=Sum('remaining_quantity'),
+        total_cost=Sum(F('remaining_quantity') * F('price'))
+    )
+    active_ids = set()
+    for lot in active_lots:
+        iid = lot['instrument']
+        t_qty = lot['total_qty']
+        a_cost = lot['total_cost'] / t_qty if t_qty > 0 else 0
+        active_ids.add(iid)
+        p_item, created = Portfolio.objects.get_or_create(user=user, instrument_id=iid, defaults={'quantity': t_qty, 'avg_cost': a_cost})
+        if not created and (p_item.quantity != t_qty or abs(p_item.avg_cost - a_cost) > 0.01):
+            p_item.quantity = t_qty
+            p_item.avg_cost = a_cost
+            p_item.save(update_fields=['quantity', 'avg_cost'])
+    Portfolio.objects.filter(user=user).exclude(instrument_id__in=active_ids).delete()
+    # --------------------------------------------------------------------
+
     today = timezone.now().date()
     
     # 1. Stocks/ETFs
@@ -703,9 +732,10 @@ def get_recommendations(user, is_consolidated=False):
     """
     Calculate buy/sell recommendations for a given user or consolidated family portfolio.
     """
-    from core.models import Portfolio, PnLStatement, Instrument, Profile, FamilyLink
+    from core.models import Portfolio, PnLStatement, Instrument, Profile, FamilyLink, Transaction
     from django.db.models.functions import Upper
-    from django.db.models import Sum
+    from django.db.models import Sum, Count
+    from django.db import models
     from django.contrib.auth.models import User
     
     if is_consolidated:
@@ -726,6 +756,18 @@ def get_recommendations(user, is_consolidated=False):
         total_profit=Sum('realized_profit')
     )
     realized_profits = {item['symbol_upper'].upper(): float(item['total_profit']) for item in realized_profits_qs}
+
+    # Count lots per instrument
+    lot_counts_qs = Transaction.objects.filter(
+        user_id__in=user_list if is_consolidated else [user.id],
+        transaction_type='BUY',
+        remaining_quantity__gt=0
+    ).annotate(
+        symbol_upper=Upper('instrument__symbol')
+    ).values('symbol_upper').annotate(
+        count=Count('id')
+    )
+    lot_counts = {item['symbol_upper'].upper(): item['count'] for item in lot_counts_qs}
 
     # Aggregate Portfolio items across all target users
     # We group by instrument symbol
@@ -809,7 +851,7 @@ def get_recommendations(user, is_consolidated=False):
         can_sell = realized_profit <= invested
         if unrealized_pct >= profit_target and can_sell:
             action = "SELL"
-            reason = f"Pft {unrealized_pct:.2f}% >= {profit_target}%"
+            reason = f"Pft > {profit_target}%"
         elif -3000 <= buy_gap_formula <= 3000:
             action = "HOLD"
             reason = f"TgtCap: {buy_gap_formula:.0f}"
@@ -833,7 +875,8 @@ def get_recommendations(user, is_consolidated=False):
         if previous_close <= 0:
             previous_close = ltp - absolute_change
             
-        day_change = absolute_change * quantity
+        day_change = absolute_change
+        total_day_change_item = absolute_change * quantity
         day_change_pct = (absolute_change / previous_close * 100) if previous_close > 0 else 0
 
         recommendations.append({
@@ -847,6 +890,7 @@ def get_recommendations(user, is_consolidated=False):
             'unrealized_pnl': round(unrealized, 2),
             'pnl_percent': round(unrealized_pct, 2),
             'day_change': round(day_change, 2),
+            'total_day_change': round(total_day_change_item, 2),
             'day_change_pct': round(day_change_pct, 2),
             'previous_close': round(previous_close, 2),
             'action': action,
@@ -856,6 +900,7 @@ def get_recommendations(user, is_consolidated=False):
             'reduce_gap': round(reduce_gap, 2),
             'realized_profit': realized_profit,
             'in_portfolio': True if quantity > 0 else False,
+            'lot_count': lot_counts.get(symbol, 0),
             'notes': data.get('notes', ''),
         })
     
@@ -884,6 +929,12 @@ def get_recommendations(user, is_consolidated=False):
             buy_gap = buy_gap_formula if action == 'BUY' else 0
             reduce_gap = abs(buy_gap_formula) if action == 'REDUCE' else 0
 
+            absolute_change = float(inst.price_change or 0)
+            previous_close = float(inst.previous_close or 0)
+            if previous_close <= 0:
+                previous_close = ltp - absolute_change
+            day_change_pct = (absolute_change / previous_close * 100) if previous_close > 0 else 0
+
             recommendations.append({
                 'symbol': symbol,
                 'name': inst.name,
@@ -894,8 +945,8 @@ def get_recommendations(user, is_consolidated=False):
                 'current_value': 0,
                 'unrealized_pnl': 0,
                 'pnl_percent': 0,
-                'day_change': 0,
-                'day_change_pct': 0,
+                'day_change': round(absolute_change, 2),
+                'day_change_pct': round(day_change_pct, 2),
                 'action': action,
                 'buy_gap': round(buy_gap, 2),
                 'reduce_gap': round(reduce_gap, 2),
@@ -936,6 +987,13 @@ def get_recommendations(user, is_consolidated=False):
             buy_gap = buy_gap_formula if action == 'BUY' else 0
             reduce_gap = abs(buy_gap_formula) if action == 'REDUCE' else 0
 
+            # Day Change Calculations
+            absolute_change = float(inst.price_change or 0) if inst else 0
+            previous_close = float(inst.previous_close or 0) if inst else 0
+            if inst and previous_close <= 0:
+                previous_close = ltp - absolute_change
+            day_change_pct = (absolute_change / previous_close * 100) if previous_close > 0 else 0
+
             recommendations.append({
                 'symbol': symbol,
                 'name': inst.name if inst else symbol,
@@ -946,8 +1004,8 @@ def get_recommendations(user, is_consolidated=False):
                 'current_value': 0,
                 'unrealized_pnl': 0,
                 'pnl_percent': 0,
-                'day_change': 0,
-                'day_change_pct': 0,
+                'day_change': round(absolute_change, 2),
+                'day_change_pct': round(day_change_pct, 2),
                 'action': action,
                 'buy_gap': round(buy_gap, 2),
                 'reduce_gap': round(reduce_gap, 2),
@@ -1097,3 +1155,198 @@ def get_portfolio_summary_metrics(user):
         'total_count': total_signals
     }
 
+
+def execute_stock_sell(user, instrument, quantity_to_sell, price, exit_date=None):
+    """
+    Core logic for selling a stock, handles FIFO/Intraday, PnL recording and Portfolio updates.
+    Returns (profit, is_intraday) or raises ValidationError.
+    """
+    from core.models import Transaction, PnLStatement, Portfolio, Profile
+    from decimal import Decimal
+    from django.utils import timezone
+    from django.core.exceptions import ValidationError
+    import pandas as pd
+    
+    if not exit_date:
+        exit_date = timezone.now().date()
+    elif isinstance(exit_date, str):
+        exit_date = pd.to_datetime(exit_date).date()
+        
+    if exit_date > timezone.now().date():
+        raise ValidationError("Exit date cannot be in the future.")
+        
+    portfolio = Portfolio.objects.filter(user=user, instrument_id=instrument.id).first()
+    if not portfolio or quantity_to_sell > portfolio.quantity:
+        available = portfolio.quantity if portfolio else 0
+        raise ValidationError(f"Insufficient quantity. You have {available} units of {instrument.symbol}.")
+
+    # Unified Priority Logic: Intraday (Same Day) First, then FIFO (Older Lots)
+    total_buy_value = Decimal('0')
+    remaining_to_deduct = quantity_to_sell
+    first_entry_date = None
+    is_intraday = False
+
+    # 1. Gather all active BUYS for this instrument
+    all_buys = Transaction.objects.filter(
+        user=user,
+        instrument=instrument,
+        transaction_type='BUY',
+        remaining_quantity__gt=0
+    ).order_by('date', 'created_at')
+
+    # 2. Prioritize Same-Day (Intraday) Lots
+    intraday_lots = [tx for tx in all_buys if tx.date == exit_date]
+    other_lots = [tx for tx in all_buys if tx.date != exit_date]
+
+    # Use Intraday lots first
+    for tx in intraday_lots:
+        if remaining_to_deduct <= 0:
+            break
+        is_intraday = True # Mark as intraday if we use any same-day lot
+        if first_entry_date is None:
+            first_entry_date = tx.date
+        
+        deduct = min(tx.remaining_quantity, remaining_to_deduct)
+        total_buy_value += Decimal(str(deduct)) * tx.price
+        tx.remaining_quantity -= deduct
+        tx.save()
+        remaining_to_deduct -= deduct
+
+    # 3. Use other lots (FIFO) if still needed
+    for tx in other_lots:
+        if remaining_to_deduct <= 0:
+            break
+        if first_entry_date is None:
+            first_entry_date = tx.date
+        
+        deduct = min(tx.remaining_quantity, remaining_to_deduct)
+        total_buy_value += Decimal(str(deduct)) * tx.price
+        tx.remaining_quantity -= deduct
+        tx.save()
+        remaining_to_deduct -= deduct
+        
+    # Calculate Brokerage for SELL
+    profile, _ = Profile.objects.get_or_create(user=user)
+    if is_intraday:
+        fixed_charge = profile.intraday_fixed_charge or Decimal('0')
+        pct_charge = profile.intraday_brokerage_pct or Decimal('0')
+    else:
+        fixed_charge = profile.equity_fixed_charge or Decimal('0')
+        pct_charge = profile.equity_brokerage_pct or Decimal('0')
+        
+    sell_brokerage = Decimal(str(fixed_charge)) + (price * Decimal(str(quantity_to_sell)) * Decimal(str(pct_charge)) / 100)
+    sell_value_gross = Decimal(str(quantity_to_sell)) * price
+    sell_value_net = sell_value_gross - sell_brokerage
+    
+    profit = sell_value_net - total_buy_value
+    
+    # Record Sell Transaction
+    Transaction.objects.create(
+        user=user,
+        instrument=instrument,
+        transaction_type='SELL',
+        quantity=quantity_to_sell,
+        price=price,
+        date=exit_date
+    )
+    
+    # Record in PnLStatement
+    PnLStatement.objects.create(
+        user=user,
+        instrument=instrument,
+        entry_date=first_entry_date,
+        quantity=quantity_to_sell,
+        buy_value=total_buy_value,
+        sell_value=sell_value_net,
+        realized_profit=profit,
+        exit_date=exit_date
+    )
+    
+    # Update Portfolio
+    portfolio.quantity -= quantity_to_sell
+    if portfolio.quantity <= 0:
+        portfolio.delete()
+    else:
+        # Recalculate average cost based on remaining lots
+        remaining_lots = Transaction.objects.filter(
+            user=user,
+            instrument=instrument,
+            transaction_type='BUY',
+            remaining_quantity__gt=0
+        )
+        if remaining_lots.exists():
+            from django.db.models import Sum, F
+            agg = remaining_lots.aggregate(
+                total_qty=Sum('remaining_quantity'),
+                total_cost=Sum(F('remaining_quantity') * F('price'))
+            )
+            t_qty = agg['total_qty']
+            t_cost = agg['total_cost']
+            portfolio.avg_cost = t_cost / Decimal(str(t_qty)) if t_qty > 0 else 0
+        portfolio.save()
+        
+    return profit, is_intraday
+
+def execute_stock_buy(user, instrument, quantity, avg_cost, transaction_date=None, notes=None):
+    """
+    Core logic for buying a stock, handles brokerage calculation, transaction recording, 
+    and portfolio weighted average cost updates.
+    """
+    from core.models import Transaction, Portfolio, Profile
+    from decimal import Decimal
+    from django.utils import timezone
+    from core.utils import fetch_live_ltp
+    
+    if not transaction_date:
+        transaction_date = timezone.now().date()
+        
+    # Try to get initial LTP from live data if possible
+    symbol = instrument.symbol.upper()
+    live_ltps = fetch_live_ltp()
+    ltp_data = live_ltps.get(symbol)
+    if isinstance(ltp_data, tuple):
+        ltp = ltp_data[0]
+    else:
+        ltp = ltp_data or avg_cost
+
+    # Calculate Brokerage for BUY
+    profile, _ = Profile.objects.get_or_create(user=user)
+    fixed_charge = profile.equity_fixed_charge or Decimal('0')
+    pct_charge = profile.equity_brokerage_pct or Decimal('0')
+    total_brokerage = Decimal(str(fixed_charge)) + (Decimal(str(avg_cost)) * Decimal(str(quantity)) * Decimal(str(pct_charge)) / 100)
+    price_with_brokerage = ((Decimal(str(avg_cost)) * Decimal(str(quantity))) + total_brokerage) / Decimal(str(quantity))
+
+    # Create Transaction record
+    Transaction.objects.create(
+        user=user,
+        instrument=instrument,
+        transaction_type='BUY',
+        quantity=quantity,
+        remaining_quantity=quantity,
+        price=price_with_brokerage,
+        date=transaction_date
+    )
+
+    portfolio, created = Portfolio.objects.get_or_create(
+        user=user, 
+        instrument=instrument,
+        defaults={'quantity': 0, 'avg_cost': Decimal('0'), 'ltp': ltp}
+    )
+    
+    # Update Weighted Average Cost for Portfolio summary
+    current_total_cost = Decimal(str(portfolio.quantity)) * portfolio.avg_cost
+    new_total_cost = Decimal(str(quantity)) * price_with_brokerage
+    total_quantity = portfolio.quantity + quantity
+    
+    new_avg_cost = (current_total_cost + new_total_cost) / Decimal(str(total_quantity))
+    
+    portfolio.quantity = total_quantity
+    portfolio.avg_cost = new_avg_cost
+    # Only update LTP if it was 0 or just created
+    if created or not portfolio.ltp or portfolio.ltp == 0:
+        portfolio.ltp = ltp
+    
+    if notes:
+        portfolio.notes = notes
+    portfolio.save()
+    return portfolio

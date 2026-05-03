@@ -109,6 +109,7 @@ celerybeat.pid
 .venv
 env/
 venv/
+venv_win/
 ENV/
 env.bak/
 venv.bak/
@@ -156,3 +157,12 @@ symbols.txt
 *.tmp
 backups/
 staticfiles/
+
+# Data Dumps
+auth_data.json
+core_data.json
+core_data_full.json
+db_backup.json
+*.json
+!manifest.json
+!package.json

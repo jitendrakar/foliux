@@ -129,3 +129,16 @@ def family_context(request):
         'is_consolidated': is_consolidated,
         'linked_family': FamilyLink.objects.filter(user=request.user, is_verified=True).order_by('family_user__username')
     }
+
+def ipo_info(request):
+    """
+    Context processor to provide the count of open IPOs to all templates.
+    """
+    from .models import IPO
+    from django.utils import timezone
+    today = timezone.now().date()
+    # Count IPOs that are currently open AND have an "Apply" recommendation
+    active_ipo_count = IPO.objects.filter(start_date__lte=today, end_date__gte=today, advise='APPLY').count()
+    return {
+        'active_ipo_count': active_ipo_count
+    }

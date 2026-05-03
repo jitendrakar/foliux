@@ -1,6 +1,6 @@
 @echo off
 echo ======================================================
-echo NPITS Android APK Generator (Unsigned)
+echo FOLIUX Android APK Generator (Unsigned)
 echo ======================================================
 echo.
 echo Requirements:

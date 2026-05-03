@@ -4,7 +4,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 
 class CustomUserCreationForm(UserCreationForm):
-    full_name = forms.CharField(max_length=100, required=True, label='Name')
+    full_name = forms.CharField(max_length=100, required=True, label='Name / Nick Name')
     email = forms.EmailField(required=True, label='Email ID')
     mobile_number = forms.CharField(max_length=15, required=True, label='Mobile Number')
 
@@ -56,7 +56,7 @@ class ProfileForm(forms.ModelForm):
             'financial_goal'
         ]
         labels = {
-            'full_name': 'Full Name',
+            'full_name': 'Name / Nick Name',
             'profile_picture': 'Profile Photo',
             'mobile_number': 'Mobile Number',
             'date_of_birth': 'Date of Birth',
@@ -75,7 +75,7 @@ class ProfileForm(forms.ModelForm):
             'financial_goal': 'Financial Goal',
         }
         widgets = {
-            'full_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter your full name'}),
+            'full_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'First name or nick name'}),
             'profile_picture': forms.ClearableFileInput(attrs={'class': 'form-control'}),
             'mobile_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter mobile number'}),
             'date_of_birth': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
@@ -115,7 +115,6 @@ class ManualPortfolioForm(forms.Form):
         widget=forms.TextInput(attrs={
             'class': 'form-control', 
             'placeholder': 'Search company name...',
-            'id': 'id_company_name',
             'autocomplete': 'off'
         })
     )
@@ -125,7 +124,6 @@ class ManualPortfolioForm(forms.Form):
         widget=forms.TextInput(attrs={
             'class': 'form-control', 
             'placeholder': 'Symbol will auto-fill',
-            'id': 'id_symbol',
             'readonly': 'readonly'
         })
     )
@@ -151,6 +149,69 @@ class ManualPortfolioForm(forms.Form):
         help_text='Visible on hover in portfolio view'
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from django.utils import timezone
+        self.fields['date'].widget.attrs['max'] = timezone.now().date().isoformat()
+
+    def clean_date(self):
+        date = self.cleaned_data.get('date')
+        from django.utils import timezone
+        if date and date > timezone.now().date():
+            raise forms.ValidationError("Date cannot be in the future.")
+        return date
+
+class ManualSellForm(forms.Form):
+    company_name = forms.CharField(
+        label='COMPANY NAME',
+        widget=forms.TextInput(attrs={
+            'class': 'form-control', 
+            'placeholder': 'Search company name to sell...',
+            'autocomplete': 'off'
+        })
+    )
+    symbol = forms.CharField(
+        label='STOCK SYMBOL (AUTO-FILLED)',
+        max_length=20, 
+        widget=forms.TextInput(attrs={
+            'class': 'form-control', 
+            'placeholder': 'Symbol will auto-fill',
+            'readonly': 'readonly'
+        })
+    )
+    quantity = forms.IntegerField(
+        label='QUANTITY TO SELL',
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Enter Quantity to sell'})
+    )
+    price = forms.DecimalField(
+        label='SELL PRICE',
+        max_digits=10, 
+        decimal_places=2, 
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01', 'placeholder': 'Enter Sell Price'})
+    )
+    date = forms.DateField(
+        label='EXIT DATE',
+        required=False,
+        widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'})
+    )
+    notes = forms.CharField(
+        label='NOTES (OPTIONAL)',
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Why are you selling?'}),
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from django.utils import timezone
+        self.fields['date'].widget.attrs['max'] = timezone.now().date().isoformat()
+
+    def clean_date(self):
+        date = self.cleaned_data.get('date')
+        from django.utils import timezone
+        if date and date > timezone.now().date():
+            raise forms.ValidationError("Date cannot be in the future.")
+        return date
+
 class EditLotForm(forms.Form):
     quantity = forms.IntegerField(
         widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Quantity'})
@@ -164,6 +225,18 @@ class EditLotForm(forms.Form):
         widget=forms.DateInput(attrs={'class': 'form-control', 'type': 'date'})
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from django.utils import timezone
+        self.fields['date'].widget.attrs['max'] = timezone.now().date().isoformat()
+
+    def clean_date(self):
+        date = self.cleaned_data.get('date')
+        from django.utils import timezone
+        if date and date > timezone.now().date():
+            raise forms.ValidationError("Date cannot be in the future.")
+        return date
+
 class ForgotPasswordForm(forms.Form):
     email = forms.EmailField(
         label='Email Address',
@@ -172,7 +245,7 @@ class ForgotPasswordForm(forms.Form):
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
-        if not User.objects.filter(email=email).exists():
+        if not User.objects.filter(email__iexact=email).exists():
             raise forms.ValidationError("No user found with this email address.")
         return email
 
@@ -234,4 +307,14 @@ class LoanPaymentForm(forms.ModelForm):
             'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'principal_component': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
             'interest_component': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+        }
+
+from .models import UserReview
+class UserReviewForm(forms.ModelForm):
+    class Meta:
+        model = UserReview
+        fields = ['rating', 'comment']
+        widgets = {
+            'rating': forms.Select(choices=[(i, f"{i} Stars") for i in range(5, 0, -1)], attrs={'class': 'form-select rounded-pill'}),
+            'comment': forms.Textarea(attrs={'class': 'form-control rounded-4', 'rows': 4, 'placeholder': 'Tell us about your experience with FOLIUX...'}),
         }

@@ -98,9 +98,9 @@
                     {% for item in watchlist %}
                     <tr>
                         <td class="ps-4 fw-bold">
-                            <span class="d-block">{{ item.name }}</span>
+                            <span class="d-block" style="cursor: pointer;" onclick="openStockModal('{{ item.symbol }}')">{{ item.name }}</span>
                             <div class="d-flex align-items-center gap-2">
-                                <small class="text-muted text-uppercase">{{ item.symbol }}</small>
+                                <small class="text-muted text-uppercase" style="cursor: pointer;" onclick="openStockModal('{{ item.symbol }}')">{{ item.symbol }}</small>
                                 {% if item.portfolio_qty > 0 %}
                                 <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill small" style="font-size: 0.7rem;">
                                     Held: {{ item.portfolio_qty }}
@@ -133,10 +133,6 @@
                                     <i class="fas fa-minus" style="font-size: 0.7rem;"></i>
                                 </button>
                                 {% endif %}
-                                <a href="{% url 'landing' %}?symbol={{ item.symbol }}" class="btn btn-sm btn-light border p-1" 
-                                    style="line-height: 1;" title="View Chart">
-                                    <i class="fas fa-chart-line text-primary" style="font-size: 0.7rem;"></i>
-                                </a>
                                 <button class="btn btn-sm btn-light border btn-remove-watchlist p-1" 
                                     style="line-height: 1;" data-symbol="{{ item.symbol }}" title="Delete">
                                     <i class="fas fa-trash-alt text-danger" style="font-size: 0.7rem;"></i>

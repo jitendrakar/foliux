@@ -13,13 +13,16 @@ urlpatterns = [
     path('register/verify-otp/', views.verify_signup_otp, name='verify_signup_otp'),
     path('upload/portfolio/', views.upload_portfolio, name='upload_portfolio'),
     path('export/portfolio/', views.export_portfolio, name='export_portfolio'),
-    path('portfolio/add/', views.add_portfolio_item, name='add_portfolio_item'),
+    path('portfolio/add-manual/', views.add_portfolio_item, name='add_portfolio_item'),
+    path('portfolio/sell-manual/', views.sell_portfolio_item, name='sell_portfolio_item'),
+    path('portfolio/upload/', views.upload_portfolio, name='upload_portfolio'),
     path('portfolio/add-cost/', views.upload_portfolio, name='add_folio_cost'), # Mapping to upload for now
     path('watchlist/', views.watchlist, name='watchlist'),
     path('watchlist/add/', views.add_to_watchlist_api, name='add_to_watchlist_api'),
     path('watchlist/remove/', views.remove_from_watchlist_api, name='remove_from_watchlist_api'),
 
     path('upload/pnl/', views.upload_pnl, name='upload_pnl'),
+    path('upload/rpnl/', views.upload_pnl, name='upload_rpnl'),
     path('portfolio/edit/<int:pk>/', views.edit_portfolio_item, name='edit_portfolio_item'),
     path('portfolio/delete/<int:pk>/', views.delete_portfolio_item, name='delete_portfolio_item'),
     path('portfolio/buy/', views.buy_stock, name='buy_stock'),
@@ -32,8 +35,11 @@ urlpatterns = [
     path('profile/link-family/', views.link_family_id, name='link_family_id'),
     path('profile/verify-family/', views.verify_family_otp, name='verify_family_otp'),
     path('profile/unlink-family/<int:pk>/', views.unlink_family, name='unlink_family'),
+    path('profile/request-reset/', views.request_reset_otp, name='request_reset_otp'),
+    path('profile/verify-reset/', views.verify_reset_otp, name='verify_reset_otp'),
     path('mf-guide/', views.mf_guide, name='mf_guide'),
     path('mf-dashboard/', views.mf_dashboard, name='mf_dashboard'),
+    path('mf-detail/<int:pk>/', views.mf_detail, name='mf_detail'),
     path('mf-portfolio/add/', views.add_mf_portfolio, name='add_mf_portfolio'),
     path('mf-portfolio/sell/<int:pk>/', views.sell_mf_portfolio, name='sell_mf_portfolio'),
     path('mf-portfolio/delete/<int:pk>/', views.delete_mf_portfolio, name='delete_mf_portfolio'),
@@ -42,6 +48,7 @@ urlpatterns = [
     
     # Coin (Crypto) URLs
     path('coin/', views.coin_dashboard, name='coin_dashboard'),
+    path('coin/detail/<int:pk>/', views.coin_detail, name='coin_detail'),
     path('coin/add/', views.add_coin, name='add_coin'),
     path('coin/sell/<int:pk>/', views.sell_coin, name='sell_coin'),
     path('coin/delete/<int:pk>/', views.delete_coin_portfolio, name='delete_coin_portfolio'),
@@ -50,6 +57,7 @@ urlpatterns = [
     
     # NPS URLs
     path('nps/', views.nps_dashboard, name='nps_dashboard'),
+    path('nps/detail/<int:pk>/', views.nps_detail, name='nps_detail'),
     path('nps/add/', views.add_nps, name='add_nps'),
     path('nps/sell/<int:pk>/', views.sell_nps, name='sell_nps'),
     path('nps/delete/<int:pk>/', views.delete_nps_portfolio, name='delete_nps_portfolio'),
@@ -116,4 +124,5 @@ urlpatterns = [
     path('.well-known/assetlinks.json', views.assetlinks_json, name='assetlinks_json'),
     path('chatbot-response/', views.chatbot_response, name='chatbot_response'),
     path('api/toggle-hidden-signal/', views.toggle_hidden_signal, name='toggle_hidden_signal'),
+    path('feedback/', views.submit_review, name='feedback'),
 ]

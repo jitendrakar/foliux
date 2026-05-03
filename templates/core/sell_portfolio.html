@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .autocomplete-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        z-index: 9999;
+        background: white;
+        border: 1px solid #e2e8f0;
+        width: 100%;
+        max-height: 280px;
+        overflow-y: auto;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        margin-top: 4px;
+        border-top: none;
+    }
+
+    .autocomplete-item {
+        padding: 10px;
+        cursor: pointer;
+    }
+
+    .autocomplete-item:hover {
+        background-color: #fff5f5;
+        color: #dc3545;
+    }
+    
+    .table-bulk-entry td {
+        vertical-align: top;
+        padding: 8px;
+    }
+
+    /* Prevent clipping of suggestion list */
+    .table-responsive, .card, .card-body {
+        overflow: visible !important;
+    }
+
+    /* Ensure search cell is above subsequent rows */
+    .table-bulk-entry td .position-relative {
+        z-index: 100;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const tableBody = document.querySelector('.table-bulk-entry tbody');
+        const addRowBtn = document.getElementById('add-row-btn');
+        const totalForms = document.getElementById('id_form-TOTAL_FORMS');
+
+        const attachAutocomplete = (row) => {
+            const companyInput = row.querySelector('input[id$="-company_name"]');
+            const symbolInput = row.querySelector('input[id$="-symbol"]');
+            const priceInput = row.querySelector('input[id$="-price"]');
+            
+            if (!companyInput) return;
+
+            let resultsDiv = row.querySelector('.autocomplete-results');
+            if (!resultsDiv) {
+                resultsDiv = document.createElement('div');
+                resultsDiv.className = 'autocomplete-results d-none';
+                companyInput.parentNode.appendChild(resultsDiv);
+            }
+
+            companyInput.addEventListener('input', function () {
+                const query = this.value.trim();
+                if (query.length < 2) {
+                    resultsDiv.classList.add('d-none');
+                    return;
+                }
+
+                fetch(`/search-instruments/?q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        resultsDiv.innerHTML = '';
+                        if (data.length > 0) {
+                            data.forEach(item => {
+                                const div = document.createElement('div');
+                                div.className = 'autocomplete-item';
+                                div.innerHTML = `<strong>${item.name}</strong> <span class="text-muted small">(${item.symbol})</span>`;
+                                div.addEventListener('click', () => {
+                                    companyInput.value = item.name;
+                                    symbolInput.value = item.symbol;
+                                    if (priceInput && item.ltp) {
+                                        priceInput.value = item.ltp;
+                                    }
+                                    resultsDiv.classList.add('d-none');
+                                });
+                                resultsDiv.appendChild(div);
+                            });
+                            resultsDiv.classList.remove('d-none');
+                        } else {
+                            resultsDiv.classList.add('d-none');
+                        }
+                    })
+                    .catch(err => console.error('Error:', err));
+            });
+
+            document.addEventListener('click', function (e) {
+                if (e.target !== companyInput && e.target !== resultsDiv) {
+                    resultsDiv.classList.add('d-none');
+                }
+            });
+        };
+
+        addRowBtn.addEventListener('click', function () {
+            const rowCount = parseInt(totalForms.value);
+            const firstRow = tableBody.querySelector('tr');
+            const newRow = firstRow.cloneNode(true);
+
+            const nameRegex = new RegExp(`form-(\\d+)-`, 'g');
+            const idRegex = new RegExp(`id_form-(\\d+)-`, 'g');
+
+            newRow.innerHTML = newRow.innerHTML.replace(nameRegex, `form-${rowCount}-`);
+            newRow.innerHTML = newRow.innerHTML.replace(idRegex, `id_form-${rowCount}-`);
+
+            newRow.querySelectorAll('input, textarea').forEach(input => {
+                input.value = '';
+            });
+            
+            const oldResults = newRow.querySelector('.autocomplete-results');
+            if (oldResults) oldResults.remove();
+
+            tableBody.appendChild(newRow);
+            totalForms.value = rowCount + 1;
+            
+            attachAutocomplete(newRow);
+        });
+
+        document.querySelectorAll('.table-bulk-entry tbody tr').forEach(attachAutocomplete);
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0 fw-bold"><i class="fas fa-minus-circle me-2 text-danger"></i>Bulk Sell Stocks</h5>
+                        <p class="text-muted small mb-0">Add rows as needed to record multiple sales.</p>
+                    </div>
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-times me-1"></i>Close
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ formset.management_form }}
+                        
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bulk-entry mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 25%;">Company Name</th>
+                                        <th style="width: 15%;">Symbol</th>
+                                        <th style="width: 12%;">Qty to Sell</th>
+                                        <th style="width: 12%;">Sell Price (₹)</th>
+                                        <th style="width: 15%;">Exit Date</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for form in formset %}
+                                    <tr class="formset-row">
+                                        <td>
+                                            <div class="position-relative">
+                                                {{ form.company_name }}
+                                            </div>
+                                            {% if form.company_name.errors %}
+                                                <div class="text-danger x-small">{{ form.company_name.errors }}</div>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {{ form.symbol }}
+                                            {% if form.symbol.errors %}
+                                                <div class="text-danger x-small">{{ form.symbol.errors }}</div>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {{ form.quantity }}
+                                            {% if form.quantity.errors %}
+                                                <div class="text-danger x-small">{{ form.quantity.errors }}</div>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {{ form.price }}
+                                            {% if form.price.errors %}
+                                                <div class="text-danger x-small">{{ form.price.errors }}</div>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {{ form.date }}
+                                            {% if form.date.errors %}
+                                                <div class="text-danger x-small">{{ form.date.errors }}</div>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {{ form.notes }}
+                                            {% if form.notes.errors %}
+                                                <div class="text-danger x-small">{{ form.notes.errors }}</div>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="p-3 bg-white border-top">
+                            <button type="button" id="add-row-btn" class="btn btn-outline-danger btn-sm rounded-pill">
+                                <i class="fas fa-plus me-1"></i>Add Another Row
+                            </button>
+                        </div>
+
+                        <div class="p-4 bg-light border-top d-flex justify-content-end gap-2">
+                            <a href="{% url 'dashboard' %}" class="btn btn-light border px-4">Cancel</a>
+                            <button type="submit" class="btn btn-danger px-5 fw-bold">
+                                <i class="fas fa-check-circle me-2"></i>Confirm Bulk Sell
+                              </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

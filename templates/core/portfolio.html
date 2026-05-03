@@ -169,7 +169,7 @@
                 <i class="fas fa-users-cog"></i>
             </div>
             <div>
-                <span class="text-muted small d-block">Viewing Portfolio of:</span>
+                <span class="text-muted small d-block">Viewing Folio of:</span>
                 <span class="fw-bold fs-5">
                     {% if is_family_view %}
                         {{ target_user.profile.full_name|default:target_user.username }}
@@ -181,7 +181,7 @@
         </div>
         <div class="dropdown">
             <button class="btn btn-outline-primary dropdown-toggle fw-bold" type="button" data-bs-toggle="dropdown">
-                Switch Portfolio
+                Switch Folio
             </button>
             <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3">
                 <li><a class="dropdown-item {% if not is_family_view %}active{% endif %}" href="{% url 'portfolio' %}">Self (Personal)</a></li>
@@ -338,7 +338,7 @@
                                 <div class="icon-wrapper" style="width: 44px; height: 44px; font-size: 1.25rem; margin-bottom: 0; background: rgba(34, 197, 94, 0.1); color: #16a34a;">
                                     <i class="fas fa-leaf"></i>
                                 </div>
-                                <div class="fw-bold" style="color: #1e293b; font-size: 1.05rem;">MF Cue</div>
+                                <div class="fw-bold" style="color: #1e293b; font-size: 1.05rem;">MF</div>
                             </div>
                         </td>
                         <td class="fw-semibold" style="font-size: 1rem;">₹ {{ mf_invested|inr_format }}</td>
@@ -523,7 +523,7 @@
                             <i class="fas fa-leaf"></i>
                         </div>
                         <div>
-                            <h5 class="fw-bold mb-0" style="color: #1e293b;">MF Cue</h5>
+                            <h5 class="fw-bold mb-0" style="color: #1e293b;">MF</h5>
                             <small class="text-muted">Portfolio Rebalancing</small>
                         </div>
                     </div>
@@ -555,7 +555,7 @@
                     </div>
                     
                     <div class="mt-4 text-center">
-                        <a href="{% url 'mf_dashboard' %}{% if is_family_view %}?user_id={{ target_user.id }}{% endif %}" class="btn btn-outline-success btn-sm rounded-pill px-4 fw-bold">View MF Portfolio <i class="fas fa-arrow-right ms-1"></i></a>
+                        <a href="{% url 'mf_dashboard' %}{% if is_family_view %}?user_id={{ target_user.id }}{% endif %}" class="btn btn-outline-success btn-sm rounded-pill px-4 fw-bold">View MF Folio <i class="fas fa-arrow-right ms-1"></i></a>
                     </div>
                 </div>
             </div>
@@ -648,7 +648,7 @@
     <div class="mt-5 animate__animated animate__fadeInUp">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h4 class="fw-bold mb-0" style="color: #334155;">
-                <i class="fas fa-chart-line text-primary me-2"></i> Portfolio Performance History
+                <i class="fas fa-chart-line text-primary me-2"></i> Folio Performance History
             </h4>
             <button class="btn btn-outline-primary btn-sm rounded-pill fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#portfolioHistoryCollapse" aria-expanded="false" aria-controls="portfolioHistoryCollapse">
                 <i class="fas fa-chevron-down me-1"></i> Expand

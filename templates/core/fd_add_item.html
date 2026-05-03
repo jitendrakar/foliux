@@ -99,7 +99,7 @@
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <label for="investment_date" class="form-label">Investment Date</label>
-                            <input type="date" name="investment_date" id="investment_date" class="form-control" required>
+                            <input type="date" name="investment_date" id="investment_date" class="form-control" max="{% now 'Y-m-d' %}" required>
                         </div>
                         <div class="col-md-6" id="maturity_date_container">
                             <label for="maturity_date" class="form-label">Maturity Date (Optional)</label>

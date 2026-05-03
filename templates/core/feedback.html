@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header bg-primary py-4 text-center">
+                    <h3 class="text-white mb-0 fw-bold">User Feedback</h3>
+                    <p class="text-white-50 mb-0">Help us improve FOLIUX</p>
+                </div>
+                <div class="card-body p-4 p-md-5">
+                    <form method="post" action="{% url 'feedback' %}">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">How would you rate your experience?</label>
+                            {{ form.rating }}
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Your Feedback</label>
+                            {{ form.comment }}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-pill fw-bold py-3 shadow-sm">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Feedback
+                            </button>
+                            <a href="{% url 'landing' %}" class="btn btn-link text-muted">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+
+        </div>
+    </div>
+</div>
+
+<style>
+    body {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        min-height: 100vh;
+    }
+    .form-select, .form-control {
+        border: 2px solid #e2e8f0;
+        transition: all 0.3s ease;
+    }
+    .form-select:focus, .form-control:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+    }
+</style>
+{% endblock %}

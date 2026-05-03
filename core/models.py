@@ -190,14 +190,14 @@ def protect_password_on_social_link(request, sociallogin, **kwargs):
         logger.info(f"Social account linked/updated for {user.username}. Provider: {sociallogin.account.provider}")
 class OTP(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    code = EncryptedCharField(max_length=6)
+    code = EncryptedCharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def is_valid(self):
         from django.utils import timezone
         import datetime
-        # Valid for 10 minutes
-        return self.created_at >= timezone.now() - datetime.timedelta(minutes=10)
+        # Valid for 20 minutes
+        return self.created_at >= timezone.now() - datetime.timedelta(minutes=20)
 
     def __str__(self):
         return f"OTP for {self.user.username} - {self.code}"
@@ -223,11 +223,11 @@ class Transaction(models.Model):
 class SignupOTP(models.Model):
     """OTP sent to an email address BEFORE a user account is created."""
     email = EncryptedEmailField()
-    code = EncryptedCharField(max_length=6)
+    code = EncryptedCharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def is_valid(self):
-        return self.created_at >= timezone.now() - timedelta(minutes=10)
+        return self.created_at >= timezone.now() - timedelta(minutes=20)
 
     def __str__(self):
         return f"SignupOTP for {self.email} - {self.code}"
@@ -273,6 +273,19 @@ class Watchlist(models.Model):
 
     def __str__(self):
         return f"{self.user.username} watching {self.instrument.symbol}"
+
+class UserReview(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    rating = models.IntegerField(default=5)
+    comment = models.TextField()
+    is_public = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.rating} Stars"
 
 class Dividend(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='dividends')
@@ -352,6 +365,7 @@ class FinancialYearData(models.Model):
 class MutualFund(models.Model):
     name = models.CharField(max_length=200)
     symbol = models.CharField(max_length=50, unique=True) # Yahoo Symbol (e.g. 0P0000XWWI.BO)
+    scheme_code = models.CharField(max_length=20, unique=True, null=True, blank=True) # For mfapi.in
     isin = models.CharField(max_length=20, unique=True, null=True, blank=True)
     amc = models.CharField(max_length=100, null=True, blank=True)
     nav = models.DecimalField(max_digits=20, decimal_places=4, default=0)
@@ -360,6 +374,27 @@ class MutualFund(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_nav_history(self):
+        """Fetch NAV history from cache or API."""
+        if not self.scheme_code:
+            return []
+            
+        from django.core.cache import cache
+        cache_key = f"mf_history_{self.scheme_code}"
+        history = cache.get(cache_key)
+        
+        if history:
+            return history
+            
+        from .mf_utils import get_mf_details
+        details = get_mf_details(self.scheme_code)
+        if details and details.get('data'):
+            history = details['data']
+            # Cache for 1 day
+            cache.set(cache_key, history, 86400)
+            return history
+        return []
 
 class MFPortfolio(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='mf_portfolios')
@@ -418,6 +453,38 @@ class Coin(models.Model):
     def __str__(self):
         return self.name
 
+    def get_price_history(self, period='1y'):
+        """Fetch historical prices from Yahoo Finance."""
+        from django.core.cache import cache
+        cache_key = f"coin_history_{self.symbol}_{period}"
+        history = cache.get(cache_key)
+        
+        if history:
+            return history
+            
+        import yfinance as yf
+        import pandas as pd
+        try:
+            ticker = yf.Ticker(self.symbol)
+            hist = ticker.history(period=period)
+            if not hist.empty:
+                # Convert to simple list of dicts for template
+                history_data = []
+                for dt, row in hist.iterrows():
+                    history_data.append({
+                        'date': dt.strftime('%Y-%m-%d'),
+                        'price': float(row['Close'])
+                    })
+                # Cache for 6 hours
+                cache.set(cache_key, history_data, 21600)
+                return history_data
+        except Exception as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error fetching history for {self.symbol}: {e}")
+            
+        return []
+
 class CoinPortfolio(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='coin_portfolios')
     coin = models.ForeignKey(Coin, on_delete=models.CASCADE)
@@ -467,12 +534,39 @@ class CoinTransaction(models.Model):
 
 class NPSFund(models.Model):
     name = models.CharField(max_length=200, unique=True)
+    scheme_code = models.CharField(max_length=20, null=True, blank=True) # From npsnav.in
     nav = models.DecimalField(max_digits=20, decimal_places=4, default=0)
     prev_nav = models.DecimalField(max_digits=20, decimal_places=4, default=0)
     last_updated = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
+
+    def get_nav_history(self):
+        """Fetch NAV history from npsnav.in API."""
+        if not self.scheme_code:
+            return []
+            
+        from django.core.cache import cache
+        cache_key = f"nps_history_{self.scheme_code}"
+        history = cache.get(cache_key)
+        
+        if history:
+            return history
+            
+        import requests
+        url = f"https://npsnav.in/api/historical/{self.scheme_code}"
+        try:
+            response = requests.get(url, timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                if isinstance(data, list):
+                    history_data = [{'date': d[0], 'nav': d[1]} for d in data]
+                    cache.set(cache_key, history_data, 86400)
+                    return history_data
+        except Exception:
+            pass
+        return []
 
 class NPSPortfolio(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='nps_portfolios')

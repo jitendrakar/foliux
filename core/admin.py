@@ -10,7 +10,8 @@ from .models import (
     StrategyStock, Watchlist, Dividend, InvestmentGoal,
     CorporateAction, MutualFund, MFPortfolio, MFTransaction,
     Coin, CoinPortfolio, CoinTransaction,
-    NPSFund, NPSPortfolio, NPSTransaction, IPO, ChatbotKnowledge
+    NPSFund, NPSPortfolio, NPSTransaction, IPO, ChatbotKnowledge,
+    UserReview
 )
 
 class CsvImportForm(forms.Form):
@@ -216,3 +217,18 @@ class IPOAdmin(admin.ModelAdmin):
 class ChatbotKnowledgeAdmin(admin.ModelAdmin):
     list_display = ('question', 'created_at', 'updated_at')
     search_fields = ('question', 'answer')
+
+@admin.register(UserReview)
+class UserReviewAdmin(admin.ModelAdmin):
+    list_display = ('user', 'rating', 'is_public', 'created_at')
+    list_filter = ('is_public', 'rating', 'created_at')
+    search_fields = ('user__username', 'comment')
+    actions = ['approve_reviews', 'reject_reviews']
+
+    def approve_reviews(self, request, queryset):
+        queryset.update(is_public=True)
+    approve_reviews.short_description = "Approve selected reviews (make public)"
+
+    def reject_reviews(self, request, queryset):
+        queryset.update(is_public=False)
+    reject_reviews.short_description = "Reject selected reviews (hide from public)"

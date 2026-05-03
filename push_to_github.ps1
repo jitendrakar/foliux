@@ -1,7 +1,7 @@
 # NPITS GitHub Backup Script
 $ErrorActionPreference = "Stop"
 
-$ProjectDir = "c:\inetpub\wwwroot\NPITS"
+$ProjectDir = $PSScriptRoot
 $GitPath = "C:\Users\Unifi\AppData\Local\GitHubDesktop\app-3.5.6\resources\app\git\cmd\git.exe"
 
 Write-Host "Starting database dump..."
@@ -26,7 +26,11 @@ if (-not $Status) {
     $Timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
     & $GitPath commit -m "Auto-backup with database: $Timestamp"
 
-    Write-Host "Pushing to GitHub..."
+    Write-Host "Pushing to GitHub (origin)..."
     & $GitPath push origin main
-    Write-Host "Successfully pushed to GitHub!"
+    
+    Write-Host "Pushing to GitHub (foliux)..."
+    & $GitPath push foliux main
+    
+    Write-Host "Successfully pushed to all remotes!"
 }

@@ -63,7 +63,7 @@ class Command(BaseCommand):
                     if (has_changed or force) and total_current > 0:
                         # Prepare Email Template
                         subject = f"Alert: Portfolio Signal Change Detected - {timezone.now().strftime('%d %b %Y')}"
-                        site_url = getattr(settings, 'SITE_URL', 'https://npits.in')
+                        site_url = getattr(settings, 'SITE_URL', 'https://foliux.com')
                         
                         context = {
                             'user': user,
@@ -96,7 +96,7 @@ class Command(BaseCommand):
                         send_mail(
                             subject=subject,
                             message=plain_message,
-                            from_email=f"NPITS <{settings.EMAIL_HOST_USER}>",
+                            from_email=f"FOLIUX <{settings.EMAIL_HOST_USER}>",
                             recipient_list=[user.email],
                             html_message=html_message,
                             fail_silently=False,

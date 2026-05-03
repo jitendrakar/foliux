@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col-md-5 col-lg-4 animate__animated animate__fadeIn">
+        <div class="card shadow-lg border-0 rounded-4">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-danger text-white rounded-circle mb-3 shadow-lg"
+                        style="width: 72px; height: 72px;">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    </div>
+                    <h3 class="fw-bold text-dark">Confirm Reset</h3>
+                    <p class="text-muted small">Please enter the 6-digit verification code sent to your email to confirm the account reset.</p>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label for="otp" class="form-label fw-bold small text-muted text-uppercase tracking-wider">Verification Code</label>
+                        <input type="text" name="otp" id="otp" class="form-control form-control-lg text-center fw-bold letter-spacing-4 border-2" 
+                               maxlength="6" placeholder="000000" autofocus required style="border-radius: 12px; height: 60px; font-size: 1.5rem;">
+                    </div>
+                    
+                    <div class="alert alert-warning border-0 rounded-3 small mb-4">
+                        <i class="fas fa-info-circle me-2"></i> This action will permanently delete all your portfolios, transactions, and custom settings.
+                    </div>
+
+                    <button type="submit" class="btn btn-danger w-100 py-3 fw-bold shadow-lg rounded-3" onclick="return confirm('FINAL WARNING: This will delete ALL your data. Are you absolutely sure?')">
+                        Verify & Reset Data <i class="fas fa-trash-alt ms-2"></i>
+                    </button>
+                </form>
+
+                <div class="text-center mt-5 pt-3 border-top">
+                    <a href="{% url 'edit_profile' %}" class="btn btn-link text-muted fw-bold text-decoration-none">
+                        <i class="fas fa-arrow-left me-2"></i> Cancel & Return
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .letter-spacing-4 {
+        letter-spacing: 0.5rem;
+    }
+    .tracking-wider {
+        letter-spacing: 0.1em;
+    }
+</style>
+{% endblock %}

@@ -70,7 +70,7 @@
                 {% if is_family_view %}
                     {{ target_user.profile.full_name|default:target_user.username }}
                 {% elif is_consolidated %}
-                    Combined Family Portfolio
+                    Combined Family Folio
                 {% else %}
                     My Account
                 {% endif %}
@@ -105,7 +105,7 @@
     <!-- Header Area -->
     <div class="d-flex justify-content-between align-items-center mb-5">
         <div>
-            <h1 class="fw-800 text-coin mb-1">COIN Portfolio</h1>
+            <h1 class="fw-800 text-coin mb-1">COIN Folio</h1>
             <p class="text-muted mb-0">Track your cryptocurrency investments (INR) with real-time yfinance updates</p>
         </div>
         <div class="d-flex gap-2">
@@ -188,7 +188,9 @@
                     {% for item in coin_holdings %}
                     <tr>
                         <td class="ps-4">
-                            <div class="fw-700 text-coin" style="font-size: 0.9rem;">{{ item.coin.name }}</div>
+                            <a href="{% url 'coin_detail' item.coin.id %}" class="text-decoration-none hover-lift">
+                                <div class="fw-700 text-coin" style="font-size: 0.9rem;">{{ item.coin.name }}</div>
+                            </a>
                             <div class="x-small text-muted" style="font-size: 0.7rem;">{{ item.coin.symbol }}</div>
                         </td>
                         <td>{{ item.units|floatformat:8 }}</td>

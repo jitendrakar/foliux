@@ -55,6 +55,7 @@ class CoreConfig(AppConfig):
             scheduler.add_job(run_alerts, 'cron', hour=10, minute=0, id='daily_signal_alerts', replace_existing=True)
             
             try:
+                print("Starting background scheduler...")
                 scheduler.start()
                 print(f"Background scheduler started (Env: {'IIS' if is_iis else 'Other'}) with auto updates.")
             except Exception as e:

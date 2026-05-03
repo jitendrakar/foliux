@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 <div class="mb-4">
                     <label for="date" class="form-label">Sell Date</label>
-                    <input type="date" name="date" id="date" class="form-control" value="{{ now|date:'Y-m-d' }}">
+                    <input type="date" name="date" id="date" class="form-control" value="{{ now|date:'Y-m-d' }}" max="{% now 'Y-m-d' %}">
                 </div>
 
                 <div class="p-3 rounded-3 bg-light text-center mb-4">

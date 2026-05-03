@@ -267,7 +267,18 @@
                             <div class="form-section shadow-sm mt-4">
                                 <h5 class="section-header">Financial Goal</h5>
                                 {{ form.financial_goal|as_crispy_field }}
-                                <small class="text-muted">Target amount for your investment journey.</small>
+                                <small class="text-muted">Investment target.</small>
+                            </div>
+
+                            <div class="mt-4">
+                                <a href="{% url 'request_reset_otp' %}" 
+                                   class="btn btn-outline-danger btn-premium w-100" 
+                                   onclick="return confirm('You will be sent an OTP to verify this action. Are you sure?')"
+                                   data-bs-toggle="tooltip" 
+                                   data-bs-placement="top" 
+                                   title="Reset your account to the initial signup state. This will delete all your portfolios and transactions permanently.">
+                                    <i class="fas fa-trash-alt me-2"></i> Reset All Data
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -551,5 +562,11 @@
             alert('An error occurred. Please try again.');
         });
     }
+
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
 </script>
 {% endblock %}
