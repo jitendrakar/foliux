@@ -22,7 +22,7 @@ urlpatterns = [
     path('watchlist/remove/', views.remove_from_watchlist_api, name='remove_from_watchlist_api'),
 
     path('upload/pnl/', views.upload_pnl, name='upload_pnl'),
-    path('upload/rpnl/', views.upload_pnl, name='upload_rpnl'),
+    path('upload/rpnl/', views.upload_rpnl, name='upload_rpnl'),
     path('portfolio/edit/<int:pk>/', views.edit_portfolio_item, name='edit_portfolio_item'),
     path('portfolio/delete/<int:pk>/', views.delete_portfolio_item, name='delete_portfolio_item'),
     path('portfolio/buy/', views.buy_stock, name='buy_stock'),

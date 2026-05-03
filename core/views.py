@@ -1950,7 +1950,6 @@ def export_portfolio(request):
 
 def upload_pnl(request):
     target_user, is_family_view, is_consolidated = get_target_user(request)
-    url_name = request.resolver_match.url_name
     
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
@@ -1958,193 +1957,130 @@ def upload_pnl(request):
             df = handle_uploaded_file(request.FILES['file'])
             if df is not None:
                 uploaded_headers = [h.strip() for h in df.columns]
-                
-                # Header Selection based on URL
-                is_trade_format = (url_name == 'upload_pnl')
-                expected_headers = TRADE_HEADERS if is_trade_format else PNL_HEADERS
+                expected_headers = TRADE_HEADERS
                 
                 # Check if uploaded headers match the expected headers (relaxed check: check if all expected are present)
                 missing_headers = [h for h in expected_headers if h not in uploaded_headers]
                 if missing_headers:
                     messages.error(request, f"Header mismatch. Missing: {missing_headers}. Expected: {expected_headers}")
-                    return redirect(url_name)
+                    return redirect('upload_pnl')
+
+                # Sorting: Ensure BUYS come before SELLS on the same date for correct FIFO
+                try:
+                    # Convert 'Trade Date' to datetime for robust sorting
+                    df['Trade Date'] = pd.to_datetime(df['Trade Date'], dayfirst=True)
+                    # Sort by Date ASC, and then by Trade Type ('BUY' < 'SELL')
+                    df = df.sort_values(by=['Trade Date', 'Trade Type'], ascending=[True, True])
+                except Exception as e:
+                    logger.error(f"Sorting failed in upload_pnl: {e}")
+                    # Continue anyway, but sorting is preferred
 
                 count = 0
-                if is_trade_format:
-                    # Logic for TRADE format: Symbol, Trade Date, Trade Type, Quantity, Price
-                    # We process these sequentially to build/reduce portfolio and calculate PnL
-                    for _, row in df.iterrows():
-                        symbol = str(row.get('Symbol')).strip().upper()
-                        trade_date = row.get('Trade Date')
-                        trade_type = str(row.get('Trade Type')).strip().upper()
-                        qty = clean_numeric(row.get('Quantity'), to_int=True)
-                        price = clean_numeric(row.get('Price'))
+                # Logic for TRADE format: Symbol, Trade Date, Trade Type, Quantity, Price
+                # We process these sequentially to build/reduce portfolio and calculate PnL
+                for _, row in df.iterrows():
+                    symbol = str(row.get('Symbol')).strip().upper()
+                    trade_date = row.get('Trade Date')
+                    trade_type = str(row.get('Trade Type')).strip().upper()
+                    qty = clean_numeric(row.get('Quantity'), to_int=True)
+                    price = clean_numeric(row.get('Price'))
+                    
+                    if not (symbol and trade_date and trade_type and qty and price):
+                        continue
                         
-                        if not (symbol and trade_date and trade_type and qty and price):
-                            continue
+                    from core.utils import resolve_instrument
+                    inst = resolve_instrument(symbol)
+                    if not inst:
+                        messages.warning(request, f"Skipped '{symbol}': Not in verified database.")
+                        continue
+                        
+                    # Date Parsing (already handled by pd.to_datetime but ensuring .date())
+                    try:
+                        dt = trade_date.date() if hasattr(trade_date, 'date') else pd.to_datetime(trade_date).date()
+                    except:
+                        continue
+                        
+                    # Duplicate prevention
+                    exists = Transaction.objects.filter(
+                        user=target_user, instrument=inst, transaction_type=trade_type,
+                        quantity=qty, price=price, date=dt
+                    ).exists()
+                    if exists:
+                        continue
+                        
+                    if trade_type == 'BUY':
+                        # Record Buy Transaction
+                        Transaction.objects.create(
+                            user=target_user, instrument=inst, transaction_type='BUY',
+                            quantity=qty, remaining_quantity=qty, price=price, date=dt
+                        )
+                        # Update Portfolio
+                        p_item, _ = Portfolio.objects.get_or_create(
+                            user=target_user, instrument=inst,
+                            defaults={'quantity': 0, 'avg_cost': 0, 'ltp': 0}
+                        )
+                        new_total_qty = p_item.quantity + qty
+                        new_total_cost = (Decimal(str(p_item.quantity)) * Decimal(str(p_item.avg_cost))) + (Decimal(str(qty)) * Decimal(str(price)))
+                        p_item.quantity = new_total_qty
+                        p_item.avg_cost = new_total_cost / Decimal(str(new_total_qty)) if new_total_qty > 0 else 0
+                        p_item.save()
+                        count += 1
+                        
+                    elif trade_type == 'SELL':
+                        # Record Sell Transaction and Calculate PnL via FIFO
+                        buy_lots = Transaction.objects.filter(
+                            user=target_user, instrument=inst, transaction_type='BUY', remaining_quantity__gt=0
+                        ).order_by('date', 'created_at')
+                        
+                        rem_to_sell = qty
+                        total_buy_val = Decimal('0')
+                        earliest_buy_date = None
+                        
+                        for lot in buy_lots:
+                            if rem_to_sell <= 0: break
                             
-                        from core.utils import resolve_instrument
-                        inst = resolve_instrument(symbol)
-                        if not inst:
-                            messages.warning(request, f"Skipped '{symbol}': Not in verified database.")
-                            continue
+                            consume = min(lot.remaining_quantity, rem_to_sell)
+                            total_buy_val += consume * lot.price
+                            if earliest_buy_date is None: earliest_buy_date = lot.date
                             
-                        # Date Parsing
-                        try:
-                            dt = pd.to_datetime(trade_date).date()
-                        except:
-                            continue
-                            
-                        # Duplicate prevention
-                        exists = Transaction.objects.filter(
-                            user=target_user, instrument=inst, transaction_type=trade_type,
+                            lot.remaining_quantity -= consume
+                            lot.save()
+                            rem_to_sell -= consume
+                        
+                        sell_val = Decimal(str(qty)) * Decimal(str(price))
+                        profit = sell_val - total_buy_val
+                        
+                        # Create PnL Entry
+                        PnLStatement.objects.create(
+                            user=target_user, instrument=inst,
+                            quantity=qty, buy_value=total_buy_val, sell_value=sell_val,
+                            realized_profit=profit, entry_date=earliest_buy_date, exit_date=dt
+                        )
+                        
+                        # Create Transaction
+                        Transaction.objects.create(
+                            user=target_user, instrument=inst, transaction_type='SELL',
                             quantity=qty, price=price, date=dt
-                        ).exists()
-                        if exists:
-                            continue
-                            
-                        if trade_type == 'BUY':
-                            # Record Buy Transaction
-                            Transaction.objects.create(
-                                user=target_user, instrument=inst, transaction_type='BUY',
-                                quantity=qty, remaining_quantity=qty, price=price, date=dt
-                            )
-                            # Update Portfolio
-                            p_item, _ = Portfolio.objects.get_or_create(
-                                user=target_user, instrument=inst,
-                                defaults={'quantity': 0, 'avg_cost': 0, 'ltp': 0}
-                            )
-                            new_total_qty = p_item.quantity + qty
-                            new_total_cost = (Decimal(str(p_item.quantity)) * Decimal(str(p_item.avg_cost))) + (Decimal(str(qty)) * Decimal(str(price)))
-                            p_item.quantity = new_total_qty
-                            p_item.avg_cost = new_total_cost / Decimal(str(new_total_qty)) if new_total_qty > 0 else 0
-                            p_item.save()
-                            count += 1
-                            
-                        elif trade_type == 'SELL':
-                            # Record Sell Transaction and Calculate PnL via FIFO
-                            buy_lots = Transaction.objects.filter(
-                                user=target_user, instrument=inst, transaction_type='BUY', remaining_quantity__gt=0
-                            ).order_by('date', 'created_at')
-                            
-                            rem_to_sell = qty
-                            total_buy_val = Decimal('0')
-                            earliest_buy_date = None
-                            
-                            for lot in buy_lots:
-                                if rem_to_sell <= 0: break
-                                
-                                consume = min(lot.remaining_quantity, rem_to_sell)
-                                total_buy_val += consume * lot.price
-                                if earliest_buy_date is None: earliest_buy_date = lot.date
-                                
-                                lot.remaining_quantity -= consume
-                                lot.save()
-                                rem_to_sell -= consume
-                            
-                            sell_val = Decimal(str(qty)) * Decimal(str(price))
-                            profit = sell_val - total_buy_val
-                            
-                            # Create PnL Entry
-                            PnLStatement.objects.create(
-                                user=target_user, instrument=inst,
-                                quantity=qty, buy_value=total_buy_val, sell_value=sell_val,
-                                realized_profit=profit, entry_date=earliest_buy_date, exit_date=dt
-                            )
-                            
-                            # Create Transaction
-                            Transaction.objects.create(
-                                user=target_user, instrument=inst, transaction_type='SELL',
-                                quantity=qty, price=price, date=dt
-                            )
-                            
-                            # Update Portfolio
-                            p_item = Portfolio.objects.filter(user=target_user, instrument=inst).first()
-                            if p_item:
-                                p_item.quantity = max(0, p_item.quantity - qty)
-                                if p_item.quantity == 0:
-                                    p_item.delete()
-                                else:
-                                    # Recalculate avg cost based on remaining lots
-                                    rem_lots = Transaction.objects.filter(
-                                        user=target_user, instrument=inst, transaction_type='BUY', remaining_quantity__gt=0
-                                    )
-                                    rem_qty = sum(l.remaining_quantity for l in rem_lots)
-                                    rem_cost = sum(l.remaining_quantity * l.price for l in rem_lots)
-                                    p_item.avg_cost = rem_cost / rem_qty if rem_qty > 0 else 0
-                                    p_item.save()
-                            count += 1
-                else:
-                    # Logic for RPNL format (Pre-calculated PnL records)
-                    for _, row in df.iterrows():
-                        symbol = row.get('Symbol')
-                        qty = clean_numeric(row.get('Quantity'), to_int=True)
-                        sell_val = clean_numeric(row.get('Sell Value'))
-                        buy_val = clean_numeric(row.get('Buy Value'))
-                        profit = clean_numeric(row.get('Profit'))
-                        entry_date = row.get('Entry Date')
-                        exit_date = row.get('Exit Date')
+                        )
                         
-                        if symbol and qty and profit:
-                            from core.utils import resolve_instrument
-                            inst = resolve_instrument(symbol.strip())
-                            if not inst:
-                                messages.warning(request, f"Skipped '{symbol}': Not in verified database.")
-                                continue
-                            
-                            exists = PnLStatement.objects.filter(
-                                user=target_user, instrument=inst, quantity=qty, sell_value=sell_val
-                            ).exists()
-                            
-                            if not exists:
-                                from .utils import execute_stock_sell
-                                try:
-                                    # Try to use execute_stock_sell to update holdings and lots
-                                    # Calculate a unit price for the sell execution
-                                    sell_price = Decimal(str(sell_val)) / Decimal(str(qty)) if qty and sell_val else Decimal('0')
-                                    
-                                    # Parse exit date
-                                    ex_date = None
-                                    if exit_date and str(exit_date).lower() != 'nan':
-                                        try:
-                                            ex_date = pd.to_datetime(exit_date).date()
-                                        except:
-                                            pass
-                                    
-                                    # This will consume lots, create a SELL transaction, and record PnL
-                                    execute_stock_sell(
-                                        target_user, inst, qty, 
-                                        sell_price, 
-                                        exit_date=ex_date
-                                    )
-                                    count += 1
-                                except Exception as e:
-                                    en_date = pd.to_datetime(entry_date).date() if entry_date and str(entry_date).lower() != 'nan' else None
-                                    ex_date = pd.to_datetime(exit_date).date() if exit_date and str(exit_date).lower() != 'nan' else None
-                                    
-                                    # Create the PnL entry
-                                    PnLStatement.objects.create(
-                                        user=target_user, instrument=inst, quantity=qty,
-                                        buy_value=buy_val or 0, sell_value=sell_val or 0, realized_profit=profit,
-                                        entry_date=en_date, exit_date=ex_date
-                                    )
-                                    
-                                    # Create historical transactions so they show up in lot breakdown
-                                    if en_date:
-                                        b_price = Decimal(str(buy_val)) / Decimal(str(qty)) if qty else 0
-                                        Transaction.objects.create(
-                                            user=target_user, instrument=inst, transaction_type='BUY',
-                                            quantity=qty, remaining_quantity=0, price=b_price, date=en_date
-                                        )
-                                    if ex_date:
-                                        s_price = Decimal(str(sell_val)) / Decimal(str(qty)) if qty else 0
-                                        Transaction.objects.create(
-                                            user=target_user, instrument=inst, transaction_type='SELL',
-                                            quantity=qty, price=s_price, date=ex_date
-                                        )
-                                    count += 1
+                        # Update Portfolio
+                        p_item = Portfolio.objects.filter(user=target_user, instrument=inst).first()
+                        if p_item:
+                            p_item.quantity = max(0, p_item.quantity - qty)
+                            if p_item.quantity == 0:
+                                p_item.delete()
+                            else:
+                                # Recalculate avg cost based on remaining lots
+                                rem_lots = Transaction.objects.filter(
+                                    user=target_user, instrument=inst, transaction_type='BUY', remaining_quantity__gt=0
+                                )
+                                rem_qty = sum(l.remaining_quantity for l in rem_lots)
+                                rem_cost = sum(l.remaining_quantity * l.price for l in rem_lots)
+                                p_item.avg_cost = rem_cost / rem_qty if rem_qty > 0 else 0
+                                p_item.save()
+                        count += 1
                 
-                messages.success(request, f"{count} records processed for {target_user.username if is_family_view else 'account'}.")
+                messages.success(request, f"{count} trade records processed for {target_user.username if is_family_view else 'account'}.")
                 url = redirect('dashboard').url
                 if is_family_view:
                     url += f"?user_id={target_user.id}"
@@ -2152,14 +2088,118 @@ def upload_pnl(request):
     else:
         form = UploadFileForm()
     
-    # Determine which sample file to offer
-    sample_base_name = 'sample_pnl' if request.resolver_match.url_name == 'upload_pnl' else 'sample_rpnl'
-    sample_csv = f'samples/{sample_base_name}.csv'
-    sample_xlsx = f'samples/{sample_base_name}.xlsx'
+    sample_csv = 'samples/sample_pnl.csv'
+    sample_xlsx = 'samples/sample_pnl.xlsx'
     
     return render(request, 'core/upload.html', {
         'form': form, 
-        'title': 'P&L' if url_name == 'upload_pnl' else 'Realized P&L',
+        'title': 'P&L Upload (Transactions)',
+        'is_family_view': is_family_view,
+        'target_user': target_user,
+        'sample_csv': sample_csv,
+        'sample_xlsx': sample_xlsx
+    })
+
+def upload_rpnl(request):
+    target_user, is_family_view, is_consolidated = get_target_user(request)
+    
+    if request.method == 'POST':
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            df = handle_uploaded_file(request.FILES['file'])
+            if df is not None:
+                uploaded_headers = [h.strip() for h in df.columns]
+                expected_headers = PNL_HEADERS
+                
+                missing_headers = [h for h in expected_headers if h not in uploaded_headers]
+                if missing_headers:
+                    messages.error(request, f"Header mismatch. Missing: {missing_headers}. Expected: {expected_headers}")
+                    return redirect('upload_rpnl')
+
+                count = 0
+                # Logic for RPNL format (Pre-calculated PnL records)
+                for _, row in df.iterrows():
+                    symbol = row.get('Symbol')
+                    qty = clean_numeric(row.get('Quantity'), to_int=True)
+                    sell_val = clean_numeric(row.get('Sell Value'))
+                    buy_val = clean_numeric(row.get('Buy Value'))
+                    profit = clean_numeric(row.get('Profit'))
+                    entry_date = row.get('Entry Date')
+                    exit_date = row.get('Exit Date')
+                    
+                    if symbol and qty and profit:
+                        from core.utils import resolve_instrument
+                        inst = resolve_instrument(str(symbol).strip())
+                        if not inst:
+                            messages.warning(request, f"Skipped '{symbol}': Not in verified database.")
+                            continue
+                        
+                        exists = PnLStatement.objects.filter(
+                            user=target_user, instrument=inst, quantity=qty, sell_value=sell_val
+                        ).exists()
+                        
+                        if not exists:
+                            from .utils import execute_stock_sell
+                            try:
+                                # Try to use execute_stock_sell to update holdings and lots
+                                # Calculate a unit price for the sell execution
+                                sell_price = Decimal(str(sell_val)) / Decimal(str(qty)) if qty and sell_val else Decimal('0')
+                                
+                                # Parse exit date
+                                ex_date = None
+                                if exit_date and str(exit_date).lower() != 'nan':
+                                    try:
+                                        ex_date = pd.to_datetime(exit_date).date()
+                                    except:
+                                        pass
+                                
+                                # This will consume lots, create a SELL transaction, and record PnL
+                                execute_stock_sell(
+                                    target_user, inst, qty, 
+                                    sell_price, 
+                                    exit_date=ex_date
+                                )
+                                count += 1
+                            except Exception as e:
+                                en_date = pd.to_datetime(entry_date).date() if entry_date and str(entry_date).lower() != 'nan' else None
+                                ex_date = pd.to_datetime(exit_date).date() if exit_date and str(exit_date).lower() != 'nan' else None
+                                
+                                # Create the PnL entry
+                                PnLStatement.objects.create(
+                                    user=target_user, instrument=inst, quantity=qty,
+                                    buy_value=buy_val or 0, sell_value=sell_val or 0, realized_profit=profit,
+                                    entry_date=en_date, exit_date=ex_date
+                                )
+                                
+                                # Create historical transactions so they show up in lot breakdown
+                                if en_date:
+                                    b_price = Decimal(str(buy_val)) / Decimal(str(qty)) if qty else 0
+                                    Transaction.objects.create(
+                                        user=target_user, instrument=inst, transaction_type='BUY',
+                                        quantity=qty, remaining_quantity=0, price=b_price, date=en_date
+                                    )
+                                if ex_date:
+                                    s_price = Decimal(str(sell_val)) / Decimal(str(qty)) if qty else 0
+                                    Transaction.objects.create(
+                                        user=target_user, instrument=inst, transaction_type='SELL',
+                                        quantity=qty, price=s_price, date=ex_date
+                                    )
+                                count += 1
+                
+                messages.success(request, f"{count} realized pnl records processed for {target_user.username if is_family_view else 'account'}.")
+                url = redirect('dashboard').url
+                if is_family_view:
+                    url += f"?user_id={target_user.id}"
+                return redirect(url)
+    else:
+        form = UploadFileForm()
+    
+    sample_csv = 'samples/sample_rpnl.csv'
+    sample_xlsx = 'samples/sample_rpnl.xlsx'
+    
+    return render(request, 'core/upload.html', {
+        'form': form, 
+        'title': 'Realized P&L Upload (Settled)',
         'is_family_view': is_family_view,
         'target_user': target_user,
         'sample_csv': sample_csv,
