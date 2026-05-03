@@ -2119,14 +2119,29 @@ def upload_pnl(request):
                                     )
                                     count += 1
                                 except Exception as e:
-                                    # Fallback: Just create PnLStatement if lot consumption fails
-                                    # (e.g. insufficient quantity in portfolio or missing buy lots)
+                                    en_date = pd.to_datetime(entry_date).date() if entry_date and str(entry_date).lower() != 'nan' else None
+                                    ex_date = pd.to_datetime(exit_date).date() if exit_date and str(exit_date).lower() != 'nan' else None
+                                    
+                                    # Create the PnL entry
                                     PnLStatement.objects.create(
                                         user=target_user, instrument=inst, quantity=qty,
                                         buy_value=buy_val or 0, sell_value=sell_val or 0, realized_profit=profit,
-                                        entry_date=pd.to_datetime(entry_date).date() if entry_date and str(entry_date).lower() != 'nan' else None,
-                                        exit_date=pd.to_datetime(exit_date).date() if exit_date and str(exit_date).lower() != 'nan' else None
+                                        entry_date=en_date, exit_date=ex_date
                                     )
+                                    
+                                    # Create historical transactions so they show up in lot breakdown
+                                    if en_date:
+                                        b_price = Decimal(str(buy_val)) / Decimal(str(qty)) if qty else 0
+                                        Transaction.objects.create(
+                                            user=target_user, instrument=inst, transaction_type='BUY',
+                                            quantity=qty, remaining_quantity=0, price=b_price, date=en_date
+                                        )
+                                    if ex_date:
+                                        s_price = Decimal(str(sell_val)) / Decimal(str(qty)) if qty else 0
+                                        Transaction.objects.create(
+                                            user=target_user, instrument=inst, transaction_type='SELL',
+                                            quantity=qty, price=s_price, date=ex_date
+                                        )
                                     count += 1
                 
                 messages.success(request, f"{count} records processed for {target_user.username if is_family_view else 'account'}.")
@@ -2733,15 +2748,13 @@ def lot_breakdown(request, instrument_id):
         lots = Transaction.objects.filter(
             user_id__in=user_ids,
             instrument=inst,
-            transaction_type='BUY',
-            remaining_quantity__gt=0
+            transaction_type='BUY'
         ).order_by('date', 'created_at').select_related('user__profile')
     else:
         lots = Transaction.objects.filter(
             user=target_user,
             instrument=inst,
-            transaction_type='BUY',
-            remaining_quantity__gt=0
+            transaction_type='BUY'
         ).order_by('date', 'created_at').select_related('user__profile')
     
     # Enrich lots with days held and unrealized P&L
@@ -2759,33 +2772,56 @@ def lot_breakdown(request, instrument_id):
     # --- Build unified timeline: BUY lots + SELL records ---
     unified_records = []
     
-    # 1. Total historical context
-    total_history_buy_qty = Transaction.objects.filter(
-        user_id__in=user_ids if is_consolidated else [target_user.id],
-        instrument=inst,
-        transaction_type='BUY'
-    ).aggregate(models.Sum('quantity'))['quantity__sum'] or 0
+    # Summary stats for BUY (only for active holdings)
+    total_quantity = 0
+    total_invested = Decimal('0')
+    total_unrealized_pnl = Decimal('0')
     
-    total_history_sell_qty = PnLStatement.objects.filter(
-        user_id__in=user_ids if is_consolidated else [target_user.id],
-        instrument=inst,
-    ).aggregate(models.Sum('quantity'))['quantity__sum'] or 0
+    # Fetch SELL records from PnLStatement
+    if is_consolidated:
+        sell_records = PnLStatement.objects.filter(
+            user_id__in=user_ids,
+            instrument=inst,
+        ).order_by('-exit_date').select_related('user__profile')
+    else:
+        sell_records = PnLStatement.objects.filter(
+            user=target_user,
+            instrument=inst,
+        ).order_by('-exit_date').select_related('user__profile')
+    
+    # Map entry_date to exit_date for sold lot period calculation
+    entry_to_exit_map = {sr.entry_date: sr.exit_date for sr in sell_records if sr.entry_date}
 
-    # Add active BUY lots
+    # Add active and historical BUY lots
     for lot in lots:
-        days_held = (timezone.now().date() - lot.date).days
-        current_value = Decimal(str(lot.remaining_quantity)) * ltp
-        buy_value = Decimal(str(lot.remaining_quantity)) * lot.price
-        pnl = current_value - buy_value
-        pnl_pct = (pnl / buy_value * 100) if buy_value else 0
-        
+        # For active lots, calculate P&L
+        if lot.remaining_quantity > 0:
+            days_held = (timezone.now().date() - lot.date).days
+            current_value = Decimal(str(lot.remaining_quantity)) * ltp
+            buy_value = Decimal(str(lot.remaining_quantity)) * lot.price
+            pnl = current_value - buy_value
+            pnl_pct = (pnl / buy_value * 100) if buy_value else 0
+            
+            total_quantity += lot.remaining_quantity
+            total_invested += buy_value
+            total_unrealized_pnl += pnl
+        else:
+            # For sold lots, try to find the exit date from matched PnL
+            exit_date = entry_to_exit_map.get(lot.date)
+            if exit_date:
+                days_held = (exit_date - lot.date).days
+            else:
+                days_held = None
+            pnl = None
+            pnl_pct = None
+
         unified_records.append({
             'type': 'BUY',
             'id': lot.id,
             'owner': lot.user.profile.full_name or lot.user.username,
             'sort_date': lot.date,
             'date': lot.date,
-            'quantity': lot.remaining_quantity,
+            'quantity': lot.quantity, # Show original quantity in history
             'remaining_quantity': lot.remaining_quantity,
             'price': lot.price,
             'days_held': days_held,
@@ -2795,10 +2831,6 @@ def lot_breakdown(request, instrument_id):
         })
     
     # Summary stats for BUY
-    total_quantity = sum(r['quantity'] for r in unified_records if r['type'] == 'BUY')
-    total_invested = sum(Decimal(str(r['quantity'])) * r['price'] for r in unified_records if r['type'] == 'BUY')
-    total_unrealized_pnl = sum(r['pnl'] for r in unified_records if r['type'] == 'BUY')
-    
     total_unrealized_pnl_pct = (total_unrealized_pnl / total_invested * 100) if total_invested > 0 else 0
     avg_cost = total_invested / Decimal(str(total_quantity)) if total_quantity > 0 else 0
     
@@ -2847,27 +2879,8 @@ def lot_breakdown(request, instrument_id):
         total_realized_pnl += sr.realized_profit
         total_pnl_buy_val += sr.buy_value
     
-    # 2. Add System Adjustment Entry if sells > buys
-    if total_history_sell_qty > total_history_buy_qty:
-        discrepancy_qty = total_history_sell_qty - total_history_buy_qty
-        avg_buy_price = total_pnl_buy_val / Decimal(str(total_sell_quantity)) if total_sell_quantity > 0 else Decimal('0')
-        adj_date = (first_sell_date - timedelta(days=1)) if first_sell_date else date(2024, 1, 1)
-        
-        unified_records.append({
-            'type': 'SYSTEM',
-            'id': 'SYS-ADJ-001',
-            'owner': 'SYSTEM',
-            'sort_date': adj_date,
-            'date': adj_date,
-            'quantity': discrepancy_qty,
-            'price': avg_buy_price,
-            'note': 'System Entry (Original Buy Not Available – P&L Upload Adjustment)',
-            'pnl': 0, # Virtual entry has no pnl itself
-            'pnl_pct': 0,
-        })
-
     # Sort unified list by date descending (newest first)
-    unified_records.sort(key=lambda r: (r['sort_date'], 0 if r['type'] in ['BUY', 'SYSTEM'] else 1), reverse=True)
+    unified_records.sort(key=lambda r: (r['sort_date'], 0 if r['type'] == 'BUY' else 1), reverse=True)
     
     context = {
         'instrument': inst,

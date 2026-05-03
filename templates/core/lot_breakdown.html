@@ -92,16 +92,10 @@
                     </thead>
                     <tbody class="border-0">
                         {% for rec in records %}
-                        <tr class="{% if rec.type == 'SELL' %}table-light{% endif %}">
+                        <tr class="{% if rec.type == 'SELL' %}table-light{% elif rec.type == 'BUY' and rec.remaining_quantity == 0 %}opacity-50 text-muted bg-light{% endif %}">
                             <td class="ps-4">
                                 {% if rec.type == 'BUY' %}
                                 <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill">BUY</span>
-                                {% elif rec.type == 'SYSTEM' %}
-                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-3 py-2 rounded-pill" 
-                                      data-bs-toggle="tooltip" 
-                                      title="Original buy data not available. Entry created to balance uploaded Realized P&L">
-                                    SYS ADJ
-                                </span>
                                 {% else %}
                                 <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 rounded-pill">SELL</span>
                                 {% endif %}
@@ -113,9 +107,6 @@
                                 {% endif %}
                                 {% if rec.type == 'BUY' %}
                                 <div class="text-muted extra-small">Lot #{{ rec.id }}</div>
-                                {% elif rec.type == 'SYSTEM' %}
-                                <div class="text-muted extra-small">{{ rec.id }}</div>
-                                <div class="text-muted extra-small text-truncate" style="max-width: 150px;" title="{{ rec.note }}">System Adjusted</div>
                                 {% endif %}
                             </td>
                             {% if is_consolidated %}
@@ -158,7 +149,7 @@
                                 {% endif %}
                             </td>
                             <td class="text-center">
-                                {% if rec.type == 'BUY' %}
+                                {% if rec.type == 'BUY' and rec.remaining_quantity > 0 %}
                                 <div class="btn-group">
                                     {% if not is_family_view and not is_consolidated %}
                                     <a href="{% url 'edit_lot' rec.id %}"
@@ -174,6 +165,8 @@
                                     <span class="text-muted small"><i class="fas fa-lock opacity-50"></i></span>
                                     {% endif %}
                                 </div>
+                                {% elif rec.type == 'BUY' %}
+                                <span class="text-muted extra-small">Closed</span>
                                 {% else %}
                                 <span class="text-muted small"><i class="fas fa-check-circle text-success opacity-50" title="Completed"></i></span>
                                 {% endif %}
