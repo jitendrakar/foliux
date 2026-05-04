@@ -1389,7 +1389,7 @@
                 <p class="cta-sub mb-4">Upload your portfolio and P&L to get rule-based optimization signals
                     automatically.</p>
                 <div class="d-flex flex-wrap gap-3">
-                    <a href="{% if GOOGLE_CLIENT_ID %}{% provider_login_url 'google' %}{% else %}{% url 'register' %}{% endif %}" class="btn btn-primary btn-lg rounded-pill px-4 shadow"
+                    <a href="{% if GOOGLE_CLIENT_ID %}{% url 'google_login' %}{% else %}{% url 'register' %}{% endif %}" class="btn btn-primary btn-lg rounded-pill px-4 shadow"
                         style="background: linear-gradient(135deg,#003d7c,#2563eb); border:none;">Get Started</a>
                     <a href="{% url 'strategy' %}" class="btn btn-outline-light btn-lg rounded-pill px-4">View
                         Strategies</a>

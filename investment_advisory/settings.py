@@ -27,6 +27,7 @@ load_dotenv(BASE_DIR / '.env')
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure--0n$=_7ut8th3(_-0@m-o2wnh_qf23_yyzepk9cl*6g^(f!ij8')
+GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
@@ -68,6 +69,10 @@ CSRF_COOKIE_HTTPONLY = False   # Must be readable by the browser
 CSRF_COOKIE_SECURE = not DEBUG      # Enabled for HTTPS
 SESSION_COOKIE_SECURE = not DEBUG   # Enabled for HTTPS
 CSRF_COOKIE_DOMAIN = None      # Don't restrict to a specific domain
+
+# Session Persistence (1 year)
+SESSION_COOKIE_AGE = 31536000
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 
 
 
@@ -133,6 +138,7 @@ TEMPLATES = [
                 'core.context_processors.signal_info',
                 'core.context_processors.family_context',
                 'core.context_processors.ipo_info',
+                'core.context_processors.google_settings',
             ],
         },
     },

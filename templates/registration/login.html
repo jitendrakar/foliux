@@ -83,7 +83,7 @@
                 {% load socialaccount %}
                 <!-- Social login buttons -->
                 <div class="mb-4">
-                    <a href="{% provider_login_url 'google' %}" class="btn btn-white w-100 social-btn shadow-sm py-3 mb-3" style="border: 1px solid #dadce0; border-radius: 8px; font-weight: 600; color: #3c4043; transition: all 0.2s;">
+                    <a href="{% url 'google_login' %}" class="btn btn-white w-100 social-btn shadow-sm py-3 mb-3" style="border: 1px solid #dadce0; border-radius: 8px; font-weight: 600; color: #3c4043; transition: all 0.2s;">
                         <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" style="width: 20px; height: 20px; margin-right: 12px;">
                         Sign in with Google
                     </a>
