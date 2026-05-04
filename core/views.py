@@ -2720,7 +2720,6 @@ def transaction_history(request):
     
     start_year = int(current_fy_str.split('-')[0])
     end_year = int(current_fy_str.split('-')[1])
-    from .models import FinancialYearData
     
     total_realized_profits = PnLStatement.objects.filter(user=target_user)
     total_realized = sum(rp.realized_profit for rp in total_realized_profits)
@@ -2751,16 +2750,30 @@ def transaction_history(request):
     from .utils import record_portfolio_value_history
     record_portfolio_value_history(target_user)
 
-    # Get Portfolio Performance History (Same as Portfolio Dashboard)
-    from .models import PortfolioValueHistory
-    # Increase history range for a better chart
-    history = PortfolioValueHistory.objects.filter(user=target_user, date__gte=timezone.now().date() - timedelta(days=180)).order_by('date')
+    # Get Portfolio Performance History (Since Inception or at least 180 days)
+    first_tx = Transaction.objects.filter(user=target_user).order_by('date').first()
+    
+    if first_tx:
+        # Show history since the first transaction
+        history = PortfolioValueHistory.objects.filter(user=target_user, date__gte=first_tx.date).order_by('date')
+    else:
+        # Fallback to last 180 days
+        history = PortfolioValueHistory.objects.filter(user=target_user, date__gte=timezone.now().date() - timedelta(days=180)).order_by('date')
+    
+    # Calculate NIFTY Scaling Ratio based on first ever record
+    first_history = PortfolioValueHistory.objects.filter(user=target_user).order_by('date').first()
+    base_nifty = float(first_history.nifty_price) if (first_history and first_history.nifty_price) else 1.0
+    base_current = float(first_history.stock_current) if (first_history and first_history.stock_current) else 1.0
+    # Avoid zero ratio
+    ratio = base_current / base_nifty if base_nifty > 0 else 1.0
+
     history_data = {
-        'dates': [h.date.strftime('%b %d') for h in history],
+        'dates': [h.date.strftime('%b %d, %Y') for h in history],
         'invested': [float(h.stock_invested) for h in history],
         'current': [float(h.stock_current) for h in history],
         'net_worth': [float(h.stock_current) for h in history],
-        'nifty': [float(h.nifty_price) if h.nifty_price else None for h in history]
+        'nifty': [float(h.nifty_price) if h.nifty_price else None for h in history],
+        'nifty_scaled': [round(float(h.nifty_price) * ratio, 2) if h.nifty_price else None for h in history]
     }
     
     return render(request, 'core/transactions.html', {

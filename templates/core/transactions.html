@@ -149,26 +149,16 @@
                                             try {
                                                 const ctx = document.getElementById('portfolioHistoryChart').getContext('2d');
                                                 
-                                                // Scaling Nifty for comparison: Match first net worth point
-                                                let scaledNifty = [];
-                                                if (historyData.nifty && historyData.nifty.length > 0 && historyData.net_worth.length > 0) {
-                                                    const firstNW = historyData.net_worth[0];
-                                                    const firstNifty = historyData.nifty[0];
-                                                    if (firstNifty && firstNW) {
-                                                        const ratio = firstNW / firstNifty;
-                                                        scaledNifty = historyData.nifty.map(n => n ? n * ratio : null);
-                                                    }
-                                                }
+                                                // Using absolute currency values for the graph
+                                                const currentValues = historyData.net_worth;
+                                                const initialCapital = historyData.invested;
+                                                const niftyScaled = historyData.nifty_scaled || [];
 
                                                 // Gradients
                                                 const netWorthGradient = ctx.createLinearGradient(0, 0, 0, 350);
                                                 netWorthGradient.addColorStop(0, 'rgba(34, 197, 94, 0.2)');
                                                 netWorthGradient.addColorStop(1, 'rgba(34, 197, 94, 0)');
                                                 
-                                                const capitalGradient = ctx.createLinearGradient(0, 0, 0, 350);
-                                                capitalGradient.addColorStop(0, 'rgba(37, 99, 235, 0.15)');
-                                                capitalGradient.addColorStop(1, 'rgba(37, 99, 235, 0)');
-
                                                 new Chart(ctx, {
                                                     type: 'line',
                                                     data: {
@@ -176,7 +166,7 @@
                                                         datasets: [
                                                             {
                                                                 label: 'Current Value',
-                                                                data: historyData.net_worth,
+                                                                data: currentValues,
                                                                 borderColor: '#22c55e',
                                                                 backgroundColor: netWorthGradient,
                                                                 fill: true,
@@ -185,24 +175,24 @@
                                                                 borderWidth: 3
                                                             },
                                                             {
-                                                                label: 'Initial Capital',
-                                                                data: historyData.invested,
-                                                                borderColor: '#2563eb',
-                                                                backgroundColor: capitalGradient,
-                                                                fill: true,
-                                                                tension: 0.3,
-                                                                pointRadius: 2,
-                                                                borderWidth: 2
-                                                            },
-                                                            {
                                                                 label: 'NIFTY (Benchmark)',
-                                                                data: scaledNifty,
+                                                                data: niftyScaled,
                                                                 borderColor: '#eab308',
                                                                 borderDash: [5, 5],
                                                                 pointRadius: 0,
                                                                 fill: false,
                                                                 tension: 0.3,
                                                                 borderWidth: 2
+                                                            },
+                                                            {
+                                                                label: 'Initial Capital',
+                                                                data: initialCapital,
+                                                                borderColor: '#2563eb',
+                                                                borderWidth: 2,
+                                                                pointRadius: 0,
+                                                                fill: false,
+                                                                tension: 0.1,
+                                                                hidden: false
                                                             }
                                                         ]
                                                     },
@@ -216,12 +206,16 @@
                                                                 padding: 12,
                                                                 backgroundColor: 'rgba(15, 23, 42, 0.9)',
                                                                 callbacks: {
+                                                                    title: (tooltipItems) => {
+                                                                        return tooltipItems[0].label;
+                                                                    },
                                                                     label: (ctx) => {
+                                                                        const val = ctx.raw;
                                                                         if (ctx.dataset.label.includes('NIFTY')) {
                                                                             const originalPrice = historyData.nifty[ctx.dataIndex];
-                                                                            return `NIFTY Price: ₹${originalPrice ? originalPrice.toLocaleString('en-IN') : '-'}`;
+                                                                            return `NIFTY (Scaled): ₹${val.toLocaleString('en-IN', {maximumFractionDigits: 0})} [Index: ${originalPrice ? originalPrice.toLocaleString('en-IN') : '-'}]`;
                                                                         }
-                                                                        return `${ctx.dataset.label}: ₹${ctx.raw.toLocaleString('en-IN')}`;
+                                                                        return `${ctx.dataset.label}: ₹${val.toLocaleString('en-IN', {maximumFractionDigits: 0})}`;
                                                                     }
                                                                 }
                                                             }
@@ -231,9 +225,18 @@
                                                                 beginAtZero: false,
                                                                 grid: { color: 'rgba(0,0,0,0.05)' },
                                                                 ticks: { 
-                                                                    display: false,
-                                                                    callback: (val) => '₹' + (val/1000).toFixed(0) + 'K', 
+                                                                    display: true,
+                                                                    callback: (val) => {
+                                                                        if (val >= 100000) return (val/1000).toFixed(0) + 'K';
+                                                                        if (val >= 1000) return (val/1000).toFixed(1) + 'K';
+                                                                        return val;
+                                                                    },
                                                                     font: { weight: '500' } 
+                                                                },
+                                                                title: {
+                                                                    display: true,
+                                                                    text: 'Value (₹)',
+                                                                    font: { size: 10 }
                                                                 }
                                                             },
                                                             x: { grid: { display: false } }
