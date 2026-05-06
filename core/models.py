@@ -330,7 +330,10 @@ class CorporateAction(models.Model):
     ratio_numerator = models.IntegerField(null=True, blank=True) # e.g., 2 for a 2:1 split
     ratio_denominator = models.IntegerField(null=True, blank=True) # e.g., 1 for a 2:1 split
     announcement_date = models.DateField()
+    ex_date = models.DateField(null=True, blank=True)
     record_date = models.DateField(null=True, blank=True)
+    rate = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    value = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     description = models.TextField(blank=True, null=True)
 
     def __str__(self):
