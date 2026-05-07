@@ -27,6 +27,7 @@ urlpatterns = [
     path('portfolio/delete/<int:pk>/', views.delete_portfolio_item, name='delete_portfolio_item'),
     path('portfolio/buy/', views.buy_stock, name='buy_stock'),
     path('portfolio/sell/', views.sell_stock, name='sell_stock'),
+    path('portfolio/sell-lot/', views.sell_specific_lot, name='sell_specific_lot'),
     
     # Custom Login View
     path('accounts/login/', auth_views.LoginView.as_view(authentication_form=EmailOrMobileAuthenticationForm), name='login'),

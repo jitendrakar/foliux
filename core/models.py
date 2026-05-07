@@ -226,6 +226,7 @@ class Transaction(models.Model):
     remaining_quantity = models.IntegerField(default=0) # Only for BUY
     price = models.DecimalField(max_digits=10, decimal_places=2)
     date = models.DateField()
+    matched_buy = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='matched_sells') # For SELL transactions to specify a lot
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

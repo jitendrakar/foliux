@@ -2697,6 +2697,37 @@ def sell_stock(request):
             url += f"?user_id={target_user.id}"
         return redirect(url)
     return redirect('dashboard')
+
+@login_required
+@csrf_exempt
+def sell_specific_lot(request):
+    if request.method == 'POST':
+        target_user, is_family_view, is_consolidated = get_target_user(request)
+        lot_id = request.POST.get('lot_id')
+        symbol = request.POST.get('symbol', '').strip().upper()
+        quantity_to_sell = int(request.POST.get('quantity', 0))
+        price = Decimal(request.POST.get('price', '0'))
+        exit_date_str = request.POST.get('exit_date')
+        
+        from .utils import execute_stock_sell
+        try:
+            inst = get_object_or_404(Instrument, symbol__iexact=symbol, is_verified=True)
+            # Pass target_lot_id to execute_stock_sell to bypass FIFO
+            profit, is_intraday = execute_stock_sell(
+                target_user, 
+                inst, 
+                quantity_to_sell, 
+                price, 
+                exit_date_str, 
+                target_lot_id=lot_id
+            )
+            
+            messages.success(request, f"Sold {quantity_to_sell} units of {symbol} from specific lot. Profit: {profit}")
+        except Exception as e:
+            messages.error(request, str(e))
+            
+        return redirect('lot_breakdown', instrument_id=inst.id)
+    return redirect('dashboard')
 def get_current_financial_year():
     now = timezone.localdate()
     # Standard Indian Financial Year starts April 1.

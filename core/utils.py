@@ -1182,17 +1182,123 @@ def get_portfolio_summary_metrics(user):
     }
 
 
-def execute_stock_sell(user, instrument, quantity_to_sell, price, exit_date=None):
+def recalculate_instrument_lots(user, instrument):
     """
-    Core logic for selling a stock, handles FIFO/Intraday, PnL recording and Portfolio updates.
-    Returns (profit, is_intraday) or raises ValidationError.
+    Re-processes all BUY/SELL transactions for an instrument to ensure correct FIFO/Intraday matching.
+    Crucially, it processes BUYs before SELLs on the same day to handle 'Sell then Buy' intraday scenarios.
     """
     from core.models import Transaction, PnLStatement, Portfolio, Profile
     from decimal import Decimal
-    from django.utils import timezone
+    from django.db.models import F
+    from django.db import transaction as db_transaction
+
+    with db_transaction.atomic():
+        # 1. Reset all BUY lots for this user/instrument
+        Transaction.objects.filter(user=user, instrument=instrument, transaction_type='BUY').update(remaining_quantity=F('quantity'))
+        # 2. Delete all existing PnL for this user/instrument
+        PnLStatement.objects.filter(user=user, instrument=instrument).delete()
+        
+        # 3. Get all transactions, ordered to prioritize BUYs on the same day
+        # 'BUY' < 'SELL' alphabetically, so they come first with ascending order
+        all_txs = Transaction.objects.filter(user=user, instrument=instrument).order_by('date', 'transaction_type', 'created_at')
+        
+        buy_lots = []
+        for tx in all_txs:
+            if tx.transaction_type == 'BUY':
+                buy_lots.append(tx)
+                continue
+            
+            # Process SELL
+            remaining_to_deduct = tx.quantity
+            total_buy_value = Decimal('0')
+            first_entry_date = None
+            is_intraday = False
+            
+            # Priority 0: Manual Match (Specific Lot)
+            if tx.matched_buy_id:
+                lot = next((l for l in buy_lots if l.id == tx.matched_buy_id), None)
+                if lot and lot.remaining_quantity > 0:
+                    deduct = min(lot.remaining_quantity, remaining_to_deduct)
+                    total_buy_value += Decimal(str(deduct)) * lot.price
+                    lot.remaining_quantity -= deduct
+                    remaining_to_deduct -= deduct
+                    if first_entry_date is None: first_entry_date = lot.date
+                    if lot.date == tx.date: is_intraday = True
+
+            # Priority 1: Intraday (Same Day)
+            if remaining_to_deduct > 0:
+                intraday_lots = [l for l in buy_lots if l.date == tx.date and l.remaining_quantity > 0]
+                for lot in intraday_lots:
+                    if remaining_to_deduct <= 0: break
+                    deduct = min(lot.remaining_quantity, remaining_to_deduct)
+                    total_buy_value += Decimal(str(deduct)) * lot.price
+                    lot.remaining_quantity -= deduct
+                    remaining_to_deduct -= deduct
+                    if first_entry_date is None: first_entry_date = lot.date
+                    is_intraday = True
+
+            # Priority 2: FIFO (Oldest)
+            if remaining_to_deduct > 0:
+                # buy_lots is already sorted by date
+                for lot in buy_lots:
+                    if lot.remaining_quantity <= 0: continue
+                    if remaining_to_deduct <= 0: break
+                    deduct = min(lot.remaining_quantity, remaining_to_deduct)
+                    total_buy_value += Decimal(str(deduct)) * lot.price
+                    lot.remaining_quantity -= deduct
+                    remaining_to_deduct -= deduct
+                    if first_entry_date is None: first_entry_date = lot.date
+
+            # Calculate Profit and Record PnL
+            profile, _ = Profile.objects.get_or_create(user=user)
+            if is_intraday:
+                fixed_charge = profile.intraday_fixed_charge or Decimal('0')
+                pct_charge = profile.intraday_brokerage_pct if profile.intraday_brokerage_pct is not None else Decimal('0.2')
+            else:
+                fixed_charge = profile.equity_fixed_charge or Decimal('0')
+                pct_charge = profile.equity_brokerage_pct if profile.equity_brokerage_pct is not None else Decimal('0.2')
+            
+            sell_brokerage = Decimal(str(fixed_charge)) + (tx.price * Decimal(str(tx.quantity)) * Decimal(str(pct_charge)) / 100)
+            sell_value_net = (tx.price * Decimal(str(tx.quantity))) - sell_brokerage
+            profit = sell_value_net - total_buy_value
+            
+            PnLStatement.objects.create(
+                user=user, instrument=instrument,
+                entry_date=first_entry_date,
+                quantity=tx.quantity,
+                buy_value=total_buy_value,
+                sell_value=sell_value_net,
+                realized_profit=profit,
+                exit_date=tx.date
+            )
+            
+        # 4. Finalize - save lot quantities
+        for lot in buy_lots:
+            lot.save(update_fields=['remaining_quantity'])
+            
+        # 5. Update Portfolio
+        total_remaining = sum(l.remaining_quantity for l in buy_lots)
+        total_cost = sum(Decimal(str(l.remaining_quantity)) * l.price for l in buy_lots)
+        
+        portfolio = Portfolio.objects.filter(user=user, instrument=instrument).first()
+        if total_remaining <= 0:
+            if portfolio: portfolio.delete()
+        else:
+            if not portfolio:
+                portfolio = Portfolio(user=user, instrument=instrument)
+            portfolio.quantity = total_remaining
+            portfolio.avg_cost = total_cost / Decimal(str(total_remaining)) if total_remaining > 0 else 0
+            portfolio.save()
+
+
+def execute_stock_sell(user, instrument, quantity_to_sell, price, exit_date=None, target_lot_id=None):
+    """
+    Simplified sell logic: records the transaction and triggers a full lot recalculation.
+    """
+    from core.models import Transaction, Portfolio, PnLStatement
     from django.core.exceptions import ValidationError
     import pandas as pd
-    
+
     if not exit_date:
         exit_date = timezone.localdate()
     elif isinstance(exit_date, str):
@@ -1206,66 +1312,6 @@ def execute_stock_sell(user, instrument, quantity_to_sell, price, exit_date=None
         available = portfolio.quantity if portfolio else 0
         raise ValidationError(f"Insufficient quantity. You have {available} units of {instrument.symbol}.")
 
-    # Unified Priority Logic: Intraday (Same Day) First, then FIFO (Older Lots)
-    total_buy_value = Decimal('0')
-    remaining_to_deduct = quantity_to_sell
-    first_entry_date = None
-    is_intraday = False
-
-    # 1. Gather all active BUYS for this instrument
-    all_buys = Transaction.objects.filter(
-        user=user,
-        instrument=instrument,
-        transaction_type='BUY',
-        remaining_quantity__gt=0
-    ).order_by('date', 'created_at')
-
-    # 2. Prioritize Same-Day (Intraday) Lots
-    intraday_lots = [tx for tx in all_buys if tx.date == exit_date]
-    other_lots = [tx for tx in all_buys if tx.date != exit_date]
-
-    # Use Intraday lots first
-    for tx in intraday_lots:
-        if remaining_to_deduct <= 0:
-            break
-        is_intraday = True # Mark as intraday if we use any same-day lot
-        if first_entry_date is None:
-            first_entry_date = tx.date
-        
-        deduct = min(tx.remaining_quantity, remaining_to_deduct)
-        total_buy_value += Decimal(str(deduct)) * tx.price
-        tx.remaining_quantity -= deduct
-        tx.save()
-        remaining_to_deduct -= deduct
-
-    # 3. Use other lots (FIFO) if still needed
-    for tx in other_lots:
-        if remaining_to_deduct <= 0:
-            break
-        if first_entry_date is None:
-            first_entry_date = tx.date
-        
-        deduct = min(tx.remaining_quantity, remaining_to_deduct)
-        total_buy_value += Decimal(str(deduct)) * tx.price
-        tx.remaining_quantity -= deduct
-        tx.save()
-        remaining_to_deduct -= deduct
-        
-    # Calculate Brokerage for SELL
-    profile, _ = Profile.objects.get_or_create(user=user)
-    if is_intraday:
-        fixed_charge = profile.intraday_fixed_charge or Decimal('0')
-        pct_charge = profile.intraday_brokerage_pct if profile.intraday_brokerage_pct is not None else Decimal('0.2')
-    else:
-        fixed_charge = profile.equity_fixed_charge or Decimal('0')
-        pct_charge = profile.equity_brokerage_pct if profile.equity_brokerage_pct is not None else Decimal('0.2')
-        
-    sell_brokerage = Decimal(str(fixed_charge)) + (price * Decimal(str(quantity_to_sell)) * Decimal(str(pct_charge)) / 100)
-    sell_value_gross = Decimal(str(quantity_to_sell)) * price
-    sell_value_net = sell_value_gross - sell_brokerage
-    
-    profit = sell_value_net - total_buy_value
-    
     # Record Sell Transaction
     Transaction.objects.create(
         user=user,
@@ -1273,67 +1319,32 @@ def execute_stock_sell(user, instrument, quantity_to_sell, price, exit_date=None
         transaction_type='SELL',
         quantity=quantity_to_sell,
         price=price,
-        date=exit_date
+        date=exit_date,
+        matched_buy_id=target_lot_id
     )
     
-    # Record in PnLStatement
-    PnLStatement.objects.create(
-        user=user,
-        instrument=instrument,
-        entry_date=first_entry_date,
-        quantity=quantity_to_sell,
-        buy_value=total_buy_value,
-        sell_value=sell_value_net,
-        realized_profit=profit,
-        exit_date=exit_date
-    )
+    # Trigger Recalculation
+    recalculate_instrument_lots(user, instrument)
     
-    # Update Portfolio
-    portfolio.quantity -= quantity_to_sell
-    if portfolio.quantity <= 0:
-        portfolio.delete()
-    else:
-        # Recalculate average cost based on remaining lots
-        remaining_lots = Transaction.objects.filter(
-            user=user,
-            instrument=instrument,
-            transaction_type='BUY',
-            remaining_quantity__gt=0
-        )
-        if remaining_lots.exists():
-            from django.db.models import Sum, F
-            agg = remaining_lots.aggregate(
-                total_qty=Sum('remaining_quantity'),
-                total_cost=Sum(F('remaining_quantity') * F('price'))
-            )
-            t_qty = agg['total_qty']
-            t_cost = agg['total_cost']
-            portfolio.avg_cost = t_cost / Decimal(str(t_qty)) if t_qty > 0 else 0
-        portfolio.save()
-        
+    # Get profit from the last PnLStatement for this sell
+    pnl = PnLStatement.objects.filter(user=user, instrument=instrument, exit_date=exit_date).order_by('-id').first()
+    profit = pnl.realized_profit if pnl else 0
+    is_intraday = (pnl.entry_date == pnl.exit_date) if pnl else False
+    
     return profit, is_intraday
 
 def execute_stock_buy(user, instrument, quantity, avg_cost, transaction_date=None, notes=None):
     """
-    Core logic for buying a stock, handles brokerage calculation, transaction recording, 
-    and portfolio weighted average cost updates.
+    Simplified buy logic: records the transaction (with brokerage) and triggers a lot recalculation.
     """
     from core.models import Transaction, Portfolio, Profile
     from decimal import Decimal
-    from django.utils import timezone
-    from core.utils import fetch_live_ltp
     
     if not transaction_date:
         transaction_date = timezone.localdate()
-        
-    # Try to get initial LTP from live data if possible
-    symbol = instrument.symbol.upper()
-    live_ltps = fetch_live_ltp()
-    ltp_data = live_ltps.get(symbol)
-    if isinstance(ltp_data, tuple):
-        ltp = ltp_data[0]
-    else:
-        ltp = ltp_data or avg_cost
+    elif isinstance(transaction_date, str):
+        import pandas as pd
+        transaction_date = pd.to_datetime(transaction_date).date()
 
     # Calculate Brokerage for BUY
     profile, _ = Profile.objects.get_or_create(user=user)
@@ -1353,26 +1364,14 @@ def execute_stock_buy(user, instrument, quantity, avg_cost, transaction_date=Non
         date=transaction_date
     )
 
-    portfolio, created = Portfolio.objects.get_or_create(
-        user=user, 
-        instrument=instrument,
-        defaults={'quantity': 0, 'avg_cost': Decimal('0'), 'ltp': ltp}
-    )
+    # Trigger Recalculation
+    recalculate_instrument_lots(user, instrument)
     
-    # Update Weighted Average Cost for Portfolio summary
-    current_total_cost = Decimal(str(portfolio.quantity)) * portfolio.avg_cost
-    new_total_cost = Decimal(str(quantity)) * price_with_brokerage
-    total_quantity = portfolio.quantity + quantity
-    
-    new_avg_cost = (current_total_cost + new_total_cost) / Decimal(str(total_quantity))
-    
-    portfolio.quantity = total_quantity
-    portfolio.avg_cost = new_avg_cost
-    # Only update LTP if it was 0 or just created
-    if created or not portfolio.ltp or portfolio.ltp == 0:
-        portfolio.ltp = ltp
-    
+    # Update notes if provided
     if notes:
-        portfolio.notes = notes
-    portfolio.save()
-    return portfolio
+        portfolio = Portfolio.objects.filter(user=user, instrument=instrument).first()
+        if portfolio:
+            portfolio.notes = notes
+            portfolio.save(update_fields=['notes'])
+            
+    return Portfolio.objects.filter(user=user, instrument=instrument).first()

@@ -3,11 +3,13 @@ from django.urls import path
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django import forms
+from django.contrib.auth.models import User
+from django.contrib.auth.admin import UserAdmin
 import pandas as pd
 from .models import (
     Instrument, Portfolio, PnLStatement, Profile, OTP, 
     Transaction, SignupOTP, MarketTicker, Strategy, 
-    StrategyStock, Watchlist, Dividend, InvestmentGoal,
+    StrategyStock, Watchlist, InvestmentGoal,
     CorporateAction, MutualFund, MFPortfolio, MFTransaction,
     Coin, CoinPortfolio, CoinTransaction,
     NPSFund, NPSPortfolio, NPSTransaction, IPO, ChatbotKnowledge,
@@ -120,10 +122,6 @@ class WatchlistAdmin(admin.ModelAdmin):
     list_display = ('user', 'instrument', 'added_at')
     list_filter = ('user',)
 
-@admin.register(Dividend)
-class DividendAdmin(admin.ModelAdmin):
-    list_display = ('user', 'instrument', 'amount', 'received_date')
-    list_filter = ('user', 'received_date')
 
 @admin.register(InvestmentGoal)
 class InvestmentGoalAdmin(admin.ModelAdmin):
@@ -308,3 +306,12 @@ class UserReviewAdmin(admin.ModelAdmin):
     def reject_reviews(self, request, queryset):
         queryset.update(is_public=False)
     reject_reviews.short_description = "Reject selected reviews (hide from public)"
+
+# Customize User Admin
+admin.site.unregister(User)
+@admin.register(User)
+class CustomUserAdmin(UserAdmin):
+    list_display = ('username', 'email', 'first_name', 'last_name', 'is_staff', 'last_login')
+    list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')
+    search_fields = ('username', 'first_name', 'last_name', 'email')
+    ordering = ('-last_login',) # Default sort by most recent login
