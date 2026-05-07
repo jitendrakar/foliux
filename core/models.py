@@ -324,14 +324,36 @@ class InvestmentGoal(models.Model):
         return f"{self.user.username} - {self.name}"
 
 class CorporateAction(models.Model):
-    ACTION_TYPES = [('SPLIT', 'Stock Split'), ('BONUS', 'Bonus Issue'), ('DIVIDEND', 'Dividend Declared'), ('MERGER', 'Merger/Demerger')]
+    ACTION_TYPES = [
+        ('DIVIDEND', 'Dividend Declared'),
+        ('INTERIM_DIVIDEND', 'Interim Dividend'),
+        ('BONUS', 'Bonus Issue'),
+        ('SPLIT', 'Stock Split'),
+        ('RIGHTS_ISSUE', 'Rights Issue'),
+        ('BUYBACK', 'Buyback'),
+        ('MERGER', 'Merger'),
+        ('DEMERGER', 'Demerger'),
+        ('AMALGAMATION', 'Amalgamation'),
+        ('DELISTING', 'Delisting'),
+        ('OPEN_OFFER', 'Open Offer / Takeover'),
+        ('FV_CHANGE', 'Face Value Change / Reverse Split'),
+        ('PREF_ALLOTMENT', 'Preferential Allotment'),
+        ('ESOP', 'ESOP / Share Dilution'),
+        ('SPECIAL_DIVIDEND', 'Special Dividend'),
+        ('SHARE_QUANTITY', 'Share Quantity'),
+        ('SHARE_PRICE', 'Share Price'),
+        ('OWNERSHIP_PCT', 'Ownership Percentage'),
+        ('CASH_BENEFIT', 'Cash Benefit'),
+        ('CO_STRUCTURE', 'Company Structure'),
+        ('TRADING_STATUS', 'Trading / Liquidity Status'),
+    ]
     instrument = models.ForeignKey(Instrument, on_delete=models.CASCADE, related_name='corporate_actions')
-    action_type = models.CharField(max_length=10, choices=ACTION_TYPES)
+    action_type = models.CharField(max_length=50, choices=ACTION_TYPES)
     ratio_numerator = models.IntegerField(null=True, blank=True) # e.g., 2 for a 2:1 split
     ratio_denominator = models.IntegerField(null=True, blank=True) # e.g., 1 for a 2:1 split
     announcement_date = models.DateField()
-    ex_date = models.DateField(null=True, blank=True)
-    record_date = models.DateField(null=True, blank=True)
+    ex_date = models.CharField(max_length=50, null=True, blank=True, default="Not Yet Declared", help_text="Enter date (YYYY-MM-DD) or 'Not Yet Declared'")
+    record_date = models.CharField(max_length=50, null=True, blank=True, default="Not Yet Declared", help_text="Enter date (YYYY-MM-DD) or 'Not Yet Declared'")
     rate = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     value = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     description = models.TextField(blank=True, null=True)

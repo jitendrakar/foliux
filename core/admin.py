@@ -166,18 +166,32 @@ class CorporateActionAdmin(admin.ModelAdmin):
             
             action_name = obj.get_action_type_display()
             # If it's a dividend, we use 'Dividend' as per request template
-            if obj.action_type == 'DIVIDEND':
+            # Handle multiple dividend types
+            if obj.action_type in ['DIVIDEND', 'INTERIM_DIVIDEND', 'SPECIAL_DIVIDEND']:
                 action_name = "Dividend"
                 
             message += f"{action_name} – {obj.instrument.name}\n\n"
             
-            ex_date_str = obj.ex_date.strftime('%d-%b-%Y') if obj.ex_date else "–"
-            record_date_str = obj.record_date.strftime('%d-%b-%Y') if obj.record_date else "–"
+            # Helper to format date string if it looks like a date (YYYY-MM-DD)
+            def format_date_str(d_str):
+                if not d_str or d_str == "Not Yet Declared":
+                    return "Not Yet Declared"
+                try:
+                    from datetime import datetime
+                    # If it's already a date object (happens sometimes in admin before save)
+                    if hasattr(d_str, 'strftime'):
+                        return d_str.strftime('%d-%b-%Y')
+                    return datetime.strptime(str(d_str), '%Y-%m-%d').strftime('%d-%b-%Y')
+                except (ValueError, TypeError):
+                    return str(d_str)
+
+            ex_date_str = format_date_str(obj.ex_date)
+            record_date_str = format_date_str(obj.record_date)
             
             message += f"Ex-date: {ex_date_str}\n"
             message += f"Record Date: {record_date_str}\n\n"
             
-            if obj.action_type == 'DIVIDEND':
+            if obj.action_type in ['DIVIDEND', 'INTERIM_DIVIDEND', 'SPECIAL_DIVIDEND']:
                 rate_val = f"{obj.rate:.0f}" if obj.rate is not None else "–"
                 value_val = f"{obj.value:.2f}" if obj.value is not None else "–"
                 message += f"Rate*: {rate_val}\n"
@@ -188,7 +202,9 @@ class CorporateActionAdmin(admin.ModelAdmin):
             if obj.description:
                 message += f"Description: {obj.description}\n\n"
                 
-            message += "For NCDs/Bonds, the mentioned rate refers to the coupon rate of the security. The value will depend on your holding period."
+            message += "For NCDs/Bonds, the mentioned rate refers to the coupon rate of the security. The value will depend on your holding period.\n\n"
+            message += "For more details and updates, visit: FOLIUX.COM\n\n"
+            message += "Best regards,\nTeam FOLIUX"
             
             try:
                 if user.email:
