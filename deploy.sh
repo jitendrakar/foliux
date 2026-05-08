@@ -59,6 +59,12 @@ fi
 check_status "Git pull" "$PULL_OUTPUT"
 NEW_VERSION=$(git rev-parse HEAD)
 
+# --- SAFETY CHECK ---
+if [ ! -f "$GIT_DIR/manage.py" ]; then
+    echo -e "${RED}CRITICAL SAFETY ERROR: manage.py not found in $GIT_DIR! Aborting sync to prevent data loss.${NC}"
+    exit 1
+fi
+
 # --- STEP 2: SYNC TO LIVE DIRECTORY ---
 echo -e "\n${BLUE}[2/4] Syncing changes to live directory ($LIVE_DIR)...${NC}"
 if [ ! -d "$LIVE_DIR" ]; then 
