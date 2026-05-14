@@ -32,7 +32,7 @@ GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['foliux.com', 'www.foliux.com', 'npits.in', 'www.npits.in', 'localhost', '127.0.0.1', '192.168.1.244']
+ALLOWED_HOSTS = ['foliux.com', 'www.foliux.com', 'npits.in', 'www.npits.in', 'localhost', '127.0.0.1', '192.168.1.244', '182.76.246.66']
 
 # Correctly identify host when behind a proxy
 USE_X_FORWARDED_HOST = True

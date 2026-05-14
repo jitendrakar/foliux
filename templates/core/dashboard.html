@@ -667,7 +667,7 @@
             scales: {
                 y: {
                     grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false },
-                    ticks: { font: { size: 10 }, callback: value => '₹' + (value/100000).toFixed(1) + 'L' }
+                    ticks: { font: { size: 10 }, callback: value => '₹' + (value/100000).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + 'L' }
                 },
                 x: {
                     grid: { display: false }

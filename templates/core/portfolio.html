@@ -753,7 +753,7 @@
                                 y: {
                                     beginAtZero: false,
                                     grid: { color: 'rgba(0,0,0,0.05)' },
-                                    ticks: { callback: (val) => '₹' + (val/100000).toFixed(1) + 'L', font: { weight: '500' } }
+                                    ticks: { callback: (val) => '₹' + (val/100000).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) + 'L', font: { weight: '500' } }
                                 },
                                 x: { grid: { display: false } }
                             }
