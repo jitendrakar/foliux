@@ -206,7 +206,7 @@ class CorporateActionAdmin(admin.ModelAdmin):
             
             try:
                 if user.email:
-                    send_mail(subject, message, settings.EMAIL_HOST_USER, [user.email])
+                    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
             except Exception as e:
                 logger.error(f"Failed to send corporate action email to {user.email}: {e}")
 

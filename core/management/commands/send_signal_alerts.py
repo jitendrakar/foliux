@@ -96,7 +96,7 @@ class Command(BaseCommand):
                         send_mail(
                             subject=subject,
                             message=plain_message,
-                            from_email=f"FOLIUX <{settings.EMAIL_HOST_USER}>",
+                            from_email=settings.DEFAULT_FROM_EMAIL,
                             recipient_list=[user.email],
                             html_message=html_message,
                             fail_silently=False,

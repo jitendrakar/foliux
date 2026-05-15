@@ -121,7 +121,7 @@ def forgot_password_session(request):
     try:
         subject = "Your Password Reset Code"
         message = f"Your 6-digit verification code is: {code}\nThis code is valid for 10 minutes."
-        send_mail(subject, message, settings.EMAIL_HOST_USER, [user.email])
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
         
         # Store email in session for next steps
         request.session['reset_email'] = user.email
@@ -150,7 +150,7 @@ def forgot_password(request):
             try:
                 subject = "Your Password Reset Code"
                 message = f"Your 6-digit verification code is: {code}\nThis code is valid for 10 minutes."
-                send_mail(subject, message, settings.EMAIL_HOST_USER, [email])
+                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email])
                 
                 # Store email in session for next steps
                 request.session['reset_email'] = email
@@ -2361,7 +2361,7 @@ def send_signup_otp(request):
                 f'This code is valid for 10 minutes.\n\n'
                 f'If you did not request this, please ignore this email.'
             ),
-            from_email=settings.EMAIL_HOST_USER,
+            from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[email],
             fail_silently=False,
         )
@@ -2443,7 +2443,7 @@ def register(request):
                 send_mail(
                     subject='Welcome to FOLIUX',
                     message=f'Hi {user.email},\n\nWelcome to FOLIUX Investment Tracking System. Thank you for registering with us.\n\nBest Regards,\nFOLIUX Team',
-                    from_email=settings.EMAIL_HOST_USER,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[user.email],
                     fail_silently=False,
                 )
@@ -2560,7 +2560,7 @@ def link_family_id(request):
             subject = "Family Account Linking Request - FOLIUX"
             requester_name = request.user.profile.full_name or request.user.email
             message = f"User {requester_name} has requested to link your portfolio as a family member. \n\nYour verification code is: {code}\n\nPlease provide this code to them if you wish to authorize the link. This allows them to view and manage your portfolio data separately from theirs."
-            send_mail(subject, message, settings.EMAIL_HOST_USER, [target_user.email])
+            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [target_user.email])
             
             messages.success(request, f"An OTP has been sent to the registered email of {family_id}. Please enter it below.")
             request.session['linking_family_user_id'] = target_user.id
@@ -4729,7 +4729,7 @@ def chatbot_response(request):
                         send_mail(
                             email_subject,
                             email_body,
-                            settings.EMAIL_HOST_USER,
+                            settings.DEFAULT_FROM_EMAIL,
                             ['jitendra.kar@gmail.com'],
                             fail_silently=True
                         )
@@ -4792,7 +4792,7 @@ def request_reset_otp(request):
     try:
         subject = "Account Reset Verification Code - FOLIUX"
         message = f"You have requested to reset all data for your FOLIUX account ({user.email}).\n\nYour 6-digit verification code is: {code}\n\nThis code is valid for 10 minutes. If you did not request this, please ignore this email."
-        send_mail(subject, message, settings.EMAIL_HOST_USER, [user.email])
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
         
         request.session['resetting_user_id'] = user.id
         messages.success(request, f"A 6-digit verification code has been sent to {user.email}")
