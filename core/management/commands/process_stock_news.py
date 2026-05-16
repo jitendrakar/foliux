@@ -269,7 +269,12 @@ class Command(BaseCommand):
                 content += f"<a href='{item.url}' style='display: inline-block; background-color: #3498db; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-size: 0.85em;'>Read Full Story</a>"
             content += "</div>"
             
-        content += "<p style='font-size: 0.8em; color: #95a5a6; margin-top: 30px;'>This is an automated alert from Foliux.</p>"
+        content += f"<div style='margin-top: 30px; border-top: 2px solid #3498db; padding-top: 20px;'>"
+        content += f"<p style='font-weight: bold;'>Want to see all updates in one place?</p>"
+        content += f"<a href='http://192.168.1.244/stock-news/' style='display: inline-block; background-color: #2c3e50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;'>Know More - View All News</a>"
+        content += f"</div>"
+
+        content += "<p style='font-size: 0.8em; color: #95a5a6; margin-top: 20px;'>This is an automated alert from Foliux.</p>"
 
         try:
             send_mail(
