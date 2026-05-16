@@ -355,7 +355,6 @@
                     <table class="table table-sm table-hover align-middle border-top portfolio-table" id="portfolioTable">
                         <thead class="bg-light">
                             <tr class="text-nowrap">
-                                <th class="border-0 text-uppercase small fw-bold text-muted">Buy/Sell</th>
                                 <th class="border-0 text-uppercase small fw-bold text-muted text-center col-instrument" style="cursor: pointer;"
                                     data-sort="instrument">Instrument <i class="fas fa-sort ms-1"></i></th>
                                 <th class="border-0 text-uppercase small fw-bold text-muted text-center" style="cursor: pointer;"
@@ -379,6 +378,7 @@
                                 <th class="border-0 text-uppercase small fw-bold text-muted text-center"
                                     style="cursor: pointer;" data-sort="action">Input <i class="fas fa-sort ms-1"></i>
                                 </th>
+                                <th class="border-0 text-uppercase small fw-bold text-muted">Buy/Sell</th>
                                 <th class="border-0 text-uppercase small fw-bold text-muted" style="cursor: pointer;"
                                     data-sort="reason">Reason <i class="fas fa-sort ms-1"></i></th>
                                 <th class="border-0 text-uppercase small fw-bold text-muted text-center" style="cursor: pointer;"
@@ -390,6 +390,40 @@
                             <tr data-action="{{ item.action }}" data-pnl="{{ item.unrealized_pnl }}"
                                 data-buy-gap="{{ item.buy_gap }}" data-reduce-gap="{{ item.reduce_gap }}"
                                 data-in-portfolio="{{ item.in_portfolio|yesno:'true,false' }}">
+                                <td class="fw-bold col-instrument">
+                                    {% if item.in_portfolio or item.realized_profit %}
+                                    <a href="{% url 'lot_breakdown' item.instrument_id %}{% if is_family_view %}?user_id={{ target_user.id }}{% elif is_consolidated %}?user_id=consolidated{% endif %}"
+                                         class="text-primary me-1 small" title="Lot Breakdown"><i
+                                              class="fas fa-layer-group"></i></a>
+                                    {% endif %}
+                                    <span title="{% if item.notes %}Notes: {{ item.notes }}{% else %}{{ item.symbol }}{% endif %}" 
+                                          style="cursor: pointer; border-bottom: 1px dotted #ccc;"
+                                          onclick="openStockModal('{{ item.symbol }}')">
+                                        {{ item.name }}
+                                    </span>
+                                </td>
+                                <td>{{ item.quantity }}</td>
+                                <td>&#8377;{{ item.avg_cost|inr_format }}</td>
+                                <td class="fw-semibold">&#8377;{{ item.ltp|inr_format }}</td>
+                                <td class="fw-semibold text-center {% if item.total_day_change >= 0 %}text-success{% else %}text-danger{% endif %} text-nowrap">
+                                    {% if item.total_day_change > 0 %}<span class="sign-small">+</span>{% endif %}&#8377;{{ item.total_day_change|inr_format }}</td>
+                                <td class="fw-semibold text-center {% if item.day_change_pct >= 0 %}text-success{% else %}text-danger{% endif %} text-nowrap">
+                                    {% if item.day_change_pct > 0 %}<span class="sign-small">+</span>{% endif %}{{ item.day_change_pct|inr_format }}%</td>
+                                <td class="text-center">&#8377;{{ item.invested_amount|inr_format }}</td>
+                                <td class="text-center">&#8377;{{ item.current_value|inr_format }}</td>
+                                <td
+                                    class="fw-bold text-center {% if item.unrealized_pnl >= 0 %}text-success{% else %}text-danger{% endif %} text-nowrap">
+                                    {% if item.unrealized_pnl > 0 %}<span class="sign-small">+</span>{% endif %}&#8377;{{ item.unrealized_pnl|inr_format }}</td>
+                                <td
+                                    class="fw-bold text-center {% if item.pnl_percent >= 0 %}text-success{% else %}text-danger{% endif %} text-nowrap">
+                                    {% if item.pnl_percent > 0 %}<span class="sign-small">+</span>{% endif %}{{ item.pnl_percent|inr_format }}%</td>
+                                <td class="text-center">
+                                    <span
+                                        class="badge px-3 py-2 rounded-pill {% if item.action == 'SELL' %}bg-danger-subtle text-danger border border-danger-subtle{% elif item.action == 'BUY' %}bg-success-subtle text-success border border-success-subtle{% elif item.action == 'REDUCE' %}bg-warning-subtle text-warning border border-warning-subtle{% else %}bg-light text-dark border{% endif %}"
+                                        title="{% if item.action == 'BUY' %}Profit, P/E, and 52-week high gap are favorable, invest up to target capital.{% elif item.action == 'REDUCE' %}Investment high; reduce to target capital when possible.{% elif item.action == 'HOLD' %}No action required.{% elif item.action == 'SELL' %}22% profit target achieved.{% endif %}">
+                                        {% if item.action == 'REDUCE' %}REDU{% else %}{{ item.action }}{% endif %}
+                                    </span>
+                                </td>
                                 <td>
                                     <div class="d-flex gap-1 justify-content-center">
                                         {% if not is_consolidated %}
@@ -424,40 +458,6 @@
                                         <span class="text-muted small"><i class="fas fa-lock opacity-50"></i></span>
                                         {% endif %}
                                     </div>
-                                </td>
-                                <td class="fw-bold col-instrument">
-                                    {% if item.in_portfolio or item.realized_profit %}
-                                    <a href="{% url 'lot_breakdown' item.instrument_id %}{% if is_family_view %}?user_id={{ target_user.id }}{% elif is_consolidated %}?user_id=consolidated{% endif %}"
-                                         class="text-primary me-1 small" title="Lot Breakdown"><i
-                                             class="fas fa-layer-group"></i></a>
-                                    {% endif %}
-                                    <span title="{% if item.notes %}Notes: {{ item.notes }}{% else %}{{ item.symbol }}{% endif %}" 
-                                          style="cursor: pointer; border-bottom: 1px dotted #ccc;"
-                                          onclick="openStockModal('{{ item.symbol }}')">
-                                        {{ item.name }}
-                                    </span>
-                                </td>
-                                <td>{{ item.quantity }}</td>
-                                <td>&#8377;{{ item.avg_cost|inr_format }}</td>
-                                <td class="fw-semibold">&#8377;{{ item.ltp|inr_format }}</td>
-                                <td class="fw-semibold text-center {% if item.total_day_change >= 0 %}text-success{% else %}text-danger{% endif %} text-nowrap">
-                                    {% if item.total_day_change > 0 %}<span class="sign-small">+</span>{% endif %}&#8377;{{ item.total_day_change|inr_format }}</td>
-                                <td class="fw-semibold text-center {% if item.day_change_pct >= 0 %}text-success{% else %}text-danger{% endif %} text-nowrap">
-                                    {% if item.day_change_pct > 0 %}<span class="sign-small">+</span>{% endif %}{{ item.day_change_pct|inr_format }}%</td>
-                                <td class="text-center">&#8377;{{ item.invested_amount|inr_format }}</td>
-                                <td class="text-center">&#8377;{{ item.current_value|inr_format }}</td>
-                                <td
-                                    class="fw-bold text-center {% if item.unrealized_pnl >= 0 %}text-success{% else %}text-danger{% endif %} text-nowrap">
-                                    {% if item.unrealized_pnl > 0 %}<span class="sign-small">+</span>{% endif %}&#8377;{{ item.unrealized_pnl|inr_format }}</td>
-                                <td
-                                    class="fw-bold text-center {% if item.pnl_percent >= 0 %}text-success{% else %}text-danger{% endif %} text-nowrap">
-                                    {% if item.pnl_percent > 0 %}<span class="sign-small">+</span>{% endif %}{{ item.pnl_percent|inr_format }}%</td>
-                                <td class="text-center">
-                                    <span
-                                        class="badge px-3 py-2 rounded-pill {% if item.action == 'SELL' %}bg-danger-subtle text-danger border border-danger-subtle{% elif item.action == 'BUY' %}bg-success-subtle text-success border border-success-subtle{% elif item.action == 'REDUCE' %}bg-warning-subtle text-warning border border-warning-subtle{% else %}bg-light text-dark border{% endif %}"
-                                        title="{% if item.action == 'BUY' %}Profit, P/E, and 52-week high gap are favorable, invest up to target capital.{% elif item.action == 'REDUCE' %}Investment high; reduce to target capital when possible.{% elif item.action == 'HOLD' %}No action required.{% elif item.action == 'SELL' %}22% profit target achieved.{% endif %}">
-                                        {% if item.action == 'REDUCE' %}REDU{% else %}{{ item.action }}{% endif %}
-                                    </span>
                                 </td>
                                 <td class="small text-muted" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
                                     {% if "TgtCap" in item.reason %}title="Qty can buy: {{ item.target_qty }}"{% endif %}>
