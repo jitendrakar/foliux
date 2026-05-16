@@ -26,7 +26,7 @@ from .models import (
     NPSFund, NPSPortfolio, NPSTransaction, FixedAsset, OtherAsset,
     Loan, LoanPayment, IPO, ChatbotKnowledge, Watchlist, Dividend,
     InvestmentGoal, SignalNotificationState, FamilyLink, FinancialYearData,
-    MFSIP, PortfolioValueHistory, HiddenSignal, UserReview
+    MFSIP, PortfolioValueHistory, HiddenSignal, UserReview, NewsAlert
 )
 from .forms import (
     UploadFileForm, PortfolioForm, ManualPortfolioForm, ManualSellForm,
@@ -512,6 +512,7 @@ def landing(request):
         'nse_news': landing_data.get('nse_news', []),
         'financial_news': landing_data.get('financial_news', []),
         'reviews': UserReview.objects.filter(is_public=True),
+        'news_alerts': NewsAlert.objects.all().order_by('-news_date', '-created_at')[:15],
         'last_updated': datetime.datetime.now(),
     }
     return render(request, 'core/landing.html', context)
@@ -1736,6 +1737,7 @@ def dashboard(request):
         'history_labels': history_labels,
         'history_values': history_values,
         'history_invested': history_invested,
+        'news_alerts': NewsAlert.objects.filter(instrument__in=[r['instrument_obj'] for r in recommendations if r.get('in_portfolio')]).order_by('-news_date', '-created_at')[:10]
     }
 
     # Record current value history for users

@@ -1100,6 +1100,65 @@
         animation-delay: 0.3s;
         opacity: 0;
     }
+
+    /* ===== STOCK NEWS SECTION ===== */
+    .news-section {
+        padding: 5rem 0;
+        background: #f8fafc;
+    }
+    .news-card {
+        background: #fff;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+        padding: 24px;
+        height: 100%;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    .news-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        border-color: #3b82f6;
+    }
+    .news-tag {
+        font-size: 0.7rem;
+        font-weight: 800;
+        color: #3b82f6;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 8px;
+        display: block;
+    }
+    .news-card-title {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #1e293b;
+        margin-bottom: 12px;
+        line-height: 1.4;
+    }
+    .news-summary {
+        font-size: 0.9rem;
+        color: #64748b;
+        line-height: 1.6;
+        margin-bottom: 20px;
+        flex-grow: 1;
+    }
+    .news-link {
+        font-weight: 700;
+        font-size: 0.85rem;
+        color: #3b82f6;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: gap 0.2s;
+    }
+    .news-link:hover {
+        gap: 10px;
+        color: #2563eb;
+    }
 </style>
 {% endblock %}
 
@@ -2242,6 +2301,48 @@
         initReviewMarquee();
     }); // End of DOMContentLoaded
 </script>
+
+<!-- Stock News Section -->
+<section id="news-section" class="news-section">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-900 text-dark mb-2">Latest Stock Insights</h2>
+            <p class="text-muted fw-bold">Automated updates for stocks in our strategy and your portfolio.</p>
+        </div>
+        
+        {% if news_alerts %}
+        <div class="row g-4">
+            {% for alert in news_alerts %}
+            <div class="col-md-6 col-lg-4">
+                <div class="news-card">
+                    <span class="news-tag">{{ alert.instrument.symbol }}</span>
+                    <h3 class="news-card-title">{{ alert.title }}</h3>
+                    <p class="news-summary">{{ alert.summary|truncatewords:40 }}</p>
+                    <div class="mt-auto">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted x-small fw-bold">{{ alert.news_date|date:"d M Y" }}</span>
+                            {% if alert.url %}
+                            <a href="{{ alert.url }}" target="_blank" class="news-link">
+                                Read Full Story <i class="fas fa-arrow-right"></i>
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <div class="bg-light rounded-4 p-5 d-inline-block">
+                <i class="fas fa-newspaper text-muted mb-3" style="font-size: 3rem; opacity: 0.3;"></i>
+                <h5 class="text-muted">No news updates for today yet.</h5>
+                <p class="text-muted small">Our automated system checks for relevant stock news every day at 9 AM.</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
 
 <!-- Intro Video Modal (Re-Styled New Gen) -->
 <div class="modal fade" id="introVideoModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="introVideoLabel" aria-hidden="true">

@@ -250,6 +250,12 @@
         {% endif %}
     </a>
 </li>
+<li class="nav-item">
+    <a class="nav-link" href="#news-section">News</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{% url 'feedback' %}">Feedback</a>
+</li>
 
 {% if user.is_authenticated %}
     <li class="nav-item">
@@ -366,7 +372,8 @@
         <a href="{% url 'landing' %}" class="text-decoration-none text-muted small fw-bold text-uppercase">Home</a>
         <a href="{% url 'strategy' %}" class="text-decoration-none text-muted small fw-bold text-uppercase">Strategy</a>
         <a href="{% url 'education_hub' %}" class="text-decoration-none text-muted small fw-bold text-uppercase">Education</a>
-        <a href="https://foliux.com/feedback/" class="text-decoration-none text-muted small fw-bold">FEEDBACK</a>
+        <a href="#news-section" class="text-decoration-none text-muted small fw-bold text-uppercase">News</a>
+        <a href="{% url 'feedback' %}" class="text-decoration-none text-muted small fw-bold text-uppercase">Feedback</a>
       </div>
       <hr class="my-4 opacity-25" style="max-width: 800px; margin: 0 auto;">
       <p class="mb-0 text-muted small">© 2026 FOLIUX. Rule-based investing for disciplined wealth creation.</p>
