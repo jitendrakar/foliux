@@ -1028,3 +1028,18 @@ class HiddenSignal(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - Hidden: {self.instrument.symbol}"
+
+class NewsAlert(models.Model):
+    instrument = models.ForeignKey(Instrument, on_delete=models.CASCADE, related_name='news_alerts')
+    message_id = models.CharField(max_length=255, unique=True) # Gmail Message ID to prevent duplicates
+    title = models.CharField(max_length=255)
+    summary = models.TextField()
+    url = models.URLField(max_length=1000, null=True, blank=True)
+    alert_type = models.CharField(max_length=50, null=True, blank=True) # e.g. Positive, Negative
+    news_date = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+    def __str__(self):
+        return f"{self.instrument.symbol} - {self.title}"
+

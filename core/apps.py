@@ -20,6 +20,12 @@ class CoreConfig(AppConfig):
             except Exception as e:
                 print(f"Error running signal alerts: {e}")
 
+        def run_stock_news():
+            try:
+                call_command('process_stock_news')
+            except Exception as e:
+                print(f"Error running stock news: {e}")
+
         # Helper to avoid heavy imports at startup
         def scheduled_sync():
             from .utils import perform_sync
@@ -53,6 +59,7 @@ class CoreConfig(AppConfig):
             scheduler.add_job(scheduled_coin, 'interval', minutes=30, id='auto_update_coin', replace_existing=True)
             scheduler.add_job(scheduled_nps, 'interval', minutes=30, id='auto_update_nps', replace_existing=True)
             scheduler.add_job(run_alerts, 'cron', hour=10, minute=0, id='daily_signal_alerts', replace_existing=True)
+            scheduler.add_job(run_stock_news, 'cron', hour=9, minute=0, id='daily_stock_news', replace_existing=True)
             
             try:
                 print("Starting background scheduler...")
@@ -60,3 +67,4 @@ class CoreConfig(AppConfig):
                 print(f"Background scheduler started (Env: {'IIS' if is_iis else 'Other'}) with auto updates.")
             except Exception as e:
                 print(f"Failed to start scheduler: {e}")
+
