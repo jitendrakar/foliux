@@ -917,19 +917,15 @@
                 dataRows.forEach(row => {
                     const instrumentCell = row.querySelector('.col-instrument');
                     const text = instrumentCell ? instrumentCell.textContent.toLowerCase() : '';
-                    // Filter: match query
                     const matchesQuery = query === '' || text.includes(query);
-                    const show = matchesQuery;
-                    
-                    row.style.display = show ? '' : 'none';
-                    if (show) visibleCount++;
+                    row.style.display = matchesQuery ? '' : 'none';
+                    if (matchesQuery) visibleCount++;
                 });
 
                 if (emptyRow) {
                     emptyRow.style.display = (visibleCount === 0) ? '' : 'none';
                 }
                 
-                // Update title to reflect search
                 const viewTitle = document.getElementById('portfolio-view-title');
                 if (viewTitle) {
                     if (query !== '') {
@@ -937,11 +933,11 @@
                     } else {
                         viewTitle.innerHTML = '<i class="fas fa-list me-2"></i>Folio';
                     }
+                }
+            });
         }
-    });
-</script>
 
-<script>
+        // Ctrl + F Shortcut: Focus Search Input
         document.addEventListener('keydown', function(e) {
             if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
                 const searchInput = document.getElementById('portfolioSearch');
