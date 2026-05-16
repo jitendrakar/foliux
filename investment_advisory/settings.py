@@ -311,7 +311,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'foliuxits@gmail.com'
-EMAIL_HOST_PASSWORD = 'vdhddqssiroxpfnx'
+EMAIL_HOST_PASSWORD = 'ohxuntbhlyxwsukx'
 DEFAULT_FROM_EMAIL = f"Foliux <{EMAIL_HOST_USER}>"
 EMAIL_USE_SSL = False
 
