@@ -941,37 +941,6 @@
     });
 </script>
 
-{% if news_alerts %}
-<div class="row mt-5">
-    <div class="col-12">
-        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-            <div class="card-header bg-white border-0 py-3">
-                <h5 class="mb-0 fw-bold"><i class="fas fa-newspaper text-primary me-2"></i>Relevant Stock News</h5>
-            </div>
-            <div class="card-body p-0">
-                <div class="list-group list-group-flush">
-                    {% for alert in news_alerts %}
-                    <div class="list-group-item p-4 border-0 border-bottom">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <span class="badge bg-primary bg-opacity-10 text-primary fw-bold">{{ alert.instrument.symbol }}</span>
-                            <span class="text-muted small fw-bold">{{ alert.news_date|date:"d M Y" }}</span>
-                        </div>
-                        <h6 class="fw-bold mb-2">{{ alert.title }}</h6>
-                        <p class="text-muted small mb-3">{{ alert.summary|truncatewords:50 }}</p>
-                        {% if alert.url %}
-                        <a href="{{ alert.url }}" target="_blank" class="btn btn-sm btn-link text-primary fw-bold p-0 text-decoration-none">
-                            Read Full Story <i class="fas fa-arrow-right ms-1"></i>
-                        </a>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
-
 <script>
         document.addEventListener('keydown', function(e) {
             if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
