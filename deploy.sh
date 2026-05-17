@@ -7,7 +7,7 @@
 # Configuration
 LIVE_DIR="/home/foliux"
 GIT_DIR="/home/foliux_git"
-VENV_PATH="$LIVE_DIR/venv_local"
+VENV_PATH="$LIVE_DIR/venv"
 SERVICE_NAME="foliux"
 REPO_URL="https://JITENDRAKAR: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@github.com/JITENDRAKAR/foliux.git"
 
@@ -77,7 +77,7 @@ fi
 # This ensures that your .env and database are never overwritten by Git
 rsync -av --delete \
     --exclude '.git/' \
-    --exclude 'venv_local/' \
+    --exclude 'venv/' \
     --exclude '__pycache__/' \
     --exclude '.env' \
     --exclude 'db.sqlite3' \
