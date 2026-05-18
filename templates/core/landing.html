@@ -1446,16 +1446,7 @@
                     <a href="{% url 'strategy' %}" class="btn btn-outline-light btn-lg rounded-pill px-4">View
                         Strategies</a>
                 </div>
-                
-                {% if not user.is_authenticated %}
-                <div class="mt-4 p-3 rounded-4 shadow-sm border-0 d-flex align-items-center justify-content-between flex-wrap gap-3 animate-in animate-delay-2" style="max-width: 580px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12) !important; backdrop-filter: blur(10px);">
-                    <div style="flex: 1; min-width: 250px;">
-                        <h5 class="fw-bold mb-1 text-white" style="font-size: 0.95rem;"><i class="fab fa-google text-info me-2"></i>Seamless Google Login</h5>
-                        <p class="small text-white-50 mb-0" style="font-size: 0.78rem;">Experience a smooth, frictionless authentication sequence without any redirects or extra password forms.</p>
-                    </div>
-                    <div id="g_id_signin_button" style="min-width: 190px;"></div>
-                </div>
-                {% endif %}
+
             </div>
             <div class="col-lg-5">
                 <div class="row g-3">
