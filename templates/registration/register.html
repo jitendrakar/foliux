@@ -165,45 +165,23 @@
           <p class="text-center text-muted small mb-4 fw-semibold text-uppercase" style="letter-spacing:.05em">Continue
             with</p>
 
-          <div class="social-icons-row d-flex justify-content-center gap-3 mb-4">
-            <!-- Google -->
-            <a href="{% url 'google_login' %}" class="social-icon-btn d-flex align-items-center justify-content-center rounded-3 border" title="Continue with Google"
-               style="width: 52px; height: 52px; transition: all 0.2s; background: #fff;">
-              <svg width="24" height="24" viewBox="0 0 48 48">
-                <path fill="#4285F4" d="M46.145 24.5c0-1.616-.145-3.17-.415-4.664H24v8.821h12.445c-.537 2.9-2.17 5.355-4.627 7.005l7.482 5.81C43.36 37.354 46.145 31.39 46.145 24.5z" />
-                <path fill="#34A853" d="M24 47c6.24 0 11.475-2.065 15.3-5.592l-7.482-5.81c-2.07 1.388-4.72 2.21-7.818 2.21-6.012 0-11.1-4.06-12.926-9.525L3.545 34.246C7.345 41.78 15.075 47 24 47z" />
-                <path fill="#FBBC05" d="M11.074 28.283A13.9 13.9 0 0 1 10.5 24c0-1.49.258-2.94.574-4.283L3.545 13.754A22.93 22.93 0 0 0 1 24c0 3.69.882 7.183 2.545 10.246l7.529-5.963z" />
-                <path fill="#EA4335" d="M24 10.191c3.39 0 6.435 1.165 8.826 3.454l6.614-6.614C35.47 3.297 30.237 1 24 1 15.075 1 7.345 6.22 3.545 13.754l7.529 5.963C12.9 14.252 17.988 10.191 24 10.191z" />
-              </svg>
-            </a>
-
-            <!-- Apple -->
-            <a href="javascript:void(0)" class="social-icon-btn social-icon-btn-disabled d-flex align-items-center justify-content-center rounded-3 border" title="Apple Login - Coming Soon"
-               style="width: 52px; height: 52px; transition: all 0.2s; background: #fff;">
-               <svg width="22" height="22" viewBox="0 0 384 512" fill="#000">
-                 <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/>
-               </svg>
-            </a>
-
-            <!-- Microsoft -->
-            <a href="javascript:void(0)" class="social-icon-btn social-icon-btn-disabled d-flex align-items-center justify-content-center rounded-3 border" title="Microsoft Login - Coming Soon"
-               style="width: 52px; height: 52px; transition: all 0.2s; background: #fff;">
-              <svg width="22" height="22" viewBox="0 0 21 21">
-                <rect x="1" y="1" width="9" height="9" fill="#f25022" />
-                <rect x="11" y="1" width="9" height="9" fill="#7fba00" />
-                <rect x="1" y="11" width="9" height="9" fill="#00a4ef" />
-                <rect x="11" y="11" width="9" height="9" fill="#ffb900" />
-              </svg>
-            </a>
-
-            <!-- Facebook -->
-            <a href="javascript:void(0)" class="social-icon-btn social-icon-btn-disabled d-flex align-items-center justify-content-center rounded-3 border" title="Facebook Login - Coming Soon"
-               style="width: 52px; height: 52px; transition: all 0.2s; background: #fff;">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="#1877F2">
-                <path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.932-1.956 1.887v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z" />
-              </svg>
-            </a>
+          {% if GOOGLE_CLIENT_ID %}
+          <div class="mb-4">
+              <!-- Premium GSI Sign-In Button Container -->
+              <div id="g_id_signin_button" class="w-100 d-flex justify-content-center mb-3"></div>
+              
+              <div class="d-flex justify-content-center gap-2">
+                  <a href="javascript:void(0)" class="social-btn social-btn-disabled flex-grow-1" style="font-size: 0.85rem; padding: 0.4rem;" title="Microsoft Login - Coming Soon">
+                      <i class="fab fa-microsoft me-2" style="color: #00a4ef;"></i>
+                      Microsoft
+                  </a>
+                  <a href="javascript:void(0)" class="social-btn social-btn-disabled flex-grow-1" style="font-size: 0.85rem; padding: 0.4rem;" title="Facebook Login - Coming Soon">
+                      <i class="fab fa-facebook me-2" style="color: #1877F2;"></i>
+                      Facebook
+                  </a>
+              </div>
           </div>
+          {% endif %}
 
           <div class="or-divider"><span>or sign up with email</span></div>
 

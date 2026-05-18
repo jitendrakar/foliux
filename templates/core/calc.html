@@ -449,10 +449,10 @@
               <h2 class="h3 fw-extrabold mb-1" id="activeCalcTitle">Loading Calculator...</h2>
               <p class="text-muted small mb-0" id="activeCalcDescription">Please wait while the computational engine initializes.</p>
             </div>
-            <div class="d-flex gap-2 mt-2 mt-sm-0">
+            <div class="d-flex flex-wrap gap-2 mt-2 mt-sm-0">
               <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="saveToHistory()" title="Save calculation details to local history"><i class="fas fa-history me-1"></i>Save</button>
-              <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="exportCalculationCSV()" title="Export results as CSV"><i class="fas fa-file-csv me-1"></i>Export</button>
               <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="copyShareableSummary()" title="Copy shareable text summary"><i class="fas fa-share-alt me-1"></i>Share</button>
+              <button class="btn btn-sm btn-success rounded-pill px-3" onclick="downloadPDFReport()" title="Download personalized PDF report"><i class="fas fa-file-pdf me-1"></i>PDF Report</button>
             </div>
           </div>
 
@@ -616,6 +616,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'js/jspdf.umd.min.js' %}"></script>
 <script>
   // Complete JavaScript Simulators Registry & Computational Core
   const CALCULATORS_REGISTRY = {
@@ -1910,13 +1911,293 @@
     populateCalculatorList(cat, e.target.value);
   });
 
+  // PDF Report Generation Core with client personalization and seamless login redirection
+  window.downloadPDFReport = function() {
+    try {
+      const isAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
+      
+      if (!isAuthenticated) {
+        if (confirm("Please log in or register to download your personalized wealth projection PDF report. Your customized parameters will be preserved!")) {
+          const calc = CALCULATORS_REGISTRY[activeCalculatorId];
+          const params = {};
+          calc.inputs.forEach(inp => {
+            const el = document.getElementById(`input_${inp.key}`);
+            params[inp.key] = el ? el.value : (inp.default || 0);
+          });
+          const queryString = new URLSearchParams({
+            calc_id: activeCalculatorId,
+            ...params,
+            trigger_download: 'true'
+          }).toString();
+          
+          const nextUrl = window.location.pathname + '?' + queryString;
+          window.location.href = `/accounts/login/?next=${encodeURIComponent(nextUrl)}`;
+        }
+        return;
+      }
+      
+      // User is logged in, let's generate the PDF!
+      let jsPDFClass;
+      if (window.jspdf && window.jspdf.jsPDF) {
+        jsPDFClass = window.jspdf.jsPDF;
+      } else if (window.jsPDF) {
+        jsPDFClass = window.jsPDF;
+      } else {
+        alert("The PDF generation library (jsPDF) is not loaded yet. Please verify you have an active internet connection and that CDN scripts are not blocked by your browser/ad-blocker.");
+        return;
+      }
+      
+      const doc = new jsPDFClass({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+      
+      // Defensively parse Profile data to prevent server or javascript runtime crashes
+      const userName = "{% if request.user.profile %}{{ request.user.profile.full_name|default:request.user.username|escapejs }}{% else %}{{ request.user.username|escapejs }}{% endif %}";
+      const userDob = "{% if request.user.profile %}{{ request.user.profile.date_of_birth|date:'d-M-Y'|default:'Not Provided'|escapejs }}{% else %}Not Provided{% endif %}";
+      const userEmail = "{{ request.user.email|default:'Not Provided'|escapejs }}";
+      
+      const calc = CALCULATORS_REGISTRY[activeCalculatorId];
+      if (!calc) {
+        alert("Invalid calculator configuration. Please refresh and try again.");
+        return;
+      }
+      
+      // Retrieve inputs
+      const inputs = [];
+      calc.inputs.forEach(inp => {
+        const el = document.getElementById(`input_${inp.key}`);
+        const val = el ? el.value : (inp.default || 0);
+        const label = inp.label;
+        let displayVal = val;
+        if (inp.type === 'currency') displayVal = formatIndianCurrency(parseFloat(val)).replace(/₹/g, 'Rs. ');
+        else if (inp.type === 'percent') displayVal = val + '%';
+        inputs.push({ label, value: displayVal });
+      });
+      
+      // Retrieve outputs
+      const state = {};
+      calc.inputs.forEach(inp => {
+        const el = document.getElementById(`input_${inp.key}`);
+        state[inp.key] = el ? parseFloat(el.value) : (inp.default || 0);
+      });
+      
+      const output = calc.calculate(state);
+      const results = [];
+      if (output && output.metrics) {
+        output.metrics.forEach(metric => {
+          let valStr = '';
+          if (metric.type === 'currency') valStr = formatIndianCurrency(metric.value).replace(/₹/g, 'Rs. ');
+          else if (metric.type === 'percent') valStr = (typeof metric.value === 'number') ? metric.value.toFixed(2) + '%' : metric.value;
+          else valStr = (metric.value !== undefined && metric.value !== null) ? metric.value.toLocaleString() : '';
+          results.push({ label: metric.label, value: valStr });
+        });
+      }
+      
+      // Accent top bar
+      doc.setFillColor(0, 61, 124); // FOLIUX Primary Navy (#003D7C)
+      doc.rect(0, 0, 210, 8, 'F');
+      
+      // Title & Logo
+      doc.setTextColor(0, 61, 124);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(22);
+      doc.text("FOLIUX WEALTH STUDIO", 15, 22);
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(100, 116, 139); // Muted grey
+      doc.text("Rules-Based Investment & Portfolio Intelligence", 15, 27);
+      
+      // Date/Time of generation
+      const dateStr = new Date().toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      doc.setFontSize(9);
+      doc.text(`Generated: ${dateStr}`, 195, 22, { align: 'right' });
+      
+      // Horizontal Separator Line
+      doc.setDrawColor(226, 232, 240);
+      doc.setLineWidth(0.5);
+      doc.line(15, 33, 195, 33);
+      
+      // User Profile Box
+      doc.setFillColor(248, 250, 252);
+      doc.roundedRect(15, 38, 180, 24, 3, 3, 'F');
+      doc.setDrawColor(226, 232, 240);
+      doc.roundedRect(15, 38, 180, 24, 3, 3, 'S');
+      
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(0, 61, 124);
+      doc.text("CLIENT PROJECTION PROFILE", 20, 43);
+      
+      doc.setFontSize(10);
+      doc.setTextColor(15, 23, 42);
+      doc.text(`Name: ${userName}`, 20, 50);
+      doc.text(`Date of Birth: ${userDob}`, 20, 56);
+      
+      doc.text(`Account Email: ${userEmail}`, 110, 50);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(100, 116, 139);
+      doc.text("Confidential Wealth Projection Document", 110, 56);
+      
+      // Calculator Description Section
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.setTextColor(0, 61, 124);
+      doc.text(calc.title, 15, 72);
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(15, 23, 42);
+      const splitDesc = doc.splitTextToSize(calc.description, 180);
+      doc.text(splitDesc, 15, 78);
+      
+      // Parameters vs Projections Grid
+      const yStart = 92;
+      
+      // Left: Inputs
+      doc.setFillColor(248, 250, 252);
+      doc.roundedRect(15, yStart, 86, 75, 3, 3, 'F');
+      doc.roundedRect(15, yStart, 86, 75, 3, 3, 'S');
+      
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(0, 61, 124);
+      doc.text("INPUT PARAMETERS", 22, yStart + 8);
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(15, 23, 42);
+      let yPos = yStart + 18;
+      inputs.forEach(inp => {
+        doc.setFont("helvetica", "bold");
+        doc.text(inp.label, 22, yPos);
+        doc.setFont("helvetica", "normal");
+        doc.text(inp.value, 22, yPos + 6);
+        yPos += 16;
+      });
+      
+      // Right: Outputs
+      doc.setFillColor(240, 253, 244);
+      doc.roundedRect(109, yStart, 86, 75, 3, 3, 'F');
+      doc.setDrawColor(187, 247, 208);
+      doc.roundedRect(109, yStart, 86, 75, 3, 3, 'S');
+      
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(22, 101, 52);
+      doc.text("LIVE PROJECTIONS", 116, yStart + 8);
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(15, 23, 42);
+      yPos = yStart + 18;
+      results.forEach(res => {
+        doc.setFont("helvetica", "bold");
+        doc.text(res.label, 116, yPos);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(22, 101, 52);
+        doc.text(res.value, 116, yPos + 6);
+        doc.setTextColor(15, 23, 42);
+        yPos += 16;
+      });
+      
+      // Disclaimer Summary
+      const yCompliance = 180;
+      doc.setFillColor(248, 250, 252);
+      doc.roundedRect(15, yCompliance, 180, 75, 3, 3, 'F');
+      doc.setDrawColor(226, 232, 240);
+      doc.roundedRect(15, yCompliance, 180, 75, 3, 3, 'S');
+      
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(0, 61, 124);
+      doc.text("REGULATORY TRANSPARENCY & DISCLAIMER SUMMARY", 20, yCompliance + 6);
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(100, 116, 139);
+      
+      const textSEBI = "SEBI Disclaimer: Simulation tools provided by FOLIUX are solely for educational purposes and do not constitute solicitation or recommendations to buy, sell, or hold securities. These projections are mathematical estimations based on past growth performance and do not guarantee future returns. Mutual fund, stock, and cryptocurrency investments are subject to market risks. Read all scheme related documents carefully. Past performance does not indicate future results.";
+      const splitSEBI = doc.splitTextToSize(textSEBI, 170);
+      doc.text(splitSEBI, 20, yCompliance + 13);
+      
+      const textRisk = "Stocks & Cryptocurrencies Risk Warning: Trading high-volatility financial instruments carries a highly significant risk of capital loss. Simulators model linear rate expectations; real market assets incur compounding volatility and potential drawdown events.";
+      const splitRisk = doc.splitTextToSize(textRisk, 170);
+      doc.text(splitRisk, 20, yCompliance + 35);
+      
+      const textTax = "Tax Calculation Disclaimer: Tax regimes, HRA exempt rules, and salary breakdowns are estimated under the provisions of the Income Tax Act, 1961 (and subsequent amendments). Surcharges, rebates, and individual deductions may vary; consult a qualified Chartered Accountant (CA) or certified tax advisor before filing.";
+      const splitTax = doc.splitTextToSize(textTax, 170);
+      doc.text(splitTax, 20, yCompliance + 51);
+      
+      // Footer Branding
+      doc.setFontSize(8);
+      doc.setTextColor(148, 163, 184);
+      doc.text("FOLIUX.com - Empowering Disciplined Compounding", 15, 275);
+      doc.text("Page 1 of 1", 195, 275, { align: 'right' });
+      
+      const cleanUserName = userName ? userName.toLowerCase().replace(/[^a-z0-9]/g, '_') : 'client';
+      const filename = `foliux_${activeCalculatorId}_report_${cleanUserName}.pdf`;
+      doc.save(filename);
+    } catch (err) {
+      console.error("PDF Download Error Details:", err);
+      alert("Failed to download PDF: " + err.message + "\n\nPlease open the browser developer console (F12) to see details.");
+    }
+  };
+
   // Initialization Core
   window.addEventListener('DOMContentLoaded', () => {
     initTheme();
     populateCalculatorList('all', '');
-    selectCalculator('sip');
+    
+    // Parse URL query parameters to pre-load customized calculation parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const calcId = urlParams.get('calc_id') || 'sip';
+    
+    selectCalculator(calcId);
+    
+    const calc = CALCULATORS_REGISTRY[calcId];
+    if (calc) {
+      let hasCustomParams = false;
+      calc.inputs.forEach(inp => {
+        const urlVal = urlParams.get(inp.key);
+        if (urlVal !== null) {
+          const val = parseFloat(urlVal);
+          if (!isNaN(val)) {
+            const slider = document.getElementById(`slider_${inp.key}`);
+            const input = document.getElementById(`input_${inp.key}`);
+            if (slider) slider.value = val;
+            if (input) input.value = val;
+            hasCustomParams = true;
+          }
+        }
+      });
+      if (hasCustomParams) {
+        runActiveCalculation();
+      }
+    }
+    
     loadHistory();
     runTaxComparison();
+    
+    // Automatically trigger PDF download if redirected back after authentication
+    if (urlParams.get('trigger_download') === 'true') {
+      // Clean query parameters from URL history bar to prevent loops on page refresh
+      const cleanUrl = window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
+      
+      setTimeout(() => {
+        downloadPDFReport();
+      }, 500);
+    }
   });
 </script>
 {% endblock %}

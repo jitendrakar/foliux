@@ -483,32 +483,7 @@
     </div>
   </div>
 
-  {% if not user.is_authenticated and GOOGLE_CLIENT_ID %}
-  <!-- Premium Google Sign-In Prompt Modal -->
-  <div class="modal fade" id="googlePromptModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="googlePromptModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content border-0 shadow-lg animate__animated animate__fadeInUp" style="border-radius: 24px; background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(15px); animation-duration: 0.5s;">
-        <div class="modal-body text-center p-5">
-          <div class="mb-4">
-            {% load static %}
-            <img src="{% static 'images/logo.png' %}" alt="FOLIUX Logo" class="rounded-4 shadow-sm mb-3 animate__animated animate__pulse animate__infinite" style="width: 72px; height: 72px; animation-duration: 3s;">
-            <h3 class="fw-bold mb-2" style="color: var(--primary-color); letter-spacing: -0.02em;">Welcome to FOLIUX</h3>
-            <p class="text-muted small px-3">Unlock rule-based wealth tracking, real-time signals, and advanced investment tools. Sign in with your Google account to continue.</p>
-          </div>
-          
-          <!-- Standard Google Sign-In Button Container -->
-          <div class="d-flex justify-content-center my-4">
-            <div id="g_id_signin_modal_button"></div>
-          </div>
-          
-          <div class="mt-4">
-            <button type="button" class="btn btn-link text-decoration-none text-muted small fw-bold" data-bs-dismiss="modal">Browse Publicly First</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  {% endif %}
+  <!-- Google prompt modal removed in favor of clean non-intrusive button-driven GSI login -->
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
@@ -665,56 +640,38 @@
   {% include 'core/chatbot.html' %}
 
   {% if not user.is_authenticated and GOOGLE_CLIENT_ID %}
-  <!-- Google One Tap JavaScript API -->
+  <!-- Google Sign-In Integration -->
   <script>
     window.addEventListener('load', function() {
       if (typeof google !== 'undefined') {
         google.accounts.id.initialize({
           client_id: "{{ GOOGLE_CLIENT_ID }}",
           callback: handleCredentialResponse,
-          auto_select: true,
-          cancel_on_tap_outside: false
+          auto_select: false, // Ensure user is NOT logged in automatically
+          cancel_on_tap_outside: true
         });
         
-        // Display the One Tap prompt
+        // Detect if active Gmail account is logged in and display standard One Tap prompt (NPITS style)
         google.accounts.id.prompt((notification) => {
           console.log('Google Identity Moment Type:', notification.getMomentType());
-          if (notification.isNotDisplayed()) {
-            console.warn('One Tap not displayed:', notification.getNotDisplayedReason());
-            showFallbackModal();
-          } else if (notification.isSkippedMoment()) {
-            console.warn('One Tap skipped:', notification.getSkippedReason());
-            showFallbackModal();
-          } else if (notification.isDismissedMoment()) {
-            console.warn('One Tap dismissed:', notification.getDismissedReason());
-            showFallbackModal();
-          }
         });
-      }
-    });
-
-    function showFallbackModal() {
-      // Ensure the modal element exists and show it
-      const modalEl = document.getElementById('googlePromptModal');
-      if (modalEl) {
-        setTimeout(() => {
-          const modal = new bootstrap.Modal(modalEl);
-          modal.show();
-          
-          // Render the official Google Sign-In Button in the modal
+        
+        // Render the Google Sign-in Button in the designated container if present
+        const btnContainer = document.getElementById("g_id_signin_button");
+        if (btnContainer) {
           google.accounts.id.renderButton(
-            document.getElementById("g_id_signin_modal_button"),
+            btnContainer,
             { 
-              theme: "filled_blue", 
+              theme: "outline", 
               size: "large", 
-              width: 300, 
+              width: btnContainer.offsetWidth || 340, 
               shape: "pill",
               text: "continue_with"
             }
           );
-        }, 1200); // 1.2s delay for perfect transition aesthetics
+        }
       }
-    }
+    });
 
     function handleCredentialResponse(response) {
       const formData = new FormData();
@@ -737,13 +694,6 @@
       })
       .catch(err => console.error('Error:', err));
     }
-
-    // Handle Navbar Login Click
-    document.getElementById('nav-login-link')?.addEventListener('click', function(e) {
-      if (typeof google !== 'undefined') {
-        google.accounts.id.prompt();
-      }
-    });
   </script>
   {% endif %}
 </body>
