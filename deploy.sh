@@ -82,7 +82,6 @@ rsync -av --delete \
     --exclude '.env' \
     --exclude 'db.sqlite3' \
     --exclude 'media/' \
-    --exclude 'static/' \
     --exclude 'staticfiles/' \
     $GIT_DIR/ $LIVE_DIR/
 check_status "File sync"
