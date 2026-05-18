@@ -138,8 +138,5 @@ fi
 echo -e "\n${GREEN}==========================================${NC}"
 echo -e "${GREEN}   DEPLOYMENT COMPLETED SUCCESSFULLY!     ${NC}"
 echo -e "${GREEN}==========================================${NC}"
-# Optional: run the daily news command to verify email flow
-echo -e "${YELLOW}Running daily news job for verification...${NC}"
-$VENV_PATH/bin/python manage.py process_stock_news
 
 echo -e "${BLUE}Finished at: $(date)${NC}"

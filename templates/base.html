@@ -647,12 +647,14 @@
         google.accounts.id.initialize({
           client_id: "{{ GOOGLE_CLIENT_ID }}",
           callback: handleCredentialResponse,
-          auto_select: true, // Auto-select active Gmail account (NPITS style)
-          cancel_on_tap_outside: false
+          auto_select: false, // Ensure user is NOT logged in automatically
+          cancel_on_tap_outside: true
         });
         
-        // Trigger One Tap auto sign-in dialog prompt
-        google.accounts.id.prompt();
+        // Detect if active Gmail account is logged in and display standard One Tap prompt (NPITS style)
+        google.accounts.id.prompt((notification) => {
+          console.log('Google Identity Moment Type:', notification.getMomentType());
+        });
         
         // Render the Google Sign-in Button in the designated container if present
         const btnContainer = document.getElementById("g_id_signin_button");
