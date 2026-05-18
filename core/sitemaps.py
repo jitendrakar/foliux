@@ -19,6 +19,7 @@ class StaticViewSitemap(sitemaps.Sitemap):
             'ipo',
             'strategy',
             'feedback',
+            'wealth_calculators',
         ]
 
     def location(self, item):
