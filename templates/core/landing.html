@@ -2545,6 +2545,18 @@
         background-color: rgba(245, 158, 11, 0.1) !important;
         border-color: rgba(245, 158, 11, 0.3) !important;
     }
+
+    html[data-theme="dark"] .btn-close {
+        filter: invert(1) grayscale(100%) brightness(200%) !important;
+        opacity: 0.8;
+        transition: filter 0.2s ease, opacity 0.2s ease;
+    }
+
+    html[data-theme="dark"] .btn-close:hover {
+        filter: invert(1) grayscale(100%) brightness(250%) !important;
+        opacity: 1 !important;
+    }
+
     
     @media (max-width: 991px) {
         .modal-xl { max-width: 95%; margin: 10px auto; }
