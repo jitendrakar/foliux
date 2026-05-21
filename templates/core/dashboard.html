@@ -460,7 +460,7 @@
                                     </span>
                                 </td>
                                 <td class="small text-muted" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
-                                    {% if "TgtCap" in item.reason %}title="Qty can buy: {{ item.target_qty }}"{% endif %}>
+                                    {% if "TgtCap" in item.reason %}title="Qty can buy: {{ item.target_qty }}"{% elif "Pft >" in item.reason %}title="Qty can sell = {{ item.qty_can_sell }}"{% endif %}>
                                     {{ item.reason }}
                                 </td>
                                 <td class="fw-bold text-center {% if item.realized_profit >= 0 %}text-success{% else %}text-danger{% endif %} text-nowrap">

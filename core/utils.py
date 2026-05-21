@@ -879,6 +879,10 @@ def get_recommendations(user, is_consolidated=False):
         total_day_change_item = absolute_change * quantity
         day_change_pct = (absolute_change / previous_close * 100) if previous_close > 0 else 0
 
+        qty_can_sell = 0
+        if avg_cost > 0:
+            qty_can_sell = int(abs(quantity - ((realized_profit + unrealized) / avg_cost)))
+
         recommendations.append({
             'symbol': symbol,
             'name': inst.name,
@@ -901,6 +905,7 @@ def get_recommendations(user, is_consolidated=False):
             'target_capital': buy_gap_formula,
             'target_qty': round(buy_gap_formula / ltp) if ltp > 0 else 0,
             'realized_profit': realized_profit,
+            'qty_can_sell': qty_can_sell,
             'in_portfolio': True if quantity > 0 else False,
             'lot_count': lot_counts.get(symbol, 0),
             'notes': data.get('notes', ''),
