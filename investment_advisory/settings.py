@@ -367,3 +367,8 @@ LOGGING = {
         },
     },
 }
+
+# Increase max upload size limits to 50MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 52428800  # 50 MB
+
