@@ -2,6 +2,26 @@
 {% load static %}
 {% load indian_numbers %}
 
+{% block meta_tags %}
+<title>Education Hub | Foliux Insights</title>
+<meta name="description" content="Learn rule-based investing, mutual funds, ETFs, stocks, and advanced wealth engineering strategies to achieve disciplined financial freedom.">
+<meta name="author" content="Foliux">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{ request.build_absolute_uri }}">
+<meta property="og:title" content="Education Hub | Foliux Insights">
+<meta property="og:description" content="Learn rule-based investing, mutual funds, ETFs, stocks, and advanced wealth engineering strategies to achieve disciplined financial freedom.">
+<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/logo.png' %}">
+
+<!-- Twitter -->
+<meta property="twitter:card" content="summary_large_image">
+<meta property="twitter:url" content="{{ request.build_absolute_uri }}">
+<meta property="twitter:title" content="Education Hub | Foliux Insights">
+<meta property="twitter:description" content="Learn rule-based investing, mutual funds, ETFs, stocks, and advanced wealth engineering strategies to achieve disciplined financial freedom.">
+<meta property="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/logo.png' %}">
+{% endblock %}
+
 
 {% block extra_css %}
 <style>
