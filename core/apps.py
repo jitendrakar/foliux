@@ -26,6 +26,12 @@ class CoreConfig(AppConfig):
             except Exception as e:
                 print(f"Error running stock news: {e}")
 
+        def run_daily_summary():
+            try:
+                call_command('send_daily_summary')
+            except Exception as e:
+                print(f"Error running daily summary: {e}")
+
         # Helper to avoid heavy imports at startup
         def scheduled_sync():
             from .utils import perform_sync
@@ -52,17 +58,50 @@ class CoreConfig(AppConfig):
 
         if (is_runserver and is_main_process) or is_gunicorn or (not is_runserver and (is_iis or not is_manage_py)):
             from apscheduler.schedulers.background import BackgroundScheduler
+            from apscheduler.triggers.cron import CronTrigger
             
             scheduler = BackgroundScheduler()
+
+            # --- Existing interval jobs ---
             scheduler.add_job(scheduled_sync, 'interval', minutes=5, id='gsheet_sync_job', replace_existing=True)
             scheduler.add_job(scheduled_mf, 'interval', minutes=30, id='auto_update_mf', replace_existing=True)
             scheduler.add_job(scheduled_coin, 'interval', minutes=30, id='auto_update_coin', replace_existing=True)
             scheduler.add_job(scheduled_nps, 'interval', minutes=30, id='auto_update_nps', replace_existing=True)
+
+            # --- Daily Email Jobs (previously in master_scheduler) ---
+
+            # 9:00 AM IST — Daily Stock News Alert
+            scheduler.add_job(
+                run_stock_news,
+                CronTrigger(hour=9, minute=0, timezone='Asia/Kolkata'),
+                id='daily_stock_news_job',
+                replace_existing=True,
+                misfire_grace_time=3600  # Fire up to 1 hour late if process was restarting
+            )
+
+            # 10:00 AM IST — Daily Portfolio Summary
+            scheduler.add_job(
+                run_daily_summary,
+                CronTrigger(hour=10, minute=0, timezone='Asia/Kolkata'),
+                id='daily_portfolio_summary_job',
+                replace_existing=True,
+                misfire_grace_time=3600
+            )
+
+            # Every 15 min — Signal Alerts (previously in master_scheduler)
+            scheduler.add_job(
+                run_alerts,
+                'interval', minutes=15,
+                id='signal_alerts_job',
+                replace_existing=True
+            )
             
             try:
                 print("Starting background scheduler...")
                 scheduler.start()
-                print(f"Background scheduler started (Env: {'IIS' if is_iis else 'Other'}) with auto updates.")
+                print(f"Background scheduler started (Env: {'IIS' if is_iis else 'Other'}) with auto updates + daily emails.")
+                print("  - 09:00 AM IST: Daily Stock News Alert")
+                print("  - 10:00 AM IST: Daily Portfolio Summary")
+                print("  - Every 15 min: Signal Alerts")
             except Exception as e:
                 print(f"Failed to start scheduler: {e}")
-

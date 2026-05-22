@@ -5,8 +5,9 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.conf import settings
 from django.utils import timezone
+from django.db import transaction, IntegrityError
 from core.utils import get_recommendations, record_portfolio_value_history, get_portfolio_summary_metrics
-from core.models import Portfolio, MFPortfolio, CoinPortfolio, NPSPortfolio, Loan, FixedAsset, OtherAsset, PnLStatement
+from core.models import Portfolio, MFPortfolio, CoinPortfolio, NPSPortfolio, Loan, FixedAsset, OtherAsset, PnLStatement, EmailLog
 from decimal import Decimal
 import logging
 
@@ -36,6 +37,22 @@ class Command(BaseCommand):
         for user in users:
             try:
                 if not hasattr(user, 'profile') or not user.email:
+                    continue
+
+                # Dedup: Skip if already sent today
+                today_date = today.date()
+                try:
+                    with transaction.atomic():
+                        _, created = EmailLog.objects.get_or_create(
+                            user=user,
+                            email_type='daily_portfolio_summary',
+                            date_sent=today_date
+                        )
+                        if not created:
+                            self.stdout.write(f"Already sent daily summary to {user.email} for {today_date}. Skipping.")
+                            continue
+                except IntegrityError:
+                    self.stdout.write(f"Race condition: daily summary already sent to {user.email} for {today_date}. Skipping.")
                     continue
 
                 # 1. Update Portfolio History (Ensure fresh data)
