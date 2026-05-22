@@ -1,7 +1,40 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block meta_tags %}
+<title>{{ post.title }} | Foliux Insights</title>
+<meta name="description" content="{{ post.excerpt|default:post.content|striptags|truncatewords:30 }}">
+<meta name="author" content="{{ post.author.first_name|default:post.author.username }}">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="article">
+<meta property="og:url" content="{{ request.build_absolute_uri }}">
+<meta property="og:title" content="{{ post.title }}">
+<meta property="og:description" content="{{ post.excerpt|default:post.content|striptags|truncatewords:30 }}">
+{% if post.featured_image %}
+<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ post.featured_image.url }}">
+{% elif post.image_url %}
+<meta property="og:image" content="{{ post.image_url }}">
+{% else %}
+<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/logo.png' %}">
+{% endif %}
+
+<!-- Twitter -->
+<meta property="twitter:card" content="summary_large_image">
+<meta property="twitter:url" content="{{ request.build_absolute_uri }}">
+<meta property="twitter:title" content="{{ post.title }}">
+<meta property="twitter:description" content="{{ post.excerpt|default:post.content|striptags|truncatewords:30 }}">
+{% if post.featured_image %}
+<meta property="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ post.featured_image.url }}">
+{% elif post.image_url %}
+<meta property="twitter:image" content="{{ post.image_url }}">
+{% else %}
+<meta property="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/logo.png' %}">
+{% endif %}
+{% endblock %}
+
 {% block extra_css %}
+
 <style>
     /* Article Layout */
     .article-container {
