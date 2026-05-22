@@ -1715,7 +1715,7 @@ def dashboard(request):
         last_updated = last_ticker_update
     
     if not last_updated:
-        last_updated = datetime.now()
+        last_updated = timezone.now()
 
     from .models import PortfolioValueHistory
     history = PortfolioValueHistory.objects.filter(user=request.user).order_by('-date')[:30][::-1]

@@ -36,22 +36,36 @@ class MasterStockDatabaseTest(TestCase):
         self.assertEqual(len(data), 0)
 
     def test_add_portfolio_validation(self):
+        from django.utils import timezone
+        today_str = timezone.localdate().isoformat()
         # Valid verified stock
         response = self.client.post(reverse('add_portfolio_item'), {
-            'company_name': 'Reliance Industries',
-            'symbol': 'RELIANCE',
-            'quantity': 10,
-            'avg_cost': 2500,
+            'form-TOTAL_FORMS': '1',
+            'form-INITIAL_FORMS': '0',
+            'form-MIN_NUM_FORMS': '0',
+            'form-MAX_NUM_FORMS': '1000',
+            'form-0-company_name': 'Reliance Industries',
+            'form-0-symbol': 'RELIANCE',
+            'form-0-quantity': '10',
+            'form-0-avg_cost': '2500',
+            'form-0-date': today_str,
+            'form-0-trade_type': 'NORMAL',
         })
         self.assertEqual(response.status_code, 302) # Redirect to dashboard
         self.assertTrue(Portfolio.objects.filter(instrument__symbol='RELIANCE').exists())
 
         # Invalid unverified stock
         response = self.client.post(reverse('add_portfolio_item'), {
-            'company_name': 'Wrong Stock',
-            'symbol': 'WRONG',
-            'quantity': 10,
-            'avg_cost': 100,
+            'form-TOTAL_FORMS': '1',
+            'form-INITIAL_FORMS': '0',
+            'form-MIN_NUM_FORMS': '0',
+            'form-MAX_NUM_FORMS': '1000',
+            'form-0-company_name': 'Wrong Stock',
+            'form-0-symbol': 'WRONG',
+            'form-0-quantity': '10',
+            'form-0-avg_cost': '100',
+            'form-0-date': today_str,
+            'form-0-trade_type': 'NORMAL',
         })
         self.assertEqual(response.status_code, 200) # Form redisplays
         # Check that it didn't create a portfolio item

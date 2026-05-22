@@ -880,8 +880,8 @@ def get_recommendations(user, is_consolidated=False):
         day_change_pct = (absolute_change / previous_close * 100) if previous_close > 0 else 0
 
         qty_can_sell = 0
-        if avg_cost > 0:
-            qty_can_sell = int(abs(quantity - ((realized_profit + unrealized) / avg_cost)))
+        if ltp > 0:
+            qty_can_sell = int(abs(quantity - ((realized_profit + unrealized) / ltp)))
 
         recommendations.append({
             'symbol': symbol,
@@ -904,6 +904,7 @@ def get_recommendations(user, is_consolidated=False):
             'reduce_gap': round(reduce_gap, 2),
             'target_capital': buy_gap_formula,
             'target_qty': round(buy_gap_formula / ltp) if ltp > 0 else 0,
+            'target_qty_abs': abs(round(buy_gap_formula / ltp)) if ltp > 0 else 0,
             'realized_profit': realized_profit,
             'qty_can_sell': qty_can_sell,
             'in_portfolio': True if quantity > 0 else False,
@@ -969,6 +970,7 @@ def get_recommendations(user, is_consolidated=False):
                 'reduce_gap': round(reduce_gap, 2),
                 'target_capital': buy_gap_formula,
                 'target_qty': round(buy_gap_formula / ltp) if ltp > 0 else 0,
+                'target_qty_abs': abs(round(buy_gap_formula / ltp)) if ltp > 0 else 0,
                 'realized_profit': realized_profit,
                 'in_portfolio': False,
                 'instrument_id': inst.id,
@@ -1040,6 +1042,7 @@ def get_recommendations(user, is_consolidated=False):
                 'reduce_gap': round(reduce_gap, 2),
                 'target_capital': buy_gap_formula,
                 'target_qty': round(buy_gap_formula / ltp) if ltp > 0 else 0,
+                'target_qty_abs': abs(round(buy_gap_formula / ltp)) if ltp > 0 else 0,
                 'realized_profit': 0,
                 'in_portfolio': False,
                 'instrument_id': inst.id if inst else None,
