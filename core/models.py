@@ -1089,5 +1089,9 @@ class BlogPost(models.Model):
             return [tag.strip() for tag in self.tags.split(',') if tag.strip()]
         return []
 
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return reverse('blog_detail', kwargs={'slug': self.slug})
+
 
 

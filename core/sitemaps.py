@@ -1,5 +1,6 @@
 from django.contrib import sitemaps
 from django.urls import reverse
+from .models import BlogPost
 
 class StaticViewSitemap(sitemaps.Sitemap):
     priority = 0.5
@@ -24,3 +25,15 @@ class StaticViewSitemap(sitemaps.Sitemap):
 
     def location(self, item):
         return reverse(item)
+
+
+class BlogPostSitemap(sitemaps.Sitemap):
+    changefreq = 'weekly'
+    priority = 0.8
+    protocol = 'https'
+
+    def items(self):
+        return BlogPost.objects.filter(status='published').order_by('-created_at')
+
+    def lastmod(self, obj):
+        return obj.updated_at
