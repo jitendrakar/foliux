@@ -26,7 +26,7 @@ from .models import (
     NPSFund, NPSPortfolio, NPSTransaction, FixedAsset, OtherAsset,
     Loan, LoanPayment, IPO, ChatbotKnowledge, Watchlist, Dividend,
     InvestmentGoal, SignalNotificationState, FamilyLink, FinancialYearData,
-    MFSIP, PortfolioValueHistory, HiddenSignal, UserReview, NewsAlert
+    MFSIP, PortfolioValueHistory, HiddenSignal, UserReview, NewsAlert, BlogPost
 )
 from .forms import (
     UploadFileForm, PortfolioForm, ManualPortfolioForm, ManualSellForm,
@@ -1591,8 +1591,93 @@ def stock_guide(request):
     return render(request, 'core/stock_guide.html')
 
 def education_hub(request):
-    """Education Hub landing page."""
-    return render(request, 'core/education_hub.html')
+    """Education Hub landing page displaying blogs and guides."""
+    from django.db.models import Q
+    from django.core.paginator import Paginator
+
+    # Get search query & tag filter
+    search_query = request.GET.get('q', '').strip()
+    tag_filter = request.GET.get('tag', '').strip()
+
+    # Get all published posts
+    posts = BlogPost.objects.filter(status='published').order_by('-created_at')
+
+    # Apply search filter
+    if search_query:
+        posts = posts.filter(
+            Q(title__icontains=search_query) |
+            Q(content__icontains=search_query) |
+            Q(excerpt__icontains=search_query) |
+            Q(tags__icontains=search_query)
+        )
+
+    # Apply tag filter
+    if tag_filter:
+        posts = posts.filter(tags__icontains=tag_filter)
+
+    # Get all unique tags for filtering in UI
+    all_tags = set()
+    for blog in BlogPost.objects.filter(status='published').values_list('tags', flat=True):
+        if blog:
+            for t in blog.split(','):
+                cleaned = t.strip()
+                if cleaned:
+                    all_tags.add(cleaned)
+
+    # Pagination: 6 posts per page
+    paginator = Paginator(posts, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+        'all_tags': sorted(list(all_tags)),
+        'search_query': search_query,
+        'selected_tag': tag_filter,
+    }
+    return render(request, 'core/education_hub.html', context)
+
+
+def blog_detail(request, slug):
+    """View to show detailed blog post content."""
+    from django.shortcuts import get_object_or_404
+    from django.db.models import F
+
+    # Fetch blog post
+    post = get_object_or_404(BlogPost, slug=slug)
+
+    # If it is draft, restrict access to staff/superusers only
+    if post.status == 'draft' and not request.user.is_staff:
+        from django.http import Http404
+        raise Http404("This blog post is not yet published.")
+
+    # Increment view count
+    BlogPost.objects.filter(id=post.id).update(views_count=F('views_count') + 1)
+    post.refresh_from_db()
+
+    # Fetch related posts (sharing any tags, excluding current post)
+    related_posts = BlogPost.objects.exclude(id=post.id).filter(status='published')
+    tags_list = post.get_tags_list()
+    if tags_list:
+        from django.db.models import Q
+        tag_queries = Q()
+        for t in tags_list:
+            tag_queries |= Q(tags__icontains=t)
+        related_posts = related_posts.filter(tag_queries)
+    related_posts = related_posts.order_by('-created_at')[:3]
+
+    # If not enough related posts, backfill with recent posts
+    if related_posts.count() < 3:
+        exclude_ids = [post.id] + [p.id for p in related_posts]
+        extra_posts = BlogPost.objects.exclude(id__in=exclude_ids).filter(status='published').order_by('-created_at')[:3 - related_posts.count()]
+        related_posts = list(related_posts) + list(extra_posts)
+
+    context = {
+        'post': post,
+        'related_posts': related_posts[:3],
+    }
+    return render(request, 'core/blog_detail.html', context)
+
 
 
 def stock_news_list(request):

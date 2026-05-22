@@ -1,16 +1,19 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load blog_tags %}
 
 {% block extra_css %}
 <style>
+    /* Hero Styling */
     .edu-hero {
-        background: linear-gradient(135deg, var(--primary-color) 0%, #1e40af 100%);
-        padding: 6rem 0;
+        background: linear-gradient(135deg, #003D7C 0%, #1e40af 100%);
+        padding: 5rem 2rem;
         border-radius: 24px;
         color: white;
-        margin-bottom: 4rem;
+        margin-bottom: 3rem;
         position: relative;
         overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 61, 124, 0.15);
     }
     
     .edu-hero::before {
@@ -24,6 +27,294 @@
         transform: rotate(-15deg);
     }
 
+    /* Filter & Search Bar */
+    .search-filter-section {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        border-radius: 20px;
+        padding: 1.5rem;
+        margin-bottom: 3rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+    }
+
+    html[data-theme="dark"] .search-filter-section {
+        background: rgba(30, 41, 59, 0.8);
+        border-color: var(--global-dark-border);
+    }
+
+    .search-input-group {
+        border-radius: 12px;
+        overflow: hidden;
+        border: 2px solid #e2e8f0;
+        transition: all 0.3s ease;
+    }
+
+    html[data-theme="dark"] .search-input-group {
+        border-color: var(--global-dark-border);
+    }
+
+    .search-input-group:focus-within {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+    }
+
+    .search-input-group .form-control {
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+        padding: 0.75rem 1.25rem;
+    }
+
+    .search-input-group .btn {
+        border: none !important;
+        background: transparent !important;
+        color: var(--text-muted);
+        padding-right: 1.25rem;
+    }
+
+    .tag-pill {
+        display: inline-block;
+        padding: 0.5rem 1.25rem;
+        border-radius: 30px;
+        font-weight: 600;
+        font-size: 0.85rem;
+        background: #f1f5f9;
+        color: #475569;
+        border: 1.5px solid transparent;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    html[data-theme="dark"] .tag-pill {
+        background: #1e293b;
+        color: #94a3b8;
+    }
+
+    .tag-pill:hover {
+        background: #e2e8f0;
+        color: #1e293b;
+        transform: translateY(-1px);
+    }
+
+    html[data-theme="dark"] .tag-pill:hover {
+        background: #334155;
+        color: white;
+    }
+
+    .tag-pill.active {
+        background: rgba(37, 99, 235, 0.1);
+        color: #2563eb;
+        border-color: #2563eb;
+    }
+
+    html[data-theme="dark"] .tag-pill.active {
+        background: rgba(147, 197, 253, 0.1);
+        color: #93c5fd;
+        border-color: #93c5fd;
+    }
+
+    /* Blog Card Design */
+    .blog-card {
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        border-radius: 20px;
+        background: white;
+        overflow: hidden;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+    }
+
+    html[data-theme="dark"] .blog-card {
+        background: var(--global-dark-card);
+        border-color: var(--global-dark-border);
+    }
+
+    .blog-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+        border-color: rgba(37, 99, 235, 0.2);
+    }
+
+    .blog-image-wrapper {
+        position: relative;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+        background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    }
+
+    html[data-theme="dark"] .blog-image-wrapper {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    }
+
+    .blog-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+    }
+
+    .blog-card:hover .blog-image {
+        transform: scale(1.06);
+    }
+
+    .blog-default-pattern {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #003D7C 0%, #1d4ed8 100%);
+        color: white;
+        font-size: 3rem;
+        opacity: 0.9;
+    }
+
+    .blog-badge {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        background: rgba(255, 255, 255, 0.9);
+        color: #1e3a8a;
+        font-weight: 800;
+        font-size: 0.7rem;
+        padding: 0.35rem 0.85rem;
+        border-radius: 30px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        backdrop-filter: blur(4px);
+    }
+
+    .blog-card-body {
+        padding: 1.75rem;
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+
+    .blog-meta {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .blog-card-title {
+        font-weight: 800;
+        font-size: 1.25rem;
+        line-height: 1.4;
+        margin-bottom: 0.75rem;
+        color: var(--text-dark);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        transition: color 0.2s ease;
+    }
+
+    .blog-card:hover .blog-card-title {
+        color: var(--primary-color);
+    }
+
+    .blog-excerpt {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        flex-grow: 1;
+    }
+
+    .blog-footer {
+        border-top: 1px solid rgba(0,0,0,0.05);
+        padding-top: 1rem;
+        margin-top: auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        font-weight: 600;
+    }
+
+    html[data-theme="dark"] .blog-footer {
+        border-color: var(--global-dark-border);
+    }
+
+    .blog-author {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .author-avatar {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #e2e8f0;
+        color: #475569;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.65rem;
+        font-weight: 800;
+    }
+
+    html[data-theme="dark"] .author-avatar {
+        background: #334155;
+        color: #cbd5e1;
+    }
+
+    /* Learning Guides Section */
+    .guides-divider {
+        margin: 5rem 0 3rem;
+        position: relative;
+        text-align: center;
+    }
+
+    .guides-divider::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        width: 100%;
+        height: 1px;
+        background: #e2e8f0;
+        z-index: 1;
+    }
+
+    html[data-theme="dark"] .guides-divider::before {
+        background: var(--global-dark-border);
+    }
+
+    .guides-divider-title {
+        position: relative;
+        z-index: 2;
+        background: var(--bg-light);
+        padding: 0 1.5rem;
+        display: inline-block;
+        font-weight: 800;
+        color: var(--text-dark);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 0.9rem;
+    }
+
+    html[data-theme="dark"] .guides-divider-title {
+        background: var(--global-dark-bg);
+    }
+
     .edu-card {
         border: none;
         border-radius: 20px;
@@ -35,21 +326,26 @@
         border: 1px solid rgba(0,0,0,0.05);
     }
 
+    html[data-theme="dark"] .edu-card {
+        background: var(--global-dark-card);
+        border-color: var(--global-dark-border);
+    }
+
     .edu-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.08);
         border-color: var(--primary-color);
     }
 
     .edu-icon-wrapper {
-        width: 70px;
-        height: 70px;
-        border-radius: 18px;
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.8rem;
-        margin-bottom: 1.5rem;
+        font-size: 1.5rem;
+        margin-bottom: 1.25rem;
         transition: all 0.3s ease;
     }
 
@@ -64,25 +360,26 @@
 
     .edu-title {
         font-weight: 800;
-        font-size: 1.4rem;
-        margin-bottom: 0.75rem;
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
         color: var(--text-dark);
     }
 
     .edu-description {
         color: var(--text-muted);
         line-height: 1.6;
-        margin-bottom: 2rem;
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
         flex-grow: 1;
     }
 
     .btn-edu {
         border-radius: 12px;
-        padding: 0.75rem 1.5rem;
+        padding: 0.65rem 1.25rem;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        font-size: 0.85rem;
+        font-size: 0.8rem;
         transition: all 0.3s ease;
         width: 100%;
     }
@@ -93,20 +390,44 @@
         background: transparent;
     }
 
+    html[data-theme="dark"] .btn-edu-outline {
+        border-color: var(--global-dark-border);
+    }
+
     .edu-card:hover .btn-edu-outline {
         background: var(--primary-color);
         color: white;
         border-color: var(--primary-color);
     }
 
-    .section-label {
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        font-weight: 700;
-        font-size: 0.8rem;
-        color: #64748b;
-        margin-bottom: 1rem;
-        display: block;
+    /* Pagination */
+    .pagination .page-item .page-link {
+        border: none;
+        margin: 0 4px;
+        border-radius: 10px;
+        color: #475569;
+        font-weight: 600;
+        background: transparent;
+        transition: all 0.2s;
+    }
+
+    html[data-theme="dark"] .pagination .page-item .page-link {
+        color: #cbd5e1;
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: var(--primary-color) !important;
+        color: white !important;
+    }
+
+    .pagination .page-item .page-link:hover:not(.active) {
+        background-color: #e2e8f0;
+        color: var(--text-dark);
+    }
+
+    html[data-theme="dark"] .pagination .page-item .page-link:hover:not(.active) {
+        background-color: #334155;
+        color: white;
     }
 </style>
 {% endblock %}
@@ -116,16 +437,159 @@
     <!-- Hero Section -->
     <div class="edu-hero text-center animate__animated animate__fadeIn">
         <div class="position-relative z-1">
-            <span class="section-label text-white opacity-75">Knowledge Center</span>
-            <h1 class="display-4 fw-bold mb-3">Education Hub</h1>
+            <span class="text-uppercase fw-bold text-white opacity-75 small letter-spacing-2" style="letter-spacing: 2px;">Foliux Insights</span>
+            <h1 class="display-4 fw-bold mb-3 mt-1">Education & Market Intelligence</h1>
             <p class="lead opacity-90 mx-auto" style="max-width: 700px;">
-                Master the art of disciplined investing with our comprehensive guides. 
-                Learn the rules, understand the strategies, and build long-term wealth.
+                Enhance your financial knowledge, read data-driven market analyses, 
+                and follow structured blueprints for long-term wealth creation.
             </p>
         </div>
     </div>
 
-    <!-- Hub Grid -->
+    <!-- Search and Tag Filtering -->
+    <div class="search-filter-section animate__animated animate__fadeInUp">
+        <div class="row g-3 align-items-center">
+            <!-- Search Bar -->
+            <div class="col-md-5">
+                <form method="get" action="{% url 'education_hub' %}">
+                    {% if selected_tag %}
+                        <input type="hidden" name="tag" value="{{ selected_tag }}">
+                    {% endif %}
+                    <div class="input-group search-input-group">
+                        <input type="text" name="q" class="form-control" placeholder="Search insights and analysis..." value="{{ search_query }}">
+                        <button class="btn" type="submit" aria-label="Search">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Filter Actions / Tag pills -->
+            <div class="col-md-7">
+                <div class="d-flex flex-wrap align-items-center gap-1 mt-1 mt-md-0">
+                    <span class="small fw-bold text-muted me-2"><i class="fas fa-filter me-1"></i> Topics:</span>
+                    <a href="{% url 'education_hub' %}{% if search_query %}?q={{ search_query }}{% endif %}" class="tag-pill {% if not selected_tag %}active{% endif %}">
+                        All Insights
+                    </a>
+                    {% for tag in all_tags %}
+                        <a href="{% url 'education_hub' %}?tag={{ tag }}{% if search_query %}&q={{ search_query }}{% endif %}" class="tag-pill {% if selected_tag == tag %}active{% endif %}">
+                            {{ tag }}
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Blog Posts Grid -->
+    <div class="row g-4 mb-5">
+        {% if page_obj %}
+            {% for post in page_obj %}
+                <div class="col-md-6 col-lg-4 animate__animated animate__fadeInUp" style="animation-delay: {{ forloop.counter0|add:1|multiply:0.05 }}s;">
+                    <div class="blog-card">
+                        <!-- Image wrapper -->
+                        <div class="blog-image-wrapper">
+                            {% if post.featured_image %}
+                                <img src="{{ post.featured_image.url }}" alt="{{ post.title }}" class="blog-image" loading="lazy">
+                            {% elif post.image_url %}
+                                <img src="{{ post.image_url }}" alt="{{ post.title }}" class="blog-image" loading="lazy">
+                            {% else %}
+                                <div class="blog-default-pattern">
+                                    <i class="fas fa-chart-bar"></i>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Badges -->
+                            {% if post.get_tags_list %}
+                                <span class="blog-badge">{{ post.get_tags_list.0 }}</span>
+                            {% else %}
+                                <span class="blog-badge">Market</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="blog-card-body">
+                            <div class="blog-meta">
+                                <span><i class="far fa-calendar-alt me-1"></i> {{ post.created_at|date:"d M Y" }}</span>
+                                <span><i class="far fa-eye me-1"></i> {{ post.views_count }} views</span>
+                            </div>
+                            
+                            <a href="{% url 'blog_detail' post.slug %}" class="text-decoration-none">
+                                <h3 class="blog-card-title">{{ post.title }}</h3>
+                            </a>
+                            
+                            <p class="blog-excerpt">
+                                {{ post.excerpt|default:post.content|striptags|truncatewords:25 }}
+                            </p>
+
+                            <div class="blog-footer">
+                                <div class="blog-author">
+                                    <div class="author-avatar" title="{{ post.author.username }}">
+                                        {{ post.author.username|slice:":2"|upper }}
+                                    </div>
+                                    <span>By {{ post.author.first_name|default:post.author.username }}</span>
+                                </div>
+                                <a href="{% url 'blog_detail' post.slug %}" class="text-decoration-none fw-bold text-primary">
+                                    Read Article <i class="fas fa-arrow-right ms-1" style="font-size: 0.75rem;"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <div class="bg-white rounded-4 p-5 shadow-sm border" style="max-width: 600px; margin: 0 auto;">
+                    <i class="fas fa-file-invoice text-muted mb-3" style="font-size: 4rem; opacity: 0.2;"></i>
+                    <h4 class="text-dark fw-bold">No insights found</h4>
+                    <p class="text-muted">We couldn't find any articles matching your search filters. Try looking for another topic or clear the search query.</p>
+                    <a href="{% url 'education_hub' %}" class="btn btn-primary rounded-pill px-4 mt-2">View All Articles</a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+        <nav class="d-flex justify-content-center mt-5 mb-5" aria-label="Blog pagination">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_tag %}&tag={{ selected_tag }}{% endif %}" aria-label="Previous">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > page_obj.number|add:-3 and num < page_obj.number|add:3 %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_tag %}&tag={{ selected_tag }}{% endif %}">
+                                {{ num }}
+                            </a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_tag %}&tag={{ selected_tag }}{% endif %}" aria-label="Next">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% endif %}
+
+    <!-- Resource Guides Divider -->
+    <div class="guides-divider animate__animated animate__fadeIn">
+        <span class="guides-divider-title">Core Learning Blueprints</span>
+    </div>
+
+    <!-- Hub Guides Grid -->
     <div class="row g-4 mb-5">
         <!-- Stock Market Guide -->
         <div class="col-md-6 col-lg-3">
@@ -186,9 +650,9 @@
 
     <!-- Call to Action -->
     <div class="card border-0 shadow-sm rounded-4 bg-light p-5 text-center mt-5 mb-5">
-        <h2 class="fw-bold mb-3">Ready to start tracking?</h2>
-        <p class="text-muted mb-4">Apply your knowledge and manage your portfolio with discipline.</p>
-        <div class="d-flex justify-content-center gap-3">
+        <h2 class="fw-bold mb-3 text-dark">Ready to apply these concepts?</h2>
+        <p class="text-muted mb-4">Put theory into practice by evaluating our strategy stocks and setting up tracking signals.</p>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
             <a href="{% url 'strategy' %}" class="btn btn-primary px-4 py-2 rounded-pill fw-bold">Go to Strategy</a>
             <a href="{% url 'landing' %}" class="btn btn-outline-secondary px-4 py-2 rounded-pill fw-bold">Back to Home</a>
         </div>

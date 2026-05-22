@@ -1062,3 +1062,32 @@ class EmailLog(models.Model):
         return f"{self.user.email} - {self.email_type} - {self.date_sent}"
 
 
+class BlogPost(models.Model):
+    STATUS_CHOICES = (
+        ('draft', 'Draft'),
+        ('published', 'Published'),
+    )
+
+    title = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, unique=True, help_text="SEO-friendly URL identifier. Generated automatically from title.")
+    content = models.TextField(help_text="The body of the blog post. HTML or plain text.")
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blog_posts')
+    excerpt = models.TextField(blank=True, null=True, help_text="A short summary of the post displayed on the list page.")
+    featured_image = models.ImageField(upload_to='blog_images/', blank=True, null=True, help_text="Upload an image for the post.")
+    image_url = models.URLField(max_length=1000, blank=True, null=True, help_text="Or paste an external image URL if not uploading.")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='published')
+    tags = models.CharField(max_length=255, blank=True, null=True, help_text="Comma-separated list of tags (e.g. Stocks, Mutual Funds, Macroeconomy)")
+    views_count = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.title
+
+    def get_tags_list(self):
+        if self.tags:
+            return [tag.strip() for tag in self.tags.split(',') if tag.strip()]
+        return []
+
+
+

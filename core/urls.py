@@ -90,6 +90,7 @@ urlpatterns = [
     path('nps-guide/', views.nps_guide, name='nps_guide'),
     path('stock-guide/', views.stock_guide, name='stock_guide'),
     path('education/', views.education_hub, name='education_hub'),
+    path('education/<slug:slug>/', views.blog_detail, name='blog_detail'),
     path('ipo/', views.ipo_list, name='ipo'),
     path('aboutproject/', views.about_project, name='about_project'),
     # Transactions and Lots

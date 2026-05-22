@@ -13,7 +13,7 @@ from .models import (
     CorporateAction, MutualFund, MFPortfolio, MFTransaction,
     Coin, CoinPortfolio, CoinTransaction,
     NPSFund, NPSPortfolio, NPSTransaction, IPO, ChatbotKnowledge,
-    UserReview
+    UserReview, BlogPost
 )
 
 class CsvImportForm(forms.Form):
@@ -315,3 +315,18 @@ class CustomUserAdmin(UserAdmin):
     list_filter = ('is_staff', 'is_superuser', 'is_active', 'groups')
     search_fields = ('username', 'first_name', 'last_name', 'email')
     ordering = ('-last_login',) # Default sort by most recent login
+
+
+@admin.register(BlogPost)
+class BlogPostAdmin(admin.ModelAdmin):
+    list_display = ('title', 'author', 'status', 'created_at', 'views_count')
+    list_filter = ('status', 'created_at', 'author')
+    search_fields = ('title', 'content', 'tags', 'excerpt')
+    prepopulated_fields = {'slug': ('title',)}
+    ordering = ('-created_at',)
+
+    def save_model(self, request, obj, form, change):
+        if not obj.author_id:
+            obj.author = request.user
+        super().save_model(request, obj, form, change)
+
