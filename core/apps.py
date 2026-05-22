@@ -88,20 +88,12 @@ class CoreConfig(AppConfig):
                 misfire_grace_time=3600
             )
 
-            # Every 15 min — Signal Alerts (previously in master_scheduler)
-            scheduler.add_job(
-                run_alerts,
-                'interval', minutes=15,
-                id='signal_alerts_job',
-                replace_existing=True
-            )
-            
+
             try:
                 print("Starting background scheduler...")
                 scheduler.start()
                 print(f"Background scheduler started (Env: {'IIS' if is_iis else 'Other'}) with auto updates + daily emails.")
                 print("  - 09:00 AM IST: Daily Stock News Alert")
                 print("  - 10:00 AM IST: Daily Portfolio Summary")
-                print("  - Every 15 min: Signal Alerts")
             except Exception as e:
                 print(f"Failed to start scheduler: {e}")
