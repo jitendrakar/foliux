@@ -836,8 +836,66 @@
     </div>
   </div>
 
-  <!-- Google prompt modal removed in favor of clean non-intrusive button-driven GSI login -->
+  {% if not user.is_authenticated and GOOGLE_CLIENT_ID %}
+  <!-- Google Identity Services (GSI) -->
+  <script src="https://accounts.google.com/gsi/client" onload="initGoogleOneTap()" async defer></script>
+  <script>
+    function initGoogleOneTap() {
+      if (typeof google !== 'undefined') {
+        google.accounts.id.initialize({
+          client_id: "{{ GOOGLE_CLIENT_ID }}",
+          callback: handleCredentialResponse,
+          auto_select: false, // Let user choose their accounts
+          cancel_on_tap_outside: true
+        });
+        
+        // Display the One Tap prompt in the top-right corner
+        google.accounts.id.prompt((notification) => {
+          console.log('Google One Tap prompt status:', notification.getMomentType());
+        });
+        
+        // Render the Google Sign-in Button in the designated container if present
+        const btnContainer = document.getElementById("g_id_signin_button");
+        if (btnContainer) {
+          google.accounts.id.renderButton(
+            btnContainer,
+            { 
+              theme: "outline", 
+              size: "large", 
+              width: btnContainer.offsetWidth || 340, 
+              shape: "pill",
+              text: "continue_with"
+            }
+          );
+        }
+      }
+    }
 
+    function handleCredentialResponse(response) {
+      if (!response.credential) return;
+      const formData = new FormData();
+      formData.append('credential', response.credential);
+      
+      fetch('{% url "google_one_tap_login" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRFToken': '{{ csrf_token }}',
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'success') {
+          window.location.href = data.redirect_url || '/';
+        } else {
+          console.error('Google One Tap login failed:', data.message);
+        }
+      })
+      .catch(err => console.error('Error during Google One Tap login:', err));
+    }
+  </script>
+  {% endif %}
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
   <!-- Chart.js -->
