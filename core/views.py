@@ -303,11 +303,15 @@ def google_one_tap_login(request):
             request.session.set_expiry(settings.SESSION_COOKIE_AGE)
 
         # Resolve redirect URL
-        from django.urls import reverse
-        try:
-            redirect_url = reverse(settings.LOGIN_REDIRECT_URL)
-        except:
-            redirect_url = '/'
+        next_url = request.POST.get('next')
+        if next_url and next_url.startswith('/'):
+            redirect_url = next_url
+        else:
+            from django.urls import reverse
+            try:
+                redirect_url = reverse(settings.LOGIN_REDIRECT_URL)
+            except:
+                redirect_url = '/'
             
         return JsonResponse({'status': 'success', 'redirect_url': redirect_url})
 

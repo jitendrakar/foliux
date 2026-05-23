@@ -875,6 +875,7 @@
       if (!response.credential) return;
       const formData = new FormData();
       formData.append('credential', response.credential);
+      formData.append('next', window.location.pathname + window.location.search);
       
       fetch('{% url "google_one_tap_login" %}', {
         method: 'POST',
