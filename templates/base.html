@@ -845,6 +845,7 @@
         google.accounts.id.initialize({
           client_id: "{{ GOOGLE_CLIENT_ID }}",
           callback: handleCredentialResponse,
+          itp_support: true,
           auto_select: false, // Let user choose their accounts
           cancel_on_tap_outside: true
         });
