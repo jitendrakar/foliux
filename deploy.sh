@@ -105,6 +105,7 @@ if [ -d "$VENV_PATH" ]; then
     pip install -r requirements.txt > /dev/null
     
     echo -e "${YELLOW}Running database migrations...${NC}"
+    python manage.py makemigrations --noinput
     python manage.py migrate --noinput
     
     echo -e "${YELLOW}Collecting static files...${NC}"
