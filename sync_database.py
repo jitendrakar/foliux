@@ -72,7 +72,8 @@ TABLES = [
     'core_signalnotificationstate',
     'core_familylink',
     'core_financialyeardata',
-    'core_mfsip'
+    'core_mfsip',
+    'core_blogcomment'
 ]
 
 def sync_tables(source_config, dest_config):

@@ -103,14 +103,15 @@ if [ -d "$VENV_PATH" ]; then
     source "$VENV_PATH/bin/activate"
     echo -e "${YELLOW}Installing dependencies...${NC}"
     pip install -r requirements.txt > /dev/null
+    check_status "Installing dependencies"
     
     echo -e "${YELLOW}Running database migrations...${NC}"
-    python manage.py makemigrations --noinput
     python manage.py migrate --noinput
+    check_status "Database migration"
     
     echo -e "${YELLOW}Collecting static files...${NC}"
     python manage.py collectstatic --noinput
-    check_status "Django tasks"
+    check_status "Static files collection"
 else
     echo -e "${RED}CRITICAL ERROR: Virtual environment not found at $VENV_PATH${NC}"
     echo -e "${YELLOW}Please create it manually once: python3 -m venv $VENV_PATH${NC}"
