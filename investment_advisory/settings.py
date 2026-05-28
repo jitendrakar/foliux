@@ -163,6 +163,9 @@ if USE_LOCAL_DB:
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': db_path,
+            'OPTIONS': {
+                'timeout': 20,
+            }
         }
     }
 else:
