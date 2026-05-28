@@ -26,7 +26,7 @@ from .models import (
     NPSFund, NPSPortfolio, NPSTransaction, FixedAsset, OtherAsset,
     Loan, LoanPayment, IPO, ChatbotKnowledge, Watchlist, Dividend,
     InvestmentGoal, SignalNotificationState, FamilyLink, FinancialYearData,
-    MFSIP, PortfolioValueHistory, HiddenSignal, UserReview, NewsAlert, BlogPost
+    MFSIP, PortfolioValueHistory, HiddenSignal, UserReview, NewsAlert, BlogPost, BlogComment
 )
 from .forms import (
     UploadFileForm, PortfolioForm, ManualPortfolioForm, ManualSellForm,
@@ -1681,6 +1681,21 @@ def blog_detail(request, slug):
         'related_posts': related_posts[:3],
     }
     return render(request, 'core/blog_detail.html', context)
+
+
+@login_required
+def add_blog_comment(request, slug):
+    """View to add a comment to a blog post."""
+    post = get_object_or_404(BlogPost, slug=slug)
+    if request.method == 'POST':
+        content = request.POST.get('content', '').strip()
+        if content:
+            BlogComment.objects.create(post=post, user=request.user, content=content)
+            messages.success(request, "Your comment has been posted successfully!")
+        else:
+            messages.error(request, "Comment content cannot be empty.")
+    return redirect(f"{post.get_absolute_url()}?show_comments=true")
+
 
 
 

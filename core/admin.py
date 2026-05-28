@@ -13,7 +13,7 @@ from .models import (
     CorporateAction, MutualFund, MFPortfolio, MFTransaction,
     Coin, CoinPortfolio, CoinTransaction,
     NPSFund, NPSPortfolio, NPSTransaction, IPO, ChatbotKnowledge,
-    UserReview, BlogPost
+    UserReview, BlogPost, BlogComment
 )
 
 class CsvImportForm(forms.Form):
@@ -329,4 +329,13 @@ class BlogPostAdmin(admin.ModelAdmin):
         if not obj.author_id:
             obj.author = request.user
         super().save_model(request, obj, form, change)
+
+
+@admin.register(BlogComment)
+class BlogCommentAdmin(admin.ModelAdmin):
+    list_display = ('user', 'post', 'created_at')
+    list_filter = ('created_at', 'user')
+    search_fields = ('content', 'user__username', 'post__title')
+    ordering = ('-created_at',)
+
 

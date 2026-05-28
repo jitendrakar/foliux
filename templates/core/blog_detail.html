@@ -338,6 +338,50 @@
         transform: translateY(0);
         opacity: 1;
     }
+
+    /* Comments Styles & Dark Mode Overrides */
+    html[data-theme="dark"] .comments-section button {
+        border-color: var(--global-dark-border) !important;
+        color: var(--global-dark-text) !important;
+    }
+    html[data-theme="dark"] .comments-section button:hover {
+        background-color: var(--global-dark-bg) !important;
+    }
+    html[data-theme="dark"] .comments-section .card {
+        background: rgba(30, 41, 59, 0.7) !important;
+        border-color: var(--global-dark-border) !important;
+        color: var(--global-dark-text) !important;
+    }
+    html[data-theme="dark"] .comment-item {
+        border-bottom-color: var(--global-dark-border) !important;
+    }
+    html[data-theme="dark"] .comment-item .text-dark {
+        color: var(--global-dark-text) !important;
+    }
+    html[data-theme="dark"] .comment-item .avatar-small {
+        background: var(--primary-color) !important;
+    }
+    html[data-theme="dark"] .comment-item p {
+        color: var(--global-dark-muted) !important;
+    }
+    html[data-theme="dark"] .comments-section textarea {
+        background-color: var(--global-dark-bg) !important;
+        border-color: var(--global-dark-border) !important;
+        color: var(--global-dark-text) !important;
+    }
+    html[data-theme="dark"] .comments-section textarea::placeholder {
+        color: var(--global-dark-muted) !important;
+    }
+    html[data-theme="dark"] .comments-section .bg-light {
+        background-color: var(--global-dark-bg) !important;
+        border-color: var(--global-dark-border) !important;
+    }
+    .collapse-chevron {
+        transition: transform 0.3s ease;
+    }
+    .comments-section button[aria-expanded="true"] .collapse-chevron {
+        transform: rotate(180deg);
+    }
 </style>
 {% endblock %}
 
@@ -428,6 +472,61 @@
             </div>
         {% endif %}
 
+        <!-- Comments Section -->
+        <div class="comments-section mt-5 animate__animated animate__fadeIn">
+            <button class="btn btn-outline-primary w-100 fw-bold d-flex justify-content-between align-items-center py-3 px-4 rounded-4 shadow-sm" type="button" data-bs-toggle="collapse" data-bs-target="#commentsCollapse" aria-expanded="false" aria-controls="commentsCollapse" style="border: 2px solid rgba(0, 61, 124, 0.15); transition: all 0.25s ease;">
+                <span class="fs-5"><i class="far fa-comments me-2 text-primary"></i> Comments ({{ post.comments.count }})</span>
+                <span class="collapse-chevron"><i class="fas fa-chevron-down fs-5"></i></span>
+            </button>
+            
+            <div class="collapse mt-3" id="commentsCollapse">
+                <div class="card card-body border-0 shadow-sm rounded-4 p-4 p-md-5" style="background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5);">
+                    
+                    <!-- List Comments -->
+                    <div class="comments-list mb-4">
+                        {% for comment in post.comments.all %}
+                            <div class="comment-item pb-4 mb-4 border-bottom" style="border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="avatar-small d-flex align-items-center justify-content-center fw-bold text-white rounded-circle" style="width: 32px; height: 32px; font-size: 0.8rem; background: var(--primary-color);">
+                                            {{ comment.user.username|slice:":2"|upper }}
+                                        </div>
+                                        <span class="fw-bold text-dark fs-6">{{ comment.user.first_name|default:comment.user.username }}</span>
+                                    </div>
+                                    <span class="text-muted small" style="font-size: 0.75rem;"><i class="far fa-clock me-1"></i>{{ comment.created_at|date:"d M Y, H:i" }}</span>
+                                </div>
+                                <p class="mb-0 text-muted ps-2" style="white-space: pre-wrap; font-size: 0.95rem; line-height: 1.6;">{{ comment.content }}</p>
+                            </div>
+                        {% empty %}
+                            <div class="text-center py-4">
+                                <i class="far fa-comment-dots text-muted fs-1 mb-2"></i>
+                                <p class="text-muted small mb-0">No comments yet. Be the first to share your thoughts!</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Write Comment -->
+                    {% if user.is_authenticated %}
+                        <form method="post" action="{% url 'add_blog_comment' post.slug %}" class="mt-4">
+                            {% csrf_token %}
+                            <div class="mb-4">
+                                <label for="commentContent" class="form-label small fw-bold text-uppercase text-muted" style="letter-spacing: 0.5px;">Write a Comment</label>
+                                <textarea class="form-control rounded-4 shadow-inner" id="commentContent" name="content" rows="4" placeholder="Share your feedback, questions, or insights..." required style="padding: 1rem; border: 1.5px solid rgba(0, 0, 0, 0.08); font-size: 0.95rem; resize: none;"></textarea>
+                            </div>
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-primary btn-sm px-4 py-2 fw-bold rounded-pill shadow-sm" style="font-size: 0.9rem; letter-spacing: 0.2px;">Submit Comment <i class="fas fa-paper-plane ms-2"></i></button>
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="text-center py-4 px-3 bg-light rounded-4 border" style="border: 1px dashed rgba(0, 0, 0, 0.1) !important;">
+                            <p class="mb-3 text-muted small"><i class="fas fa-lock me-1"></i> You must be logged in to write a comment.</p>
+                            <a href="{% url 'login' %}?next={{ request.path }}%3Fshow_comments%3Dtrue" class="btn btn-outline-primary btn-sm px-4 py-2 fw-bold rounded-pill">Log In to Comment</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
     </article>
 </div>
 
@@ -495,6 +594,23 @@
                     console.error('Failed to copy link: ', err);
                 });
             });
+        }
+
+        // Auto-expand comments if requested in URL params
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('show_comments') === 'true') {
+            const commentsCollapse = document.getElementById('commentsCollapse');
+            if (commentsCollapse) {
+                // Initialize bootstrap collapse and show it
+                const bsCollapse = new bootstrap.Collapse(commentsCollapse, {
+                    toggle: false
+                });
+                bsCollapse.show();
+                // Smooth scroll to comments button
+                setTimeout(() => {
+                    commentsCollapse.previousElementSibling.scrollIntoView({ behavior: 'smooth' });
+                }, 100);
+            }
         }
     });
 </script>
