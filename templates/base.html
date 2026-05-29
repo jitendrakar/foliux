@@ -555,6 +555,47 @@
         border: 1px solid var(--global-dark-border) !important;
         color: var(--global-dark-text) !important;
     }
+
+    /* Menu Layout Stabilization */
+    .nav-user-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      gap: 0.75rem;
+    }
+    
+    @media (min-width: 992px) {
+      .nav-user-stabilizer {
+        width: 360px !important;
+        display: flex !important;
+        justify-content: flex-end !important;
+        align-items: center !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      .nav-user-content {
+        width: 100% !important;
+        flex-direction: row !important;
+        justify-content: flex-end !important;
+        align-items: center !important;
+        gap: 1.25rem !important;
+      }
+      .nav-user-content .nav-link {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        margin: 0 !important;
+      }
+      .nav-user-content .btn {
+        margin: 0 !important;
+      }
+      .nav-username-text {
+        max-width: 120px !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
+      }
+    }
   </style>
   {% block extra_css %}{% endblock %}
   <script>
@@ -625,43 +666,40 @@
     </button>
 </li>
 
-{% if user.is_authenticated %}
-    <li class="nav-item">
-        <a class="nav-link nav-item-dashboard" href="{% url 'portfolio' %}{% if is_family_view %}?user_id={{ target_user.id }}{% elif is_consolidated %}?user_id=consolidated{% endif %}">
-            Foliux
-            {% if action_count and action_count > 0 %}
-              <span class="badge-fbi" title="Your action is needed!">{{ action_count }}</span>
-            {% endif %}
-        </a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link pe-0 d-flex align-items-center" href="{% url 'edit_profile' %}">
-            {% if user.profile.profile_picture %}
-                <img src="{{ user.profile.profile_picture.url }}?v={% now 'U' %}" alt="Profile" class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover; border: 2px solid rgba(255,255,255,0.2);" width="32" height="32" loading="lazy">
-            {% else %}
-                <div class="bg-light rounded-circle me-2 d-flex align-items-center justify-content-center text-primary" style="width: 28px; height: 28px; font-size: 0.7rem;">
-                    <i class="fas fa-user-alt small"></i>
-                </div>
-            {% endif %}
-            <span {% if not user.profile.is_complete %}style="color: #ff4d4d !important;" title="Please complete your profile"{% endif %}>
-                <strong>{{ user.profile.full_name|default:user.username }}</strong>
-            </span>
-        </a>
-    </li>
-    <li class="nav-item ms-2">
-        <form method="post" action="{% url 'logout' %}" class="d-inline">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-outline-light btn-sm px-3 rounded-pill">Logout</button>
-        </form>
-    </li>
-{% else %}
-    <li class="nav-item">
-        <a class="btn btn-outline-light btn-sm px-4 rounded-pill fw-bold me-2" href="{% url 'login' %}" id="nav-login-link">Login</a>
-    </li>
-    <li class="nav-item ms-lg-2">
-        <a class="btn btn-light btn-sm px-4 rounded-pill fw-bold" href="{% url 'register' %}" style="color: var(--primary-color);">Sign Up</a>
-    </li>
-{% endif %}
+<!-- Stabilized Auth/Profile Section -->
+<li class="nav-item nav-user-stabilizer ms-lg-2">
+    <div class="nav-user-content">
+        {% if user.is_authenticated %}
+            <a class="nav-link nav-item-dashboard" href="{% url 'portfolio' %}{% if is_family_view %}?user_id={{ target_user.id }}{% elif is_consolidated %}?user_id=consolidated{% endif %}">
+                Foliux
+                {% if action_count and action_count > 0 %}
+                  <span class="badge-fbi" title="Your action is needed!">{{ action_count }}</span>
+                {% endif %}
+            </a>
+            <a class="nav-link d-flex align-items-center" href="{% url 'edit_profile' %}">
+                {% if user.profile.profile_picture %}
+                    <img src="{{ user.profile.profile_picture.url }}?v={% now 'U' %}" alt="Profile" class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover; border: 2px solid rgba(255,255,255,0.2);" width="32" height="32" loading="lazy">
+                {% else %}
+                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center text-primary" style="width: 32px; height: 32px; font-size: 0.8rem;">
+                        <i class="fas fa-user-alt"></i>
+                    </div>
+                {% endif %}
+            </a>
+            <a class="nav-link nav-username-text" href="{% url 'edit_profile' %}">
+                <span {% if not user.profile.is_complete %}style="color: #ff4d4d !important;" title="Please complete your profile"{% endif %}>
+                    <strong>{{ user.profile.full_name|default:user.username }}</strong>
+                </span>
+            </a>
+            <form method="post" action="{% url 'logout' %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-light btn-sm px-3 rounded-pill">Logout</button>
+            </form>
+        {% else %}
+            <a class="btn btn-outline-light btn-sm px-4 rounded-pill fw-bold" href="{% url 'login' %}" id="nav-login-link">Login</a>
+            <a class="btn btn-light btn-sm px-4 rounded-pill fw-bold" href="{% url 'register' %}" style="color: var(--primary-color);">Sign Up</a>
+        {% endif %}
+    </div>
+</li>
         </ul>
       </div>
     </div>
