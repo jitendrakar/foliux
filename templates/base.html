@@ -676,15 +676,6 @@
                   <span class="badge-fbi" title="Your action is needed!">{{ action_count }}</span>
                 {% endif %}
             </a>
-            <a class="nav-link d-flex align-items-center" href="{% url 'edit_profile' %}">
-                {% if user.profile.profile_picture %}
-                    <img src="{{ user.profile.profile_picture.url }}?v={% now 'U' %}" alt="Profile" class="rounded-circle" style="width: 32px; height: 32px; object-fit: cover; border: 2px solid rgba(255,255,255,0.2);" width="32" height="32" loading="lazy">
-                {% else %}
-                    <div class="bg-light rounded-circle d-flex align-items-center justify-content-center text-primary" style="width: 32px; height: 32px; font-size: 0.8rem;">
-                        <i class="fas fa-user-alt"></i>
-                    </div>
-                {% endif %}
-            </a>
             <a class="nav-link nav-username-text" href="{% url 'edit_profile' %}">
                 <span {% if not user.profile.is_complete %}style="color: #ff4d4d !important;" title="Please complete your profile"{% endif %}>
                     <strong>{{ user.profile.full_name|default:user.username }}</strong>
