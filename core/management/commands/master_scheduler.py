@@ -1,52 +1,101 @@
-import time
-import datetime
 import pytz
 from django.core.management.base import BaseCommand
 from django.core import management
+from apscheduler.schedulers.blocking import BlockingScheduler
+from apscheduler.triggers.cron import CronTrigger
 
 class Command(BaseCommand):
     help = 'Master scheduler for Foliux daily and periodic tasks.'
 
     def handle(self, *args, **options):
-        ist = pytz.timezone('Asia/Kolkata')
-        self.stdout.write("Master Scheduler Started (IST Timezone).")
-        self.stdout.write("- 9:00 AM : process_stock_news (News Alerts)")
-        self.stdout.write("- 10:00 AM : send_daily_summary (Portfolio Snapshot)")
-        self.stdout.write("- Every 15 mins : send_signal_alerts (Instant Signal Changes)")
+        scheduler = BlockingScheduler(timezone=pytz.timezone('Asia/Kolkata'))
         
-        last_signal_run = None
-        
-        while True:
-            now = datetime.datetime.now(ist)
-            
-            # 1. Check for 9:00 AM task (process_stock_news)
-            if now.hour == 9 and now.minute == 0:
-                self.stdout.write(f"[{now.strftime('%H:%M:%S')}] Running process_stock_news...")
-                try:
-                    management.call_command('process_stock_news')
-                except Exception as e:
-                    self.stderr.write(f"Error running process_stock_news: {e}")
-                time.sleep(60) # Sleep 60s to prevent double execution in the same minute
-                continue
-                
-            # 2. Check for 10:00 AM task (send_daily_summary)
-            if now.hour == 10 and now.minute == 0:
-                self.stdout.write(f"[{now.strftime('%H:%M:%S')}] Running send_daily_summary...")
-                try:
-                    management.call_command('send_daily_summary')
-                except Exception as e:
-                    self.stderr.write(f"Error running send_daily_summary: {e}")
-                time.sleep(60) # Sleep 60s to prevent double execution in the same minute
-                continue
+        # 1. Sync tasks (every 5 / 30 mins)
+        def scheduled_sync():
+            self.stdout.write("Running scheduled gsheet sync...")
+            try:
+                from core.utils import perform_sync
+                perform_sync()
+            except Exception as e:
+                self.stderr.write(f"Error running perform_sync: {e}")
 
-            # 3. Check for instant alerts (run every 15 minutes)
-            if last_signal_run is None or (now - last_signal_run).total_seconds() >= 900: # 900 seconds = 15 mins
-                self.stdout.write(f"[{now.strftime('%H:%M:%S')}] Running send_signal_alerts...")
-                try:
-                    management.call_command('send_signal_alerts')
-                except Exception as e:
-                    self.stderr.write(f"Error running send_signal_alerts: {e}")
-                last_signal_run = datetime.datetime.now(ist)
-                
-            # Sleep 30 seconds before checking the time again
-            time.sleep(30)
+        def scheduled_update_ltp():
+            self.stdout.write("Running scheduled update_ltp (force_fetch)...")
+            try:
+                management.call_command('update_ltp')
+            except Exception as e:
+                self.stderr.write(f"Error running update_ltp: {e}")
+
+        def scheduled_mf():
+            self.stdout.write("Running scheduled mutual fund update...")
+            try:
+                from core.views import _auto_update_mf
+                _auto_update_mf()
+            except Exception as e:
+                self.stderr.write(f"Error running _auto_update_mf: {e}")
+
+        def scheduled_coin():
+            self.stdout.write("Running scheduled coin update...")
+            try:
+                from core.views import _auto_update_coin
+                _auto_update_coin()
+            except Exception as e:
+                self.stderr.write(f"Error running _auto_update_coin: {e}")
+
+        def scheduled_nps():
+            self.stdout.write("Running scheduled NPS update...")
+            try:
+                from core.views import _auto_update_nps
+                _auto_update_nps()
+            except Exception as e:
+                self.stderr.write(f"Error running _auto_update_nps: {e}")
+
+        def scheduled_rss():
+            self.stdout.write("Running scheduled RSS feed cache update...")
+            try:
+                from core.views import fetch_landing_data
+                fetch_landing_data(force_fetch=True)
+            except Exception as e:
+                self.stderr.write(f"Error running fetch_landing_data: {e}")
+
+        def run_alerts():
+            self.stdout.write("Running scheduled signal alerts...")
+            try:
+                management.call_command('send_signal_alerts')
+            except Exception as e:
+                self.stderr.write(f"Error running signal alerts: {e}")
+
+        def run_stock_news():
+            self.stdout.write("Running scheduled stock news...")
+            try:
+                management.call_command('process_stock_news')
+            except Exception as e:
+                self.stderr.write(f"Error running stock news: {e}")
+
+        def run_daily_summary():
+            self.stdout.write("Running scheduled daily summary...")
+            try:
+                management.call_command('send_daily_summary')
+            except Exception as e:
+                self.stderr.write(f"Error running daily summary: {e}")
+
+        # Add jobs
+        scheduler.add_job(scheduled_sync, 'interval', minutes=5, id='gsheet_sync_job')
+        scheduler.add_job(scheduled_update_ltp, 'interval', minutes=5, id='update_ltp_job')
+        scheduler.add_job(scheduled_rss, 'interval', minutes=30, id='rss_sync_job')
+        
+        scheduler.add_job(scheduled_mf, 'interval', minutes=30, id='auto_update_mf')
+        scheduler.add_job(scheduled_coin, 'interval', minutes=30, id='auto_update_coin')
+        scheduler.add_job(scheduled_nps, 'interval', minutes=30, id='auto_update_nps')
+        
+        scheduler.add_job(run_alerts, 'interval', minutes=15, id='send_signal_alerts')
+        
+        # Daily cron jobs (9:00 AM & 10:00 AM IST)
+        scheduler.add_job(run_stock_news, CronTrigger(hour=9, minute=0), id='daily_stock_news_job', misfire_grace_time=3600)
+        scheduler.add_job(run_daily_summary, CronTrigger(hour=10, minute=0), id='daily_portfolio_summary_job', misfire_grace_time=3600)
+        
+        self.stdout.write("Starting BlockingScheduler (timezone: Asia/Kolkata)...")
+        try:
+            scheduler.start()
+        except (KeyboardInterrupt, SystemExit):
+            self.stdout.write("BlockingScheduler stopped.")

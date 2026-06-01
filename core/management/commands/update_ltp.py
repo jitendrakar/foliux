@@ -10,7 +10,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         self.stdout.write("Fetching live LTP data...")
-        ltp_map = fetch_live_ltp()
+        ltp_map = fetch_live_ltp(force_fetch=True)
         
         if not ltp_map:
             self.stderr.write(self.style.ERROR("Failed to fetch LTP data from Google Sheet."))

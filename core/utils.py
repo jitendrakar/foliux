@@ -563,13 +563,19 @@ def sync_coins_from_sheet():
         logger.error(f"Error syncing Coins: {e}")
         return 0
 
-def fetch_live_ltp():
+def fetch_live_ltp(force_fetch=False):
     """Fetch live LTP from Google Sheet CSV export with caching."""
     cache_key = 'live_ltp_data'
     data = cache.get(cache_key)
     
     if data is not None:
         return data
+
+    if not force_fetch:
+        # Prevent blocking synchronous HTTP requests during page load cycles.
+        # Background scheduler / update_ltp command will run with force_fetch=True.
+        logger.info("LTP cache miss in request thread; returning empty map to fallback on database prices.")
+        return {}
 
     url = f"https://docs.google.com/spreadsheets/d/{settings.MASTER_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=n2g"
     try:

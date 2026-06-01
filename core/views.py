@@ -484,12 +484,21 @@ def fetch_rss_feed(url, source_name, timeout=10):
         print(f"Error fetching {source_name} feed: {e}")
         return []
 
-def fetch_landing_data():
+def fetch_landing_data(force_fetch=False):
     """Fetch all RSS feeds for the landing page with caching."""
     cache_key = 'landing_rss_data_v3'  # v3: Livemint + Zerodha Pulse
     cached_data = cache.get(cache_key)
     if cached_data:
         return cached_data
+
+    if not force_fetch:
+        # Avoid blocking synchronous RSS fetch on public landing page load.
+        # Master scheduler will run this in background with force_fetch=True.
+        logger.info("RSS feed cache miss; returning empty news lists to avoid blocking.")
+        return {
+            'nse_news': [],
+            'financial_news': []
+        }
 
     # Left tile: Livemint Markets RSS
     nse_news = fetch_rss_feed('https://www.livemint.com/rss/markets', 'Livemint')

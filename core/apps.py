@@ -56,7 +56,10 @@ class CoreConfig(AppConfig):
         is_gunicorn = os.environ.get('SERVER_SOFTWARE', '').startswith('gunicorn')
         is_iis = os.environ.get('SERVER_SOFTWARE', '').startswith('Microsoft-IIS') or os.environ.get('WSGI_HANDLER')
 
-        if (is_runserver and is_main_process) or is_gunicorn or (not is_runserver and (is_iis or not is_manage_py)):
+        # Only run scheduler in local runserver mode (to make local development easy).
+        # In production (Gunicorn, IIS, etc.), the scheduler should run as a separate
+        # background process via 'python manage.py master_scheduler'.
+        if is_runserver and is_main_process:
             from apscheduler.schedulers.background import BackgroundScheduler
             from apscheduler.triggers.cron import CronTrigger
             
