@@ -168,3 +168,6 @@ db_backup.json
 *.json
 !manifest.json
 !package.json
+
+# Cache
+django_cache/

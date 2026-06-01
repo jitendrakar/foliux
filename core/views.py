@@ -492,9 +492,21 @@ def fetch_landing_data(force_fetch=False):
         return cached_data
 
     if not force_fetch:
-        # Avoid blocking synchronous RSS fetch on public landing page load.
-        # Master scheduler will run this in background with force_fetch=True.
-        logger.info("RSS feed cache miss; returning empty news lists to avoid blocking.")
+        # If cache miss, attempt a quick fallback fetch with 2s timeout to avoid blank landing pages.
+        logger.info("RSS feed cache miss; performing quick fallback fetch.")
+        try:
+            nse_news = fetch_rss_feed('https://www.livemint.com/rss/markets', 'Livemint', timeout=2)
+            pulse_news = fetch_rss_feed('http://pulse.zerodha.com/feed.php', 'Zerodha Pulse', timeout=2)
+            result = {
+                'nse_news': nse_news[:20],
+                'financial_news': pulse_news[:20]
+            }
+            if nse_news or pulse_news:
+                cache.set(cache_key, result, 86400) # 24 hours cache TTL
+                return result
+        except Exception as e:
+            logger.error(f"Quick fallback RSS fetch failed: {e}")
+        
         return {
             'nse_news': [],
             'financial_news': []
