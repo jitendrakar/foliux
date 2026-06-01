@@ -512,7 +512,7 @@ def fetch_landing_data(force_fetch=False):
     }
     
     if nse_news or pulse_news:
-        cache.set(cache_key, result, 1800) # 30 mins
+        cache.set(cache_key, result, 86400) # 24 hours cache TTL, refreshed every 30 mins by background scheduler
     return result
 
 @ensure_csrf_cookie

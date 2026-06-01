@@ -79,10 +79,14 @@ class Command(BaseCommand):
             except Exception as e:
                 self.stderr.write(f"Error running daily summary: {e}")
 
+        import datetime
+        kolkata_tz = pytz.timezone('Asia/Kolkata')
+        run_now = datetime.datetime.now(kolkata_tz)
+
         # Add jobs
-        scheduler.add_job(scheduled_sync, 'interval', minutes=5, id='gsheet_sync_job')
-        scheduler.add_job(scheduled_update_ltp, 'interval', minutes=5, id='update_ltp_job')
-        scheduler.add_job(scheduled_rss, 'interval', minutes=30, id='rss_sync_job')
+        scheduler.add_job(scheduled_sync, 'interval', minutes=5, next_run_time=run_now, id='gsheet_sync_job')
+        scheduler.add_job(scheduled_update_ltp, 'interval', minutes=5, next_run_time=run_now, id='update_ltp_job')
+        scheduler.add_job(scheduled_rss, 'interval', minutes=30, next_run_time=run_now, id='rss_sync_job')
         
         scheduler.add_job(scheduled_mf, 'interval', minutes=30, id='auto_update_mf')
         scheduler.add_job(scheduled_coin, 'interval', minutes=30, id='auto_update_coin')
