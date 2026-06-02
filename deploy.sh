@@ -136,6 +136,13 @@ else
     echo -e "${YELLOW}systemctl not found, skipping service restart.${NC}"
 fi
 
+# Restart Master Scheduler
+if [ -f "./start_scheduler.sh" ]; then
+    echo -e "${YELLOW}Restarting Master Scheduler background process...${NC}"
+    chmod +x start_scheduler.sh
+    ./start_scheduler.sh
+fi
+
 echo -e "\n${GREEN}==========================================${NC}"
 echo -e "${GREEN}   DEPLOYMENT COMPLETED SUCCESSFULLY!     ${NC}"
 echo -e "${GREEN}==========================================${NC}"
