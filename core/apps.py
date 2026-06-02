@@ -91,6 +91,14 @@ class CoreConfig(AppConfig):
                 misfire_grace_time=3600
             )
 
+            # 4:00 PM IST — Daily Signal Alerts
+            scheduler.add_job(
+                run_alerts,
+                CronTrigger(hour=16, minute=0, timezone='Asia/Kolkata'),
+                id='daily_signal_alerts_job',
+                replace_existing=True,
+                misfire_grace_time=3600
+            )
 
             try:
                 print("Starting background scheduler...")
@@ -98,5 +106,6 @@ class CoreConfig(AppConfig):
                 print(f"Background scheduler started (Env: {'IIS' if is_iis else 'Other'}) with auto updates + daily emails.")
                 print("  - 09:00 AM IST: Daily Stock News Alert")
                 print("  - 10:00 AM IST: Daily Portfolio Summary")
+                print("  - 04:00 PM IST: Daily Signal Alerts")
             except Exception as e:
                 print(f"Failed to start scheduler: {e}")

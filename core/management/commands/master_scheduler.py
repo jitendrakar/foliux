@@ -92,11 +92,10 @@ class Command(BaseCommand):
         scheduler.add_job(scheduled_coin, 'interval', minutes=30, id='auto_update_coin')
         scheduler.add_job(scheduled_nps, 'interval', minutes=30, id='auto_update_nps')
         
-        scheduler.add_job(run_alerts, 'interval', minutes=15, id='send_signal_alerts')
-        
-        # Daily cron jobs (9:00 AM & 10:00 AM IST)
+        # Daily cron jobs (9:00 AM, 10:00 AM, & 4:00 PM IST)
         scheduler.add_job(run_stock_news, CronTrigger(hour=9, minute=0), id='daily_stock_news_job', misfire_grace_time=3600)
         scheduler.add_job(run_daily_summary, CronTrigger(hour=10, minute=0), id='daily_portfolio_summary_job', misfire_grace_time=3600)
+        scheduler.add_job(run_alerts, CronTrigger(hour=16, minute=0), id='send_signal_alerts', misfire_grace_time=3600)
         
         self.stdout.write("Starting BlockingScheduler (timezone: Asia/Kolkata)...")
         try:
