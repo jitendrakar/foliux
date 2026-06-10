@@ -5040,7 +5040,7 @@ def fy_to_dates(fy_str):
         return date(y, 4, 1), date(y+1, 3, 31)
 
 
-def get_fy_cashflow_details(user, fy_str):
+def get_fy_cashflow_details(user, fy_str, months=None, income_types=None, expense_categories=None, investment_types=None):
     from datetime import date, timedelta
     from collections import defaultdict
     from calendar import monthrange
@@ -5051,6 +5051,16 @@ def get_fy_cashflow_details(user, fy_str):
     logger = logging.getLogger(__name__)
     start_date, end_date = fy_to_dates(fy_str)
     
+    # Convert filters to standard lists of upper-case strings/integers
+    if months:
+        months = [int(m) for m in months]
+    if income_types:
+        income_types = [t.upper() for t in income_types]
+    if expense_categories:
+        expense_categories = [c.upper() for c in expense_categories]
+    if investment_types:
+        investment_types = [t.upper() for t in investment_types]
+        
     # Prepare months list
     months_list = []
     curr = start_date
@@ -5058,7 +5068,8 @@ def get_fy_cashflow_details(user, fy_str):
         m_start = curr
         last_day = monthrange(curr.year, curr.month)[1]
         m_end = date(curr.year, curr.month, last_day)
-        months_list.append((curr.year, curr.month, m_start, m_end))
+        if not months or curr.month in months:
+            months_list.append((curr.year, curr.month, m_start, m_end))
         curr = m_end + timedelta(days=1)
         
     # Pre-process: Trigger auto EMIs and SIPs to catch up
@@ -5073,6 +5084,16 @@ def get_fy_cashflow_details(user, fy_str):
     entries = CashFlowEntry.objects.filter(user=user, date__range=(start_date, end_date))
     manual_by_month = defaultdict(lambda: defaultdict(Decimal))
     for entry in entries:
+        if entry.entry_type == 'INCOME':
+            if income_types and entry.category not in income_types:
+                continue
+        elif entry.entry_type == 'EXPENSE':
+            if expense_categories and entry.category not in expense_categories:
+                continue
+        elif entry.entry_type == 'INVESTMENT':
+            if investment_types and entry.category not in investment_types:
+                continue
+                
         key = (entry.date.year, entry.date.month)
         manual_by_month[key][entry.category] += entry.amount
         
@@ -5092,6 +5113,10 @@ def get_fy_cashflow_details(user, fy_str):
                         interest -= asset.monthly_deposit
             interest = max(Decimal('0'), interest)
             
+            # Apply income type filter for interest income
+            if income_types and 'INTEREST_INCOME' not in income_types:
+                interest = Decimal('0')
+                
             if asset.asset_type in ['FD', 'RD']:
                 interest_by_month[key]['FD'] += interest
             elif asset.asset_type in ['PPF', 'EPF']:
@@ -5103,6 +5128,8 @@ def get_fy_cashflow_details(user, fy_str):
     pnl_records = PnLStatement.objects.filter(user=user, exit_date__range=(start_date, end_date))
     stock_profit_by_month = defaultdict(Decimal)
     for p in pnl_records:
+        if income_types and 'STOCK_PROFIT' not in income_types:
+            continue
         key = (p.exit_date.year, p.exit_date.month)
         stock_profit_by_month[key] += p.realized_profit
         
@@ -5127,6 +5154,8 @@ def get_fy_cashflow_details(user, fy_str):
                     buy_lots[fid].pop(0)
             profit = (tx.units * tx.price) - cost
             if start_date <= tx.date <= end_date:
+                if income_types and 'MUTUAL_FUND_PROFIT' not in income_types:
+                    continue
                 key = (tx.date.year, tx.date.month)
                 mf_profit_by_month[key] += profit
                 
@@ -5141,6 +5170,8 @@ def get_fy_cashflow_details(user, fy_str):
     sip_txs = MFTransaction.objects.filter(user=user, is_sip=True, transaction_type='BUY', date__range=(start_date, end_date))
     sip_by_month = defaultdict(Decimal)
     for tx in sip_txs:
+        if investment_types and 'SIP' not in investment_types and 'MUTUAL_FUNDS' not in investment_types:
+            continue
         key = (tx.date.year, tx.date.month)
         sip_by_month[key] += tx.units * tx.price
         
@@ -5167,9 +5198,44 @@ def get_fy_cashflow_details(user, fy_str):
     for y, m, m_start, m_end in months_list:
         key = (y, m)
         salary = manual_by_month[key]['SALARY']
-        other_income = manual_by_month[key]['OTHER_INCOME']
-        daily_expense = manual_by_month[key]['DAILY_EXPENSE']
-        other_expense = manual_by_month[key]['OTHER_EXPENSE']
+        other_income = (
+            manual_by_month[key]['OTHER_INCOME'] +
+            manual_by_month[key]['RENTAL_INCOME'] +
+            manual_by_month[key]['DIVIDEND_INCOME'] +
+            manual_by_month[key]['INTEREST_INCOME']
+        )
+        
+        daily_expense = (
+            manual_by_month[key]['DAILY_EXPENSE'] +
+            manual_by_month[key]['FOOD'] +
+            manual_by_month[key]['GROCERIES'] +
+            manual_by_month[key]['TRANSPORTATION'] +
+            manual_by_month[key]['MEDICAL'] +
+            manual_by_month[key]['ENTERTAINMENT'] +
+            manual_by_month[key]['SHOPPING']
+        )
+        
+        other_expense = (
+            manual_by_month[key]['OTHER_EXPENSE'] +
+            manual_by_month[key]['RENT'] +
+            manual_by_month[key]['UTILITIES'] +
+            manual_by_month[key]['EDUCATION'] +
+            manual_by_month[key]['TRAVEL']
+        )
+        
+        manual_investment = (
+            manual_by_month[key]['SIP'] +
+            manual_by_month[key]['MUTUAL_FUNDS'] +
+            manual_by_month[key]['STOCKS'] +
+            manual_by_month[key]['FD'] +
+            manual_by_month[key]['PPF'] +
+            manual_by_month[key]['EPF'] +
+            manual_by_month[key]['NPS'] +
+            manual_by_month[key]['BONDS'] +
+            manual_by_month[key]['GOLD'] +
+            manual_by_month[key]['REAL_ESTATE'] +
+            manual_by_month[key]['OTHER_INVESTMENTS']
+        )
         
         fd_int = interest_by_month[key]['FD']
         pf_int = interest_by_month[key]['PF']
@@ -5179,7 +5245,7 @@ def get_fy_cashflow_details(user, fy_str):
         mf_prof = mf_profit_by_month[key]
         
         emi_val = emi_by_month[key]
-        sip_val = sip_by_month[key]
+        sip_val = sip_by_month[key] + manual_investment
         
         total_inc = salary + fd_int + pf_int + other_int + stk_prof + mf_prof + other_income
         total_exp = daily_expense + emi_val + sip_val + other_expense
@@ -5223,15 +5289,50 @@ def cashflow_dashboard(request):
     
     # Selected Financial Year
     from datetime import date
+    import calendar
     today = date.today()
     y = today.year
     if today.month < 4:
         y -= 1
     default_fy = f"{y}-{y+1}"
-    fy_str = request.GET.get('fy', default_fy)
+    
+    # Retrieve or clear session filters
+    session_filters = request.session.get('cashflow_filters', {})
+    
+    if 'reset_filters' in request.GET:
+        session_filters = {}
+        request.session['cashflow_filters'] = {}
+        from django.shortcuts import redirect as _redirect
+        return _redirect('cashflow_dashboard')
+    elif 'apply_filters' in request.GET or any(k in request.GET for k in ['months', 'income_types', 'expense_categories', 'investment_types']):
+        session_filters = {
+            'months': request.GET.getlist('months'),
+            'income_types': request.GET.getlist('income_types'),
+            'expense_categories': request.GET.getlist('expense_categories'),
+            'investment_types': request.GET.getlist('investment_types'),
+        }
+        request.session['cashflow_filters'] = session_filters
+
+    fy_str = request.GET.get('fy')
+    if fy_str:
+        session_filters['fy'] = fy_str
+        request.session['cashflow_filters'] = session_filters
+    else:
+        fy_str = session_filters.get('fy', default_fy)
+        
+    months = session_filters.get('months', [])
+    income_types = session_filters.get('income_types', [])
+    expense_categories = session_filters.get('expense_categories', [])
+    investment_types = session_filters.get('investment_types', [])
     
     # Fetch Data
-    monthly_data, fy_totals = get_fy_cashflow_details(target_user, fy_str)
+    monthly_data, fy_totals = get_fy_cashflow_details(
+        target_user, fy_str,
+        months=months,
+        income_types=income_types,
+        expense_categories=expense_categories,
+        investment_types=investment_types
+    )
     fys = get_available_financial_years(target_user)
     
     # Recent Manual Entries in this FY
@@ -5246,6 +5347,45 @@ def cashflow_dashboard(request):
     entry_choices = CashFlowEntry.ENTRY_TYPES
     category_choices = CashFlowEntry.CATEGORIES
     
+    INCOME_CHOICES = [
+        ('SALARY', 'Salary'),
+        ('RENTAL_INCOME', 'Rental Income'),
+        ('INTEREST_INCOME', 'Interest Income (FD, PF, Savings, etc.)'),
+        ('DIVIDEND_INCOME', 'Dividend Income'),
+        ('STOCK_PROFIT', 'Stock Profit'),
+        ('MUTUAL_FUND_PROFIT', 'Mutual Fund Profit'),
+        ('OTHER_INCOME', 'Other Income'),
+    ]
+
+    EXPENSE_CHOICES = [
+        ('FOOD', 'Food'),
+        ('GROCERIES', 'Groceries & Vegetables'),
+        ('RENT', 'Rent'),
+        ('UTILITIES', 'Utilities'),
+        ('TRANSPORTATION', 'Transportation'),
+        ('MEDICAL', 'Medical'),
+        ('ENTERTAINMENT', 'Entertainment / Movies'),
+        ('SHOPPING', 'Shopping'),
+        ('EDUCATION', 'Education'),
+        ('TRAVEL', 'Travel'),
+        ('DAILY_EXPENSE', 'Daily Expense'),
+        ('OTHER_EXPENSE', 'Other Expense'),
+    ]
+
+    INVESTMENT_CHOICES = [
+        ('SIP', 'SIP'),
+        ('MUTUAL_FUNDS', 'Mutual Funds'),
+        ('STOCKS', 'Stocks'),
+        ('FD', 'Fixed Deposit (FD)'),
+        ('PPF', 'Public Provident Fund (PPF)'),
+        ('EPF', 'Employee Provident Fund (EPF/PF)'),
+        ('NPS', 'NPS'),
+        ('BONDS', 'Bonds'),
+        ('GOLD', 'Gold'),
+        ('REAL_ESTATE', 'Real Estate'),
+        ('OTHER_INVESTMENTS', 'Other Investments'),
+    ]
+    
     context = {
         'target_user': target_user,
         'is_family_view': is_family_view,
@@ -5257,6 +5397,16 @@ def cashflow_dashboard(request):
         'recent_entries': recent_entries,
         'entry_choices': entry_choices,
         'category_choices': category_choices,
+        
+        # Filter fields passed to template
+        'active_months': months,
+        'active_income_types': income_types,
+        'active_expense_categories': expense_categories,
+        'active_investment_types': investment_types,
+        'income_filter_choices': INCOME_CHOICES,
+        'expense_filter_choices': EXPENSE_CHOICES,
+        'investment_filter_choices': INVESTMENT_CHOICES,
+        'month_choices': [(str(i), calendar.month_name[i]) for i in range(1, 13)],
     }
     return render(request, 'core/cashflow_dashboard.html', context)
 

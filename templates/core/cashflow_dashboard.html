@@ -153,6 +153,86 @@
         color: #D62A2D;
         font-weight: 700;
     }
+
+    .badge-investment {
+        background: rgba(59, 130, 246, 0.1);
+        color: #2563eb;
+        font-weight: 700;
+    }
+
+    /* ── Filter Panel ── */
+    .filter-panel {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        box-shadow: 0 4px 24px rgba(15, 23, 42, 0.07);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+
+    .filter-panel-header {
+        background: linear-gradient(90deg, #003D7C 0%, #1a56a0 100%);
+        color: white;
+        padding: 0.9rem 1.4rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .filter-panel-header:hover { opacity: 0.95; }
+
+    .filter-section-label {
+        font-size: 0.68rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #64748b;
+        margin-bottom: 0.5rem;
+    }
+
+    .filter-checkbox-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 0.35rem 1rem;
+    }
+
+    .filter-checkbox-grid .form-check-label {
+        font-size: 0.85rem;
+        cursor: pointer;
+    }
+
+    /* Active filter badges */
+    .active-filter-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-bottom: 1.2rem;
+    }
+
+    .filter-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        background: linear-gradient(135deg, #eff6ff, #dbeafe);
+        border: 1px solid #bfdbfe;
+        color: #1e40af;
+        font-size: 0.78rem;
+        font-weight: 600;
+        padding: 0.3rem 0.8rem;
+        border-radius: 100px;
+        white-space: nowrap;
+    }
+
+    .filter-badge-group {
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-right: 0.2rem;
+    }
 </style>
 {% endblock %}
 
@@ -174,6 +254,15 @@
                     {% endfor %}
                 </select>
             </form>
+
+            <!-- Filter Toggle Button -->
+            <button class="btn btn-outline-light rounded-pill px-3 fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#filterPanel" aria-expanded="false" aria-controls="filterPanel" id="filterToggleBtn">
+                <i class="fas fa-filter me-2"></i>Filters
+                {% set active_count = active_months|length + active_income_types|length + active_expense_categories|length + active_investment_types|length %}
+                {% if active_months or active_income_types or active_expense_categories or active_investment_types %}
+                    <span class="badge bg-warning text-dark ms-1">Active</span>
+                {% endif %}
+            </button>
 
             <button class="btn btn-primary rounded-pill px-4 fw-bold" data-bs-toggle="modal" data-bs-target="#addEntryModal">
                 <i class="fas fa-plus me-2"></i>Log Entry
@@ -199,6 +288,122 @@
         </div>
     </div>
 
+    <!-- ── Dynamic Filter Panel ── -->
+    <div class="collapse {% if active_months or active_income_types or active_expense_categories or active_investment_types %}show{% endif %}" id="filterPanel">
+        <div class="filter-panel mb-4">
+            <div class="filter-panel-header" data-bs-toggle="collapse" data-bs-target="#filterPanel">
+                <span class="fw-bold"><i class="fas fa-sliders-h me-2"></i>CashFlow Filters</span>
+                <i class="fas fa-chevron-up text-white-50"></i>
+            </div>
+            <form method="GET" action="" id="filterForm" class="p-4">
+                <input type="hidden" name="fy" value="{{ selected_fy }}">
+                <input type="hidden" name="apply_filters" value="1">
+
+                <div class="row g-4">
+                    <!-- Month Filter -->
+                    <div class="col-md-3">
+                        <div class="filter-section-label"><i class="fas fa-calendar me-1"></i> Month</div>
+                        <div class="d-flex flex-column gap-1" style="max-height: 200px; overflow-y:auto;">
+                            {% for code, label in month_choices %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="months" value="{{ code }}" id="m_{{ code }}"
+                                    {% if code in active_months %}checked{% endif %}>
+                                <label class="form-check-label" for="m_{{ code }}">{{ label }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Income Type Filter -->
+                    <div class="col-md-3">
+                        <div class="filter-section-label"><i class="fas fa-arrow-down me-1 text-success"></i> Income Type</div>
+                        <div class="d-flex flex-column gap-1" style="max-height: 200px; overflow-y:auto;">
+                            {% for code, label in income_filter_choices %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="income_types" value="{{ code }}" id="inc_{{ code }}"
+                                    {% if code in active_income_types %}checked{% endif %}>
+                                <label class="form-check-label" for="inc_{{ code }}">{{ label }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Expense Category Filter -->
+                    <div class="col-md-3">
+                        <div class="filter-section-label"><i class="fas fa-arrow-up me-1 text-danger"></i> Expense Category</div>
+                        <div class="d-flex flex-column gap-1" style="max-height: 200px; overflow-y:auto;">
+                            {% for code, label in expense_filter_choices %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="expense_categories" value="{{ code }}" id="exp_{{ code }}"
+                                    {% if code in active_expense_categories %}checked{% endif %}>
+                                <label class="form-check-label" for="exp_{{ code }}">{{ label }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Investment Type Filter -->
+                    <div class="col-md-3">
+                        <div class="filter-section-label"><i class="fas fa-chart-line me-1 text-primary"></i> Investment Type</div>
+                        <div class="d-flex flex-column gap-1" style="max-height: 200px; overflow-y:auto;">
+                            {% for code, label in investment_filter_choices %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="investment_types" value="{{ code }}" id="inv_{{ code }}"
+                                    {% if code in active_investment_types %}checked{% endif %}>
+                                <label class="form-check-label" for="inv_{{ code }}">{{ label }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-4 pt-3 border-top">
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold" style="background:#003D7C;border-color:#003D7C;">
+                        <i class="fas fa-check me-2"></i>Apply Filters
+                    </button>
+                    <a href="{% url 'cashflow_dashboard' %}?reset_filters=1" class="btn btn-outline-secondary rounded-pill px-4 fw-bold">
+                        <i class="fas fa-times me-2"></i>Reset Filters
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ── Active Filter Badges ── -->
+    {% if active_months or active_income_types or active_expense_categories or active_investment_types %}
+    <div class="active-filter-bar mb-3">
+        <span class="text-muted small fw-semibold me-1 align-self-center"><i class="fas fa-filter me-1"></i>Active:</span>
+
+        {% for code in active_months %}
+            {% for mcode, mlabel in month_choices %}
+                {% if mcode == code %}<span class="filter-badge"><span class="filter-badge-group">Month</span>{{ mlabel }}</span>{% endif %}
+            {% endfor %}
+        {% endfor %}
+
+        {% for code in active_income_types %}
+            {% for icode, ilabel in income_filter_choices %}
+                {% if icode == code %}<span class="filter-badge"><span class="filter-badge-group">Income</span>{{ ilabel }}</span>{% endif %}
+            {% endfor %}
+        {% endfor %}
+
+        {% for code in active_expense_categories %}
+            {% for ecode, elabel in expense_filter_choices %}
+                {% if ecode == code %}<span class="filter-badge"><span class="filter-badge-group">Expense</span>{{ elabel }}</span>{% endif %}
+            {% endfor %}
+        {% endfor %}
+
+        {% for code in active_investment_types %}
+            {% for vcode, vlabel in investment_filter_choices %}
+                {% if vcode == code %}<span class="filter-badge"><span class="filter-badge-group">Investment</span>{{ vlabel }}</span>{% endif %}
+            {% endfor %}
+        {% endfor %}
+
+        <a href="{% url 'cashflow_dashboard' %}?reset_filters=1" class="btn btn-sm btn-outline-danger rounded-pill px-3 ms-1" style="font-size:0.75rem;">
+            <i class="fas fa-times me-1"></i>Clear All
+        </a>
+    </div>
+    {% endif %}
+
     <!-- Summary Metrics -->
     <div class="row g-4 mb-4">
         <div class="col-md-3">
@@ -223,7 +428,7 @@
                     ₹ {{ fy_totals.total_income|inr_format }}
                 </div>
                 <div class="small text-muted mt-2">
-                    <i class="fas fa-wallet text-primary me-1"></i> Salary & Asset yields
+                    <i class="fas fa-wallet text-primary me-1"></i> Salary &amp; Asset yields
                 </div>
             </div>
         </div>
@@ -234,7 +439,7 @@
                     ₹ {{ fy_totals.total_expenses|inr_format }}
                 </div>
                 <div class="small text-muted mt-2">
-                    <i class="fas fa-credit-card text-danger me-1"></i> Daily outlays, EMIs & SIPs
+                    <i class="fas fa-credit-card text-danger me-1"></i> Daily outlays, EMIs &amp; SIPs
                 </div>
             </div>
         </div>
@@ -356,7 +561,7 @@
                                                     </div>
                                                     <!-- Expense Items -->
                                                     <div class="col-md-6">
-                                                        <div class="detail-section-title">Expense & Investment Outlays</div>
+                                                        <div class="detail-section-title">Expense &amp; Investment Outlays</div>
                                                         <div class="detail-item">
                                                             <span>Daily Expenses (Manual):</span>
                                                             <span class="fw-semibold">₹ {{ m.daily_expense|inr_format }}</span>
@@ -366,7 +571,7 @@
                                                             <span class="fw-semibold">₹ {{ m.emi|inr_format }}</span>
                                                         </div>
                                                         <div class="detail-item">
-                                                            <span>SIP Investments (DB):</span>
+                                                            <span>SIP &amp; Investments:</span>
                                                             <span class="fw-semibold">₹ {{ m.sip|inr_format }}</span>
                                                         </div>
                                                         <div class="detail-item">
@@ -377,6 +582,13 @@
                                                 </div>
                                             </div>
                                         </div>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-5 text-muted">
+                                        <i class="fas fa-filter fa-2x mb-3 d-block opacity-25"></i>
+                                        No data matches the selected filters. <a href="{% url 'cashflow_dashboard' %}?reset_filters=1">Clear filters</a> to view all months.
                                     </td>
                                 </tr>
                             {% endfor %}
@@ -453,7 +665,7 @@
                                     <span class="fw-bold">₹ {{ fy_totals.emi|inr_format }}</span>
                                 </div>
                                 <div class="list-group-item d-flex justify-content-between border-0 px-0 py-2">
-                                    <span class="text-slate-600">SIP Investments (DB)</span>
+                                    <span class="text-slate-600">SIP &amp; Investments (DB + Manual)</span>
                                     <span class="fw-bold">₹ {{ fy_totals.sip|inr_format }}</span>
                                 </div>
                                 <div class="list-group-item d-flex justify-content-between border-0 px-0 py-2">
@@ -510,7 +722,7 @@
                         <tr>
                             <td>{{ entry.date|date:"d M Y" }}</td>
                             <td>
-                                <span class="badge rounded-pill px-3 py-1 {% if entry.entry_type == 'INCOME' %}badge-income{% else %}badge-badge-expense badge-expense{% endif %}">
+                                <span class="badge rounded-pill px-3 py-1 {% if entry.entry_type == 'INCOME' %}badge-income{% elif entry.entry_type == 'INVESTMENT' %}badge-investment{% else %}badge-expense{% endif %}">
                                     {{ entry.get_entry_type_display }}
                                 </span>
                             </td>
@@ -601,15 +813,41 @@
 
 {% block extra_js %}
 <script>
-    // Categories data for filter
+    // Categories data for modal filter
     const categoriesMap = {
         'INCOME': [
-            {code: 'SALARY', label: 'Salary'},
-            {code: 'OTHER_INCOME', label: 'Other Income'}
+            {code: 'SALARY',           label: 'Salary'},
+            {code: 'RENTAL_INCOME',    label: 'Rental Income'},
+            {code: 'INTEREST_INCOME',  label: 'Interest Income (FD, PF, Savings, etc.)'},
+            {code: 'DIVIDEND_INCOME',  label: 'Dividend Income'},
+            {code: 'OTHER_INCOME',     label: 'Other Income'}
         ],
         'EXPENSE': [
-            {code: 'DAILY_EXPENSE', label: 'Daily Expense'},
-            {code: 'OTHER_EXPENSE', label: 'Other Expense'}
+            {code: 'FOOD',             label: 'Food'},
+            {code: 'GROCERIES',        label: 'Groceries & Vegetables'},
+            {code: 'RENT',             label: 'Rent'},
+            {code: 'UTILITIES',        label: 'Utilities'},
+            {code: 'TRANSPORTATION',   label: 'Transportation'},
+            {code: 'MEDICAL',          label: 'Medical'},
+            {code: 'ENTERTAINMENT',    label: 'Entertainment / Movies'},
+            {code: 'SHOPPING',         label: 'Shopping'},
+            {code: 'EDUCATION',        label: 'Education'},
+            {code: 'TRAVEL',           label: 'Travel'},
+            {code: 'DAILY_EXPENSE',    label: 'Daily Expense'},
+            {code: 'OTHER_EXPENSE',    label: 'Other Expense'}
+        ],
+        'INVESTMENT': [
+            {code: 'SIP',              label: 'SIP'},
+            {code: 'MUTUAL_FUNDS',     label: 'Mutual Funds'},
+            {code: 'STOCKS',           label: 'Stocks'},
+            {code: 'FD',               label: 'Fixed Deposit (FD)'},
+            {code: 'PPF',              label: 'Public Provident Fund (PPF)'},
+            {code: 'EPF',              label: 'Employee Provident Fund (EPF/PF)'},
+            {code: 'NPS',              label: 'NPS'},
+            {code: 'BONDS',            label: 'Bonds'},
+            {code: 'GOLD',             label: 'Gold'},
+            {code: 'REAL_ESTATE',      label: 'Real Estate'},
+            {code: 'OTHER_INVESTMENTS',label: 'Other Investments'}
         ]
     };
 
@@ -666,7 +904,7 @@
     }
 
     // Chart.js Configuration
-    const months = [{% for m in monthly_data %}"{{ m.month_name }}",{% endfor %}];
+    const chartMonths = [{% for m in monthly_data %}"{{ m.month_name }}",{% endfor %}];
     const totalIncomes = [{% for m in monthly_data %}{{ m.total_income }},{% endfor %}];
     const totalExpenses = [{% for m in monthly_data %}{{ m.total_expenses }},{% endfor %}];
     const netCashflows = [{% for m in monthly_data %}{{ m.net_cashflow }},{% endfor %}];
@@ -676,7 +914,7 @@
     new Chart(ctxIncExp, {
         type: 'bar',
         data: {
-            labels: months,
+            labels: chartMonths,
             datasets: [
                 {
                     label: 'Income',
@@ -732,7 +970,7 @@
     new Chart(ctxNetSavings, {
         type: 'line',
         data: {
-            labels: months,
+            labels: chartMonths,
             datasets: [{
                 label: 'Net Cashflow',
                 data: netCashflows,
@@ -822,7 +1060,7 @@
 
     // Chart 4: Expense Distribution (FY)
     const ctxExpPie = document.getElementById('expensePieChart').getContext('2d');
-    const expLabels = ['Daily Expenses', 'EMIs', 'SIPs', 'Other Expenses'];
+    const expLabels = ['Daily Expenses', 'EMIs', 'SIPs & Investments', 'Other Expenses'];
     const expData = [
         {{ fy_totals.daily_expense|default:0 }},
         {{ fy_totals.emi|default:0 }},

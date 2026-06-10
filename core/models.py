@@ -1144,13 +1144,43 @@ class BlogComment(models.Model):
 class CashFlowEntry(models.Model):
     ENTRY_TYPES = [
         ('INCOME', 'Income'),
-        ('EXPENSE', 'Expense')
+        ('EXPENSE', 'Expense'),
+        ('INVESTMENT', 'Investment')
     ]
     CATEGORIES = [
+        # Income Categories
         ('SALARY', 'Salary'),
+        ('RENTAL_INCOME', 'Rental Income'),
+        ('INTEREST_INCOME', 'Interest Income'),
+        ('DIVIDEND_INCOME', 'Dividend Income'),
         ('OTHER_INCOME', 'Other Income'),
+        
+        # Expense Categories
+        ('FOOD', 'Food'),
+        ('GROCERIES', 'Groceries & Vegetables'),
+        ('RENT', 'Rent'),
+        ('UTILITIES', 'Utilities'),
+        ('TRANSPORTATION', 'Transportation'),
+        ('MEDICAL', 'Medical'),
+        ('ENTERTAINMENT', 'Entertainment / Movies'),
+        ('SHOPPING', 'Shopping'),
+        ('EDUCATION', 'Education'),
+        ('TRAVEL', 'Travel'),
         ('DAILY_EXPENSE', 'Daily Expense'),
-        ('OTHER_EXPENSE', 'Other Expense')
+        ('OTHER_EXPENSE', 'Other Expense'),
+        
+        # Investment Categories
+        ('SIP', 'SIP'),
+        ('MUTUAL_FUNDS', 'Mutual Funds'),
+        ('STOCKS', 'Stocks'),
+        ('FD', 'Fixed Deposit (FD)'),
+        ('PPF', 'Public Provident Fund (PPF)'),
+        ('EPF', 'Employee Provident Fund (EPF/PF)'),
+        ('NPS', 'NPS'),
+        ('BONDS', 'Bonds'),
+        ('GOLD', 'Gold'),
+        ('REAL_ESTATE', 'Real Estate'),
+        ('OTHER_INVESTMENTS', 'Other Investments')
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cashflow_entries')
     date = models.DateField(default=timezone.localdate)
