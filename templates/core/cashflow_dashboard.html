@@ -192,17 +192,6 @@
         margin-bottom: 0.5rem;
     }
 
-    .filter-checkbox-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-        gap: 0.35rem 1rem;
-    }
-
-    .filter-checkbox-grid .form-check-label {
-        font-size: 0.85rem;
-        cursor: pointer;
-    }
-
     /* Active filter badges */
     .active-filter-bar {
         display: flex;
@@ -233,8 +222,159 @@
         letter-spacing: 0.06em;
         margin-right: 0.2rem;
     }
+
+    /* ═══════════════════════════════════════
+       DARK MODE OVERRIDES
+       selector: html[data-theme="dark"]
+    ═══════════════════════════════════════ */
+
+    html[data-theme="dark"] .glass-card {
+        background: rgba(30, 41, 59, 0.85) !important;
+        border-color: var(--global-dark-border) !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    html[data-theme="dark"] .glass-card:hover {
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    html[data-theme="dark"] .stat-label {
+        color: var(--global-dark-muted);
+    }
+
+    /* Nav pills */
+    html[data-theme="dark"] .nav-pills-custom {
+        background: rgba(255,255,255,0.05);
+    }
+
+    html[data-theme="dark"] .nav-pills-custom .nav-link {
+        color: var(--global-dark-muted);
+    }
+
+    html[data-theme="dark"] .nav-pills-custom .nav-link.active {
+        background-color: #003D7C;
+        color: white !important;
+    }
+
+    /* Table */
+    html[data-theme="dark"] .cf-details-table th {
+        color: var(--global-dark-muted) !important;
+        background: rgba(255,255,255,0.03) !important;
+        border-bottom-color: var(--global-dark-border) !important;
+    }
+
+    html[data-theme="dark"] .cf-details-table td {
+        border-bottom-color: var(--global-dark-border) !important;
+        color: var(--global-dark-text);
+    }
+
+    html[data-theme="dark"] .detail-row {
+        background: rgba(255,255,255,0.04) !important;
+    }
+
+    html[data-theme="dark"] .detail-section-title {
+        color: var(--global-dark-muted);
+        border-bottom-color: var(--global-dark-border);
+    }
+
+    html[data-theme="dark"] .detail-item {
+        border-bottom-color: rgba(255,255,255,0.07);
+        color: var(--global-dark-text);
+    }
+
+    /* Expand button */
+    html[data-theme="dark"] .btn-action-outline {
+        background: var(--global-dark-card);
+        border-color: var(--global-dark-border);
+        color: var(--global-dark-muted);
+    }
+
+    html[data-theme="dark"] .btn-action-outline:hover {
+        background: var(--global-dark-bg);
+        color: var(--global-dark-text);
+    }
+
+    /* Detail expand panel */
+    html[data-theme="dark"] .bg-light {
+        background: var(--global-dark-bg) !important;
+    }
+
+    /* Filter panel */
+    html[data-theme="dark"] .filter-panel {
+        background: var(--global-dark-card) !important;
+        border-color: var(--global-dark-border) !important;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.3) !important;
+    }
+
+    html[data-theme="dark"] .filter-panel .p-4 {
+        background: var(--global-dark-card);
+    }
+
+    html[data-theme="dark"] .filter-section-label {
+        color: var(--global-dark-muted);
+    }
+
+    html[data-theme="dark"] .filter-panel .form-check-label {
+        color: var(--global-dark-text) !important;
+    }
+
+    html[data-theme="dark"] .filter-panel .form-check-input {
+        background-color: var(--global-dark-bg);
+        border-color: var(--global-dark-border);
+    }
+
+    html[data-theme="dark"] .filter-panel .form-check-input:checked {
+        background-color: #3b82f6;
+        border-color: #3b82f6;
+    }
+
+    html[data-theme="dark"] .filter-panel .border-top {
+        border-top-color: var(--global-dark-border) !important;
+    }
+
+    /* Active filter badges */
+    html[data-theme="dark"] .filter-badge {
+        background: linear-gradient(135deg, rgba(59,130,246,0.15), rgba(37,99,235,0.1));
+        border-color: rgba(59,130,246,0.3);
+        color: #93c5fd;
+    }
+
+    html[data-theme="dark"] .filter-badge-group {
+        color: var(--global-dark-muted);
+    }
+
+    html[data-theme="dark"] .active-filter-bar .text-muted {
+        color: var(--global-dark-muted) !important;
+    }
+
+    /* Recent entries table */
+    html[data-theme="dark"] .table thead tr.table-light {
+        background-color: var(--global-dark-card) !important;
+    }
+
+    html[data-theme="dark"] .table thead tr.table-light th {
+        background-color: var(--global-dark-card) !important;
+        color: var(--global-dark-muted) !important;
+    }
+
+    html[data-theme="dark"] .table td,
+    html[data-theme="dark"] .table th {
+        border-color: var(--global-dark-border) !important;
+    }
+
+    /* List group items (FY Summary) */
+    html[data-theme="dark"] .list-group-item {
+        background: transparent !important;
+        color: var(--global-dark-text) !important;
+        border-color: var(--global-dark-border) !important;
+    }
+
+    html[data-theme="dark"] .list-group-item .text-slate-600 {
+        color: var(--global-dark-muted) !important;
+    }
 </style>
 {% endblock %}
+
 
 {% block content %}
 <div class="container py-4 animate__animated animate__fadeIn">
