@@ -395,24 +395,72 @@
     100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
   }
 
-  .popular-badge {
-    background: linear-gradient(135deg, #ff9f43 0%, #ff5252 100%);
-    color: white;
-    font-size: 0.65rem;
-    font-weight: 700;
-    padding: 0.15rem 0.4rem;
-    border-radius: 4px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-left: 0.5rem;
-    display: inline-block;
+  /* Premium custom category pill buttons */
+  .category-pill {
+    background-color: var(--calc-card);
+    border: 1px solid var(--calc-border);
+    color: var(--calc-text) !important;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.6rem 1.25rem;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+  }
+  .category-pill:hover {
+    border-color: var(--studio-accent);
+    background-color: rgba(var(--studio-accent-rgb), 0.05);
+    transform: translateY(-1px);
+  }
+  .category-pill.active {
+    background: linear-gradient(135deg, var(--studio-primary) 0%, var(--studio-secondary) 100%) !important;
+    border-color: var(--studio-primary) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(0, 61, 124, 0.15);
+  }
+  html[data-theme="dark"] .category-pill.active,
+  body.studio-dark-mode .category-pill.active {
+    background: linear-gradient(135deg, var(--studio-accent) 0%, var(--studio-secondary) 100%) !important;
+    border-color: var(--studio-accent) !important;
+  }
+
+  /* Slider enhancements */
+  .calc-slider {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 8px !important;
+    border-radius: 6px;
+    background: var(--calc-border);
+    outline: none;
+    transition: background 0.3s;
+    margin-top: 8px;
+    margin-bottom: 12px;
+  }
+
+  /* Workspace divider */
+  .calc-workspace-divider {
+    border-right: none;
+  }
+  @media (min-width: 768px) {
+    .calc-workspace-divider {
+      border-right: 1px solid var(--calc-border) !important;
+    }
+  }
+
+  /* Metric cards responsive spacing */
+  @media (max-width: 575px) {
+    .metric-box {
+      padding: 1rem !important;
+    }
+    .metric-box-value {
+      font-size: 1.25rem !important;
+    }
   }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="calc-studio-container py-4 px-1" id="calcStudioWrapper">
-  <div class="container-fluid">
+  <div class="container-xl">
     
     <!-- Top Action Bar -->
     <div class="row align-items-center mb-4">
@@ -444,13 +492,13 @@
       </div>
       <div class="col-12 col-lg-8">
         <div class="d-flex flex-nowrap overflow-x-auto gap-2 pb-2" id="categoryTabWrapper">
-          <button class="btn btn-outline-secondary rounded-pill px-3 py-2 text-nowrap active" onclick="filterCategory('all', this)">All Simulators</button>
-          <button class="btn btn-outline-secondary rounded-pill px-3 py-2 text-nowrap" onclick="filterCategory('investment', this)"><i class="fas fa-piggy-bank me-2"></i>Investment</button>
-          <button class="btn btn-outline-secondary rounded-pill px-3 py-2 text-nowrap" onclick="filterCategory('retirement', this)"><i class="fas fa-couch me-2"></i>Retirement</button>
-          <button class="btn btn-outline-secondary rounded-pill px-3 py-2 text-nowrap" onclick="filterCategory('loan', this)"><i class="fas fa-home me-2"></i>Loan & EMI</button>
-          <button class="btn btn-outline-secondary rounded-pill px-3 py-2 text-nowrap" onclick="filterCategory('tax', this)"><i class="fas fa-file-invoice-dollar me-2"></i>Tax & Salary</button>
-          <button class="btn btn-outline-secondary rounded-pill px-3 py-2 text-nowrap" onclick="filterCategory('trading', this)"><i class="fas fa-exchange-alt me-2"></i>Trading</button>
-          <button class="btn btn-outline-secondary rounded-pill px-3 py-2 text-nowrap" onclick="filterCategory('crypto', this)"><i class="fab fa-bitcoin me-2"></i>Crypto</button>
+          <button class="category-pill rounded-pill text-nowrap active" onclick="filterCategory('all', this)">All Simulators</button>
+          <button class="category-pill rounded-pill text-nowrap" onclick="filterCategory('investment', this)"><i class="fas fa-piggy-bank me-2"></i>Investment</button>
+          <button class="category-pill rounded-pill text-nowrap" onclick="filterCategory('retirement', this)"><i class="fas fa-couch me-2"></i>Retirement</button>
+          <button class="category-pill rounded-pill text-nowrap" onclick="filterCategory('loan', this)"><i class="fas fa-home me-2"></i>Loan & EMI</button>
+          <button class="category-pill rounded-pill text-nowrap" onclick="filterCategory('tax', this)"><i class="fas fa-file-invoice-dollar me-2"></i>Tax & Salary</button>
+          <button class="category-pill rounded-pill text-nowrap" onclick="filterCategory('trading', this)"><i class="fas fa-exchange-alt me-2"></i>Trading</button>
+          <button class="category-pill rounded-pill text-nowrap" onclick="filterCategory('crypto', this)"><i class="fab fa-bitcoin me-2"></i>Crypto</button>
         </div>
       </div>
     </div>
@@ -459,7 +507,7 @@
     <div class="row">
       
       <!-- Left Sidebar: Calculator List -->
-      <div class="col-12 col-lg-3 mb-4 mb-lg-0">
+      <div class="col-12 col-lg-3 mb-4 mb-lg-0 d-none d-lg-block">
         <div class="premium-card p-3" style="max-height: 75vh; overflow-y: auto;">
           <h5 class="fw-bold mb-3 small text-uppercase tracking-wider" style="color: var(--calc-muted);">Calculators</h5>
           <div id="calculatorListContainer">
@@ -470,6 +518,17 @@
 
       <!-- Right Area: Interactive Calculator Interface -->
       <div class="col-12 col-lg-9">
+        <!-- Mobile Dropdown Selector (visible on mobile only) -->
+        <div class="d-lg-none mb-3">
+          <div class="premium-card p-3">
+            <label class="form-label small fw-bold text-muted mb-2"><i class="fas fa-calculator text-primary me-2"></i>Select Simulator</label>
+            <div class="input-group-premium p-1">
+              <select id="mobileCalculatorSelect" class="form-select border-0 bg-transparent fw-bold py-1" onchange="selectCalculator(this.value)" style="color: var(--calc-text); cursor: pointer;">
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+          </div>
+        </div>
         <div class="premium-card p-4 mb-4">
           
           <!-- Workspace Title -->
@@ -488,7 +547,7 @@
           <!-- Dynamic Workspace Split -->
           <div class="row">
             <!-- Left Side: Interactive Input Parameters (Sliders + Inputs) -->
-            <div class="col-12 col-md-6 mb-4 mb-md-0 border-end pe-md-4">
+            <div class="col-12 col-md-6 mb-4 mb-md-0 calc-workspace-divider pe-md-4">
               <h5 class="fw-bold mb-4 d-flex align-items-center">
                 <i class="fas fa-sliders-h text-primary me-2"></i>Parameters
               </h5>
@@ -1580,6 +1639,11 @@
     const listContainer = document.getElementById('calculatorListContainer');
     listContainer.innerHTML = '';
     
+    const mobileSelect = document.getElementById('mobileCalculatorSelect');
+    if (mobileSelect) {
+      mobileSelect.innerHTML = '';
+    }
+    
     const query = searchQuery.toLowerCase().trim();
 
     Object.values(CALCULATORS_REGISTRY).forEach(calc => {
@@ -1587,6 +1651,7 @@
       const matchSearch = calc.title.toLowerCase().includes(query) || calc.description.toLowerCase().includes(query);
 
       if (matchCategory && matchSearch) {
+        // Desktop List Item
         const div = document.createElement('div');
         div.id = `sidebar_item_${calc.id}`;
         div.className = `calc-list-item ${calc.id === activeCalculatorId ? 'selected' : ''}`;
@@ -1602,6 +1667,15 @@
           <span class="text-muted d-block small mt-1" style="font-size:0.75rem; line-height: 1.2;">${calc.description.substring(0, 50)}...</span>
         `;
         listContainer.appendChild(div);
+
+        // Mobile Dropdown Item
+        if (mobileSelect) {
+          const opt = document.createElement('option');
+          opt.value = calc.id;
+          opt.textContent = calc.title + (calc.popular ? ' (Popular)' : '');
+          opt.selected = calc.id === activeCalculatorId;
+          mobileSelect.appendChild(opt);
+        }
       }
     });
   }
@@ -1613,6 +1687,12 @@
     // Update active highlight classes
     document.querySelectorAll('.calc-list-item').forEach(el => el.classList.remove('selected'));
     document.getElementById(`sidebar_item_${calcId}`)?.classList.add('selected');
+
+    // Sync mobile select dropdown
+    const mobileSelect = document.getElementById('mobileCalculatorSelect');
+    if (mobileSelect && mobileSelect.value !== calcId) {
+      mobileSelect.value = calcId;
+    }
 
     const calc = CALCULATORS_REGISTRY[calcId];
     document.getElementById('activeCalcTitle').innerText = calc.title;
@@ -1630,7 +1710,8 @@
 
     calc.inputs.forEach(input => {
       const wrap = document.createElement('div');
-      wrap.className = 'mb-4';
+      wrap.className = 'mb-4 pb-3';
+      wrap.style.borderBottom = '1px dashed var(--calc-border)';
 
       let stepBadge = '';
       if (input.type === 'currency') {
@@ -1642,17 +1723,24 @@
           <label class="form-label small fw-bold mb-0">${input.label}</label>
           ${stepBadge}
         </div>
-        <div class="input-group-premium mb-2">
+        <div class="input-group-premium mb-3">
           <input type="number" id="input_${input.key}" value="${input.default}" min="${input.min}" max="${input.max}" step="${input.step}" oninput="syncCalculatorValues('${input.key}', 'input')">
           <span class="addon">${input.type === 'percent' ? '%' : input.type === 'currency' ? '₹' : 'Qty'}</span>
         </div>
-        <input type="range" class="calc-slider" id="slider_${input.key}" value="${input.default}" min="${input.min}" max="${input.max}" step="${input.step}" oninput="syncCalculatorValues('${input.key}', 'slider')">
+        <div class="px-1">
+          <input type="range" class="calc-slider" id="slider_${input.key}" value="${input.default}" min="${input.min}" max="${input.max}" step="${input.step}" oninput="syncCalculatorValues('${input.key}', 'slider')">
+        </div>
       `;
       container.appendChild(wrap);
       
       // Initial badge update
       updateUnitBadge(input.key, input.default, input.type);
     });
+
+    // Remove bottom border from the last child for cleaner appearance
+    if (container.lastChild) {
+      container.lastChild.style.borderBottom = 'none';
+    }
   }
 
   // Synchronize inputs and slider positions instantly
@@ -1704,7 +1792,7 @@
 
     output.metrics.forEach(metric => {
       const col = document.createElement('div');
-      col.className = 'col-6 col-sm-4';
+      col.className = 'col-12 col-sm-4 mb-3 mb-sm-0';
       
       let valStr = '';
       if (metric.type === 'currency') {
