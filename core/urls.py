@@ -134,5 +134,10 @@ urlpatterns = [
     path('stock-news/', views.stock_news_list, name='stock_news'),
     path('calc/', views.wealth_calculators, name='wealth_calculators'),
     path('accounts/update-theme/', views.update_theme_preference, name='update_theme_preference'),
+    path('cashflow/', views.cashflow_dashboard, name='cashflow_dashboard'),
+    path('cashflow/add/', views.add_cashflow_entry, name='add_cashflow_entry'),
+    path('cashflow/delete/<int:pk>/', views.delete_cashflow_entry, name='delete_cashflow_entry'),
+    path('cashflow/export/excel/', views.export_cashflow_excel, name='export_cashflow_excel'),
+    path('cashflow/export/pdf/', views.export_cashflow_pdf, name='export_cashflow_pdf'),
 ]
 

@@ -491,6 +491,7 @@ class MFTransaction(models.Model):
     price = models.DecimalField(max_digits=20, decimal_places=4)
     date = models.DateField()
     remaining_units = models.DecimalField(max_digits=20, decimal_places=4, default=0) # Only for BUY
+    is_sip = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
 class Coin(models.Model):
@@ -767,6 +768,38 @@ class FixedAsset(models.Model):
             inv = 0.0
         if inv == 0: return 0
         return (self.unrealized_pnl / inv) * 100
+
+    def value_at_date(self, target_date):
+        if target_date < self.investment_date:
+            return Decimal('0')
+        
+        calculation_date = min(target_date, self.maturity_date) if self.maturity_date else target_date
+        
+        try:
+            inv = float(self.invested_amount) if self.invested_amount else 0.0
+        except (ValueError, TypeError):
+            inv = 0.0
+        try:
+            ir = float(self.interest_rate) if self.interest_rate else 0.0
+        except (ValueError, TypeError):
+            ir = 0.0
+            
+        i = ir / 100 / 12
+        
+        if self.asset_type == 'RD':
+            n = max(0, (calculation_date.year - self.investment_date.year) * 12 + (calculation_date.month - self.investment_date.month))
+            if n == 0: return Decimal(str(inv))
+            monthly_val = float(self.monthly_deposit)
+            if monthly_val <= 0: return Decimal(str(inv))
+            total = 0
+            for month in range(1, n + 2):
+                months_active = (n + 1) - month
+                if months_active < 0: break
+                total += monthly_val * ((1 + i) ** months_active)
+            return Decimal(str(total))
+        else:
+            months = max(0, (calculation_date.year - self.investment_date.year) * 12 + (calculation_date.month - self.investment_date.month))
+            return Decimal(str(inv * ((1 + i) ** months)))
 
     def __str__(self):
         return f"{self.user.username} - {self.instrument_name}"
@@ -1106,6 +1139,29 @@ class BlogComment(models.Model):
 
     def __str__(self):
         return f"Comment by {self.user.username} on {self.post.title}"
+
+
+class CashFlowEntry(models.Model):
+    ENTRY_TYPES = [
+        ('INCOME', 'Income'),
+        ('EXPENSE', 'Expense')
+    ]
+    CATEGORIES = [
+        ('SALARY', 'Salary'),
+        ('OTHER_INCOME', 'Other Income'),
+        ('DAILY_EXPENSE', 'Daily Expense'),
+        ('OTHER_EXPENSE', 'Other Expense')
+    ]
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cashflow_entries')
+    date = models.DateField(default=timezone.localdate)
+    entry_type = models.CharField(max_length=10, choices=ENTRY_TYPES)
+    category = models.CharField(max_length=20, choices=CATEGORIES)
+    amount = models.DecimalField(max_digits=20, decimal_places=2)
+    description = models.CharField(max_length=255, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.category} - {self.amount} on {self.date}"
 
 
 

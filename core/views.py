@@ -4990,4 +4990,614 @@ def update_theme_preference(request):
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 
+# =========================================================================
+# CASHFLOW MODULE VIEW CONTROLLERS & HELPERS
+# =========================================================================
+
+def get_available_financial_years(user):
+    from datetime import date
+    from .models import CashFlowEntry, MFTransaction, PnLStatement
+    today = date.today()
+    start_year = 2023 # fallback default
+    
+    # Check earliest CashFlowEntry
+    earliest_entry = CashFlowEntry.objects.filter(user=user).order_by('date').first()
+    if earliest_entry:
+        start_year = min(start_year, earliest_entry.date.year)
+        
+    # Check earliest MFTransaction
+    earliest_mf = MFTransaction.objects.filter(user=user).order_by('date').first()
+    if earliest_mf:
+        start_year = min(start_year, earliest_mf.date.year)
+        
+    # Check earliest PnLStatement
+    earliest_pnl = PnLStatement.objects.filter(user=user).order_by('exit_date').first()
+    if earliest_pnl:
+        start_year = min(start_year, earliest_pnl.exit_date.year)
+        
+    current_year = today.year
+    if today.month < 4:
+        current_year -= 1
+        
+    fys = []
+    for y in range(start_year, current_year + 2):
+        fys.append(f"{y}-{y+1}")
+    return sorted(list(set(fys)), reverse=True)
+
+
+def fy_to_dates(fy_str):
+    from datetime import date
+    try:
+        parts = fy_str.split('-')
+        start_year = int(parts[0])
+        end_year = int(parts[1])
+        return date(start_year, 4, 1), date(end_year, 3, 31)
+    except Exception:
+        today = date.today()
+        y = today.year
+        if today.month < 4:
+            y -= 1
+        return date(y, 4, 1), date(y+1, 3, 31)
+
+
+def get_fy_cashflow_details(user, fy_str):
+    from datetime import date, timedelta
+    from collections import defaultdict
+    from calendar import monthrange
+    from decimal import Decimal
+    import logging
+    from .models import CashFlowEntry, FixedAsset, PnLStatement, MFTransaction, Loan, LoanPayment
+    
+    logger = logging.getLogger(__name__)
+    start_date, end_date = fy_to_dates(fy_str)
+    
+    # Prepare months list
+    months_list = []
+    curr = start_date
+    while curr <= end_date:
+        m_start = curr
+        last_day = monthrange(curr.year, curr.month)[1]
+        m_end = date(curr.year, curr.month, last_day)
+        months_list.append((curr.year, curr.month, m_start, m_end))
+        curr = m_end + timedelta(days=1)
+        
+    # Pre-process: Trigger auto EMIs and SIPs to catch up
+    try:
+        for l in Loan.objects.filter(user=user, is_active=True):
+            _process_auto_emis(l)
+        _process_auto_mf_sips(user)
+    except Exception as e:
+        logger.error(f"Error processing auto EMIs/SIPs: {e}")
+        
+    # 1. Fetch manual entries
+    entries = CashFlowEntry.objects.filter(user=user, date__range=(start_date, end_date))
+    manual_by_month = defaultdict(lambda: defaultdict(Decimal))
+    for entry in entries:
+        key = (entry.date.year, entry.date.month)
+        manual_by_month[key][entry.category] += entry.amount
+        
+    # 2. Fixed Assets
+    fixed_assets = list(FixedAsset.objects.filter(user=user))
+    interest_by_month = defaultdict(lambda: defaultdict(Decimal))
+    for y, m, m_start, m_end in months_list:
+        key = (y, m)
+        day_before = m_start - timedelta(days=1)
+        for asset in fixed_assets:
+            val_end = asset.value_at_date(m_end)
+            val_start = asset.value_at_date(day_before)
+            interest = val_end - val_start
+            if asset.asset_type == 'RD':
+                if asset.investment_date <= m_end:
+                    if not asset.maturity_date or asset.maturity_date >= m_start:
+                        interest -= asset.monthly_deposit
+            interest = max(Decimal('0'), interest)
+            
+            if asset.asset_type in ['FD', 'RD']:
+                interest_by_month[key]['FD'] += interest
+            elif asset.asset_type in ['PPF', 'EPF']:
+                interest_by_month[key]['PF'] += interest
+            elif asset.asset_type == 'Other':
+                interest_by_month[key]['Other'] += interest
+                
+    # 3. Stock Realized Profit
+    pnl_records = PnLStatement.objects.filter(user=user, exit_date__range=(start_date, end_date))
+    stock_profit_by_month = defaultdict(Decimal)
+    for p in pnl_records:
+        key = (p.exit_date.year, p.exit_date.month)
+        stock_profit_by_month[key] += p.realized_profit
+        
+    # 4. Mutual Fund Realized Profit (using FIFO on all user transactions)
+    mf_txs = MFTransaction.objects.filter(user=user).order_by('date', 'created_at')
+    buy_lots = defaultdict(list)
+    mf_profit_by_month = defaultdict(Decimal)
+    for tx in mf_txs:
+        fid = tx.fund_id
+        if tx.transaction_type == 'BUY':
+            buy_lots[fid].append({'units': tx.units, 'price': tx.price})
+        elif tx.transaction_type == 'SELL':
+            sell_units = tx.units
+            cost = Decimal('0')
+            while sell_units > 0 and buy_lots[fid]:
+                lot = buy_lots[fid][0]
+                matched = min(lot['units'], sell_units)
+                cost += matched * lot['price']
+                lot['units'] -= matched
+                sell_units -= matched
+                if lot['units'] <= 0:
+                    buy_lots[fid].pop(0)
+            profit = (tx.units * tx.price) - cost
+            if start_date <= tx.date <= end_date:
+                key = (tx.date.year, tx.date.month)
+                mf_profit_by_month[key] += profit
+                
+    # 5. Loan EMIs
+    payments = LoanPayment.objects.filter(loan__user=user, payment_type='EMI', date__range=(start_date, end_date))
+    emi_by_month = defaultdict(Decimal)
+    for p in payments:
+        key = (p.date.year, p.date.month)
+        emi_by_month[key] += p.amount_decimal
+        
+    # 6. MF SIP investments
+    sip_txs = MFTransaction.objects.filter(user=user, is_sip=True, transaction_type='BUY', date__range=(start_date, end_date))
+    sip_by_month = defaultdict(Decimal)
+    for tx in sip_txs:
+        key = (tx.date.year, tx.date.month)
+        sip_by_month[key] += tx.units * tx.price
+        
+    # Assemble monthly breakdown
+    monthly_data = []
+    fy_totals = {
+        'salary': Decimal('0'),
+        'other_income': Decimal('0'),
+        'fd_interest': Decimal('0'),
+        'pf_interest': Decimal('0'),
+        'other_interest': Decimal('0'),
+        'stock_realized': Decimal('0'),
+        'mf_realized': Decimal('0'),
+        'daily_expense': Decimal('0'),
+        'emi': Decimal('0'),
+        'sip': Decimal('0'),
+        'other_expense': Decimal('0'),
+        'total_income': Decimal('0'),
+        'total_expenses': Decimal('0'),
+        'net_cashflow': Decimal('0'),
+    }
+    
+    import calendar
+    for y, m, m_start, m_end in months_list:
+        key = (y, m)
+        salary = manual_by_month[key]['SALARY']
+        other_income = manual_by_month[key]['OTHER_INCOME']
+        daily_expense = manual_by_month[key]['DAILY_EXPENSE']
+        other_expense = manual_by_month[key]['OTHER_EXPENSE']
+        
+        fd_int = interest_by_month[key]['FD']
+        pf_int = interest_by_month[key]['PF']
+        other_int = interest_by_month[key]['Other']
+        
+        stk_prof = stock_profit_by_month[key]
+        mf_prof = mf_profit_by_month[key]
+        
+        emi_val = emi_by_month[key]
+        sip_val = sip_by_month[key]
+        
+        total_inc = salary + fd_int + pf_int + other_int + stk_prof + mf_prof + other_income
+        total_exp = daily_expense + emi_val + sip_val + other_expense
+        net_cf = total_inc - total_exp
+        
+        month_name = calendar.month_name[m]
+        
+        m_stats = {
+            'year': y,
+            'month': m,
+            'month_name': f"{month_name} {y}",
+            'salary': salary,
+            'other_income': other_income,
+            'fd_interest': fd_int,
+            'pf_interest': pf_int,
+            'other_interest': other_int,
+            'stock_realized': stk_prof,
+            'mf_realized': mf_prof,
+            'daily_expense': daily_expense,
+            'emi': emi_val,
+            'sip': sip_val,
+            'other_expense': other_expense,
+            'total_income': total_inc,
+            'total_expenses': total_exp,
+            'net_cashflow': net_cf,
+        }
+        monthly_data.append(m_stats)
+        
+        # Add to FY totals
+        for k in fy_totals:
+            if k in m_stats:
+                fy_totals[k] += m_stats[k]
+                
+    return monthly_data, fy_totals
+
+
+@login_required
+def cashflow_dashboard(request):
+    """Dashboard for Monthly and Financial Year-wise CashFlow."""
+    target_user, is_family_view, is_consolidated = get_target_user(request)
+    
+    # Selected Financial Year
+    from datetime import date
+    today = date.today()
+    y = today.year
+    if today.month < 4:
+        y -= 1
+    default_fy = f"{y}-{y+1}"
+    fy_str = request.GET.get('fy', default_fy)
+    
+    # Fetch Data
+    monthly_data, fy_totals = get_fy_cashflow_details(target_user, fy_str)
+    fys = get_available_financial_years(target_user)
+    
+    # Recent Manual Entries in this FY
+    from .models import CashFlowEntry
+    start_date, end_date = fy_to_dates(fy_str)
+    recent_entries = CashFlowEntry.objects.filter(
+        user=target_user,
+        date__range=(start_date, end_date)
+    ).order_by('-date', '-created_at')[:20]
+    
+    # Category and Entry Types Choices
+    entry_choices = CashFlowEntry.ENTRY_TYPES
+    category_choices = CashFlowEntry.CATEGORIES
+    
+    context = {
+        'target_user': target_user,
+        'is_family_view': is_family_view,
+        'is_consolidated': is_consolidated,
+        'monthly_data': monthly_data,
+        'fy_totals': fy_totals,
+        'fys': fys,
+        'selected_fy': fy_str,
+        'recent_entries': recent_entries,
+        'entry_choices': entry_choices,
+        'category_choices': category_choices,
+    }
+    return render(request, 'core/cashflow_dashboard.html', context)
+
+
+@login_required
+def add_cashflow_entry(request):
+    """Add a manual income or expense cashflow entry."""
+    if request.method == 'POST':
+        target_user, is_family_view, is_consolidated = get_target_user(request)
+        if is_consolidated:
+            messages.error(request, "Cannot add entries in consolidated view.")
+            return redirect('cashflow_dashboard')
+            
+        from decimal import Decimal
+        from .models import CashFlowEntry
+        
+        date_str = request.POST.get('date')
+        entry_type = request.POST.get('entry_type')
+        category = request.POST.get('category')
+        amount_str = request.POST.get('amount')
+        description = request.POST.get('description', '').strip()
+        fy_str = request.POST.get('fy', '')
+        
+        try:
+            amount = Decimal(amount_str)
+            if amount <= 0:
+                raise ValueError("Amount must be positive.")
+        except Exception:
+            messages.error(request, "Invalid amount provided.")
+            return redirect(f'/cashflow/?fy={fy_str}' if fy_str else 'cashflow_dashboard')
+            
+        try:
+            import pandas as pd
+            entry_date = pd.to_datetime(date_str).date()
+        except Exception:
+            from django.utils import timezone
+            entry_date = timezone.localdate()
+            
+        # Create entry
+        CashFlowEntry.objects.create(
+            user=target_user,
+            date=entry_date,
+            entry_type=entry_type,
+            category=category,
+            amount=amount,
+            description=description
+        )
+        messages.success(request, f"Successfully recorded {entry_type.lower()} entry of ₹{amount:,.2f}.")
+        return redirect(f'/cashflow/?fy={fy_str}' if fy_str else 'cashflow_dashboard')
+        
+    return redirect('cashflow_dashboard')
+
+
+@login_required
+def delete_cashflow_entry(request, pk):
+    """Delete a manual cashflow entry."""
+    target_user, is_family_view, is_consolidated = get_target_user(request)
+    if is_consolidated:
+        messages.error(request, "Cannot delete entries in consolidated view.")
+        return redirect('cashflow_dashboard')
+        
+    from .models import CashFlowEntry
+    entry = get_object_or_404(CashFlowEntry, pk=pk, user=target_user)
+    amount = entry.amount
+    category = entry.category
+    entry.delete()
+    
+    fy_str = request.GET.get('fy', '')
+    messages.success(request, f"Deleted manual entry of ₹{amount:,.2f} under {category.lower()}.")
+    return redirect(f'/cashflow/?fy={fy_str}' if fy_str else 'cashflow_dashboard')
+
+
+@login_required
+def export_cashflow_excel(request):
+    """Export cashflow data to Excel."""
+    import pandas as pd
+    import io
+    from django.http import HttpResponse
+    
+    target_user, is_family_view, is_consolidated = get_target_user(request)
+    fy_str = request.GET.get('fy')
+    if not fy_str:
+        from datetime import date
+        today = date.today()
+        y = today.year
+        if today.month < 4:
+            y -= 1
+        fy_str = f"{y}-{y+1}"
+        
+    try:
+        monthly_data, fy_totals = get_fy_cashflow_details(target_user, fy_str)
+        
+        # 1. Monthly DataFrame
+        monthly_rows = []
+        for m in monthly_data:
+            monthly_rows.append({
+                'Month': m['month_name'],
+                'Salary (Manual)': float(m['salary']),
+                'Other Income (Manual)': float(m['other_income']),
+                'FD Interest (DB)': float(m['fd_interest']),
+                'PF Interest (DB)': float(m['pf_interest']),
+                'Other Interest (DB)': float(m['other_interest']),
+                'Stock Realized Profit (DB)': float(m['stock_realized']),
+                'MF Realized Profit (DB)': float(m['mf_realized']),
+                'Total Income': float(m['total_income']),
+                'Daily Expenses (Manual)': float(m['daily_expense']),
+                'EMIs (DB)': float(m['emi']),
+                'SIPs (DB)': float(m['sip']),
+                'Other Expenses (Manual)': float(m['other_expense']),
+                'Total Expenses': float(m['total_expenses']),
+                'Net Cash Flow': float(m['net_cashflow'])
+            })
+        df_monthly = pd.DataFrame(monthly_rows)
+        
+        # 2. FY Summary DataFrame
+        summary_rows = [
+            {'Category': 'Total Income', 'Item': 'Salary', 'Amount': float(fy_totals['salary'])},
+            {'Category': 'Total Income', 'Item': 'Other Income', 'Amount': float(fy_totals['other_income'])},
+            {'Category': 'Total Income', 'Item': 'FD Interest', 'Amount': float(fy_totals['fd_interest'])},
+            {'Category': 'Total Income', 'Item': 'PF Interest', 'Amount': float(fy_totals['pf_interest'])},
+            {'Category': 'Total Income', 'Item': 'Other Interest', 'Amount': float(fy_totals['other_interest'])},
+            {'Category': 'Total Income', 'Item': 'Stock Realized Profit', 'Amount': float(fy_totals['stock_realized'])},
+            {'Category': 'Total Income', 'Item': 'MF Realized Profit', 'Amount': float(fy_totals['mf_realized'])},
+            {'Category': 'Total Income', 'Item': 'TOTAL INCOME', 'Amount': float(fy_totals['total_income'])},
+            {'Category': 'Total Expenses', 'Item': 'Daily Expenses', 'Amount': float(fy_totals['daily_expense'])},
+            {'Category': 'Total Expenses', 'Item': 'EMIs', 'Amount': float(fy_totals['emi'])},
+            {'Category': 'Total Expenses', 'Item': 'SIPs', 'Amount': float(fy_totals['sip'])},
+            {'Category': 'Total Expenses', 'Item': 'Other Expenses', 'Amount': float(fy_totals['other_expense'])},
+            {'Category': 'Total Expenses', 'Item': 'TOTAL EXPENSES', 'Amount': float(fy_totals['total_expenses'])},
+            {'Category': 'Summary', 'Item': 'NET CASH FLOW', 'Amount': float(fy_totals['net_cashflow'])},
+        ]
+        df_summary = pd.DataFrame(summary_rows)
+        
+        buffer = io.BytesIO()
+        with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+            df_monthly.to_excel(writer, index=False, sheet_name='Monthly CashFlow')
+            df_summary.to_excel(writer, index=False, sheet_name='FY Summary')
+        buffer.seek(0)
+        
+        response = HttpResponse(
+            buffer.getvalue(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename="cashflow_export_{fy_str}.xlsx"'
+        return response
+    except Exception as e:
+        messages.error(request, f"Excel export failed: {e}")
+        return redirect('cashflow_dashboard')
+
+
+@login_required
+def export_cashflow_pdf(request):
+    """Export cashflow data to PDF."""
+    from django.http import HttpResponse
+    from datetime import date
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import letter
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    import io
+    
+    target_user, is_family_view, is_consolidated = get_target_user(request)
+    fy_str = request.GET.get('fy')
+    if not fy_str:
+        today = date.today()
+        y = today.year
+        if today.month < 4:
+            y -= 1
+        fy_str = f"{y}-{y+1}"
+        
+    try:
+        monthly_data, fy_totals = get_fy_cashflow_details(target_user, fy_str)
+        
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(
+            buffer,
+            pagesize=letter,
+            rightMargin=30,
+            leftMargin=30,
+            topMargin=30,
+            bottomMargin=30
+        )
+        
+        styles = getSampleStyleSheet()
+        
+        title_style = ParagraphStyle(
+            name='TitleStyle',
+            fontName='Helvetica-Bold',
+            fontSize=22,
+            textColor=colors.HexColor('#003D7C'),
+            alignment=1,
+            spaceAfter=15
+        )
+        subtitle_style = ParagraphStyle(
+            name='SubTitleStyle',
+            fontName='Helvetica',
+            fontSize=10,
+            textColor=colors.HexColor('#6c757d'),
+            alignment=1,
+            spaceAfter=20
+        )
+        h2_style = ParagraphStyle(
+            name='H2Style',
+            fontName='Helvetica-Bold',
+            fontSize=14,
+            textColor=colors.HexColor('#1a1e21'),
+            spaceBefore=15,
+            spaceAfter=10
+        )
+        normal_style = ParagraphStyle(
+            name='NormalStyle',
+            fontName='Helvetica',
+            fontSize=9,
+            textColor=colors.HexColor('#1a1e21')
+        )
+        header_cell_style = ParagraphStyle(
+            name='HeaderCell',
+            fontName='Helvetica-Bold',
+            fontSize=8,
+            textColor=colors.white
+        )
+        cell_style = ParagraphStyle(
+            name='Cell',
+            fontName='Helvetica',
+            fontSize=8,
+            textColor=colors.HexColor('#1a1e21')
+        )
+        cell_bold_style = ParagraphStyle(
+            name='CellBold',
+            fontName='Helvetica-Bold',
+            fontSize=8,
+            textColor=colors.HexColor('#1a1e21')
+        )
+        
+        story = []
+        
+        story.append(Paragraph(f"FOLIUX CASH FLOW REPORT", title_style))
+        story.append(Paragraph(f"Financial Year: {fy_str} | User: {target_user.username}", subtitle_style))
+        
+        story.append(Paragraph("Executive Summary", h2_style))
+        summary_data = [
+            [
+                Paragraph("<b>Total Income</b>", normal_style),
+                Paragraph("<b>Total Expenses</b>", normal_style),
+                Paragraph("<b>Net Cash Flow</b>", normal_style)
+            ],
+            [
+                Paragraph(f"<font color='#008D4C'><b>₹{fy_totals['total_income']:,.2f}</b></font>", title_style),
+                Paragraph(f"<font color='#D62A2D'><b>₹{fy_totals['total_expenses']:,.2f}</b></font>", title_style),
+                Paragraph(f"<font color=\"{'#008D4C' if fy_totals['net_cashflow'] >= 0 else '#D62A2D'}\"><b>₹{fy_totals['net_cashflow']:,.2f}</b></font>", title_style)
+            ]
+        ]
+        summary_table = Table(summary_data, colWidths=[180, 180, 180])
+        summary_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#f4f7f9')),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('BOX', (0, 0), (-1, -1), 1, colors.HexColor('#e9ecef')),
+            ('INNERGRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#e9ecef')),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 12),
+            ('TOPPADDING', (0, 0), (-1, -1), 12),
+        ]))
+        story.append(summary_table)
+        story.append(Spacer(1, 20))
+        
+        story.append(Paragraph("Month-wise Breakdown", h2_style))
+        
+        table_data = [[
+            Paragraph("Month", header_cell_style),
+            Paragraph("Income (Man)", header_cell_style),
+            Paragraph("Interest (FD/PF)", header_cell_style),
+            Paragraph("Profit (Stk/MF)", header_cell_style),
+            Paragraph("Total Income", header_cell_style),
+            Paragraph("Expense (Man)", header_cell_style),
+            Paragraph("EMIs", header_cell_style),
+            Paragraph("SIPs", header_cell_style),
+            Paragraph("Total Expense", header_cell_style),
+            Paragraph("Net CashFlow", header_cell_style),
+        ]]
+        
+        for m in monthly_data:
+            manual_inc = m['salary'] + m['other_income']
+            interest_inc = m['fd_interest'] + m['pf_interest'] + m['other_interest']
+            profit_inc = m['stock_realized'] + m['mf_realized']
+            manual_exp = m['daily_expense'] + m['other_expense']
+            
+            table_data.append([
+                Paragraph(m['month_name'], cell_style),
+                Paragraph(f"₹{manual_inc:,.0f}", cell_style),
+                Paragraph(f"₹{interest_inc:,.0f}", cell_style),
+                Paragraph(f"₹{profit_inc:,.0f}", cell_style),
+                Paragraph(f"<b>₹{m['total_income']:,.0f}</b>", cell_bold_style),
+                Paragraph(f"₹{manual_exp:,.0f}", cell_style),
+                Paragraph(f"₹{m['emi']:,.0f}", cell_style),
+                Paragraph(f"₹{m['sip']:,.0f}", cell_style),
+                Paragraph(f"<b>₹{m['total_expenses']:,.0f}</b>", cell_bold_style),
+                Paragraph(f"<font color=\"{'#008D4C' if m['net_cashflow'] >= 0 else '#D62A2D'}\"><b>₹{m['net_cashflow']:,.0f}</b></font>", cell_bold_style),
+            ])
+            
+        manual_inc_tot = fy_totals['salary'] + fy_totals['other_income']
+        interest_inc_tot = fy_totals['fd_interest'] + fy_totals['pf_interest'] + fy_totals['other_interest']
+        profit_inc_tot = fy_totals['stock_realized'] + fy_totals['mf_realized']
+        manual_exp_tot = fy_totals['daily_expense'] + fy_totals['other_expense']
+        
+        table_data.append([
+            Paragraph("<b>TOTAL</b>", cell_bold_style),
+            Paragraph(f"<b>₹{manual_inc_tot:,.0f}</b>", cell_bold_style),
+            Paragraph(f"<b>₹{interest_inc_tot:,.0f}</b>", cell_bold_style),
+            Paragraph(f"<b>₹{profit_inc_tot:,.0f}</b>", cell_bold_style),
+            Paragraph(f"<b>₹{fy_totals['total_income']:,.0f}</b>", cell_bold_style),
+            Paragraph(f"<b>₹{manual_exp_tot:,.0f}</b>", cell_bold_style),
+            Paragraph(f"<b>₹{fy_totals['emi']:,.0f}</b>", cell_bold_style),
+            Paragraph(f"<b>₹{fy_totals['sip']:,.0f}</b>", cell_bold_style),
+            Paragraph(f"<b>₹{fy_totals['total_expenses']:,.0f}</b>", cell_bold_style),
+            Paragraph(f"<font color=\"{'#008D4C' if fy_totals['net_cashflow'] >= 0 else '#D62A2D'}\"><b>₹{fy_totals['net_cashflow']:,.0f}</b></font>", cell_bold_style),
+        ])
+        
+        cf_table = Table(table_data, colWidths=[70, 52, 52, 52, 55, 52, 45, 45, 55, 60])
+        cf_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#003D7C')),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -2), [colors.white, colors.HexColor('#f8fafc')]),
+            ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#e2e8f0')),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cbd5e1')),
+            ('TOPPADDING', (0, 0), (-1, -1), 6),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
+        ]))
+        
+        story.append(cf_table)
+        
+        doc.build(story)
+        buffer.seek(0)
+        
+        response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="cashflow_report_{fy_str}.pdf"'
+        return response
+    except Exception as e:
+        messages.error(request, f"PDF export failed: {e}")
+        return redirect('cashflow_dashboard')
+
+
+
 

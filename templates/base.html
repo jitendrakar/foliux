@@ -141,8 +141,17 @@
       font-weight: 500;
       font-size: 0.95rem;
       transition: color 0.2s;
-      padding-left: 1.25rem !important;
-      padding-right: 1.25rem !important;
+      padding-left: 0.85rem !important;
+      padding-right: 0.85rem !important;
+      white-space: nowrap;
+    }
+
+    @media (min-width: 992px) and (max-width: 1200px) {
+      .nav-link {
+        padding-left: 0.4rem !important;
+        padding-right: 0.4rem !important;
+        font-size: 0.88rem;
+      }
     }
 
     .card {
@@ -567,12 +576,17 @@
     
     @media (min-width: 992px) {
       .nav-user-stabilizer {
-        width: 360px !important;
+        width: 300px !important;
         display: flex !important;
         justify-content: flex-end !important;
         align-items: center !important;
         padding: 0 !important;
         margin: 0 !important;
+      }
+      @media (max-width: 1200px) {
+        .nav-user-stabilizer {
+          width: 240px !important;
+        }
       }
       .nav-user-content {
         width: 100% !important;
@@ -627,7 +641,7 @@
           <div class="brand-subtitle d-none d-md-block">Investment Tracking System</div>
         </div>
       </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Toggle navigation">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Toggle navigation" style="margin-right: -25px !important;">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
@@ -659,6 +673,9 @@
 </li>
 <li class="nav-item">
     <a class="nav-link" href="{% url 'wealth_calculators' %}{% if is_family_view %}?user_id={{ target_user.id }}{% elif is_consolidated %}?user_id=consolidated{% endif %}">Calc</a>
+</li>
+<li class="nav-item">
+    <a class="nav-link" href="{% url 'cashflow_dashboard' %}{% if is_family_view %}?user_id={{ target_user.id }}{% elif is_consolidated %}?user_id=consolidated{% endif %}">Cashflow</a>
 </li>
 <li class="nav-item d-flex align-items-center ms-lg-2">
     <button id="globalThemeToggle" class="btn btn-link nav-link p-0 m-0 d-flex align-items-center justify-content-center" style="font-size: 1.1rem; border: none; background: none; width: 32px; height: 32px;" aria-label="Toggle Theme">
