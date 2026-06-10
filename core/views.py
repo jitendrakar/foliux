@@ -5481,13 +5481,16 @@ def delete_cashflow_entry(request, pk):
 
 @login_required
 def export_cashflow_excel(request):
-    """Export cashflow data to Excel."""
+    """Export cashflow data to Excel, respecting active session filters."""
     import pandas as pd
     import io
     from django.http import HttpResponse
     
     target_user, is_family_view, is_consolidated = get_target_user(request)
-    fy_str = request.GET.get('fy')
+
+    # Load session filters
+    session_filters = request.session.get('cashflow_filters', {})
+    fy_str = request.GET.get('fy') or session_filters.get('fy')
     if not fy_str:
         from datetime import date
         today = date.today()
@@ -5495,9 +5498,20 @@ def export_cashflow_excel(request):
         if today.month < 4:
             y -= 1
         fy_str = f"{y}-{y+1}"
-        
+
+    months = session_filters.get('months', [])
+    income_types = session_filters.get('income_types', [])
+    expense_categories = session_filters.get('expense_categories', [])
+    investment_types = session_filters.get('investment_types', [])
+
     try:
-        monthly_data, fy_totals = get_fy_cashflow_details(target_user, fy_str)
+        monthly_data, fy_totals = get_fy_cashflow_details(
+            target_user, fy_str,
+            months=months,
+            income_types=income_types,
+            expense_categories=expense_categories,
+            investment_types=investment_types
+        )
         
         # 1. Monthly DataFrame
         monthly_rows = []
@@ -5559,7 +5573,7 @@ def export_cashflow_excel(request):
 
 @login_required
 def export_cashflow_pdf(request):
-    """Export cashflow data to PDF."""
+    """Export cashflow data to PDF, respecting active session filters."""
     from django.http import HttpResponse
     from datetime import date
     from reportlab.lib import colors
@@ -5569,16 +5583,30 @@ def export_cashflow_pdf(request):
     import io
     
     target_user, is_family_view, is_consolidated = get_target_user(request)
-    fy_str = request.GET.get('fy')
+
+    # Load session filters
+    session_filters = request.session.get('cashflow_filters', {})
+    fy_str = request.GET.get('fy') or session_filters.get('fy')
     if not fy_str:
         today = date.today()
         y = today.year
         if today.month < 4:
             y -= 1
         fy_str = f"{y}-{y+1}"
-        
+
+    months = session_filters.get('months', [])
+    income_types = session_filters.get('income_types', [])
+    expense_categories = session_filters.get('expense_categories', [])
+    investment_types = session_filters.get('investment_types', [])
+
     try:
-        monthly_data, fy_totals = get_fy_cashflow_details(target_user, fy_str)
+        monthly_data, fy_totals = get_fy_cashflow_details(
+            target_user, fy_str,
+            months=months,
+            income_types=income_types,
+            expense_categories=expense_categories,
+            investment_types=investment_types
+        )
         
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(
