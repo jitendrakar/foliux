@@ -258,7 +258,6 @@
             <!-- Filter Toggle Button -->
             <button class="btn btn-outline-light rounded-pill px-3 fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#filterPanel" aria-expanded="false" aria-controls="filterPanel" id="filterToggleBtn">
                 <i class="fas fa-filter me-2"></i>Filters
-                {% set active_count = active_months|length + active_income_types|length + active_expense_categories|length + active_investment_types|length %}
                 {% if active_months or active_income_types or active_expense_categories or active_investment_types %}
                     <span class="badge bg-warning text-dark ms-1">Active</span>
                 {% endif %}
