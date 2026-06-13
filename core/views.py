@@ -44,8 +44,48 @@ import math
 from decimal import Decimal, InvalidOperation
 
 import logging
-import logging
 logger = logging.getLogger(__name__)
+
+from functools import wraps
+from django.db import IntegrityError
+
+def prevent_duplicate_submissions(view_func):
+    @wraps(view_func)
+    def wrapped_view(request, *args, **kwargs):
+        if request.method == 'POST':
+            idempotency_key = request.POST.get('idempotency_key')
+            if idempotency_key:
+                from .models import IdempotencyKey
+                try:
+                    # Attempt to create the idempotency key in a transaction
+                    with db_transaction.atomic():
+                        IdempotencyKey.objects.create(key=idempotency_key)
+                except IntegrityError:
+                    # Key already exists: block duplicate submission
+                    messages.warning(request, "This request has already been processed.")
+                    try:
+                        target_user, is_family_view, _ = get_target_user(request)
+                        if is_family_view:
+                            return redirect(f"/dashboard/?user_id={target_user.id}")
+                    except Exception:
+                        pass
+                    return redirect('dashboard')
+                
+                # If key creation succeeded, execute view logic
+                try:
+                    with db_transaction.atomic():
+                        return view_func(request, *args, **kwargs)
+                except Exception:
+                    # Roll back the idempotency key on failure so it can be retried
+                    try:
+                        IdempotencyKey.objects.filter(key=idempotency_key).delete()
+                    except Exception:
+                        pass
+                    raise
+            else:
+                return view_func(request, *args, **kwargs)
+        return view_func(request, *args, **kwargs)
+    return wrapped_view
 
 @login_required
 def portfolio_history_api(request):
@@ -836,6 +876,7 @@ def mf_detail(request, pk):
     return render(request, 'core/mf_detail.html', context)
 
 @login_required
+@prevent_duplicate_submissions
 def add_mf_portfolio(request):
     """Add a mutual fund holding manually."""
     if request.method == 'POST':
@@ -973,6 +1014,7 @@ def add_mf_portfolio(request):
     return render(request, 'core/mf_add_item.html', {'prefill_symbol': prefill_symbol})
 
 @login_required
+@prevent_duplicate_submissions
 def sell_mf_portfolio(request, pk):
     target_user, is_family_view, is_consolidated = get_target_user(request)
     holding = get_object_or_404(MFPortfolio, pk=pk, user=target_user)
@@ -1212,6 +1254,7 @@ def coin_detail(request, pk):
 
 
 @login_required
+@prevent_duplicate_submissions
 def add_coin(request):
     """Add a cryptocurrency holding manually."""
     target_user, is_family_view, is_consolidated = get_target_user(request)
@@ -1286,6 +1329,7 @@ def add_coin(request):
     })
 
 @login_required
+@prevent_duplicate_submissions
 def sell_coin(request, pk):
     """Sell a cryptocurrency holding using FIFO."""
     target_user, is_family_view, is_consolidated = get_target_user(request)
@@ -1895,6 +1939,7 @@ def search_instruments(request):
     return JsonResponse(results, safe=False)
 
 @login_required
+@prevent_duplicate_submissions
 def add_portfolio_item(request):
     from django.forms import formset_factory
     from .utils import execute_stock_buy, resolve_instrument
@@ -1940,6 +1985,7 @@ def add_portfolio_item(request):
     })
 
 @login_required
+@prevent_duplicate_submissions
 def sell_portfolio_item(request):
     from django.forms import formset_factory
     from .utils import execute_stock_sell, resolve_instrument
@@ -2700,6 +2746,7 @@ def unlink_family(request, pk):
 
 @login_required
 @csrf_exempt
+@prevent_duplicate_submissions
 def buy_stock(request):
     if request.method == 'POST':
         target_user, is_family_view, is_consolidated = get_target_user(request)
@@ -2743,6 +2790,7 @@ def buy_stock(request):
 
 @login_required
 @csrf_exempt
+@prevent_duplicate_submissions
 def sell_stock(request):
     if request.method == 'POST':
         target_user, is_family_view, is_consolidated = get_target_user(request)
@@ -2769,6 +2817,7 @@ def sell_stock(request):
 
 @login_required
 @csrf_exempt
+@prevent_duplicate_submissions
 def sell_specific_lot(request):
     if request.method == 'POST':
         target_user, is_family_view, is_consolidated = get_target_user(request)
@@ -3912,6 +3961,7 @@ def nps_detail(request, pk):
 
 
 @login_required
+@prevent_duplicate_submissions
 def add_nps(request):
     target_user, is_family_view, is_consolidated = get_target_user(request)
     if request.method == 'POST':
@@ -3949,6 +3999,7 @@ def add_nps(request):
     })
 
 @login_required
+@prevent_duplicate_submissions
 def sell_nps(request, pk):
     target_user, is_family_view, is_consolidated = get_target_user(request)
     holding = get_object_or_404(NPSPortfolio, pk=pk, user=target_user)
@@ -4097,6 +4148,7 @@ def fd_dashboard(request):
     return render(request, 'core/fd_dashboard.html', context)
 
 @login_required
+@prevent_duplicate_submissions
 def add_fd(request):
     """Add a fixed asset manually."""
     target_user, is_family_view, is_consolidated = get_target_user(request)
@@ -4232,6 +4284,7 @@ def other_assets_dashboard(request):
     return render(request, 'core/other_assets_dashboard.html', context)
 
 @login_required
+@prevent_duplicate_submissions
 def add_other_asset(request):
     """Add a new other asset."""
     if request.method == 'POST':
@@ -4274,6 +4327,7 @@ def add_other_asset(request):
     return render(request, 'core/other_asset_form.html', {'action': 'Add', 'asset_types': OtherAsset.ASSET_TYPES})
 
 @login_required
+@prevent_duplicate_submissions
 def edit_other_asset(request, pk):
     """Edit an existing other asset."""
     asset = get_object_or_404(OtherAsset, pk=pk, user=request.user)
@@ -4399,6 +4453,7 @@ def loan_dashboard(request):
     return render(request, 'core/loan_dashboard.html', context)
 
 @login_required
+@prevent_duplicate_submissions
 def add_loan(request):
     """Add a new loan."""
     if request.method == 'POST':
@@ -4416,6 +4471,7 @@ def add_loan(request):
     return render(request, 'core/loan_form.html', {'form': form, 'action': 'Add'})
 
 @login_required
+@prevent_duplicate_submissions
 def edit_loan(request, pk):
     """Edit an existing loan."""
     loan = get_object_or_404(Loan, pk=pk, user=request.user)
@@ -4480,6 +4536,7 @@ def loan_detail(request, pk):
     return render(request, 'core/loan_detail.html', context)
 
 @login_required
+@prevent_duplicate_submissions
 def add_loan_payment(request, pk):
     """Record a prepayment or manual payment."""
     loan = get_object_or_404(Loan, pk=pk, user=request.user)
@@ -5046,7 +5103,7 @@ def get_fy_cashflow_details(user, fy_str, months=None, income_types=None, expens
     from calendar import monthrange
     from decimal import Decimal
     import logging
-    from .models import CashFlowEntry, FixedAsset, PnLStatement, MFTransaction, Loan, LoanPayment
+    from .models import CashFlowEntry, FixedAsset, PnLStatement, MFTransaction, Loan, LoanPayment, OtherAsset
     
     logger = logging.getLogger(__name__)
     start_date, end_date = fy_to_dates(fy_str)
@@ -5097,6 +5154,15 @@ def get_fy_cashflow_details(user, fy_str, months=None, income_types=None, expens
         key = (entry.date.year, entry.date.month)
         manual_by_month[key][entry.category] += entry.amount
         
+    # 1.5 Add other assets monthly rent automatically
+    if not income_types or 'RENTAL_INCOME' in income_types:
+        other_assets = list(OtherAsset.objects.filter(user=user))
+        for y, m, m_start, m_end in months_list:
+            key = (y, m)
+            for asset in other_assets:
+                if asset.purchase_date <= m_end and asset.monthly_rent > 0:
+                    manual_by_month[key]['RENTAL_INCOME'] += asset.monthly_rent
+                    
     # 2. Fixed Assets
     fixed_assets = list(FixedAsset.objects.filter(user=user))
     interest_by_month = defaultdict(lambda: defaultdict(Decimal))
@@ -5104,14 +5170,20 @@ def get_fy_cashflow_details(user, fy_str, months=None, income_types=None, expens
         key = (y, m)
         day_before = m_start - timedelta(days=1)
         for asset in fixed_assets:
-            val_end = asset.value_at_date(m_end)
-            val_start = asset.value_at_date(day_before)
-            interest = val_end - val_start
-            if asset.asset_type == 'RD':
-                if asset.investment_date <= m_end:
+            if asset.investment_date > m_end:
+                interest = Decimal('0')
+            else:
+                # If the asset was invested during this month, the starting value is its principal/deposit
+                if asset.investment_date >= m_start:
+                    val_start = asset.invested_amount_decimal
+                else:
+                    val_start = asset.value_at_date(day_before)
+                val_end = asset.value_at_date(m_end)
+                interest = val_end - val_start
+                if asset.asset_type == 'RD':
                     if not asset.maturity_date or asset.maturity_date >= m_start:
                         interest -= asset.monthly_deposit
-            interest = max(Decimal('0'), interest)
+                interest = max(Decimal('0'), interest)
             
             # Apply income type filter for interest income
             if income_types and 'INTEREST_INCOME' not in income_types:
@@ -5412,6 +5484,7 @@ def cashflow_dashboard(request):
 
 
 @login_required
+@prevent_duplicate_submissions
 def add_cashflow_entry(request):
     """Add a manual income or expense cashflow entry."""
     if request.method == 'POST':

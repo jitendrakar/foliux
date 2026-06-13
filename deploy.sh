@@ -48,6 +48,9 @@ OLD_VERSION=$(git rev-parse HEAD)
 # Ensure the remote URL uses the token for authentication
 git remote set-url origin $REPO_URL
 
+# Make sure we are on the main branch before pulling
+git checkout main
+
 # Pull latest changes
 echo -e "${YELLOW}Pulling latest changes from GitHub...${NC}"
 PULL_OUTPUT=$(git pull origin main 2>&1)

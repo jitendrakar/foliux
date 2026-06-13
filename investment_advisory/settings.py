@@ -140,6 +140,7 @@ TEMPLATES = [
                 'core.context_processors.family_context',
                 'core.context_processors.ipo_info',
                 'core.context_processors.google_settings',
+                'core.context_processors.idempotency_processor',
             ],
         },
     },

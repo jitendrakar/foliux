@@ -155,3 +155,13 @@ def google_settings(request):
         'today': today,
         'today_str': today.strftime('%Y-%m-%d'),
     }
+
+def idempotency_processor(request):
+    """
+    Generates a unique request ID (idempotency key) for each page render.
+    """
+    import uuid
+    return {
+        'idempotency_key': str(uuid.uuid4())
+    }
+

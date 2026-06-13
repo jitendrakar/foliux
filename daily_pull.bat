@@ -4,10 +4,10 @@
 
 echo [%date% %time%] Starting daily pull... >> sync_log.txt
 
-cd /d "g:\My Drive\foliux"
+cd /d "G:\My Drive\NETPROFIT\FOLIUX"
 
 :: Run the sync script using the virtual environment python
-"g:\My Drive\foliux\venv\Scripts\python.exe" sync_database.py pull >> sync_log.txt 2>&1
+"G:\My Drive\NETPROFIT\FOLIUX\venv_local\Scripts\python.exe" sync_database.py pull >> sync_log.txt 2>&1
 
 if %ERRORLEVEL% EQU 0 (
     echo [%date% %time%] Sync completed successfully. >> sync_log.txt

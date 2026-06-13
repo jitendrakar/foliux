@@ -1194,5 +1194,19 @@ class CashFlowEntry(models.Model):
         return f"{self.user.username} - {self.category} - {self.amount} on {self.date}"
 
 
+class IdempotencyKey(models.Model):
+    key = models.CharField(max_length=255, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['key']),
+        ]
+
+    def __str__(self):
+        return self.key
+
+
+
 
 

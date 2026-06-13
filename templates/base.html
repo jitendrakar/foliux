@@ -1139,6 +1139,55 @@
           document.dispatchEvent(new Event('themeChanged'));
         });
       }
+
+      // Prevent duplicate submissions and inject idempotency keys on form submit
+      document.addEventListener('submit', function(e) {
+        const form = e.target;
+        if (form.method && form.method.toLowerCase() === 'post') {
+          // 1. Inject idempotency key if it doesn't exist yet
+          let keyInput = form.querySelector('input[name="idempotency_key"]');
+          if (!keyInput) {
+            keyInput = document.createElement('input');
+            keyInput.type = 'hidden';
+            keyInput.name = 'idempotency_key';
+            keyInput.value = "{{ idempotency_key|default:'' }}";
+            form.appendChild(keyInput);
+          }
+
+          // 2. Disable submit buttons to prevent double-clicks
+          const submitBtn = form.querySelector('button[type="submit"], input[type="submit"]');
+          if (submitBtn) {
+            if (submitBtn.disabled) {
+              e.preventDefault();
+              return;
+            }
+            setTimeout(function() {
+              submitBtn.disabled = true;
+              if (submitBtn.tagName.toLowerCase() === 'button') {
+                submitBtn.dataset.originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing...';
+              } else {
+                submitBtn.dataset.originalText = submitBtn.value;
+                submitBtn.value = 'Processing...';
+              }
+            }, 0);
+          }
+        }
+      });
+    });
+
+    // Re-enable disabled buttons when page is loaded from bfcache (browser back/forward button)
+    window.addEventListener('pageshow', function(event) {
+      document.querySelectorAll('button[type="submit"], input[type="submit"]').forEach(btn => {
+        if (btn.disabled && btn.dataset.originalText) {
+          btn.disabled = false;
+          if (btn.tagName.toLowerCase() === 'button') {
+            btn.innerHTML = btn.dataset.originalText;
+          } else {
+            btn.value = btn.dataset.originalText;
+          }
+        }
+      });
     });
   </script>
 </body>
