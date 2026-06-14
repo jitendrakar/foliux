@@ -5413,7 +5413,20 @@ def cashflow_dashboard(request):
     recent_entries = CashFlowEntry.objects.filter(
         user=target_user,
         date__range=(start_date, end_date)
-    ).order_by('-date', '-created_at')[:20]
+    )
+    if months:
+        recent_entries = recent_entries.filter(date__month__in=[int(m) for m in months])
+    if income_types or expense_categories or investment_types:
+        from django.db.models import Q
+        q_filter = Q()
+        if income_types:
+            q_filter |= Q(entry_type='INCOME', category__in=[t.upper() for t in income_types])
+        if expense_categories:
+            q_filter |= Q(entry_type='EXPENSE', category__in=[c.upper() for c in expense_categories])
+        if investment_types:
+            q_filter |= Q(entry_type='INVESTMENT', category__in=[t.upper() for t in investment_types])
+        recent_entries = recent_entries.filter(q_filter)
+    recent_entries = recent_entries.order_by('-date', '-created_at')[:20]
     
     # Category and Entry Types Choices
     entry_choices = CashFlowEntry.ENTRY_TYPES
@@ -5422,7 +5435,7 @@ def cashflow_dashboard(request):
     INCOME_CHOICES = [
         ('SALARY', 'Salary'),
         ('RENTAL_INCOME', 'Rental Income'),
-        ('INTEREST_INCOME', 'Interest Income (FD, PF, Savings, etc.)'),
+        ('INTEREST_INCOME', 'Interest (FD, PF, etc.)'),
         ('DIVIDEND_INCOME', 'Dividend Income'),
         ('STOCK_PROFIT', 'Stock Profit'),
         ('MUTUAL_FUND_PROFIT', 'Mutual Fund Profit'),
@@ -5449,8 +5462,8 @@ def cashflow_dashboard(request):
         ('MUTUAL_FUNDS', 'Mutual Funds'),
         ('STOCKS', 'Stocks'),
         ('FD', 'Fixed Deposit (FD)'),
-        ('PPF', 'Public Provident Fund (PPF)'),
-        ('EPF', 'Employee Provident Fund (EPF/PF)'),
+        ('PPF', 'PPF'),
+        ('EPF', 'EPF/PF'),
         ('NPS', 'NPS'),
         ('BONDS', 'Bonds'),
         ('GOLD', 'Gold'),

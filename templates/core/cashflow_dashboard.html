@@ -592,7 +592,7 @@
                     0%
                 </div>
                 <div class="small text-muted mt-2">
-                    <i class="fas fa-piggy-bank text-info me-1"></i> Net surplus vs gross income
+                    <i class="fas fa-piggy-bank text-info me-1"></i> Income vs Surplus
                 </div>
             </div>
         </div>
@@ -658,7 +658,7 @@
                                         ₹ {{ m.net_cashflow|inr_format }}
                                     </td>
                                     <td class="text-center">
-                                        <button class="btn btn-sm btn-action-outline rounded-circle" type="button" data-bs-toggle="collapse" data-bs-target="#details-{{ m.month }}" aria-expanded="false" onclick="toggleDetailsIcon({{ m.month }})">
+                                        <button class="btn btn-sm btn-action-outline rounded-circle" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-row-{{ m.month }}" aria-expanded="false" onclick="toggleDetailsIcon({{ m.month }})">
                                             <i class="fas fa-chevron-down" id="icon-{{ m.month }}"></i>
                                         </button>
                                     </td>
@@ -666,8 +666,7 @@
                                 <!-- Collapse Row Details -->
                                 <tr id="collapse-row-{{ m.month }}" class="collapse detail-row">
                                     <td colspan="5" class="p-0">
-                                        <div class="collapse" id="details-{{ m.month }}">
-                                            <div class="p-4 bg-light bg-opacity-50">
+                                        <div class="p-4 bg-light bg-opacity-50">
                                                 <div class="row g-4">
                                                     <!-- Income Sources -->
                                                     <div class="col-md-6">
@@ -723,7 +722,6 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
                                     </td>
                                 </tr>
                             {% empty %}
@@ -960,7 +958,7 @@
         'INCOME': [
             {code: 'SALARY',           label: 'Salary'},
             {code: 'RENTAL_INCOME',    label: 'Rental Income'},
-            {code: 'INTEREST_INCOME',  label: 'Interest Income (FD, PF, Savings, etc.)'},
+            {code: 'INTEREST_INCOME',  label: 'Interest (FD, PF, etc.)'},
             {code: 'DIVIDEND_INCOME',  label: 'Dividend Income'},
             {code: 'OTHER_INCOME',     label: 'Other Income'}
         ],
@@ -983,8 +981,8 @@
             {code: 'MUTUAL_FUNDS',     label: 'Mutual Funds'},
             {code: 'STOCKS',           label: 'Stocks'},
             {code: 'FD',               label: 'Fixed Deposit (FD)'},
-            {code: 'PPF',              label: 'Public Provident Fund (PPF)'},
-            {code: 'EPF',              label: 'Employee Provident Fund (EPF/PF)'},
+            {code: 'PPF',              label: 'PPF'},
+            {code: 'EPF',              label: 'EPF/PF'},
             {code: 'NPS',              label: 'NPS'},
             {code: 'BONDS',            label: 'Bonds'},
             {code: 'GOLD',             label: 'Gold'},

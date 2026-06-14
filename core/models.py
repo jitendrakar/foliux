@@ -670,8 +670,8 @@ class FixedAsset(models.Model):
     ASSET_TYPES = [
         ('FD', 'Fixed Deposit'),
         ('RD', 'Recurring Deposit'),
-        ('PPF', 'Public Provident Fund'),
-        ('EPF', 'Employee Provident Fund'),
+        ('PPF', 'PPF'),
+        ('EPF', 'EPF/PF'),
         ('Other', 'Other Fixed Asset')
     ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='fixed_assets')
@@ -1174,8 +1174,8 @@ class CashFlowEntry(models.Model):
         ('MUTUAL_FUNDS', 'Mutual Funds'),
         ('STOCKS', 'Stocks'),
         ('FD', 'Fixed Deposit (FD)'),
-        ('PPF', 'Public Provident Fund (PPF)'),
-        ('EPF', 'Employee Provident Fund (EPF/PF)'),
+        ('PPF', 'PPF'),
+        ('EPF', 'EPF/PF'),
         ('NPS', 'NPS'),
         ('BONDS', 'Bonds'),
         ('GOLD', 'Gold'),
