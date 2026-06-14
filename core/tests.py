@@ -23,7 +23,7 @@ class CashflowIntegrationTestCase(TestCase):
         # Call cashflow details for FY 2026-2027
         # Since purchase_date is 2026-04-15:
         # April 2026 monthly rent should be included (m_end = 2026-04-30 >= 2026-04-15)
-        monthly_data, fy_totals = get_fy_cashflow_details(self.user, "2026-2027")
+        monthly_data, fy_totals = get_fy_cashflow_details(self.user, "2026-2027", current_date=date(2027, 3, 31))
         
         # April is index 0 of monthly_data (since FY starts in April)
         april_data = monthly_data[0]
@@ -41,7 +41,7 @@ class CashflowIntegrationTestCase(TestCase):
             investment_date=date(2026, 6, 15),
             maturity_date=date(2027, 6, 15)
         )
-        monthly_data, fy_totals = get_fy_cashflow_details(self.user, "2026-2027")
+        monthly_data, fy_totals = get_fy_cashflow_details(self.user, "2026-2027", current_date=date(2026, 7, 31))
         
         # June 2026 is index 2 (April=0, May=1, June=2)
         june_data = monthly_data[2]

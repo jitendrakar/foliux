@@ -5097,7 +5097,7 @@ def fy_to_dates(fy_str):
         return date(y, 4, 1), date(y+1, 3, 31)
 
 
-def get_fy_cashflow_details(user, fy_str, months=None, income_types=None, expense_categories=None, investment_types=None):
+def get_fy_cashflow_details(user, fy_str, months=None, income_types=None, expense_categories=None, investment_types=None, current_date=None):
     from datetime import date, timedelta
     from collections import defaultdict
     from calendar import monthrange
@@ -5107,6 +5107,34 @@ def get_fy_cashflow_details(user, fy_str, months=None, income_types=None, expens
     
     logger = logging.getLogger(__name__)
     start_date, end_date = fy_to_dates(fy_str)
+    
+    if current_date is None:
+        from django.utils import timezone
+        current_date = timezone.localtime(timezone.now()).date()
+        
+    last_day_of_current_month = monthrange(current_date.year, current_date.month)[1]
+    current_month_end = date(current_date.year, current_date.month, last_day_of_current_month)
+    
+    if start_date > current_month_end:
+        return [], {
+            'salary': Decimal('0'),
+            'other_income': Decimal('0'),
+            'fd_interest': Decimal('0'),
+            'pf_interest': Decimal('0'),
+            'other_interest': Decimal('0'),
+            'stock_realized': Decimal('0'),
+            'mf_realized': Decimal('0'),
+            'daily_expense': Decimal('0'),
+            'emi': Decimal('0'),
+            'sip': Decimal('0'),
+            'other_expense': Decimal('0'),
+            'total_income': Decimal('0'),
+            'total_expenses': Decimal('0'),
+            'net_cashflow': Decimal('0'),
+        }
+        
+    if end_date > current_month_end:
+        end_date = current_month_end
     
     # Convert filters to standard lists of upper-case strings/integers
     if months:
