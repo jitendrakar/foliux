@@ -1030,6 +1030,203 @@
             rateEl.textContent = "0.0%";
             rateEl.className = "stat-value text-muted";
         }
+
+        // Chart.js Configuration
+        const chartMonths = [{% for m in monthly_data %}"{{ m.month_name }}",{% endfor %}];
+        const totalIncomes = [{% for m in monthly_data %}{{ m.total_income }},{% endfor %}];
+        const totalExpenses = [{% for m in monthly_data %}{{ m.total_expenses }},{% endfor %}];
+        const netCashflows = [{% for m in monthly_data %}{{ m.net_cashflow }},{% endfor %}];
+
+        // Chart 1: Income vs Expense Trend
+        const ctxIncExp = document.getElementById('incExpChart').getContext('2d');
+        new Chart(ctxIncExp, {
+            type: 'bar',
+            data: {
+                labels: chartMonths,
+                datasets: [
+                    {
+                        label: 'Income',
+                        data: totalIncomes,
+                        backgroundColor: '#10b981',
+                        borderRadius: 6,
+                        maxBarThickness: 16
+                    },
+                    {
+                        label: 'Expense',
+                        data: totalExpenses,
+                        backgroundColor: '#ef4444',
+                        borderRadius: 6,
+                        maxBarThickness: 16
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top', labels: { boxWidth: 12, font: { weight: '600' } } },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                return ' ' + ctx.dataset.label + ': ₹' + ctx.raw.toLocaleString('en-IN');
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: {
+                        grid: { color: 'rgba(0, 0, 0, 0.04)' },
+                        ticks: {
+                            callback: function(val) {
+                                if (val >= 100000) return '₹' + (val/100000).toFixed(1) + 'L';
+                                if (val >= 1000) return '₹' + (val/1000).toFixed(0) + 'k';
+                                return '₹' + val;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Chart 2: Net Savings Trend
+        const ctxNetSavings = document.getElementById('netSavingsChart').getContext('2d');
+        const gradient = ctxNetSavings.createLinearGradient(0, 0, 0, 300);
+        gradient.addColorStop(0, 'rgba(59, 130, 246, 0.25)');
+        gradient.addColorStop(1, 'rgba(59, 130, 246, 0.01)');
+
+        new Chart(ctxNetSavings, {
+            type: 'line',
+            data: {
+                labels: chartMonths,
+                datasets: [{
+                    label: 'Net Cashflow',
+                    data: netCashflows,
+                    borderColor: '#3b82f6',
+                    borderWidth: 3,
+                    backgroundColor: gradient,
+                    fill: true,
+                    tension: 0.35,
+                    pointRadius: 3,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) {
+                                return ' Net Cashflow: ₹' + ctx.raw.toLocaleString('en-IN');
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { grid: { display: false } },
+                    y: {
+                        grid: { color: 'rgba(0, 0, 0, 0.04)' },
+                        ticks: {
+                            callback: function(val) {
+                                if (Math.abs(val) >= 100000) return '₹' + (val/100000).toFixed(1) + 'L';
+                                if (Math.abs(val) >= 1000) return '₹' + (val/1000).toFixed(0) + 'k';
+                                return '₹' + val;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Chart 3: Income Distribution (FY)
+        const ctxIncPie = document.getElementById('incomePieChart').getContext('2d');
+        const incLabels = ['Salary', 'FD Interest', 'PF Interest', 'Other Interest', 'Stock Realized', 'MF Realized', 'Other Income'];
+        const incData = [
+            {{ fy_totals.salary|default:0 }},
+            {{ fy_totals.fd_interest|default:0 }},
+            {{ fy_totals.pf_interest|default:0 }},
+            {{ fy_totals.other_interest|default:0 }},
+            {{ fy_totals.stock_realized|default:0 }},
+            {{ fy_totals.mf_realized|default:0 }},
+            {{ fy_totals.other_income|default:0 }}
+        ];
+        // Filter non-zero items
+        const nonZeroInc = [];
+        const nonZeroIncLabels = [];
+        for(let i=0; i<incData.length; i++) {
+            if (incData[i] > 0) {
+                nonZeroInc.push(incData[i]);
+                nonZeroIncLabels.push(incLabels[i]);
+            }
+        }
+
+        if(nonZeroInc.length > 0) {
+            new Chart(ctxIncPie, {
+                type: 'doughnut',
+                data: {
+                    labels: nonZeroIncLabels,
+                    datasets: [{
+                        data: nonZeroInc,
+                        backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899', '#64748b'],
+                        borderWidth: 2,
+                        borderColor: 'white'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } }
+                    }
+                }
+            });
+        } else {
+            ctxIncPie.canvas.parentNode.innerHTML = "<div class='text-center py-5 text-muted'>No income data to map</div>";
+        }
+
+        // Chart 4: Expense Distribution (FY)
+        const ctxExpPie = document.getElementById('expensePieChart').getContext('2d');
+        const expLabels = ['Daily Expenses', 'EMIs', 'SIPs & Investments', 'Other Expenses'];
+        const expData = [
+            {{ fy_totals.daily_expense|default:0 }},
+            {{ fy_totals.emi|default:0 }},
+            {{ fy_totals.sip|default:0 }},
+            {{ fy_totals.other_expense|default:0 }}
+        ];
+        const nonZeroExp = [];
+        const nonZeroExpLabels = [];
+        for(let i=0; i<expData.length; i++) {
+            if (expData[i] > 0) {
+                nonZeroExp.push(expData[i]);
+                nonZeroExpLabels.push(expLabels[i]);
+            }
+        }
+
+        if(nonZeroExp.length > 0) {
+            new Chart(ctxExpPie, {
+                type: 'doughnut',
+                data: {
+                    labels: nonZeroExpLabels,
+                    datasets: [{
+                        data: nonZeroExp,
+                        backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6', '#94a3b8'],
+                        borderWidth: 2,
+                        borderColor: 'white'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } }
+                    }
+                }
+            });
+        } else {
+            ctxExpPie.canvas.parentNode.innerHTML = "<div class='text-center py-5 text-muted'>No expense data to map</div>";
+        }
     });
 
     function toggleDetailsIcon(month) {
@@ -1041,203 +1238,6 @@
             icon.classList.remove('fa-chevron-up');
             icon.classList.add('fa-chevron-down');
         }
-    }
-
-    // Chart.js Configuration
-    const chartMonths = [{% for m in monthly_data %}"{{ m.month_name }}",{% endfor %}];
-    const totalIncomes = [{% for m in monthly_data %}{{ m.total_income }},{% endfor %}];
-    const totalExpenses = [{% for m in monthly_data %}{{ m.total_expenses }},{% endfor %}];
-    const netCashflows = [{% for m in monthly_data %}{{ m.net_cashflow }},{% endfor %}];
-
-    // Chart 1: Income vs Expense Trend
-    const ctxIncExp = document.getElementById('incExpChart').getContext('2d');
-    new Chart(ctxIncExp, {
-        type: 'bar',
-        data: {
-            labels: chartMonths,
-            datasets: [
-                {
-                    label: 'Income',
-                    data: totalIncomes,
-                    backgroundColor: '#10b981',
-                    borderRadius: 6,
-                    maxBarThickness: 16
-                },
-                {
-                    label: 'Expense',
-                    data: totalExpenses,
-                    backgroundColor: '#ef4444',
-                    borderRadius: 6,
-                    maxBarThickness: 16
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'top', labels: { boxWidth: 12, font: { weight: '600' } } },
-                tooltip: {
-                    callbacks: {
-                        label: function(ctx) {
-                            return ' ' + ctx.dataset.label + ': ₹' + ctx.raw.toLocaleString('en-IN');
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: { grid: { display: false } },
-                y: {
-                    grid: { color: 'rgba(0, 0, 0, 0.04)' },
-                    ticks: {
-                        callback: function(val) {
-                            if (val >= 100000) return '₹' + (val/100000).toFixed(1) + 'L';
-                            if (val >= 1000) return '₹' + (val/1000).toFixed(0) + 'k';
-                            return '₹' + val;
-                        }
-                    }
-                }
-            }
-        }
-    });
-
-    // Chart 2: Net Savings Trend
-    const ctxNetSavings = document.getElementById('netSavingsChart').getContext('2d');
-    const gradient = ctxNetSavings.createLinearGradient(0, 0, 0, 300);
-    gradient.addColorStop(0, 'rgba(59, 130, 246, 0.25)');
-    gradient.addColorStop(1, 'rgba(59, 130, 246, 0.01)');
-
-    new Chart(ctxNetSavings, {
-        type: 'line',
-        data: {
-            labels: chartMonths,
-            datasets: [{
-                label: 'Net Cashflow',
-                data: netCashflows,
-                borderColor: '#3b82f6',
-                borderWidth: 3,
-                backgroundColor: gradient,
-                fill: true,
-                tension: 0.35,
-                pointRadius: 3,
-                pointHoverRadius: 6
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    callbacks: {
-                        label: function(ctx) {
-                            return ' Net Cashflow: ₹' + ctx.raw.toLocaleString('en-IN');
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: { grid: { display: false } },
-                y: {
-                    grid: { color: 'rgba(0, 0, 0, 0.04)' },
-                    ticks: {
-                        callback: function(val) {
-                            if (Math.abs(val) >= 100000) return '₹' + (val/100000).toFixed(1) + 'L';
-                            if (Math.abs(val) >= 1000) return '₹' + (val/1000).toFixed(0) + 'k';
-                            return '₹' + val;
-                        }
-                    }
-                }
-            }
-        }
-    });
-
-    // Chart 3: Income Distribution (FY)
-    const ctxIncPie = document.getElementById('incomePieChart').getContext('2d');
-    const incLabels = ['Salary', 'FD Interest', 'PF Interest', 'Other Interest', 'Stock Realized', 'MF Realized', 'Other Income'];
-    const incData = [
-        {{ fy_totals.salary|default:0 }},
-        {{ fy_totals.fd_interest|default:0 }},
-        {{ fy_totals.pf_interest|default:0 }},
-        {{ fy_totals.other_interest|default:0 }},
-        {{ fy_totals.stock_realized|default:0 }},
-        {{ fy_totals.mf_realized|default:0 }},
-        {{ fy_totals.other_income|default:0 }}
-    ];
-    // Filter non-zero items
-    const nonZeroInc = [];
-    const nonZeroIncLabels = [];
-    for(let i=0; i<incData.length; i++) {
-        if (incData[i] > 0) {
-            nonZeroInc.push(incData[i]);
-            nonZeroIncLabels.push(incLabels[i]);
-        }
-    }
-
-    if(nonZeroInc.length > 0) {
-        new Chart(ctxIncPie, {
-            type: 'doughnut',
-            data: {
-                labels: nonZeroIncLabels,
-                datasets: [{
-                    data: nonZeroInc,
-                    backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#06b6d4', '#ec4899', '#64748b'],
-                    borderWidth: 2,
-                    borderColor: 'white'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } }
-                }
-            }
-        });
-    } else {
-        ctxIncPie.canvas.parentNode.innerHTML = "<div class='text-center py-5 text-muted'>No income data to map</div>";
-    }
-
-    // Chart 4: Expense Distribution (FY)
-    const ctxExpPie = document.getElementById('expensePieChart').getContext('2d');
-    const expLabels = ['Daily Expenses', 'EMIs', 'SIPs & Investments', 'Other Expenses'];
-    const expData = [
-        {{ fy_totals.daily_expense|default:0 }},
-        {{ fy_totals.emi|default:0 }},
-        {{ fy_totals.sip|default:0 }},
-        {{ fy_totals.other_expense|default:0 }}
-    ];
-    const nonZeroExp = [];
-    const nonZeroExpLabels = [];
-    for(let i=0; i<expData.length; i++) {
-        if (expData[i] > 0) {
-            nonZeroExp.push(expData[i]);
-            nonZeroExpLabels.push(expLabels[i]);
-        }
-    }
-
-    if(nonZeroExp.length > 0) {
-        new Chart(ctxExpPie, {
-            type: 'doughnut',
-            data: {
-                labels: nonZeroExpLabels,
-                datasets: [{
-                    data: nonZeroExp,
-                    backgroundColor: ['#ef4444', '#f59e0b', '#3b82f6', '#94a3b8'],
-                    borderWidth: 2,
-                    borderColor: 'white'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } }
-                }
-            }
-        });
-    } else {
-        ctxExpPie.canvas.parentNode.innerHTML = "<div class='text-center py-5 text-muted'>No expense data to map</div>";
     }
 </script>
 {% endblock %}
