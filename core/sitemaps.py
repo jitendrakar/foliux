@@ -28,9 +28,13 @@ class StaticViewSitemap(sitemaps.Sitemap):
             'register',
             'forgot_password',
             'cashflow_dashboard',
+            '/education/share-market-taxation-in-india-stcg-ltcg-intraday-fo-tax-rules-explained/',
+            '/education/why-the-ideal-asset-allocation-could-be-33-real-estate-33-equity-and-33-fixed-assets/',
         ]
 
     def location(self, item):
+        if item.startswith('/'):
+            return item
         return reverse(item)
 
 
