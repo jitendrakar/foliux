@@ -7,6 +7,9 @@ class StaticViewSitemap(sitemaps.Sitemap):
     changefreq = 'daily'
     protocol = 'https'
 
+    def get_domain(self, site=None):
+        return 'foliux.com'
+
     def items(self):
         return [
             'landing',
@@ -21,6 +24,10 @@ class StaticViewSitemap(sitemaps.Sitemap):
             'strategy',
             'feedback',
             'wealth_calculators',
+            'login',
+            'register',
+            'forgot_password',
+            'cashflow_dashboard',
         ]
 
     def location(self, item):
@@ -31,6 +38,9 @@ class BlogPostSitemap(sitemaps.Sitemap):
     changefreq = 'weekly'
     priority = 0.8
     protocol = 'https'
+
+    def get_domain(self, site=None):
+        return 'foliux.com'
 
     def items(self):
         return BlogPost.objects.filter(status='published').order_by('-created_at')
