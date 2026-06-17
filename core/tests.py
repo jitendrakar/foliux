@@ -87,3 +87,82 @@ class IdempotencyTestCase(TestCase):
         # Verify no duplicate asset was created (count is still 1)
         self.assertEqual(OtherAsset.objects.filter(user=self.user, name='Gold ETF').count(), 1)
 
+
+class BlogPostEmailNotificationTestCase(TestCase):
+    def setUp(self):
+        from core.models import BlogPost
+        from django.core import mail
+        self.BlogPost = BlogPost
+        self.mail = mail
+        self.author = User.objects.create_user(username='author', email='author@example.com', password='password')
+        self.user1 = User.objects.create_user(username='user1', email='user1@example.com', password='password')
+        self.user2 = User.objects.create_user(username='user2', email='user2@example.com', password='password')
+        self.inactive_user = User.objects.create_user(username='inactive', email='inactive@example.com', password='password', is_active=False)
+
+    def test_draft_does_not_send_email(self):
+        # Create a draft blog post
+        post = self.BlogPost.objects.create(
+            title="Draft Post",
+            slug="draft-post",
+            content="This is a draft",
+            author=self.author,
+            status="draft"
+        )
+        self.assertEqual(len(self.mail.outbox), 0)
+        self.assertFalse(post.email_sent)
+
+    def test_publish_sends_email_once(self):
+        # Create a draft post
+        post = self.BlogPost.objects.create(
+            title="Test Post",
+            slug="test-post",
+            content="Some content",
+            author=self.author,
+            status="draft"
+        )
+        self.assertEqual(len(self.mail.outbox), 0)
+        
+        # Publish it
+        post.status = "published"
+        post.save()
+        
+        # Wait for the background email thread to finish
+        import threading
+        for t in threading.enumerate():
+            if t is not threading.current_thread() and t.name.startswith("Thread"):
+                t.join(timeout=2)
+                
+        # Expect 3 emails (author, user1, user2)
+        self.assertEqual(len(self.mail.outbox), 3)
+        self.assertTrue(post.email_sent)
+        
+        # Edit the published post
+        post.title = "Updated Test Post"
+        post.save()
+        
+        for t in threading.enumerate():
+            if t is not threading.current_thread() and t.name.startswith("Thread"):
+                t.join(timeout=2)
+                
+        # Verify no additional emails were sent (count remains 3)
+        self.assertEqual(len(self.mail.outbox), 3)
+
+    def test_direct_publish_sends_email(self):
+        # Create directly as published
+        post = self.BlogPost.objects.create(
+            title="Direct Post",
+            slug="direct-post",
+            content="Direct content",
+            author=self.author,
+            status="published"
+        )
+        
+        import threading
+        for t in threading.enumerate():
+            if t is not threading.current_thread() and t.name.startswith("Thread"):
+                t.join(timeout=2)
+                
+        self.assertEqual(len(self.mail.outbox), 3)
+        self.assertTrue(post.email_sent)
+
+

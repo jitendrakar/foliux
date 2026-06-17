@@ -1438,3 +1438,66 @@ def execute_stock_buy(user, instrument, quantity, avg_cost, transaction_date=Non
             portfolio.save(update_fields=['notes'])
             
     return Portfolio.objects.filter(user=user, instrument=instrument).first()
+
+
+def send_blog_notification(post):
+    """
+    Sends an email notification to all active registered users when a new blog post is published.
+    This runs asynchronously in a background thread to prevent blocking request execution.
+    """
+    from django.contrib.auth import get_user_model
+    from django.core.mail import send_mail
+    from django.template.loader import render_to_string
+    from django.utils.html import strip_tags
+    from django.conf import settings
+    import threading
+    import logging
+
+    logger = logging.getLogger(__name__)
+    User = get_user_model()
+
+    # Query active users and their names on the main thread to avoid DB locking in threads
+    users_data = []
+    for user in User.objects.filter(is_active=True):
+        if user.email:
+            profile = getattr(user, 'profile', None)
+            user_name = profile.full_name if profile and profile.full_name else user.username
+            users_data.append({
+                'email': user.email,
+                'name': user_name
+            })
+
+    subject = f"New Blog Post: {post.title} - FOLIUX"
+    site_url = getattr(settings, 'SITE_URL', 'https://foliux.com')
+
+    # Serialize post data to dictionary to avoid DB calls (e.g. lazy field loading) inside the thread
+    post_data = {
+        'title': post.title,
+        'excerpt': post.excerpt,
+        'get_absolute_url': post.get_absolute_url()
+    }
+
+    def _send():
+        for user_info in users_data:
+            try:
+                context = {
+                    'user_name': user_info['name'],
+                    'post': post_data,
+                    'site_url': site_url,
+                }
+                html_message = render_to_string('emails/new_blog_post.html', context)
+                plain_message = strip_tags(html_message)
+
+                send_mail(
+                    subject=subject,
+                    message=plain_message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[user_info['email']],
+                    html_message=html_message,
+                    fail_silently=True
+                )
+            except Exception as e:
+                logger.error(f"Failed to send blog email to {user_info['email']}: {e}")
+
+    threading.Thread(target=_send).start()
+

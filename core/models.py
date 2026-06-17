@@ -1113,9 +1113,20 @@ class BlogPost(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='published')
     tags = models.CharField(max_length=255, blank=True, null=True, help_text="Comma-separated list of tags (e.g. Stocks, Mutual Funds, Macroeconomy)")
     views_count = models.IntegerField(default=0)
+    email_sent = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+        is_new_publish = False
+        if self.status == 'published' and not self.email_sent:
+            is_new_publish = True
+            self.email_sent = True
+        super().save(*args, **kwargs)
+        if is_new_publish:
+            from .utils import send_blog_notification
+            send_blog_notification(self)
 
     def get_tags_list(self):
         if self.tags:
