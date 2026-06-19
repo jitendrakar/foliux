@@ -126,6 +126,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (!symbolInput || !resultsDiv) return;
 
+    const reportMissingInstrument = (query) => {
+        fetch('/api/report-missing-instrument/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ name: query, type: 'Coin' })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                alert(data.message);
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(err => {
+            console.error('Error reporting instrument:', err);
+            alert('An error occurred. Please try again.');
+        });
+    };
+
     symbolInput.addEventListener('input', function() {
         const query = this.value.trim().toUpperCase();
         if (query.length < 2) {
@@ -138,29 +161,60 @@ document.addEventListener('DOMContentLoaded', function() {
             fetch(`/api/coin-suggestions/?q=${encodeURIComponent(query)}`)
                 .then(response => response.json())
                 .then(data => {
+                    resultsDiv.innerHTML = '';
+                    
+                    const appendNotFoundOption = () => {
+                        const notFoundDiv = document.createElement('div');
+                        notFoundDiv.className = 'autocomplete-item text-danger border-top fw-bold';
+                        notFoundDiv.innerHTML = `<i class="fas fa-paper-plane me-2"></i>Not Found – Send to Admin`;
+                        notFoundDiv.addEventListener('click', () => {
+                            reportMissingInstrument(query);
+                            resultsDiv.classList.add('d-none');
+                        });
+                        resultsDiv.appendChild(notFoundDiv);
+                    };
+
                     if (data.status === 'success' && data.results.length > 0) {
-                        resultsDiv.innerHTML = data.results.map(item => `
-                            <div class="autocomplete-item coin-suggestion" data-symbol="${item.symbol}" data-price="${item.price}" data-name="${item.name}">
+                        data.results.forEach(item => {
+                            const div = document.createElement('div');
+                            div.className = 'autocomplete-item coin-suggestion';
+                            div.dataset.symbol = item.symbol;
+                            div.dataset.price = item.price;
+                            div.dataset.name = item.name;
+                            div.innerHTML = `
                                 <span class="autocomplete-name">${item.name}</span>
                                 <span class="autocomplete-symbol">${item.symbol} | Live Price: ₹${item.price}</span>
-                            </div>
-                        `).join('');
-                        resultsDiv.classList.remove('d-none');
-                        
-                        // Add click listeners
-                        document.querySelectorAll('.coin-suggestion').forEach(el => {
-                            el.addEventListener('click', function() {
-                                symbolInput.value = this.dataset.symbol;
+                            `;
+                            div.addEventListener('click', function() {
+                                const sym = this.dataset.symbol;
+                                symbolInput.value = sym;
                                 const priceInput = document.getElementById('avg_price');
                                 if (priceInput) {
-                                    priceInput.value = this.dataset.price;
-                                    priceInput.dispatchEvent(new Event('input', { bubbles: true }));
+                                    if (parseFloat(this.dataset.price) > 0) {
+                                        priceInput.value = this.dataset.price;
+                                        priceInput.dispatchEvent(new Event('input', { bubbles: true }));
+                                    } else {
+                                        // Fetch live price from api
+                                        fetch(`/api/coin-price/?symbol=${encodeURIComponent(sym)}`)
+                                            .then(res => res.json())
+                                            .then(resData => {
+                                                if (resData.status === 'success' && resData.price > 0) {
+                                                    priceInput.value = resData.price;
+                                                    priceInput.dispatchEvent(new Event('input', { bubbles: true }));
+                                                }
+                                            })
+                                            .catch(err => console.error("Error fetching coin price:", err));
+                                    }
                                 }
                                 resultsDiv.classList.add('d-none');
                             });
+                            resultsDiv.appendChild(div);
                         });
+                        appendNotFoundOption();
+                        resultsDiv.classList.remove('d-none');
                     } else {
-                        resultsDiv.classList.add('d-none');
+                        appendNotFoundOption();
+                        resultsDiv.classList.remove('d-none');
                     }
                 })
                 .catch(err => {

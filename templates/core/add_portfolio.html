@@ -52,6 +52,29 @@
         const addRowBtn = document.getElementById('add-row-btn');
         const totalForms = document.getElementById('id_form-TOTAL_FORMS');
 
+        const reportMissingInstrument = (query) => {
+            fetch('/api/report-missing-instrument/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ name: query })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    alert(data.message);
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(err => {
+                console.error('Error reporting instrument:', err);
+                alert('An error occurred. Please try again.');
+            });
+        };
+
         const attachAutocomplete = (row) => {
             const companyInput = row.querySelector('input[id$="-company_name"]');
             const symbolInput = row.querySelector('input[id$="-symbol"]');
@@ -78,6 +101,18 @@
                     .then(response => response.json())
                     .then(data => {
                         resultsDiv.innerHTML = '';
+                        
+                        const appendNotFoundOption = () => {
+                            const notFoundDiv = document.createElement('div');
+                            notFoundDiv.className = 'autocomplete-item text-danger border-top fw-bold';
+                            notFoundDiv.innerHTML = `<i class="fas fa-paper-plane me-2"></i>Not Found – Send to Admin`;
+                            notFoundDiv.addEventListener('click', () => {
+                                reportMissingInstrument(query);
+                                resultsDiv.classList.add('d-none');
+                            });
+                            resultsDiv.appendChild(notFoundDiv);
+                        };
+
                         if (data.length > 0) {
                             data.forEach(item => {
                                 const div = document.createElement('div');
@@ -93,9 +128,11 @@
                                 });
                                 resultsDiv.appendChild(div);
                             });
+                            appendNotFoundOption();
                             resultsDiv.classList.remove('d-none');
                         } else {
-                            resultsDiv.classList.add('d-none');
+                            appendNotFoundOption();
+                            resultsDiv.classList.remove('d-none');
                         }
                     })
                     .catch(err => console.error('Error:', err));

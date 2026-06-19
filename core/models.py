@@ -1128,6 +1128,16 @@ class EmailLog(models.Model):
         return f"{self.user.email} - {self.email_type} - {self.date_sent}"
 
 
+class MissingInstrumentRequest(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='missing_instrument_requests')
+    searched_name = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('reviewed', 'Reviewed')], default='pending')
+
+    def __str__(self):
+        return f"{self.user.username} - {self.searched_name} ({self.status})"
+
+
 class BlogPost(models.Model):
     STATUS_CHOICES = (
         ('draft', 'Draft'),

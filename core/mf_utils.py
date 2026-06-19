@@ -13,8 +13,9 @@ def search_mf_schemes(query):
     if not query:
         return []
     url = f"{BASE_URL}/search?q={query}"
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
     try:
-        response = requests.get(url, timeout=10)
+        response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
         return response.json()
     except Exception as e:
@@ -26,8 +27,9 @@ def get_mf_details(scheme_code):
     if not scheme_code:
         return None
     url = f"{BASE_URL}/{scheme_code}"
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
     try:
-        response = requests.get(url, timeout=15)
+        response = requests.get(url, headers=headers, timeout=15)
         response.raise_for_status()
         return response.json()
     except Exception as e:

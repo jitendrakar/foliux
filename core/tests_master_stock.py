@@ -70,3 +70,45 @@ class MasterStockDatabaseTest(TestCase):
         self.assertEqual(response.status_code, 200) # Form redisplays
         # Check that it didn't create a portfolio item
         self.assertFalse(Portfolio.objects.filter(instrument__symbol='WRONG').exists())
+
+    def test_report_missing_instrument(self):
+        from core.models import MissingInstrumentRequest
+        from django.core import mail
+        import json
+        import time
+        
+        # Test posting valid name (default type is Stock/ETF)
+        response = self.client.post(
+            reverse('report_missing_instrument'),
+            json.dumps({'name': 'ABC Global ETF'}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['status'], 'ok')
+        self.assertEqual(data['message'], 'Stock/ETF name has been sent to the admin for review.')
+        
+        # Check that request was saved in database
+        self.assertEqual(MissingInstrumentRequest.objects.filter(searched_name='[Stock/ETF] ABC Global ETF').count(), 1)
+        req = MissingInstrumentRequest.objects.get(searched_name='[Stock/ETF] ABC Global ETF')
+        self.assertEqual(req.user, self.user)
+        self.assertEqual(req.status, 'pending')
+        
+        # Test posting with a specific type (e.g. Mutual Fund)
+        response2 = self.client.post(
+            reverse('report_missing_instrument'),
+            json.dumps({'name': 'Axis Bluechip Fund', 'type': 'Mutual Fund'}),
+            content_type='application/json'
+        )
+        self.assertEqual(response2.status_code, 200)
+        self.assertEqual(MissingInstrumentRequest.objects.filter(searched_name='[Mutual Fund] Axis Bluechip Fund').count(), 1)
+
+        # Wait a split second for the background thread to send the email
+        time.sleep(0.5)
+        
+        self.assertEqual(len(mail.outbox), 2)
+        subjects = [m.subject for m in mail.outbox]
+        self.assertIn('[FOLIUX] Missing Stock/ETF Report: ABC Global ETF', subjects)
+        self.assertIn('[FOLIUX] Missing Mutual Fund Report: Axis Bluechip Fund', subjects)
+        for m in mail.outbox:
+            self.assertEqual(m.to, ['jitendra.kar@gmail.com'])

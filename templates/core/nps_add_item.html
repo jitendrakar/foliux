@@ -122,38 +122,85 @@ document.addEventListener('DOMContentLoaded', function() {
     const unitsInput = document.getElementById('units');
     const amountInput = document.getElementById('invested_amount');
 
-    const funds = [
-        {% for f in all_funds %}
-        { "name": "{{ f.name|escapejs }}", "nav": "{{ f.nav }}" },
-        {% endfor %}
-    ];
+    const reportMissingInstrument = (query) => {
+        fetch('/api/report-missing-instrument/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ name: query, type: 'NPS' })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'ok') {
+                alert(data.message);
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(err => {
+            console.error('Error reporting instrument:', err);
+            alert('An error occurred. Please try again.');
+        });
+    };
 
     nameInput.addEventListener('input', function() {
-        const query = this.value.trim().toLowerCase();
-        resultsDiv.innerHTML = '';
-        if (query.length < 2) {
+        const rawQuery = this.value.trim();
+        if (rawQuery.length < 2) {
             resultsDiv.classList.add('d-none');
             return;
         }
 
-        const matches = funds.filter(f => f.name.toLowerCase().includes(query)).slice(0, 10);
-        if (matches.length > 0) {
-            matches.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'autocomplete-item';
-                div.innerHTML = `<span class="fw-bold">${item.name}</span><br><small class="text-muted">NAV: ₹${item.nav}</small>`;
-                div.addEventListener('click', () => {
-                    nameInput.value = item.name;
-                    navInput.value = item.nav;
-                    resultsDiv.classList.add('d-none');
-                    calculate();
-                });
-                resultsDiv.appendChild(div);
+        fetch(`/api/nps-suggestions/?q=${encodeURIComponent(rawQuery)}`)
+            .then(response => response.json())
+            .then(data => {
+                resultsDiv.innerHTML = '';
+                
+                const appendNotFoundOption = () => {
+                    const notFoundDiv = document.createElement('div');
+                    notFoundDiv.className = 'autocomplete-item text-danger border-top fw-bold';
+                    notFoundDiv.innerHTML = `<i class="fas fa-paper-plane me-2"></i>Not Found – Send to Admin`;
+                    notFoundDiv.addEventListener('click', () => {
+                        reportMissingInstrument(rawQuery);
+                        resultsDiv.classList.add('d-none');
+                    });
+                    resultsDiv.appendChild(notFoundDiv);
+                };
+
+                if (data.length > 0) {
+                    data.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'autocomplete-item';
+                        div.innerHTML = `<span class="fw-bold">${item.name}</span><br><small class="text-muted">Code: ${item.symbol} | NAV: ₹${item.nav}</small>`;
+                        div.addEventListener('click', () => {
+                            nameInput.value = item.name;
+                            if (item.nav > 0) {
+                                navInput.value = item.nav;
+                                navInput.dispatchEvent(new Event('input', { bubbles: true }));
+                            } else {
+                                // Fetch NAV dynamically for the scheme code
+                                fetch(`/api/nps-suggestions/?q=${encodeURIComponent(item.symbol)}`)
+                                    .then(res => res.json())
+                                    .then(detailData => {
+                                        if (detailData && detailData.length > 0 && detailData[0].nav > 0) {
+                                            navInput.value = detailData[0].nav;
+                                            navInput.dispatchEvent(new Event('input', { bubbles: true }));
+                                        }
+                                    })
+                                    .catch(err => console.error("Error fetching NPS NAV:", err));
+                            }
+                            resultsDiv.classList.add('d-none');
+                        });
+                        resultsDiv.appendChild(div);
+                    });
+                    appendNotFoundOption();
+                    resultsDiv.classList.remove('d-none');
+                } else {
+                    appendNotFoundOption();
+                    resultsDiv.classList.remove('d-none');
+                }
             });
-            resultsDiv.classList.remove('d-none');
-        } else {
-            resultsDiv.classList.add('d-none');
-        }
     });
 
     function calculate() {

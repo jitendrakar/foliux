@@ -3776,39 +3776,118 @@ def auto_migrate(request):
 def mf_suggestions_api(request):
     """API for Mutual Fund autocomplete by name or symbol."""
     from django.db.models import Q
+    from decimal import Decimal
     query = request.GET.get('q', '').strip()
     if not query:
         return JsonResponse([], safe=False)
     
+    # If query is a numeric scheme code, fetch and return NAV immediately
+    if query.isdigit():
+        fund = MutualFund.objects.filter(scheme_code=query).first()
+        if not fund:
+            fund = MutualFund.objects.filter(symbol=query).first()
+        if fund and fund.nav > 0:
+            return JsonResponse([{
+                'name': fund.name,
+                'symbol': fund.symbol or fund.scheme_code,
+                'nav': float(fund.nav)
+            }], safe=False)
+        else:
+            # Fetch from mfapi.in
+            from .mf_utils import get_mf_details
+            details = get_mf_details(query)
+            if details and details.get('data'):
+                nav = float(details['data'][0]['nav'])
+                name = details.get('meta', {}).get('scheme_name', f"MF {query}")
+                amc = details.get('meta', {}).get('fund_house')
+                # Save/Update in DB
+                fund, _ = MutualFund.objects.update_or_create(
+                    scheme_code=query,
+                    defaults={'name': name, 'symbol': query, 'nav': Decimal(str(nav)), 'amc': amc}
+                )
+                return JsonResponse([{
+                    'name': fund.name,
+                    'symbol': fund.scheme_code,
+                    'nav': float(fund.nav)
+                }], safe=False)
+
     # Search specifically in MutualFund model (populated from Excel)
     funds = MutualFund.objects.filter(
         Q(name__icontains=query) | Q(symbol__icontains=query)
     )[:15]
     
-    results = [
-        {
+    results = []
+    seen_symbols = set()
+    for f in funds:
+        sym = f.symbol or f.scheme_code
+        if sym:
+            seen_symbols.add(sym.upper())
+        results.append({
             'name': f.name,
-            'symbol': f.symbol,
+            'symbol': f.symbol or f.scheme_code,
             'nav': float(f.nav) if f.nav else 0
-        } for f in funds
-    ]
-    return JsonResponse(results, safe=False)
+        })
+        
+    # Query mfapi.in
+    try:
+        from .mf_utils import search_mf_schemes
+        online_funds = search_mf_schemes(query)
+        for item in online_funds[:15]:
+            code = str(item['schemeCode'])
+            if code.upper() not in seen_symbols:
+                seen_symbols.add(code.upper())
+                results.append({
+                    'name': item['schemeName'],
+                    'symbol': code,
+                    'nav': 0.0
+                })
+    except Exception as e:
+        logger.error(f"Error calling mfapi.in search: {e}")
+        
+    return JsonResponse(results[:15], safe=False)
 
 @csrf_exempt
 def coin_price_api(request):
-    """API to fetch live price for a coin from the database (synced from spreadsheet)."""
+    """API to fetch live price for a coin from the database or yfinance."""
     symbol = request.GET.get('symbol', '').strip().upper()
     if not symbol:
         return JsonResponse({'status': 'error', 'message': 'Symbol required'}, status=400)
-    
-    # Optional: trigger sync on demand, but maybe it's too slow for live UI?
-    # Better to just return what's in the DB if it's recent. 
-    # For now, let's just return DB data.
     
     # Try a few variations
     coin = Coin.objects.filter(symbol__iexact=symbol).first()
     if not coin and '-' not in symbol:
         coin = Coin.objects.filter(symbol__iexact=f"{symbol}-INR").first()
+    
+    if not coin:
+        # Fallback to yfinance
+        try:
+            import yfinance as yf
+            from decimal import Decimal
+            ticker_symbol = symbol
+            if '-' not in ticker_symbol and not ticker_symbol.endswith('.NS') and not ticker_symbol.endswith('.BO'):
+                ticker_symbol = f"{ticker_symbol}-INR"
+            ticker = yf.Ticker(ticker_symbol)
+            info = ticker.info
+            price_val = info.get('regularMarketPrice') or info.get('previousClose') or info.get('navPrice')
+            if price_val:
+                name_val = info.get('longName') or info.get('shortName') or symbol.split('-')[0]
+                coin, _ = Coin.objects.update_or_create(
+                    symbol=ticker_symbol,
+                    defaults={'name': name_val, 'price': Decimal(str(price_val))}
+                )
+        except Exception as e:
+            logger.error(f"Error fetching coin price from yfinance for {symbol}: {e}")
+            
+    if not coin:
+        # Try spreadsheet sync as a second fallback
+        try:
+            from .utils import sync_coins_from_sheet
+            sync_coins_from_sheet()
+            coin = Coin.objects.filter(symbol__iexact=symbol).first()
+            if not coin and '-' not in symbol:
+                coin = Coin.objects.filter(symbol__iexact=f"{symbol}-INR").first()
+        except Exception as e:
+            logger.error(f"Spreadsheet sync error: {e}")
     
     if coin:
         return JsonResponse({
@@ -3818,38 +3897,155 @@ def coin_price_api(request):
             'price': float(coin.price)
         })
     else:
-        # If not found, maybe it's new. Try a quick sync?
-        from .utils import sync_coins_from_sheet
-        sync_coins_from_sheet()
-        
-        coin = Coin.objects.filter(symbol__iexact=symbol).first()
-        if not coin and '-' not in symbol:
-            coin = Coin.objects.filter(symbol__iexact=f"{symbol}-INR").first()
-            
-        if coin:
-            return JsonResponse({
-                'status': 'success',
-                'symbol': coin.symbol,
-                'name': coin.name,
-                'price': float(coin.price)
-            })
-            
-        return JsonResponse({'status': 'error', 'message': 'Price not found in database or spreadsheet'}, status=404)
+        return JsonResponse({'status': 'error', 'message': 'Price not found in database, spreadsheet or yfinance'}, status=404)
 
 @csrf_exempt
 def coin_suggestions_api(request):
-    """Provide real-time suggestions based on coin symbol or name from our DB."""
+    """Provide real-time suggestions based on coin symbol or name from our DB and external API."""
     q = request.GET.get('q', '').strip()
     if len(q) < 2:
         return JsonResponse({'status': 'success', 'results': []})
 
     from core.models import Coin
-    # Search in both symbol and name
-    results = Coin.objects.filter(
+    
+    # Search locally first
+    local_coins = Coin.objects.filter(
         models.Q(symbol__icontains=q) | models.Q(name__icontains=q)
-    ).values('symbol', 'name', 'price')[:10]
+    )
+    
+    results_map = {}
+    for c in local_coins:
+        sym = c.symbol.split('-')[0].upper() # extract BTC from BTC-INR
+        results_map[sym] = {
+            'symbol': c.symbol,
+            'name': c.name,
+            'price': float(c.price) if c.price else 0.0
+        }
+        
+    # Also fetch from coingecko search
+    try:
+        import requests
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        resp = requests.get(f"https://api.coingecko.com/api/v3/search?query={q}", headers=headers, timeout=3)
+        if resp.status_code == 200:
+            data = resp.json()
+            for coin in data.get('coins', [])[:10]:
+                sym = coin['symbol'].upper()
+                if sym not in results_map:
+                    results_map[sym] = {
+                        'symbol': f"{sym}-INR",
+                        'name': coin['name'],
+                        'price': 0.0
+                    }
+    except Exception as e:
+        logger.error(f"Error fetching from Coingecko: {e}")
+        
+    # If the user's exact typed query is not in the map, add it as a fallback option
+    q_upper = q.upper()
+    if q_upper not in results_map:
+        results_map[q_upper] = {
+            'symbol': f"{q_upper}-INR",
+            'name': q_upper,
+            'price': 0.0
+        }
 
-    return JsonResponse({'status': 'success', 'results': list(results)})
+    return JsonResponse({'status': 'success', 'results': list(results_map.values())[:15]})
+
+@csrf_exempt
+def nps_suggestions_api(request):
+    """API for NPS Fund autocomplete by name or code."""
+    from django.db.models import Q
+    from django.core.cache import cache
+    from decimal import Decimal
+    from core.models import NPSFund
+    import requests
+    
+    query = request.GET.get('q', '').strip()
+    if not query:
+        return JsonResponse([], safe=False)
+        
+    # If query is a scheme code (starts with SM), fetch details and return NAV immediately
+    if query.upper().startswith('SM') and len(query) >= 6:
+        fund = NPSFund.objects.filter(scheme_code__iexact=query).first()
+        if not fund:
+            fund = NPSFund.objects.filter(name__iexact=query).first()
+        if fund and fund.nav > 0:
+            return JsonResponse([{
+                'name': fund.name,
+                'symbol': fund.scheme_code or query.upper(),
+                'nav': float(fund.nav)
+            }], safe=False)
+        else:
+            # Fetch from npsnav.in
+            url = f"https://npsnav.in/api/detailed/{query.upper()}"
+            headers = {'User-Agent': 'Mozilla/5.0'}
+            try:
+                response = requests.get(url, headers=headers, timeout=5)
+                if response.status_code == 200:
+                    data = response.json()
+                    nav_val = float(data.get('NAV', '0'))
+                    name_val = data.get('Scheme Name', f"NPS {query.upper()}")
+                    # Save/Update in DB
+                    fund, _ = NPSFund.objects.update_or_create(
+                        scheme_code=query.upper(),
+                        defaults={'name': name_val, 'nav': Decimal(str(nav_val))}
+                    )
+                    return JsonResponse([{
+                        'name': fund.name,
+                        'symbol': fund.scheme_code,
+                        'nav': float(fund.nav)
+                    }], safe=False)
+            except Exception as e:
+                logger.error(f"Error fetching NPS details for {query}: {e}")
+                
+    # Search locally first
+    local_funds = NPSFund.objects.filter(
+        Q(name__icontains=query) | Q(scheme_code__icontains=query)
+    )[:15]
+    
+    results = []
+    seen_codes = set()
+    for f in local_funds:
+        code = f.scheme_code or f.name
+        seen_codes.add(code.upper())
+        results.append({
+            'name': f.name,
+            'symbol': f.scheme_code or '',
+            'nav': float(f.nav) if f.nav else 0.0
+        })
+        
+    # Query npsnav.in schemes list (cached for 24h)
+    cache_key = "npsnav_schemes"
+    schemes_list = cache.get(cache_key)
+    if not schemes_list:
+        try:
+            url = "https://npsnav.in/api/schemes"
+            headers = {'User-Agent': 'Mozilla/5.0'}
+            resp = requests.get(url, headers=headers, timeout=5)
+            if resp.status_code == 200:
+                data = resp.json()
+                schemes_list = data.get('data', [])
+                cache.set(cache_key, schemes_list, 86400) # cache for 1 day
+        except Exception as e:
+            logger.error(f"Error fetching NPS schemes list: {e}")
+            
+    if schemes_list:
+        query_lower = query.lower()
+        for item in schemes_list:
+            code = item[0]
+            name = item[1]
+            if query_lower in name.lower() or query_lower in code.lower():
+                if code.upper() not in seen_codes:
+                    seen_codes.add(code.upper())
+                    results.append({
+                        'name': name,
+                        'symbol': code,
+                        'nav': 0.0 # Will be fetched dynamically when selected
+                    })
+                    if len(results) >= 15:
+                        break
+                        
+    return JsonResponse(results[:15], safe=False)
 
 @login_required
 def nps_dashboard(request):
@@ -5906,6 +6102,77 @@ def export_cashflow_pdf(request):
     except Exception as e:
         messages.error(request, f"PDF export failed: {e}")
         return redirect('cashflow_dashboard')
+
+
+@login_required
+@require_POST
+def report_missing_instrument(request):
+    """API endpoint to report a missing Stock/ETF/MF/NPS/Coin instrument."""
+    import json
+    import logging
+    import threading
+    from django.http import JsonResponse
+    from django.core.mail import send_mail
+    from django.conf import settings
+    from django.utils import timezone
+    from .models import MissingInstrumentRequest
+    
+    logger = logging.getLogger(__name__)
+    
+    try:
+        data = json.loads(request.body)
+        searched_name = data.get('name', '').strip()
+        instrument_type = data.get('type', 'Stock/ETF').strip()
+    except Exception:
+        searched_name = request.POST.get('name', '').strip()
+        instrument_type = request.POST.get('type', 'Stock/ETF').strip()
+        
+    if not searched_name:
+        return JsonResponse({'status': 'error', 'message': 'Instrument name is required.'}, status=400)
+        
+    # Log the request
+    logger.info(f"User {request.user.username} (ID: {request.user.id}) reported missing {instrument_type}: {searched_name}")
+    
+    # Store request in logs/database
+    db_name = f"[{instrument_type}] {searched_name}"
+    MissingInstrumentRequest.objects.create(
+        user=request.user,
+        searched_name=db_name
+    )
+    
+    # Send email in background
+    subject = f"[FOLIUX] Missing {instrument_type} Report: {searched_name}"
+    message = (
+        f"Hello Admin,\n\n"
+        f"A user has reported a missing {instrument_type} in the system.\n\n"
+        f"User: {request.user.username} ({request.user.email})\n"
+        f"Reported Name: {searched_name}\n"
+        f"Type: {instrument_type}\n"
+        f"Time: {timezone.now()}\n\n"
+        f"Best regards,\n"
+        f"FOLIUX System"
+    )
+    
+    def send_bg_email():
+        try:
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                ['jitendra.kar@gmail.com'],
+                fail_silently=False
+            )
+            logger.info(f"Email sent successfully for missing {instrument_type}: {searched_name}")
+        except Exception as email_err:
+            logger.error(f"Failed to send email for missing {instrument_type}: {email_err}")
+
+    thread = threading.Thread(target=send_bg_email)
+    thread.start()
+    
+    return JsonResponse({
+        'status': 'ok',
+        'message': 'Stock/ETF name has been sent to the admin for review.'
+    })
 
 
 
