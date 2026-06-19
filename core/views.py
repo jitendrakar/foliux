@@ -4294,7 +4294,15 @@ def add_other_asset(request):
         
         try:
             purchase_price = Decimal(request.POST.get('purchase_price', '0'))
-            current_value = Decimal(request.POST.get('current_value', '0'))
+            
+            # expected_appreciation
+            expected_appreciation_str = request.POST.get('expected_appreciation', '0').strip()
+            expected_appreciation = Decimal(expected_appreciation_str) if expected_appreciation_str else Decimal('0.00')
+            
+            # actual_market_value (optional override)
+            actual_market_value_str = request.POST.get('actual_market_value', '').strip()
+            actual_market_value = Decimal(actual_market_value_str) if actual_market_value_str else None
+            
             monthly_rent = Decimal(request.POST.get('monthly_rent', '0'))
             purchase_date = pd.to_datetime(purchase_date_str).date() if purchase_date_str else timezone.localdate()
             if purchase_date > timezone.localdate():
@@ -4316,7 +4324,8 @@ def add_other_asset(request):
             asset_type=asset_type,
             purchase_date=purchase_date,
             purchase_price=purchase_price,
-            current_value=current_value,
+            expected_appreciation=expected_appreciation,
+            actual_market_value=actual_market_value,
             monthly_rent=monthly_rent,
             holder_name=holder_name,
             asset_id=asset_id
@@ -4339,7 +4348,15 @@ def edit_other_asset(request, pk):
         
         try:
             asset.purchase_price = Decimal(request.POST.get('purchase_price', str(asset.purchase_price)))
-            asset.current_value = Decimal(request.POST.get('current_value', str(asset.current_value)))
+            
+            # expected_appreciation
+            expected_appreciation_str = request.POST.get('expected_appreciation', '0').strip()
+            asset.expected_appreciation = Decimal(expected_appreciation_str) if expected_appreciation_str else Decimal('0.00')
+            
+            # actual_market_value
+            actual_market_value_str = request.POST.get('actual_market_value', '').strip()
+            asset.actual_market_value = Decimal(actual_market_value_str) if actual_market_value_str else None
+            
             asset.monthly_rent = Decimal(request.POST.get('monthly_rent', str(asset.monthly_rent)))
             if purchase_date_str:
                 potential_date = pd.to_datetime(purchase_date_str).date()

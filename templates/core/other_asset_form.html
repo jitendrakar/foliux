@@ -122,9 +122,9 @@
                         <input type="number" step="0.01" name="purchase_price" id="purchase_price" class="form-control" placeholder="0.00" required value="{{ asset.purchase_price|default:'' }}" min="0.01">
                     </div>
                     <div class="col-md-6">
-                        <label for="current_value" class="form-label">Current Market Value (INR)</label>
-                        <input type="number" step="0.01" name="current_value" id="current_value" class="form-control" placeholder="0.00" required value="{{ asset.current_value|default:'' }}" min="0.01">
-                        <div class="help-text text-muted small mt-1">Manual updates required for accurate P&L.</div>
+                        <label for="expected_appreciation" class="form-label">Expected Annual Appreciation (%)</label>
+                        <input type="number" step="0.01" name="expected_appreciation" id="expected_appreciation" class="form-control" placeholder="e.g. 10.00" value="{{ asset.expected_appreciation|default:'0' }}">
+                        <div class="help-text text-muted small mt-1">Expected annual rate of growth/interest.</div>
                     </div>
                 </div>
 
@@ -139,6 +139,39 @@
                         <div class="help-text text-muted small mt-1">Enter monthly rent if applicable.</div>
                     </div>
                 </div>
+
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <label for="actual_market_value" class="form-label">Actual Market Value (INR) (Manual Override)</label>
+                        <input type="number" step="0.01" name="actual_market_value" id="actual_market_value" class="form-control" placeholder="Optional" value="{{ asset.actual_market_value|default:'' }}">
+                        <div class="help-text text-muted small mt-1">Leave blank to let the system automatically compound the value over time based on the expected annual appreciation rate.</div>
+                    </div>
+                </div>
+
+                {% if action == 'Edit' %}
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-4 border">
+                            <div class="small text-muted fw-bold mb-1 text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.5px;">Estimated Market Value</div>
+                            <div class="fs-4 fw-bold text-other">₹ {{ asset.estimated_market_value|floatformat:2 }}</div>
+                            <div class="small text-muted mt-1">(Compounded monthly at {{ asset.expected_appreciation }}% p.a.)</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-4 border">
+                            <div class="small text-muted fw-bold mb-1 text-uppercase" style="font-size: 0.75rem; letter-spacing: 0.5px;">Actual Market Value</div>
+                            <div class="fs-4 fw-bold text-dark">
+                                {% if asset.actual_market_value is not None %}
+                                    ₹ {{ asset.actual_market_value|floatformat:2 }}
+                                {% else %}
+                                    Not Set (Using Estimated)
+                                {% endif %}
+                            </div>
+                            <div class="small text-muted mt-1">(Manually overridden value if set)</div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
                 
                 <button type="submit" class="btn-submit">
                     <i class="fas fa-save me-2"></i>{{ action }} Asset

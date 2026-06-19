@@ -17,7 +17,7 @@ class CashflowIntegrationTestCase(TestCase):
             asset_type="Flat",
             purchase_date=date(2026, 4, 15),
             purchase_price=Decimal("5000000.00"),
-            current_value=Decimal("5000000.00"),
+            actual_market_value=Decimal("5000000.00"),
             monthly_rent=Decimal("15000.00")
         )
         # Call cashflow details for FY 2026-2027

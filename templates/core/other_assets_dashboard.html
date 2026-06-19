@@ -235,7 +235,14 @@
                         <td class="fw-600 text-muted">{{ item.purchase_date|date:"d M, Y" }}</td>
                         <td class="fw-700 text-primary">₹ {{ item.monthly_rent|floatformat:0 }}</td>
                         <td class="fw-600">₹ {{ item.purchase_price|floatformat:2 }}</td>
-                        <td class="fw-700">₹ {{ item.current_value|floatformat:2 }}</td>
+                        <td>
+                            <div class="fw-700">₹ {{ item.current_value|floatformat:2 }}</div>
+                            {% if item.actual_market_value is not None and item.current_value == item.actual_market_value %}
+                                <span class="badge bg-soft-primary text-primary border border-primary small" style="font-size: 0.65rem; padding: 2px 6px;">Manual</span>
+                            {% else %}
+                                <span class="badge bg-soft-success text-success border border-success small" style="font-size: 0.65rem; padding: 2px 6px;">Auto ({{ item.expected_appreciation|floatformat:1 }}%)</span>
+                            {% endif %}
+                        </td>
                         <td>
                             <div class="{% if item.unrealized_pnl >= 0 %}text-success{% else %}text-danger{% endif %} fw-bold">
                                 ₹ {{ item.unrealized_pnl|floatformat:2 }}

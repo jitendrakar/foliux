@@ -819,7 +819,8 @@ class OtherAsset(models.Model):
     asset_type = models.CharField(max_length=50, choices=ASSET_TYPES, default='Other')
     purchase_date = models.DateField()
     purchase_price = models.DecimalField(max_digits=20, decimal_places=2)
-    current_value = models.DecimalField(max_digits=20, decimal_places=2)
+    actual_market_value = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
+    expected_appreciation = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
     monthly_rent = models.DecimalField(max_digits=20, decimal_places=2, default=0)
     
     # New fields for identification
@@ -827,6 +828,38 @@ class OtherAsset(models.Model):
     asset_id = EncryptedCharField(max_length=50, null=True, blank=True)
     
     created_at = models.DateTimeField(auto_now_add=True)
+    
+    @property
+    def estimated_market_value(self):
+        from datetime import date
+        from decimal import Decimal
+        import calendar
+        
+        today = date.today()
+        if today < self.purchase_date:
+            return self.purchase_price
+            
+        months = (today.year - self.purchase_date.year) * 12 + (today.month - self.purchase_date.month)
+        if today.day < self.purchase_date.day:
+            last_day_of_month = calendar.monthrange(today.year, today.month)[1]
+            if today.day != last_day_of_month:
+                months -= 1
+        months = max(0, months)
+        
+        rate = (self.expected_appreciation or Decimal('0')) / Decimal('100') / Decimal('12')
+        val = Decimal(str(self.purchase_price)) * ((Decimal('1') + rate) ** months)
+        return val.quantize(Decimal('0.01'))
+
+    @property
+    def current_value(self):
+        est = self.estimated_market_value
+        if self.actual_market_value is not None:
+            return max(self.actual_market_value, est)
+        return est
+
+    @current_value.setter
+    def current_value(self, value):
+        self.actual_market_value = value
     
     @property
     def unrealized_pnl(self):
