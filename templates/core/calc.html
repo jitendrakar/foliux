@@ -447,15 +447,65 @@
   }
 
   /* Metric cards responsive spacing */
-  @media (max-width: 575px) {
-    .metric-box {
-      padding: 1rem !important;
+    @media (max-width: 575px) {
+      .metric-box {
+        padding: 1rem !important;
+      }
+      .metric-box-value {
+        font-size: 1.25rem !important;
+      }
     }
-    .metric-box-value {
-      font-size: 1.25rem !important;
+
+    /* My Tax Calculator Custom CSS Styles */
+    .tax-comparison-card {
+      background: linear-gradient(135deg, rgba(0, 61, 124, 0.04) 0%, rgba(0, 141, 76, 0.04) 100%);
+      border: 1px solid var(--calc-border);
+      border-radius: 16px;
     }
-  }
-</style>
+    .tax-recomm-badge {
+      background: #008D4C;
+      color: white;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 0.8rem;
+    }
+    .tax-saved-highlight {
+      color: #008D4C;
+      font-weight: 700;
+    }
+    .auto-fetched-badge {
+      background-color: rgba(0, 61, 124, 0.08);
+      color: #003D7C;
+      border: 1px solid rgba(0, 61, 124, 0.15);
+      font-size: 0.7rem;
+      padding: 3px 8px;
+      border-radius: 12px;
+    }
+    .table-premium {
+      border-color: var(--calc-border);
+    }
+    .table-premium th {
+      background-color: rgba(0, 61, 124, 0.03);
+      color: var(--calc-text);
+      font-weight: 700;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 2px solid var(--calc-border);
+    }
+    .table-premium td {
+      color: var(--calc-text);
+      border-bottom: 1px solid var(--calc-border);
+    }
+    .spin-slow {
+      animation: spin 3s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
 {% endblock %}
 
 {% block content %}
@@ -518,42 +568,401 @@
               <h2 class="h3 fw-extrabold mb-1" id="activeCalcTitle">Loading Calculator...</h2>
               <p class="text-muted small mb-0" id="activeCalcDescription">Please wait while the computational engine initializes.</p>
             </div>
-            <div class="d-flex flex-wrap gap-2 mt-2 mt-sm-0">
+            <div class="d-flex flex-wrap gap-2 mt-2 mt-sm-0" id="standardCalcHeaderActions">
               <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="saveToHistory()" title="Save calculation details to local history"><i class="fas fa-history me-1"></i>Save</button>
               <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="copyShareableSummary()" title="Copy shareable text summary"><i class="fas fa-share-alt me-1"></i>Share</button>
               <button class="btn btn-sm btn-success rounded-pill px-3" onclick="downloadPDFReport()" title="Download personalized PDF report"><i class="fas fa-file-pdf me-1"></i>PDF Report</button>
             </div>
           </div>
 
-          <!-- Dynamic Workspace Split -->
-          <div class="row">
-            <!-- Left Side: Interactive Input Parameters (Sliders + Inputs) -->
-            <div class="col-12 col-md-6 mb-4 mb-md-0 calc-workspace-divider pe-md-4">
-              <h5 class="fw-bold mb-4 d-flex align-items-center">
-                <i class="fas fa-sliders-h text-primary me-2"></i>Parameters
-              </h5>
-              <div id="dynamicInputsContainer">
-                <!-- Dynamically injected input elements -->
+          <!-- Standard Workspace Container -->
+          <div id="standardCalculatorWorkspace">
+            <!-- Dynamic Workspace Split -->
+            <div class="row">
+              <!-- Left Side: Interactive Input Parameters (Sliders + Inputs) -->
+              <div class="col-12 col-md-6 mb-4 mb-md-0 calc-workspace-divider pe-md-4">
+                <h5 class="fw-bold mb-4 d-flex align-items-center">
+                  <i class="fas fa-sliders-h text-primary me-2"></i>Parameters
+                </h5>
+                <div id="dynamicInputsContainer">
+                  <!-- Dynamically injected input elements -->
+                </div>
+              </div>
+
+              <!-- Right Side: Live Visual Representation & Metrics -->
+              <div class="col-12 col-md-6 ps-md-4">
+                <h5 class="fw-bold mb-4 d-flex align-items-center justify-content-between">
+                  <span><i class="fas fa-chart-pie text-success me-2"></i>Results Projection</span>
+                  <span class="badge bg-success bg-opacity-10 text-success fw-bold border border-success border-opacity-25 small" style="font-size: 0.75rem;">Real-time</span>
+                </h5>
+                
+                <!-- Metrics Cards Row -->
+                <div class="row g-3 mb-4" id="dynamicMetricsContainer">
+                  <!-- Dynamically injected metric blocks -->
+                </div>
+
+                <!-- Live Chart Container -->
+                <div class="bg-light rounded-4 p-3 border mb-3 text-center position-relative" style="min-height: 250px;">
+                  <canvas id="activeCalcChart" style="max-height: 250px;"></canvas>
+                  <div id="noChartFallback" class="position-absolute top-50 start-50 translate-middle d-none text-muted small">
+                    <i class="fas fa-chart-line fs-2 mb-2 d-block"></i>Visual projection is ready for calculations
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- My Tax Calculator Custom Workspace Container -->
+          <div id="myTaxCalculatorWorkspace" style="display: none;">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 border-bottom pb-3">
+              <div class="d-flex align-items-center gap-3">
+                <label class="fw-bold text-muted mb-0 small">Financial Year:</label>
+                <select id="taxFYSelect" class="form-select form-select-sm border-secondary fw-bold rounded-pill text-dark" onchange="changeTaxFY(this.value)" style="width: 130px; cursor: pointer;">
+                  <option value="2025-2026">2025-2026</option>
+                  <option value="2026-2027" selected>2026-2027</option>
+                </select>
+              </div>
+              <div>
+                <span class="badge bg-success bg-opacity-10 text-success fw-bold border border-success border-opacity-25 py-2 px-3 rounded-pill">
+                  <i class="fas fa-sync-alt me-1 spin-slow"></i>Synced with FOLIUX Portfolio
+                </span>
               </div>
             </div>
 
-            <!-- Right Side: Live Visual Representation & Metrics -->
-            <div class="col-12 col-md-6 ps-md-4">
-              <h5 class="fw-bold mb-4 d-flex align-items-center justify-content-between">
-                <span><i class="fas fa-chart-pie text-success me-2"></i>Results Projection</span>
-                <span class="badge bg-success bg-opacity-10 text-success fw-bold border border-success border-opacity-25 small" style="font-size: 0.75rem;">Real-time</span>
-              </h5>
-              
-              <!-- Metrics Cards Row -->
-              <div class="row g-3 mb-4" id="dynamicMetricsContainer">
-                <!-- Dynamically injected metric blocks -->
+            <div class="row">
+              <!-- Left Side: Interactive Tabs and Inputs -->
+              <div class="col-12 col-xl-7 mb-4 mb-xl-0 calc-workspace-divider pe-xl-4">
+                <!-- Navigation Tabs -->
+                <ul class="nav nav-pills mb-4 border-bottom pb-2 gap-2" id="taxTab" role="tablist">
+                  <li class="nav-item" role="presentation">
+                    <button class="nav-link active rounded-pill px-3 py-1.5 small fw-bold" id="declarations-tab" data-bs-toggle="tab" data-bs-target="#declarations" type="button" role="tab"><i class="fas fa-file-signature me-1.5"></i>Declarations</button>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <button class="nav-link rounded-pill px-3 py-1.5 small fw-bold" id="portfolio-tab" data-bs-toggle="tab" data-bs-target="#portfolio" type="button" role="tab"><i class="fas fa-briefcase me-1.5"></i>Auto-Fetched Assets</button>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <button class="nav-link rounded-pill px-3 py-1.5 small fw-bold" id="planning-tab" data-bs-toggle="tab" data-bs-target="#planning" type="button" role="tab"><i class="fas fa-lightbulb me-1.5"></i>Tax Planning</button>
+                  </li>
+                  <li class="nav-item" role="presentation">
+                    <button class="nav-link rounded-pill px-3 py-1.5 small fw-bold" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports" type="button" role="tab"><i class="fas fa-download me-1.5"></i>Reports</button>
+                  </li>
+                </ul>
+
+                <div class="tab-content" id="taxTabContent">
+                  <!-- Declarations Tab -->
+                  <div class="tab-pane fade show active" id="declarations" role="tabpanel">
+                    <h6 class="fw-bold mb-3"><i class="fas fa-plus-circle text-primary me-2"></i>Manual Income & Deductions</h6>
+                    <div class="row g-3">
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold">Annual Gross Salary</label>
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text bg-light text-dark">₹</span>
+                          <input type="number" id="tax_salary" class="form-control text-dark" oninput="debouncedSaveTax()" value="0">
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold">Business Income</label>
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text bg-light text-dark">₹</span>
+                          <input type="number" id="tax_business_income" class="form-control text-dark" oninput="debouncedSaveTax()" value="0">
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold">Other Taxable Income</label>
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text bg-light text-dark">₹</span>
+                          <input type="number" id="tax_other_taxable_income" class="form-control text-dark" oninput="debouncedSaveTax()" value="0">
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold">Agricultural Income (Exempt)</label>
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text bg-light text-dark">₹</span>
+                          <input type="number" id="tax_agricultural_income" class="form-control text-dark" oninput="debouncedSaveTax()" value="0">
+                        </div>
+                      </div>
+                      
+                      <div class="border-top my-3"></div>
+                      <h6 class="fw-bold mb-2"><i class="fas fa-home text-info me-2"></i>House Rent & Loan Benefits</h6>
+                      
+                      <div class="col-md-4">
+                        <label class="form-label small fw-bold">HRA Received</label>
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text bg-light text-dark">₹</span>
+                          <input type="number" id="tax_hra_received" class="form-control text-dark" oninput="debouncedSaveTax()" value="0">
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label small fw-bold">Rent Paid</label>
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text bg-light text-dark">₹</span>
+                          <input type="number" id="tax_rent_paid" class="form-control text-dark" oninput="debouncedSaveTax()" value="0">
+                        </div>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label small fw-bold">Home Loan Interest (24b)</label>
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text bg-light text-dark">₹</span>
+                          <input type="number" id="tax_home_loan_interest" class="form-control text-dark" oninput="debouncedSaveTax()" value="0">
+                        </div>
+                      </div>
+
+                      <div class="border-top my-3"></div>
+                      <h6 class="fw-bold mb-2"><i class="fas fa-piggy-bank text-success me-2"></i>Tax Deductions (Old Regime)</h6>
+                      
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold">Section 80C (PPF/ELSS/LIC)</label>
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text bg-light text-dark">₹</span>
+                          <input type="number" id="tax_section_80c" class="form-control text-dark" oninput="debouncedSaveTax()" value="0">
+                        </div>
+                        <span class="text-muted d-block small mt-1" style="font-size:0.7rem;">Capped at ₹1,50,000. Auto PPF/ELSS is added.</span>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold">Section 80D (Health Insurance)</label>
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text bg-light text-dark">₹</span>
+                          <input type="number" id="tax_section_80d" class="form-control text-dark" oninput="debouncedSaveTax()" value="0">
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold">Section 80CCD(1B) (NPS Extra)</label>
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text bg-light text-dark">₹</span>
+                          <input type="number" id="tax_section_80ccd1b" class="form-control text-dark" oninput="debouncedSaveTax()" value="0">
+                        </div>
+                        <span class="text-muted d-block small mt-1" style="font-size:0.7rem;">Capped at ₹50,000. Auto NPS is added.</span>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label small fw-bold">Section 80G (Donations)</label>
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text bg-light text-dark">₹</span>
+                          <input type="number" id="tax_section_80g" class="form-control text-dark" oninput="debouncedSaveTax()" value="0">
+                        </div>
+                      </div>
+                      <div class="col-md-12">
+                        <label class="form-label small fw-bold">Other Deductions (e.g. 80TTA)</label>
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text bg-light text-dark">₹</span>
+                          <input type="number" id="tax_other_deductions" class="form-control text-dark" oninput="debouncedSaveTax()" value="0">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Auto-Fetched Tab -->
+                  <div class="tab-pane fade" id="portfolio" role="tabpanel">
+                    <h6 class="fw-bold mb-3"><i class="fas fa-cloud-download-alt text-primary me-2"></i>Auto-Fetched Portfolio Income</h6>
+                    <p class="text-muted small">These values are automatically extracted from your live portfolios and transactions for the selected Financial Year.</p>
+                    
+                    <div class="table-responsive">
+                      <table class="table table-sm table-premium align-middle">
+                        <thead>
+                          <tr>
+                            <th>Income Source</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td class="small fw-bold">Stock Dividends</td>
+                            <td class="small text-dark fw-bold" id="fetch_stock_dividends">₹0.00</td>
+                            <td><span class="badge auto-fetched-badge"><i class="fas fa-check me-1"></i>Live Stocks</span></td>
+                          </tr>
+                          <tr>
+                            <td class="small fw-bold">Mutual Fund Dividends</td>
+                            <td class="small text-dark fw-bold" id="fetch_mf_dividends">₹0.00</td>
+                            <td><span class="badge auto-fetched-badge"><i class="fas fa-check me-1"></i>Live Cashflow</span></td>
+                          </tr>
+                          <tr>
+                            <td class="small fw-bold">Realized STCG (Equity)</td>
+                            <td class="small text-dark fw-bold" id="fetch_stcg_equity">₹0.00</td>
+                            <td><span class="badge auto-fetched-badge"><i class="fas fa-check me-1"></i>Live Trades (FIFO)</span></td>
+                          </tr>
+                          <tr>
+                            <td class="small fw-bold">Realized LTCG (Equity)</td>
+                            <td class="small text-dark fw-bold" id="fetch_ltcg_equity">₹0.00</td>
+                            <td><span class="badge auto-fetched-badge"><i class="fas fa-check me-1"></i>Live Trades (FIFO)</span></td>
+                          </tr>
+                          <tr>
+                            <td class="small fw-bold">Debt Mutual Fund Gains</td>
+                            <td class="small text-dark fw-bold" id="fetch_debt_gains">₹0.00</td>
+                            <td><span class="badge auto-fetched-badge"><i class="fas fa-check me-1"></i>Live Trades</span></td>
+                          </tr>
+                          <tr>
+                            <td class="small fw-bold">Cryptocurrency Realized Gains</td>
+                            <td class="small text-dark fw-bold" id="fetch_crypto_gains">₹0.00</td>
+                            <td><span class="badge auto-fetched-badge"><i class="fas fa-check me-1"></i>Live Coins</span></td>
+                          </tr>
+                          <tr>
+                            <td class="small fw-bold">FD & RD Interest Income</td>
+                            <td class="small text-dark fw-bold" id="fetch_fd_interest">₹0.00</td>
+                            <td><span class="badge auto-fetched-badge"><i class="fas fa-check me-1"></i>Live FDs</span></td>
+                          </tr>
+                          <tr>
+                            <td class="small fw-bold">Rental Income (Other Assets)</td>
+                            <td class="small text-dark fw-bold" id="fetch_rental_income">₹0.00</td>
+                            <td><span class="badge auto-fetched-badge"><i class="fas fa-check me-1"></i>Live Assets</span></td>
+                          </tr>
+                          <tr>
+                            <td class="small fw-bold">NPS Contributions (Section 80CCD)</td>
+                            <td class="small text-dark fw-bold" id="fetch_nps_contrib">₹0.00</td>
+                            <td><span class="badge auto-fetched-badge"><i class="fas fa-check me-1"></i>Live NPS</span></td>
+                          </tr>
+                          <tr>
+                            <td class="small fw-bold">PPF & EPF Contributions (Section 80C)</td>
+                            <td class="small text-dark fw-bold" id="fetch_ppf_contrib">₹0.00</td>
+                            <td><span class="badge auto-fetched-badge"><i class="fas fa-check me-1"></i>Live PF</span></td>
+                          </tr>
+                          <tr>
+                            <td class="small fw-bold">ELSS Investments (Section 80C)</td>
+                            <td class="small text-dark fw-bold" id="fetch_elss_contrib">₹0.00</td>
+                            <td><span class="badge auto-fetched-badge"><i class="fas fa-check me-1"></i>Live MFs</span></td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <!-- Tax Planning Tab -->
+                  <div class="tab-pane fade" id="planning" role="tabpanel">
+                    <h6 class="fw-bold mb-3"><i class="fas fa-lightbulb text-warning me-2"></i>Tax Planning & Optimizations</h6>
+                    <div id="taxPlanningSuggestionsContainer" class="d-flex flex-column gap-3 text-dark">
+                      <!-- Dynamic Suggestions -->
+                    </div>
+                    
+                    <div class="border-top my-4"></div>
+                    
+                    <h6 class="fw-bold mb-3"><i class="fas fa-chart-line text-info me-2"></i>Tax Projection (Full FY Forecast)</h6>
+                    <p class="text-muted small" id="projectionIntroText">Projecting full-year tax based on income earned to date.</p>
+                    
+                    <div class="table-responsive text-dark" id="projectionTableContainer">
+                      <!-- Dynamic Projection Table -->
+                    </div>
+                  </div>
+
+                  <!-- Reports Tab -->
+                  <div class="tab-pane fade" id="reports" role="tabpanel">
+                    <h6 class="fw-bold mb-3"><i class="fas fa-file-download text-success me-2"></i>Downloadable Tax Reports</h6>
+                    <p class="text-muted small">Export verified investment declarations and income receipts as PDF statements.</p>
+                    
+                    <div class="row g-3">
+                      <div class="col-md-6">
+                        <div class="card p-3 border h-100 d-flex flex-column justify-content-between bg-white text-dark">
+                          <div>
+                            <h6 class="fw-bold mb-1">Tax Summary Report</h6>
+                            <p class="text-muted small mb-3">Download a clean comparison of Old vs New tax regimes containing deductions claimed.</p>
+                          </div>
+                          <button class="btn btn-sm btn-outline-primary rounded-pill w-100" onclick="triggerReportDownload('summary')"><i class="fas fa-file-pdf me-1"></i>Download PDF</button>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="card p-3 border h-100 d-flex flex-column justify-content-between bg-white text-dark">
+                          <div>
+                            <h6 class="fw-bold mb-1">Capital Gains Report</h6>
+                            <p class="text-muted small mb-3">Export trades realized profit details including holding periods and classifications.</p>
+                          </div>
+                          <button class="btn btn-sm btn-outline-primary rounded-pill w-100" onclick="triggerReportDownload('capital_gains')"><i class="fas fa-file-pdf me-1"></i>Download PDF</button>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="card p-3 border h-100 d-flex flex-column justify-content-between bg-white text-dark">
+                          <div>
+                            <h6 class="fw-bold mb-1">Dividend Income Report</h6>
+                            <p class="text-muted small mb-3">Download stocks and mutual funds dividend receipts list for slab taxation.</p>
+                          </div>
+                          <button class="btn btn-sm btn-outline-primary rounded-pill w-100" onclick="triggerReportDownload('dividends')"><i class="fas fa-file-pdf me-1"></i>Download PDF</button>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="card p-3 border h-100 d-flex flex-column justify-content-between bg-white text-dark">
+                          <div>
+                            <h6 class="fw-bold mb-1">Interest Income Report</h6>
+                            <p class="text-muted small mb-3">Download accrued interest statements from fixed deposits and recurring assets.</p>
+                          </div>
+                          <button class="btn btn-sm btn-outline-primary rounded-pill w-100" onclick="triggerReportDownload('interest')"><i class="fas fa-file-pdf me-1"></i>Download PDF</button>
+                        </div>
+                      </div>
+                      <div class="col-12">
+                        <div class="card p-3 border border-primary bg-primary bg-opacity-5 h-100 d-flex flex-column justify-content-between text-dark">
+                          <div class="d-flex justify-content-between align-items-center flex-wrap">
+                            <div class="mb-2 mb-sm-0">
+                              <h6 class="fw-bold mb-1 text-primary">Annual Tax Statement</h6>
+                              <p class="text-muted small mb-0">A comprehensive, multi-page document combining Summary, Capital Gains, Dividends, and Interest.</p>
+                            </div>
+                            <button class="btn btn-primary rounded-pill px-4" onclick="triggerReportDownload('statement')"><i class="fas fa-file-invoice-dollar me-2"></i>Download Statement</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <!-- Live Chart Container -->
-              <div class="bg-light rounded-4 p-3 border mb-3 text-center position-relative" style="min-height: 250px;">
-                <canvas id="activeCalcChart" style="max-height: 250px;"></canvas>
-                <div id="noChartFallback" class="position-absolute top-50 start-50 translate-middle d-none text-muted small">
-                  <i class="fas fa-chart-line fs-2 mb-2 d-block"></i>Visual projection is ready for calculations
+              <!-- Right Side: Slabs & Overview Comparison -->
+              <div class="col-12 col-xl-5 ps-xl-4">
+                <div class="tax-comparison-card p-3 mb-4">
+                  <div class="text-center mb-3">
+                    <span class="tax-recomm-badge d-inline-block mb-2" id="recommBadge">Calculating...</span>
+                    <h3 class="fw-extrabold mb-1 text-dark" id="taxDifferenceText">₹0.00</h3>
+                    <p class="text-muted small mb-0">Potential tax savings u/s lower tax regime</p>
+                  </div>
+                  
+                  <div class="row g-2 mb-3">
+                    <div class="col-6">
+                      <div class="bg-white rounded-3 p-2.5 border text-center">
+                        <span class="text-muted small d-block">Old Regime Tax</span>
+                        <span class="fw-bold h6 mb-0 text-danger" id="taxPayableOld">₹0.00</span>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="bg-white rounded-3 p-2.5 border text-center">
+                        <span class="text-muted small d-block">New Regime Tax</span>
+                        <span class="fw-bold h6 mb-0 text-success" id="taxPayableNew">₹0.00</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row g-2 mb-3">
+                    <div class="col-6">
+                      <div class="text-center small">
+                        <span class="text-muted d-block">Total Income:</span>
+                        <span class="fw-bold text-dark" id="taxTotalIncome">₹0.00</span>
+                      </div>
+                    </div>
+                    <div class="col-6">
+                      <div class="text-center small">
+                        <span class="text-muted d-block">Tax Saved:</span>
+                        <span class="fw-bold text-success" id="taxSavedHighlight">₹0.00</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="bg-light rounded-4 p-3 border mb-4 text-center position-relative" style="min-height: 280px;">
+                  <canvas id="myTaxChart" style="max-height: 260px;"></canvas>
+                </div>
+
+                <!-- Historical Comparison Card -->
+                <div class="card p-3 border mb-3 text-dark bg-white">
+                  <h6 class="fw-bold mb-2 text-dark"><i class="fas fa-history text-muted me-2"></i>Historical Year Comparison</h6>
+                  <div class="table-responsive">
+                    <table class="table table-sm table-premium mb-0" id="historicalComparisonTable">
+                      <thead>
+                        <tr>
+                          <th>FY</th>
+                          <th>Total Income</th>
+                          <th>Old Tax</th>
+                          <th>New Tax</th>
+                          <th>Best</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <!-- Dynamic History Rows -->
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </div>
@@ -692,10 +1101,20 @@
   }
 </script>
 <script>
-  // Complete JavaScript Simulators Registry & Computational Core
-  const CALCULATORS_REGISTRY = {
-    // Investment Calculators
-    'sip': {
+    const isUserAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
+
+    // Complete JavaScript Simulators Registry & Computational Core
+    const CALCULATORS_REGISTRY = {
+      'my-tax': {
+        id: 'my-tax',
+        title: 'My Tax Calculator',
+        description: 'Fetch FOLIUX portfolio values, add manual deductions, and compare tax liability under Old vs New regimes.',
+        category: 'tax',
+        popular: true,
+        inputs: []
+      },
+      // Investment Calculators
+      'sip': {
       id: 'sip',
       title: 'SIP Calculator',
       description: 'Calculate maturity corpus and returns of Systematic Investment Plan (SIP) investments.',
@@ -1679,6 +2098,22 @@
     document.getElementById('activeCalcTitle').innerText = calc.title;
     document.getElementById('activeCalcDescription').innerText = calc.description;
 
+    if (calcId === 'my-tax') {
+      if (!isUserAuthenticated) {
+        window.location.href = "/accounts/login/?next=" + encodeURIComponent(window.location.pathname + "?calc_id=my-tax");
+        return;
+      }
+      document.getElementById('standardCalculatorWorkspace').style.display = 'none';
+      document.getElementById('standardCalcHeaderActions').style.display = 'none';
+      document.getElementById('myTaxCalculatorWorkspace').style.display = 'block';
+      loadMyTaxData();
+      return;
+    } else {
+      document.getElementById('standardCalculatorWorkspace').style.display = 'block';
+      document.getElementById('standardCalcHeaderActions').style.display = 'flex';
+      document.getElementById('myTaxCalculatorWorkspace').style.display = 'none';
+    }
+
     // Render interactive fields dynamically
     renderCalculatorInputs(calc);
     runActiveCalculation();
@@ -2243,6 +2678,305 @@
       alert("Failed to download PDF: " + err.message + "\n\nPlease open the browser developer console (F12) to see details.");
     }
   };
+
+  // --- My Tax Calculator Custom Logic ---
+  let myTaxChartInstance = null;
+  let myTaxDebounceTimeout = null;
+
+  window.loadMyTaxData = function() {
+    const fySelect = document.getElementById('taxFYSelect');
+    if (!fySelect) return;
+    const fy = fySelect.value;
+    
+    fetch(`/api/tax-calculator/?fy=${fy}`)
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          // Update manual input fields
+          document.getElementById('tax_salary').value = data.saved_inputs.salary;
+          document.getElementById('tax_business_income').value = data.saved_inputs.business_income;
+          document.getElementById('tax_other_taxable_income').value = data.saved_inputs.other_taxable_income;
+          document.getElementById('tax_agricultural_income').value = data.saved_inputs.agricultural_income;
+          document.getElementById('tax_hra_received').value = data.saved_inputs.hra_received;
+          document.getElementById('tax_rent_paid').value = data.saved_inputs.rent_paid;
+          document.getElementById('tax_home_loan_interest').value = data.saved_inputs.home_loan_interest;
+          document.getElementById('tax_section_80c').value = data.saved_inputs.section_80c;
+          document.getElementById('tax_section_80d').value = data.saved_inputs.section_80d;
+          document.getElementById('tax_section_80ccd1b').value = data.saved_inputs.section_80ccd1b;
+          document.getElementById('tax_section_80g').value = data.saved_inputs.section_80g;
+          document.getElementById('tax_other_deductions').value = data.saved_inputs.other_deductions;
+
+          // Update auto-fetched values
+          document.getElementById('fetch_stock_dividends').innerText = formatIndianCurrency(data.portfolio_data.stock_dividends);
+          document.getElementById('fetch_mf_dividends').innerText = formatIndianCurrency(data.portfolio_data.mf_dividends);
+          document.getElementById('fetch_stcg_equity').innerText = formatIndianCurrency(data.portfolio_data.stcg_equity);
+          document.getElementById('fetch_ltcg_equity').innerText = formatIndianCurrency(data.portfolio_data.ltcg_equity);
+          document.getElementById('fetch_debt_gains').innerText = formatIndianCurrency(data.portfolio_data.debt_gains);
+          document.getElementById('fetch_crypto_gains').innerText = formatIndianCurrency(data.portfolio_data.crypto_gains);
+          document.getElementById('fetch_fd_interest').innerText = formatIndianCurrency(data.portfolio_data.fd_interest);
+          document.getElementById('fetch_rental_income').innerText = formatIndianCurrency(data.portfolio_data.rental_income);
+          document.getElementById('fetch_nps_contrib').innerText = formatIndianCurrency(data.portfolio_data.nps_contrib);
+          document.getElementById('fetch_ppf_contrib').innerText = formatIndianCurrency(data.portfolio_data.ppf_contrib);
+          document.getElementById('fetch_elss_contrib').innerText = formatIndianCurrency(data.portfolio_data.elss_contrib);
+
+          // Update results dashboard
+          const res = data.results;
+          const recomm = res.recommended_regime;
+          const badge = document.getElementById('recommBadge');
+          badge.innerText = `RECOMMENDED: ${recomm} REGIME`;
+          if (recomm === 'NEW') {
+            badge.className = 'tax-recomm-badge bg-success';
+          } else {
+            badge.className = 'tax-recomm-badge bg-primary';
+          }
+
+          document.getElementById('taxDifferenceText').innerText = formatIndianCurrency(res.tax_saved);
+          document.getElementById('taxPayableOld').innerText = formatIndianCurrency(res.regimes.old.total_tax);
+          document.getElementById('taxPayableNew').innerText = formatIndianCurrency(res.regimes.new.total_tax);
+          document.getElementById('taxTotalIncome').innerText = formatIndianCurrency(res.total_income);
+          document.getElementById('taxSavedHighlight').innerText = formatIndianCurrency(res.tax_saved);
+
+          // Render Chart
+          renderMyTaxChart(res.regimes);
+
+          // Render suggestions
+          const sugContainer = document.getElementById('taxPlanningSuggestionsContainer');
+          sugContainer.innerHTML = '';
+          if (res.suggestions && res.suggestions.length > 0) {
+            res.suggestions.forEach(s => {
+              const sDiv = document.createElement('div');
+              sDiv.className = 'card p-3 border border-warning bg-warning bg-opacity-5 rounded-3 mb-2';
+              sDiv.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                  <span class="badge bg-warning text-dark fw-bold">${s.category}</span>
+                  <span class="text-success fw-bold small">Save Up to: ${formatIndianCurrency(s.potential_saving)}</span>
+                </div>
+                <p class="mb-0 text-muted small">${s.description}</p>
+              `;
+              sugContainer.appendChild(sDiv);
+            });
+          } else {
+            sugContainer.innerHTML = '<p class="text-muted small text-center my-3"><i class="fas fa-check-circle text-success me-2"></i>You have minimized your tax liability. No additional 80C/NPS planning required.</p>';
+          }
+
+          // Render projections
+          const projIntro = document.getElementById('projectionIntroText');
+          const projTable = document.getElementById('projectionTableContainer');
+          if (data.projection && Object.keys(data.projection).length > 0) {
+            projIntro.innerHTML = `<i class="fas fa-info-circle text-primary me-2"></i>Forecasted tax for the remaining months of the year (elapsed: ${data.projection.months_elapsed} months)`;
+            projTable.innerHTML = `
+              <table class="table table-sm table-premium mb-0 align-middle">
+                <thead>
+                  <tr>
+                    <th>Projected Parameter</th>
+                    <th>Current YTD</th>
+                    <th>Full Year Forecast</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="small fw-bold">Salary</td>
+                    <td class="small">${formatIndianCurrency(data.saved_inputs.salary)}</td>
+                    <td class="small fw-bold text-primary">${formatIndianCurrency(data.projection.projected_salary)}</td>
+                  </tr>
+                  <tr>
+                    <td class="small fw-bold">Business Income</td>
+                    <td class="small">${formatIndianCurrency(data.saved_inputs.business_income)}</td>
+                    <td class="small fw-bold text-primary">${formatIndianCurrency(data.projection.projected_business)}</td>
+                  </tr>
+                  <tr>
+                    <td class="small fw-bold">Capital Gains (STCG)</td>
+                    <td class="small">${formatIndianCurrency(data.portfolio_data.stcg_equity)}</td>
+                    <td class="small fw-bold text-primary">${formatIndianCurrency(data.projection.projected_stcg)}</td>
+                  </tr>
+                  <tr class="bg-light">
+                    <td class="small fw-bold">Estimated Tax (Old)</td>
+                    <td class="small">${formatIndianCurrency(res.regimes.old.total_tax)}</td>
+                    <td class="small fw-bold text-danger">${formatIndianCurrency(data.projection.tax_old)}</td>
+                  </tr>
+                  <tr class="bg-light">
+                    <td class="small fw-bold">Estimated Tax (New)</td>
+                    <td class="small">${formatIndianCurrency(res.regimes.new.total_tax)}</td>
+                    <td class="small fw-bold text-success">${formatIndianCurrency(data.projection.tax_new)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            `;
+          } else {
+            projIntro.innerHTML = `<i class="fas fa-check-circle text-success me-2"></i>Financial Year is complete. Projection is only active for ongoing/current financial years.`;
+            projTable.innerHTML = '';
+          }
+
+          // Render History
+          const histBody = document.querySelector('#historicalComparisonTable tbody');
+          histBody.innerHTML = '';
+          if (data.historical_comparison && data.historical_comparison.length > 0) {
+            data.historical_comparison.forEach(h => {
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                <td class="small fw-bold">${h.fy}</td>
+                <td class="small">${formatIndianCurrency(h.total_income)}</td>
+                <td class="small text-danger">${formatIndianCurrency(h.tax_old)}</td>
+                <td class="small text-success">${formatIndianCurrency(h.tax_new)}</td>
+                <td><span class="badge ${h.recommended === 'NEW' ? 'bg-success' : 'bg-primary'}">${h.recommended}</span></td>
+              `;
+              histBody.appendChild(tr);
+            });
+          } else {
+            histBody.innerHTML = '<tr><td colspan="5" class="text-muted small text-center py-2">No saved tax calculations found for other financial years.</td></tr>';
+          }
+        }
+      })
+      .catch(err => {
+        console.error("Load Tax Data Error:", err);
+      });
+  };
+
+  window.saveMyTaxField = function() {
+    const fy = document.getElementById('taxFYSelect').value;
+    const bodyData = {
+      salary: parseFloat(document.getElementById('tax_salary').value) || 0,
+      business_income: parseFloat(document.getElementById('tax_business_income').value) || 0,
+      other_taxable_income: parseFloat(document.getElementById('tax_other_taxable_income').value) || 0,
+      agricultural_income: parseFloat(document.getElementById('tax_agricultural_income').value) || 0,
+      hra_received: parseFloat(document.getElementById('tax_hra_received').value) || 0,
+      rent_paid: parseFloat(document.getElementById('tax_rent_paid').value) || 0,
+      home_loan_interest: parseFloat(document.getElementById('tax_home_loan_interest').value) || 0,
+      section_80c: parseFloat(document.getElementById('tax_section_80c').value) || 0,
+      section_80d: parseFloat(document.getElementById('tax_section_80d').value) || 0,
+      section_80ccd1b: parseFloat(document.getElementById('tax_section_80ccd1b').value) || 0,
+      section_80g: parseFloat(document.getElementById('tax_section_80g').value) || 0,
+      other_deductions: parseFloat(document.getElementById('tax_other_deductions').value) || 0,
+    };
+
+    fetch(`/api/tax-calculator/?fy=${fy}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+      body: JSON.stringify(bodyData)
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === 'success') {
+        const res = data.results;
+        const recomm = res.recommended_regime;
+        const badge = document.getElementById('recommBadge');
+        badge.innerText = `RECOMMENDED: ${recomm} REGIME`;
+        badge.className = recomm === 'NEW' ? 'tax-recomm-badge bg-success' : 'tax-recomm-badge bg-primary';
+
+        document.getElementById('taxDifferenceText').innerText = formatIndianCurrency(res.tax_saved);
+        document.getElementById('taxPayableOld').innerText = formatIndianCurrency(res.regimes.old.total_tax);
+        document.getElementById('taxPayableNew').innerText = formatIndianCurrency(res.regimes.new.total_tax);
+        document.getElementById('taxTotalIncome').innerText = formatIndianCurrency(res.total_income);
+        document.getElementById('taxSavedHighlight').innerText = formatIndianCurrency(res.tax_saved);
+
+        renderMyTaxChart(res.regimes);
+        
+        const sugContainer = document.getElementById('taxPlanningSuggestionsContainer');
+        sugContainer.innerHTML = '';
+        if (res.suggestions && res.suggestions.length > 0) {
+          res.suggestions.forEach(s => {
+            const sDiv = document.createElement('div');
+            sDiv.className = 'card p-3 border border-warning bg-warning bg-opacity-5 rounded-3 mb-2';
+            sDiv.innerHTML = `
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <span class="badge bg-warning text-dark fw-bold">${s.category}</span>
+                <span class="text-success fw-bold small">Save Up to: ${formatIndianCurrency(s.potential_saving)}</span>
+              </div>
+              <p class="mb-0 text-muted small">${s.description}</p>
+            `;
+            sugContainer.appendChild(sDiv);
+          });
+        } else {
+          sugContainer.innerHTML = '<p class="text-muted small text-center my-3"><i class="fas fa-check-circle text-success me-2"></i>You have minimized your tax liability. No additional 80C/NPS planning required.</p>';
+        }
+      }
+    })
+    .catch(err => {
+      console.error("Save Tax Field Error:", err);
+    });
+  };
+
+  window.debouncedSaveTax = function() {
+    clearTimeout(myTaxDebounceTimeout);
+    myTaxDebounceTimeout = setTimeout(() => {
+      saveMyTaxField();
+    }, 600);
+  };
+
+  window.changeTaxFY = function(fy) {
+    loadMyTaxData();
+  };
+
+  window.triggerReportDownload = function(reportType) {
+    const fy = document.getElementById('taxFYSelect').value;
+    window.open(`/calc/download-report/?report_type=${reportType}&fy=${fy}`, '_blank');
+  };
+
+  window.renderMyTaxChart = function(regimes) {
+    if (myTaxChartInstance) {
+      myTaxChartInstance.destroy();
+    }
+    const ctx = document.getElementById('myTaxChart').getContext('2d');
+    myTaxChartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['Gross Income', 'Deductions', 'Taxable Income', 'Total Tax'],
+        datasets: [
+          {
+            label: 'Old Regime',
+            data: [regimes.old.gross_total, regimes.old.deductions, regimes.old.taxable_income, regimes.old.total_tax],
+            backgroundColor: '#003D7C',
+            borderRadius: 6
+          },
+          {
+            label: 'New Regime',
+            data: [regimes.new.gross_total, regimes.new.deductions, regimes.new.taxable_income, regimes.new.total_tax],
+            backgroundColor: '#008D4C',
+            borderRadius: 6
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            labels: {
+              color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#f8fafc' : '#0f172a'
+            }
+          }
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#64748b' }
+          },
+          y: {
+            grid: { color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#334155' : '#e2e8f0' },
+            ticks: { color: document.documentElement.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#64748b' }
+          }
+        }
+      }
+    });
+  };
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
 
   // Initialization Core
   window.addEventListener('DOMContentLoaded', () => {

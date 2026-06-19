@@ -1261,6 +1261,31 @@ class IdempotencyKey(models.Model):
         return self.key
 
 
+class UserTaxProfile(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tax_profiles')
+    financial_year = models.CharField(max_length=9) # e.g. '2025-2026'
+    salary = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0'))
+    business_income = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0'))
+    other_taxable_income = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0'))
+    agricultural_income = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0'))
+    hra_received = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0'))
+    rent_paid = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0'))
+    home_loan_interest = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0'))
+    section_80c = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0'))
+    section_80d = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0'))
+    section_80ccd1b = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0'))
+    section_80g = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0'))
+    other_deductions = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0'))
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'financial_year')
+
+    def __str__(self):
+        return f"{self.user.username} - {self.financial_year}"
+
+
+
 
 
 

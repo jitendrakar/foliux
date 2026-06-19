@@ -6175,5 +6175,460 @@ def report_missing_instrument(request):
     })
 
 
+@login_required
+def tax_calculator_api(request):
+    if request.method not in ['GET', 'POST']:
+        return JsonResponse({'status': 'error', 'message': 'Method not allowed'}, status=405)
+    from decimal import Decimal
+    from datetime import date
+    import json
+    from .tax_utils import get_tax_portfolio_data, calculate_taxes, fy_to_dates
+    from .models import UserTaxProfile
+    
+    user = request.user
+    fy = request.GET.get('fy') or request.POST.get('fy') or '2026-2027'
+    
+    # Get or create UserTaxProfile for the user and financial year
+    profile, created = UserTaxProfile.objects.get_or_create(user=user, financial_year=fy)
+    
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            # Update the profile fields
+            profile.salary = Decimal(str(data.get('salary', profile.salary)))
+            profile.business_income = Decimal(str(data.get('business_income', profile.business_income)))
+            profile.other_taxable_income = Decimal(str(data.get('other_taxable_income', profile.other_taxable_income)))
+            profile.agricultural_income = Decimal(str(data.get('agricultural_income', profile.agricultural_income)))
+            profile.hra_received = Decimal(str(data.get('hra_received', profile.hra_received)))
+            profile.rent_paid = Decimal(str(data.get('rent_paid', profile.rent_paid)))
+            profile.home_loan_interest = Decimal(str(data.get('home_loan_interest', profile.home_loan_interest)))
+            profile.section_80c = Decimal(str(data.get('section_80c', profile.section_80c)))
+            profile.section_80d = Decimal(str(data.get('section_80d', profile.section_80d)))
+            profile.section_80ccd1b = Decimal(str(data.get('section_80ccd1b', profile.section_80ccd1b)))
+            profile.section_80g = Decimal(str(data.get('section_80g', profile.section_80g)))
+            profile.other_deductions = Decimal(str(data.get('other_deductions', profile.other_deductions)))
+            profile.save()
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': f"Invalid request body: {str(e)}"}, status=400)
+
+    # 1. Fetch live portfolio data
+    portfolio_data = get_tax_portfolio_data(user, fy)
+    
+    # 2. Merge with saved profile (declarations)
+    state = {
+        'salary': profile.salary,
+        'business_income': profile.business_income,
+        'other_taxable_income': profile.other_taxable_income,
+        'agricultural_income': profile.agricultural_income,
+        'hra_received': profile.hra_received,
+        'rent_paid': profile.rent_paid,
+        'home_loan_interest': profile.home_loan_interest,
+        'section_80c': profile.section_80c,
+        'section_80d': profile.section_80d,
+        'section_80ccd1b': profile.section_80ccd1b,
+        'section_80g': profile.section_80g,
+        'other_deductions': profile.other_deductions,
+        # portfolio values:
+        'rental_income': portfolio_data['rental_income'],
+        'fd_interest': portfolio_data['fd_interest'],
+        'stock_dividends': portfolio_data['stock_dividends'],
+        'mf_dividends': portfolio_data['mf_dividends'],
+        'stcg_equity': portfolio_data['stcg_equity'],
+        'ltcg_equity': portfolio_data['ltcg_equity'],
+        'crypto_gains': portfolio_data['crypto_gains'],
+        'debt_gains': portfolio_data['debt_gains'],
+        'nps_contrib': portfolio_data['nps_contrib'],
+        'ppf_contrib': portfolio_data['ppf_contrib'],
+        'elss_contrib': portfolio_data['elss_contrib'],
+    }
+    
+    # 3. Calculate taxes
+    results = calculate_taxes(state)
+    
+    # 4. Fetch historical years for comparison
+    historical_comparison = []
+    other_profiles = UserTaxProfile.objects.filter(user=user).exclude(financial_year=fy).order_by('financial_year')
+    for op in other_profiles:
+        try:
+            op_portfolio = get_tax_portfolio_data(user, op.financial_year)
+            op_state = {
+                'salary': op.salary,
+                'business_income': op.business_income,
+                'other_taxable_income': op.other_taxable_income,
+                'agricultural_income': op.agricultural_income,
+                'hra_received': op.hra_received,
+                'rent_paid': op.rent_paid,
+                'home_loan_interest': op.home_loan_interest,
+                'section_80c': op.section_80c,
+                'section_80d': op.section_80d,
+                'section_80ccd1b': op.section_80ccd1b,
+                'section_80g': op.section_80g,
+                'other_deductions': op.other_deductions,
+                'rental_income': op_portfolio['rental_income'],
+                'fd_interest': op_portfolio['fd_interest'],
+                'stock_dividends': op_portfolio['stock_dividends'],
+                'mf_dividends': op_portfolio['mf_dividends'],
+                'stcg_equity': op_portfolio['stcg_equity'],
+                'ltcg_equity': op_portfolio['ltcg_equity'],
+                'crypto_gains': op_portfolio['crypto_gains'],
+                'debt_gains': op_portfolio['debt_gains'],
+                'nps_contrib': op_portfolio['nps_contrib'],
+                'ppf_contrib': op_portfolio['ppf_contrib'],
+                'elss_contrib': op_portfolio['elss_contrib'],
+            }
+            op_res = calculate_taxes(op_state)
+            historical_comparison.append({
+                'fy': op.financial_year,
+                'total_income': op_res['total_income'],
+                'tax_old': op_res['regimes']['old']['total_tax'],
+                'tax_new': op_res['regimes']['new']['total_tax'],
+                'recommended': op_res['recommended_regime'],
+            })
+        except Exception as op_err:
+            logger.error(f"Error calculating historical comparison for {op.financial_year}: {op_err}")
+
+    # 5. Handle Projection
+    projection = {}
+    today = date.today()
+    fy_start, fy_end = fy_to_dates(fy)
+    if fy_start <= today <= fy_end:
+        months_elapsed = max(1, (today.year - fy_start.year) * 12 + (today.month - fy_start.month))
+        projection_factor = Decimal('12') / Decimal(str(months_elapsed))
+        
+        projected_salary = state['salary'] * projection_factor
+        projected_business = state['business_income'] * projection_factor
+        projected_dividends = (state['stock_dividends'] + state['mf_dividends']) * projection_factor
+        projected_stcg = state['stcg_equity'] * projection_factor
+        
+        projected_state = state.copy()
+        projected_state['salary'] = projected_salary
+        projected_state['business_income'] = projected_business
+        projected_state['stock_dividends'] = projected_dividends
+        projected_state['stcg_equity'] = projected_stcg
+        
+        proj_res = calculate_taxes(projected_state)
+        projection = {
+            'months_elapsed': months_elapsed,
+            'projected_salary': float(projected_salary),
+            'projected_business': float(projected_business),
+            'projected_stcg': float(projected_stcg),
+            'tax_old': proj_res['regimes']['old']['total_tax'],
+            'tax_new': proj_res['regimes']['new']['total_tax'],
+            'recommended': proj_res['recommended_regime'],
+        }
+
+    return JsonResponse({
+        'status': 'success',
+        'saved_inputs': {
+            'salary': float(profile.salary),
+            'business_income': float(profile.business_income),
+            'other_taxable_income': float(profile.other_taxable_income),
+            'agricultural_income': float(profile.agricultural_income),
+            'hra_received': float(profile.hra_received),
+            'rent_paid': float(profile.rent_paid),
+            'home_loan_interest': float(profile.home_loan_interest),
+            'section_80c': float(profile.section_80c),
+            'section_80d': float(profile.section_80d),
+            'section_80ccd1b': float(profile.section_80ccd1b),
+            'section_80g': float(profile.section_80g),
+            'other_deductions': float(profile.other_deductions),
+        },
+        'portfolio_data': {
+            'rental_income': float(portfolio_data['rental_income']),
+            'fd_interest': float(portfolio_data['fd_interest']),
+            'stock_dividends': float(portfolio_data['stock_dividends']),
+            'mf_dividends': float(portfolio_data['mf_dividends']),
+            'stcg_equity': float(portfolio_data['stcg_equity']),
+            'ltcg_equity': float(portfolio_data['ltcg_equity']),
+            'crypto_gains': float(portfolio_data['crypto_gains']),
+            'debt_gains': float(portfolio_data['debt_gains']),
+            'nps_contrib': float(portfolio_data['nps_contrib']),
+            'ppf_contrib': float(portfolio_data['ppf_contrib']),
+            'elss_contrib': float(portfolio_data['elss_contrib']),
+        },
+        'results': results,
+        'historical_comparison': historical_comparison,
+        'projection': projection,
+    })
+
+
+@login_required
+def download_tax_report(request):
+    from decimal import Decimal
+    from datetime import date, timedelta
+    from django.http import HttpResponse
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import letter
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    import io
+    
+    report_type = request.GET.get('report_type', 'summary')
+    fy = request.GET.get('fy', '2026-2027')
+    user = request.user
+
+    from .tax_utils import get_tax_portfolio_data, calculate_taxes, fy_to_dates
+    from .models import UserTaxProfile, Dividend, FixedAsset
+    
+    portfolio_data = get_tax_portfolio_data(user, fy)
+    profile, _ = UserTaxProfile.objects.get_or_create(user=user, financial_year=fy)
+    start_date, end_date = fy_to_dates(fy)
+    
+    state = {
+        'salary': profile.salary,
+        'business_income': profile.business_income,
+        'other_taxable_income': profile.other_taxable_income,
+        'agricultural_income': profile.agricultural_income,
+        'hra_received': profile.hra_received,
+        'rent_paid': profile.rent_paid,
+        'home_loan_interest': profile.home_loan_interest,
+        'section_80c': profile.section_80c,
+        'section_80d': profile.section_80d,
+        'section_80ccd1b': profile.section_80ccd1b,
+        'section_80g': profile.section_80g,
+        'other_deductions': profile.other_deductions,
+        'rental_income': portfolio_data['rental_income'],
+        'fd_interest': portfolio_data['fd_interest'],
+        'stock_dividends': portfolio_data['stock_dividends'],
+        'mf_dividends': portfolio_data['mf_dividends'],
+        'stcg_equity': portfolio_data['stcg_equity'],
+        'ltcg_equity': portfolio_data['ltcg_equity'],
+        'crypto_gains': portfolio_data['crypto_gains'],
+        'debt_gains': portfolio_data['debt_gains'],
+        'nps_contrib': portfolio_data['nps_contrib'],
+        'ppf_contrib': portfolio_data['ppf_contrib'],
+        'elss_contrib': portfolio_data['elss_contrib'],
+    }
+    
+    results = calculate_taxes(state)
+
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=letter,
+        rightMargin=30,
+        leftMargin=30,
+        topMargin=30,
+        bottomMargin=30
+    )
+    
+    styles = getSampleStyleSheet()
+    
+    title_style = ParagraphStyle(
+        name='TaxTitleStyle',
+        fontName='Helvetica-Bold',
+        fontSize=20,
+        textColor=colors.HexColor('#003D7C'),
+        alignment=1,
+        spaceAfter=10
+    )
+    subtitle_style = ParagraphStyle(
+        name='TaxSubTitleStyle',
+        fontName='Helvetica',
+        fontSize=10,
+        textColor=colors.HexColor('#6c757d'),
+        alignment=1,
+        spaceAfter=15
+    )
+    h2_style = ParagraphStyle(
+        name='TaxH2Style',
+        fontName='Helvetica-Bold',
+        fontSize=12,
+        textColor=colors.HexColor('#003D7C'),
+        spaceBefore=12,
+        spaceAfter=6
+    )
+    normal_style = ParagraphStyle(
+        name='TaxNormalStyle',
+        fontName='Helvetica',
+        fontSize=9,
+        textColor=colors.HexColor('#1a1e21')
+    )
+    bold_style = ParagraphStyle(
+        name='TaxBoldStyle',
+        fontName='Helvetica-Bold',
+        fontSize=9,
+        textColor=colors.HexColor('#1a1e21')
+    )
+    header_style = ParagraphStyle(
+        name='TaxHeaderStyle',
+        fontName='Helvetica-Bold',
+        fontSize=9,
+        textColor=colors.white
+    )
+
+    story = []
+    
+    story.append(Paragraph(f"FOLIUX TAX STUDIO REPORT", title_style))
+    story.append(Paragraph(f"Taxpayer: {user.username} | Financial Year: {fy} | Generated: {date.today().strftime('%B %d, %Y')}", subtitle_style))
+    story.append(Spacer(1, 10))
+
+    def build_summary_section(story_list):
+        story_list.append(Paragraph("TAX SUMMARY & REGIME COMPARISON", h2_style))
+        story_list.append(Paragraph("A comparative analysis of your income tax liability under the Old and New regimes.", normal_style))
+        story_list.append(Spacer(1, 10))
+        
+        old = results['regimes']['old']
+        new = results['regimes']['new']
+        
+        data = [
+            [Paragraph("Tax Parameter", header_style), Paragraph("Old Tax Regime (INR)", header_style), Paragraph("New Tax Regime (INR)", header_style)],
+            [Paragraph("Gross Salary", normal_style), f"{profile.salary:,.2f}", f"{profile.salary:,.2f}"],
+            [Paragraph("Business & Other Income", normal_style), f"{(profile.business_income + profile.other_taxable_income):,.2f}", f"{(profile.business_income + profile.other_taxable_income):,.2f}"],
+            [Paragraph("Rental & Interest Income", normal_style), f"{(state['rental_income'] + state['fd_interest']):,.2f}", f"{(state['rental_income'] + state['fd_interest']):,.2f}"],
+            [Paragraph("Dividends & Debt Gains", normal_style), f"{(state['stock_dividends'] + state['mf_dividends'] + state['debt_gains']):,.2f}", f"{(state['stock_dividends'] + state['mf_dividends'] + state['debt_gains']):,.2f}"],
+            [Paragraph("Total Deductions & Exemptions", normal_style), f"{old['deductions']:,.2f}", f"{new['deductions']:,.2f}"],
+            [Paragraph("Net Taxable Income", normal_style), f"{old['taxable_income']:,.2f}", f"{new['taxable_income']:,.2f}"],
+            [Paragraph("Tax on Normal Income", normal_style), f"{old['tax_on_normal']:,.2f}", f"{new['tax_on_normal']:,.2f}"],
+            [Paragraph("Tax on Capital Gains (Equity)", normal_style), f"{(old['tax_on_stcg'] + old['tax_on_ltcg']):,.2f}", f"{(new['tax_on_stcg'] + new['tax_on_ltcg']):,.2f}"],
+            [Paragraph("Tax on Crypto (Section 115BBH)", normal_style), f"{old['tax_on_crypto']:,.2f}", f"{new['tax_on_crypto']:,.2f}"],
+            [Paragraph("Rebate u/s 87A", normal_style), f"{old['rebate']:,.2f}", f"{new['rebate']:,.2f}"],
+            [Paragraph("Surcharge", normal_style), f"{old['surcharge']:,.2f}", f"{new['surcharge']:,.2f}"],
+            [Paragraph("Health & Education Cess (4%)", normal_style), f"{old['cess']:,.2f}", f"{new['cess']:,.2f}"],
+            [Paragraph("Total Tax Payable", bold_style), Paragraph(f"<b>{old['total_tax']:,.2f}</b>", bold_style), Paragraph(f"<b>{new['total_tax']:,.2f}</b>", bold_style)],
+        ]
+        
+        t = Table(data, colWidths=[200, 160, 160])
+        t.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#003D7C')),
+            ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+            ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#e9ecef')),
+            ('ROWBACKGROUNDS', (0,1), (-1,-2), [colors.white, colors.HexColor('#f8f9fa')]),
+            ('BACKGROUND', (0,-1), (-1,-1), colors.HexColor('#e9ecef')),
+            ('PADDING', (0,0), (-1,-1), 6),
+        ]))
+        story_list.append(t)
+        story_list.append(Spacer(1, 15))
+        
+        rec = results['recommended_regime']
+        saved = results['tax_saved']
+        story_list.append(Paragraph(f"<b>RECOMMENDATION</b>: We recommend the <b>{rec} Tax Regime</b> for you as it results in a lower tax liability. You save <b>INR {saved:,.2f}</b> under this regime.", bold_style))
+        story_list.append(Spacer(1, 15))
+
+    def build_capital_gains_section(story_list):
+        story_list.append(Paragraph("CAPITAL GAINS TAX DETAILS", h2_style))
+        story_list.append(Paragraph("Realized Capital Gains from Stocks, Mutual Funds, and Cryptocurrency assets during the financial year.", normal_style))
+        story_list.append(Spacer(1, 10))
+        
+        data = [
+            [Paragraph("Asset Category", header_style), Paragraph("Realized Gains (INR)", header_style), Paragraph("Holding Period", header_style), Paragraph("Tax Rate", header_style), Paragraph("Tax Amount (INR)", header_style)],
+            [Paragraph("Equity Stocks & MFs (Short-Term u/s 111A)", normal_style), f"{state['stcg_equity']:,.2f}", "<= 1 Year", "20.0%", f"{results['regimes']['new']['tax_on_stcg']:,.2f}"],
+            [Paragraph("Equity Stocks & MFs (Long-Term u/s 112A)", normal_style), f"{state['ltcg_equity']:,.2f}", "> 1 Year", "12.5% (above 1.25L)", f"{results['regimes']['new']['tax_on_ltcg']:,.2f}"],
+            [Paragraph("Debt Mutual Funds (Slabs)", normal_style), f"{state['debt_gains']:,.2f}", "Any", "Slab Rate", "Taxed at Slab"],
+            [Paragraph("Cryptocurrency / Coins (Section 115BBH)", normal_style), f"{state['crypto_gains']:,.2f}", "Any", "30.0%", f"{results['regimes']['new']['tax_on_crypto']:,.2f}"],
+        ]
+        
+        t = Table(data, colWidths=[180, 110, 80, 80, 90])
+        t.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#003D7C')),
+            ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+            ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#e9ecef')),
+            ('ROWBACKGROUNDS', (0,1), (-1,-1), [colors.white, colors.HexColor('#f8f9fa')]),
+            ('PADDING', (0,0), (-1,-1), 6),
+        ]))
+        story_list.append(t)
+        story_list.append(Spacer(1, 15))
+
+    def build_dividends_section(story_list):
+        story_list.append(Paragraph("DIVIDEND INCOME DETAILS", h2_style))
+        story_list.append(Paragraph("Dividends received from stocks and mutual funds during the financial year.", normal_style))
+        story_list.append(Spacer(1, 10))
+        
+        dividends_list = Dividend.objects.filter(user=user, received_date__range=(start_date, end_date)).order_by('received_date')
+        
+        if dividends_list.exists():
+            data = [[Paragraph("Received Date", header_style), Paragraph("Instrument", header_style), Paragraph("Amount (INR)", header_style)]]
+            for d_rec in dividends_list:
+                data.append([d_rec.received_date.strftime('%d-%b-%Y'), d_rec.instrument.symbol, f"{d_rec.amount:,.2f}"])
+            
+            data.append([Paragraph("<b>Total Dividends</b>", bold_style), "", Paragraph(f"<b>{state['stock_dividends']:,.2f}</b>", bold_style)])
+            
+            t = Table(data, colWidths=[150, 220, 150])
+            t.setStyle(TableStyle([
+                ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#003D7C')),
+                ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#e9ecef')),
+                ('ROWBACKGROUNDS', (0,1), (-1,-2), [colors.white, colors.HexColor('#f8f9fa')]),
+                ('BACKGROUND', (0,-1), (-1,-1), colors.HexColor('#e9ecef')),
+                ('PADDING', (0,0), (-1,-1), 6),
+            ]))
+            story_list.append(t)
+        else:
+            story_list.append(Paragraph("No stock dividend transaction records found in the portfolio for this financial year.", normal_style))
+        story_list.append(Spacer(1, 15))
+
+    def build_interest_section(story_list):
+        story_list.append(Paragraph("INTEREST INCOME DETAILS", h2_style))
+        story_list.append(Paragraph("Interest income earned or accrued from Fixed Deposits and Recurring Deposits during the financial year.", normal_style))
+        story_list.append(Spacer(1, 10))
+        
+        fds = FixedAsset.objects.filter(user=user, asset_type__in=['FD', 'RD'], investment_date__lte=end_date)
+        if fds.exists():
+            data = [[Paragraph("Instrument Name", header_style), Paragraph("Asset Type", header_style), Paragraph("Principal (INR)", header_style), Paragraph("Interest Rate", header_style), Paragraph("Interest Accrued (INR)", header_style)]]
+            tot_int = Decimal('0')
+            for fd in fds:
+                val_end = fd.value_at_date(end_date)
+                if fd.investment_date >= start_date:
+                    val_start = fd.invested_amount_decimal
+                else:
+                    val_start = fd.value_at_date(start_date - timedelta(days=1))
+                interest = val_end - val_start
+                if fd.asset_type == 'RD' and fd.investment_date < start_date:
+                    dep_start = max(start_date, fd.investment_date)
+                    dep_end = min(end_date, fd.maturity_date) if fd.maturity_date else end_date
+                    if dep_end >= dep_start:
+                        months = (dep_end.year - dep_start.year) * 12 + (dep_end.month - dep_start.month) + 1
+                        interest -= fd.monthly_deposit * months
+                interest = max(Decimal('0'), interest)
+                tot_int += interest
+                
+                data.append([
+                    fd.instrument_name,
+                    fd.get_asset_type_display(),
+                    f"{fd.invested_amount_decimal:,.2f}",
+                    f"{fd.interest_rate_decimal:.2f}%",
+                    f"{interest:,.2f}"
+                ])
+            data.append([Paragraph("<b>Total FD/RD Interest</b>", bold_style), "", "", "", Paragraph(f"<b>{tot_int:,.2f}</b>", bold_style)])
+            t = Table(data, colWidths=[160, 90, 100, 70, 100])
+            t.setStyle(TableStyle([
+                ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#003D7C')),
+                ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#e9ecef')),
+                ('ROWBACKGROUNDS', (0,1), (-1,-2), [colors.white, colors.HexColor('#f8f9fa')]),
+                ('BACKGROUND', (0,-1), (-1,-1), colors.HexColor('#e9ecef')),
+                ('PADDING', (0,0), (-1,-1), 6),
+            ]))
+            story_list.append(t)
+        else:
+            story_list.append(Paragraph("No FD/RD interest assets found in the portfolio for this financial year.", normal_style))
+        story_list.append(Spacer(1, 15))
+
+    if report_type == 'summary':
+        build_summary_section(story)
+    elif report_type == 'capital_gains':
+        build_capital_gains_section(story)
+    elif report_type == 'dividends':
+        build_dividends_section(story)
+    elif report_type == 'interest':
+        build_interest_section(story)
+    elif report_type == 'statement':
+        build_summary_section(story)
+        story.append(PageBreak())
+        build_capital_gains_section(story)
+        story.append(Spacer(1, 10))
+        build_interest_section(story)
+        story.append(PageBreak())
+        build_dividends_section(story)
+    else:
+        return HttpResponse("Invalid report type.", status=400)
+
+    doc.build(story)
+    
+    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="foliux_tax_{report_type}_{fy}.pdf"'
+    return response
+
+
+
 
 
