@@ -733,7 +733,7 @@ class FixedAsset(models.Model):
         if self.asset_type == 'RD':
             n = max(0, (calculation_date.year - self.investment_date.year) * 12 + (calculation_date.month - self.investment_date.month))
             if n == 0: return inv
-            monthly_val = float(self.monthly_deposit)
+            monthly_val = float(self.monthly_deposit or 0)
             if monthly_val <= 0: return inv
             total = 0
             for month in range(1, n + 2):
@@ -789,7 +789,7 @@ class FixedAsset(models.Model):
         if self.asset_type == 'RD':
             n = max(0, (calculation_date.year - self.investment_date.year) * 12 + (calculation_date.month - self.investment_date.month))
             if n == 0: return Decimal(str(inv))
-            monthly_val = float(self.monthly_deposit)
+            monthly_val = float(self.monthly_deposit or 0)
             if monthly_val <= 0: return Decimal(str(inv))
             total = 0
             for month in range(1, n + 2):

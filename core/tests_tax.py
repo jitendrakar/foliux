@@ -64,3 +64,48 @@ class TaxCalculatorTests(TestCase):
         self.assertEqual(res['regimes']['new']['taxable_normal'], 1205000.0)
         self.assertEqual(res['regimes']['new']['rebate'], 55750.0)
         self.assertEqual(res['regimes']['new']['total_tax'], 5200.0)
+
+    def test_null_safety_in_portfolio_data(self):
+        from unittest.mock import patch
+        from core.tax_utils import get_tax_portfolio_data
+        from core.models import FixedAsset, OtherAsset
+        from datetime import date
+        
+        user = User.objects.create_user(username='testtaxuser', password='password')
+        
+        fa = FixedAsset.objects.create(
+            user=user,
+            asset_type='RD',
+            invested_amount='10000',
+            interest_rate='6.5',
+            investment_date=date(2025, 4, 1),
+            monthly_deposit=1000
+        )
+        
+        oa = OtherAsset.objects.create(
+            user=user,
+            name='Test Flat',
+            asset_type='Flat',
+            purchase_date=date(2025, 4, 1),
+            purchase_price=Decimal('5000000'),
+            monthly_rent=15000
+        )
+        
+        fa.monthly_deposit = None
+        oa.monthly_rent = None
+        
+        with patch('core.models.FixedAsset.objects.filter') as mock_fa_filter, \
+             patch('core.models.OtherAsset.objects.filter') as mock_oa_filter:
+            
+            mock_fa_filter.return_value = [fa]
+            mock_oa_filter.return_value = [oa]
+            
+            try:
+                data = get_tax_portfolio_data(user, '2025-2026')
+            except TypeError as e:
+                self.fail(f"get_tax_portfolio_data failed with TypeError: {e}")
+                
+            self.assertEqual(data['rental_income'], Decimal('0'))
+            self.assertGreaterEqual(data['fd_interest'], Decimal('0'))
+
+

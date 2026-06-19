@@ -56,12 +56,13 @@ def get_tax_portfolio_data(user, fy_str):
     other_assets = OtherAsset.objects.filter(user=user)
     rent_assets = Decimal('0')
     for asset in other_assets:
-        if asset.purchase_date <= end_date and asset.monthly_rent > 0:
+        monthly_rent = asset.monthly_rent or Decimal('0')
+        if asset.purchase_date <= end_date and monthly_rent > 0:
             m_start = max(start_date, asset.purchase_date)
             # Months active in the financial year
             months_active = (end_date.year - m_start.year) * 12 + (end_date.month - m_start.month) + 1
             months_active = max(0, min(12, months_active))
-            rent_assets += asset.monthly_rent * months_active
+            rent_assets += monthly_rent * months_active
             
     rental_income = rent_cf + rent_assets
 
@@ -81,12 +82,13 @@ def get_tax_portfolio_data(user, fy_str):
         interest = val_end - val_start
         
         # Adjust for monthly RD/PPF deposits made during the year (which increase value but aren't interest)
-        if asset.asset_type in ['RD', 'PPF', 'EPF'] and asset.monthly_deposit > 0:
+        monthly_deposit = asset.monthly_deposit or Decimal('0')
+        if asset.asset_type in ['RD', 'PPF', 'EPF'] and monthly_deposit > 0:
             dep_start = max(start_date, asset.investment_date)
             dep_end = min(end_date, asset.maturity_date) if asset.maturity_date else end_date
             if dep_end >= dep_start:
                 months = (dep_end.year - dep_start.year) * 12 + (dep_end.month - dep_start.month) + 1
-                interest -= asset.monthly_deposit * months
+                interest -= monthly_deposit * months
                 
         interest = max(Decimal('0'), interest)
         
@@ -202,12 +204,13 @@ def get_tax_portfolio_data(user, fy_str):
     ppf_assets = FixedAsset.objects.filter(user=user, asset_type__in=['PPF', 'EPF'], investment_date__lte=end_date)
     ppf_contrib = Decimal('0')
     for asset in ppf_assets:
-        if asset.monthly_deposit > 0:
+        monthly_deposit = asset.monthly_deposit or Decimal('0')
+        if monthly_deposit > 0:
             m_start = max(start_date, asset.investment_date)
             m_end = min(end_date, asset.maturity_date) if asset.maturity_date else end_date
             if m_end >= m_start:
                 months = (m_end.year - m_start.year) * 12 + (m_end.month - m_start.month) + 1
-                ppf_contrib += asset.monthly_deposit * months
+                ppf_contrib += monthly_deposit * months
                 
     cf_ppf = CashFlowEntry.objects.filter(
         user=user, entry_type='INVESTMENT', category__in=['PPF', 'EPF'], date__range=(start_date, end_date)

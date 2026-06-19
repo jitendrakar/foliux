@@ -4298,7 +4298,7 @@ def _process_auto_rd_deposits(user):
             iterations += 1
             
             # Increase invested amount
-            rd.invested_amount = str(rd.invested_amount_decimal + rd.monthly_deposit)
+            rd.invested_amount = str(rd.invested_amount_decimal + (rd.monthly_deposit or Decimal('0')))
             
             # Update next deposit date
             rd.next_deposit_date = rd.next_deposit_date + relativedelta(months=1)
@@ -4459,7 +4459,7 @@ def other_assets_dashboard(request):
     total_invested = sum(h.purchase_price for h in other_holdings)
     total_current_value = sum(h.current_value for h in other_holdings)
     total_unrealized_pnl = sum(h.unrealized_pnl for h in other_holdings)
-    total_monthly_rent = sum(h.monthly_rent for h in other_holdings)
+    total_monthly_rent = sum((h.monthly_rent or Decimal('0')) for h in other_holdings)
     
     total_pnl_pct = 0
     if total_invested > 0:
@@ -4553,7 +4553,7 @@ def edit_other_asset(request, pk):
             actual_market_value_str = request.POST.get('actual_market_value', '').strip()
             asset.actual_market_value = Decimal(actual_market_value_str) if actual_market_value_str else None
             
-            asset.monthly_rent = Decimal(request.POST.get('monthly_rent', str(asset.monthly_rent)))
+            asset.monthly_rent = Decimal(request.POST.get('monthly_rent', str(asset.monthly_rent or '0')))
             if purchase_date_str:
                 potential_date = pd.to_datetime(purchase_date_str).date()
                 if potential_date > timezone.localdate():
@@ -5401,8 +5401,9 @@ def get_fy_cashflow_details(user, fy_str, months=None, income_types=None, expens
         for y, m, m_start, m_end in months_list:
             key = (y, m)
             for asset in other_assets:
-                if asset.purchase_date <= m_end and asset.monthly_rent > 0:
-                    manual_by_month[key]['RENTAL_INCOME'] += asset.monthly_rent
+                monthly_rent = asset.monthly_rent or Decimal('0')
+                if asset.purchase_date <= m_end and monthly_rent > 0:
+                    manual_by_month[key]['RENTAL_INCOME'] += monthly_rent
                     
     # 2. Fixed Assets
     fixed_assets = list(FixedAsset.objects.filter(user=user))
@@ -5423,7 +5424,7 @@ def get_fy_cashflow_details(user, fy_str, months=None, income_types=None, expens
                 interest = val_end - val_start
                 if asset.asset_type == 'RD':
                     if not asset.maturity_date or asset.maturity_date >= m_start:
-                        interest -= asset.monthly_deposit
+                        interest -= (asset.monthly_deposit or Decimal('0'))
                 interest = max(Decimal('0'), interest)
             
             # Apply income type filter for interest income
@@ -6578,7 +6579,7 @@ def download_tax_report(request):
                     dep_end = min(end_date, fd.maturity_date) if fd.maturity_date else end_date
                     if dep_end >= dep_start:
                         months = (dep_end.year - dep_start.year) * 12 + (dep_end.month - dep_start.month) + 1
-                        interest -= fd.monthly_deposit * months
+                        interest -= (fd.monthly_deposit or Decimal('0')) * months
                 interest = max(Decimal('0'), interest)
                 tot_int += interest
                 
