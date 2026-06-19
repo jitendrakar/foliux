@@ -114,14 +114,15 @@ def get_tax_portfolio_data(user, fy_str):
     stcg_equity = Decimal('0')
     ltcg_equity = Decimal('0')
     for p in pnl_records:
+        realized_profit = p.realized_profit or Decimal('0')
         if p.entry_date:
             holding_days = (p.exit_date - p.entry_date).days
             if holding_days <= 365:
-                stcg_equity += p.realized_profit
+                stcg_equity += realized_profit
             else:
-                ltcg_equity += p.realized_profit
+                ltcg_equity += realized_profit
         else:
-            stcg_equity += p.realized_profit # Default to short term if purchase date unknown
+            stcg_equity += realized_profit # Default to short term if purchase date unknown
 
     # 7. Mutual Fund Capital Gains (dynamically computed via FIFO)
     mf_txs = MFTransaction.objects.filter(user=user).order_by('date', 'created_at')
@@ -132,29 +133,41 @@ def get_tax_portfolio_data(user, fy_str):
     
     for tx in mf_txs:
         fid = tx.fund_id
-        fund_name = tx.fund.name.lower()
+        try:
+            fund = tx.fund
+            fund_name = fund.name.lower()
+        except Exception:
+            continue
+            
         is_equity = not any(w in fund_name for w in ['debt', 'liquid', 'gilt', 'treasury', 'money market', 'bond', 'corporate bond'])
         
+        tx_units = tx.units or Decimal('0')
+        tx_price = tx.price or Decimal('0')
+        
         if tx.transaction_type == 'BUY':
-            buy_lots[fid].append({'units': tx.units, 'price': tx.price, 'date': tx.date})
+            buy_lots[fid].append({'units': tx_units, 'price': tx_price, 'date': tx.date})
         elif tx.transaction_type == 'SELL':
-            sell_units = tx.units
+            sell_units = tx_units
             cost = Decimal('0')
             lots_matched = []
             while sell_units > 0 and buy_lots[fid]:
                 lot = buy_lots[fid][0]
-                matched = min(lot['units'], sell_units)
-                cost += matched * lot['price']
-                lots_matched.append({'date': lot['date'], 'units': matched, 'price': lot['price']})
-                lot['units'] -= matched
+                lot_units = lot['units'] or Decimal('0')
+                lot_price = lot['price'] or Decimal('0')
+                matched = min(lot_units, sell_units)
+                cost += matched * lot_price
+                lots_matched.append({'date': lot['date'], 'units': matched, 'price': lot_price})
+                lot['units'] = lot_units - matched
                 sell_units -= matched
                 if lot['units'] <= 0:
                     buy_lots[fid].pop(0)
             
             if start_date <= tx.date <= end_date:
                 for lm in lots_matched:
-                    lot_sale = lm['units'] * tx.price
-                    lot_cost = lm['units'] * lm['price']
+                    lm_units = lm['units'] or Decimal('0')
+                    lm_price = lm['price'] or Decimal('0')
+                    lot_sale = lm_units * tx_price
+                    lot_cost = lm_units * lm_price
                     lot_gain = lot_sale - lot_cost
                     holding_days = (tx.date - lm['date']).days
                     if is_equity:
@@ -175,22 +188,26 @@ def get_tax_portfolio_data(user, fy_str):
     crypto_gains = Decimal('0')
     for tx in coin_txs:
         cid = tx.coin_id
+        tx_units = tx.units or Decimal('0')
+        tx_price = tx.price or Decimal('0')
         if tx.transaction_type == 'BUY':
-            c_buy_lots[cid].append({'units': tx.units, 'price': tx.price, 'date': tx.date})
+            c_buy_lots[cid].append({'units': tx_units, 'price': tx_price, 'date': tx.date})
         elif tx.transaction_type == 'SELL':
-            sell_units = tx.units
+            sell_units = tx_units
             cost = Decimal('0')
             while sell_units > 0 and c_buy_lots[cid]:
                 lot = c_buy_lots[cid][0]
-                matched = min(lot['units'], sell_units)
-                cost += matched * lot['price']
-                lot['units'] -= matched
+                lot_units = lot['units'] or Decimal('0')
+                lot_price = lot['price'] or Decimal('0')
+                matched = min(lot_units, sell_units)
+                cost += matched * lot_price
+                lot['units'] = lot_units - matched
                 sell_units -= matched
                 if lot['units'] <= 0:
                     c_buy_lots[cid].pop(0)
             
             if start_date <= tx.date <= end_date:
-                tx_gain = (tx.units * tx.price) - cost
+                tx_gain = (tx_units * tx_price) - cost
                 if tx_gain > 0:
                     crypto_gains += tx_gain # 115BBH: no set-off, tax positive gains only
 
@@ -198,7 +215,7 @@ def get_tax_portfolio_data(user, fy_str):
     nps_txs = NPSTransaction.objects.filter(
         user=user, transaction_type='BUY', date__range=(start_date, end_date)
     )
-    nps_contrib = sum(tx.units * tx.price for tx in nps_txs)
+    nps_contrib = sum((tx.units or Decimal('0')) * (tx.price or Decimal('0')) for tx in nps_txs)
 
     # 10. PPF/EPF Contributions
     ppf_assets = FixedAsset.objects.filter(user=user, asset_type__in=['PPF', 'EPF'], investment_date__lte=end_date)
@@ -223,8 +240,13 @@ def get_tax_portfolio_data(user, fy_str):
         user=user, transaction_type='BUY', date__range=(start_date, end_date)
     )
     for tx in elss_txs:
-        if 'elss' in tx.fund.name.lower() or 'tax saver' in tx.fund.name.lower():
-            elss_contrib += tx.units * tx.price
+        try:
+            fund = tx.fund
+            fund_name = fund.name.lower()
+        except Exception:
+            continue
+        if 'elss' in fund_name or 'tax saver' in fund_name:
+            elss_contrib += (tx.units or Decimal('0')) * (tx.price or Decimal('0'))
 
     return {
         'salary': salary_cf,

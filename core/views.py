@@ -6474,8 +6474,8 @@ def download_tax_report(request):
         
         data = [
             [Paragraph("Tax Parameter", header_style), Paragraph("Old Tax Regime (INR)", header_style), Paragraph("New Tax Regime (INR)", header_style)],
-            [Paragraph("Gross Salary", normal_style), f"{profile.salary:,.2f}", f"{profile.salary:,.2f}"],
-            [Paragraph("Business & Other Income", normal_style), f"{(profile.business_income + profile.other_taxable_income):,.2f}", f"{(profile.business_income + profile.other_taxable_income):,.2f}"],
+            [Paragraph("Gross Salary", normal_style), f"{(profile.salary or Decimal('0')):,.2f}", f"{(profile.salary or Decimal('0')):,.2f}"],
+            [Paragraph("Business & Other Income", normal_style), f"{((profile.business_income or Decimal('0')) + (profile.other_taxable_income or Decimal('0'))):,.2f}", f"{((profile.business_income or Decimal('0')) + (profile.other_taxable_income or Decimal('0'))):,.2f}"],
             [Paragraph("Rental & Interest Income", normal_style), f"{(state['rental_income'] + state['fd_interest']):,.2f}", f"{(state['rental_income'] + state['fd_interest']):,.2f}"],
             [Paragraph("Dividends & Debt Gains", normal_style), f"{(state['stock_dividends'] + state['mf_dividends'] + state['debt_gains']):,.2f}", f"{(state['stock_dividends'] + state['mf_dividends'] + state['debt_gains']):,.2f}"],
             [Paragraph("Total Deductions & Exemptions", normal_style), f"{old['deductions']:,.2f}", f"{new['deductions']:,.2f}"],

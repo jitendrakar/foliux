@@ -108,4 +108,51 @@ class TaxCalculatorTests(TestCase):
             self.assertEqual(data['rental_income'], Decimal('0'))
             self.assertGreaterEqual(data['fd_interest'], Decimal('0'))
 
+    def test_transaction_nulls_and_missing_funds(self):
+        from unittest.mock import patch, MagicMock, PropertyMock
+        from core.tax_utils import get_tax_portfolio_data
+        from core.models import MFTransaction, CoinTransaction, NPSTransaction, PnLStatement
+        from datetime import date
+        
+        user = User.objects.create_user(username='testtaxuser3', password='password')
+        
+        mft = MagicMock(spec=MFTransaction)
+        mft.fund_id = 999
+        type(mft).fund = PropertyMock(side_effect=Exception("Fund does not exist"))
+        mft.transaction_type = 'BUY'
+        mft.units = None
+        mft.price = None
+        mft.date = date(2025, 6, 1)
+        
+        ct = MagicMock(spec=CoinTransaction)
+        ct.coin_id = 888
+        ct.transaction_type = 'SELL'
+        ct.units = None
+        ct.price = None
+        ct.date = date(2025, 6, 1)
+        
+        pnl = MagicMock(spec=PnLStatement)
+        pnl.entry_date = date(2025, 4, 1)
+        pnl.exit_date = date(2025, 6, 1)
+        pnl.realized_profit = None
+        
+        with patch('core.models.MFTransaction.objects.filter') as mock_mft_filter, \
+             patch('core.models.CoinTransaction.objects.filter') as mock_ct_filter, \
+             patch('core.models.PnLStatement.objects.filter') as mock_pnl_filter, \
+             patch('core.models.NPSTransaction.objects.filter') as mock_nps_filter:
+            
+            mock_mft_filter.return_value.order_by.return_value = [mft]
+            mock_ct_filter.return_value.order_by.return_value = [ct]
+            mock_pnl_filter.return_value = [pnl]
+            mock_nps_filter.return_value = []
+            
+            try:
+                data = get_tax_portfolio_data(user, '2025-2026')
+            except Exception as e:
+                self.fail(f"get_tax_portfolio_data failed with exception: {e}")
+                
+            self.assertEqual(data['stcg_equity'], Decimal('0'))
+            self.assertEqual(data['crypto_gains'], Decimal('0'))
+
+
 
