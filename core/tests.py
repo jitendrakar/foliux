@@ -166,3 +166,140 @@ class BlogPostEmailNotificationTestCase(TestCase):
         self.assertTrue(post.email_sent)
 
 
+class SavedCalculationTestCase(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='testuser', password='password')
+        self.client.login(username='testuser', password='password')
+
+    def test_ajax_login_api(self):
+        self.client.logout()
+        import json
+        response = self.client.post('/calc/api/login/', json.dumps({
+            'username': 'testuser',
+            'password': 'password'
+        }), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['status'], 'success')
+
+        # Invalid login
+        response = self.client.post('/calc/api/login/', json.dumps({
+            'username': 'testuser',
+            'password': 'wrongpassword'
+        }), content_type='application/json')
+        self.assertEqual(response.status_code, 401)
+
+    def test_save_calculation_api(self):
+        import json
+        payload = {
+            'calc_type': 'sip',
+            'calc_name': 'SIP Calculator',
+            'name': 'My Retirement Fund',
+            'input_values': {'monthly': 10000, 'rate': 12, 'tenure': 20},
+            'calculated_results': {'corpus': 10000000}
+        }
+        response = self.client.post('/calc/api/save/', json.dumps(payload), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['status'], 'success')
+        self.assertTrue('id' in data)
+
+        calc_id = data['id']
+        from core.models import SavedCalculation
+        calc = SavedCalculation.objects.get(id=calc_id)
+        self.assertEqual(calc.name, 'My Retirement Fund')
+        self.assertEqual(calc.input_values['monthly'], 10000)
+
+        # Update calculation under same ID
+        payload['id'] = calc_id
+        payload['name'] = 'My Retirement Fund - Updated'
+        response = self.client.post('/calc/api/save/', json.dumps(payload), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        calc.refresh_from_db()
+        self.assertEqual(calc.name, 'My Retirement Fund - Updated')
+
+    def test_saved_calculations_list_api(self):
+        from core.models import SavedCalculation
+        SavedCalculation.objects.create(
+            user=self.user,
+            calc_type='sip',
+            calc_name='SIP Calculator',
+            name='First SIP',
+            input_values={'monthly': 5000},
+            calculated_results={'corpus': 500000}
+        )
+        SavedCalculation.objects.create(
+            user=self.user,
+            calc_type='emi',
+            calc_name='Loan EMI Calculator',
+            name='House Loan',
+            input_values={'principal': 5000000},
+            calculated_results={'emi': 45000}
+        )
+
+        response = self.client.get('/calc/api/list/')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['total_count'], 2)
+
+        # Search filter
+        response = self.client.get('/calc/api/list/?q=House')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['total_count'], 1)
+        self.assertEqual(data['data'][0]['name'], 'House Loan')
+
+    def test_toggle_favorite_calculation_api(self):
+        from core.models import SavedCalculation
+        calc = SavedCalculation.objects.create(
+            user=self.user,
+            calc_type='sip',
+            calc_name='SIP Calculator',
+            name='My SIP',
+            input_values={'monthly': 5000},
+            calculated_results={'corpus': 500000}
+        )
+        self.assertFalse(calc.is_favorite)
+
+        response = self.client.post(f'/calc/api/toggle-favorite/{calc.id}/')
+        self.assertEqual(response.status_code, 200)
+        calc.refresh_from_db()
+        self.assertTrue(calc.is_favorite)
+
+    def test_duplicate_calculation_api(self):
+        from core.models import SavedCalculation
+        calc = SavedCalculation.objects.create(
+            user=self.user,
+            calc_type='sip',
+            calc_name='SIP Calculator',
+            name='My SIP',
+            input_values={'monthly': 5000},
+            calculated_results={'corpus': 500000}
+        )
+
+        response = self.client.post(f'/calc/api/duplicate/{calc.id}/')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['status'], 'success')
+        new_id = data['id']
+
+        self.assertEqual(SavedCalculation.objects.count(), 2)
+        new_calc = SavedCalculation.objects.get(id=new_id)
+        self.assertEqual(new_calc.name, 'My SIP (Copy)')
+
+    def test_delete_calculation_api(self):
+        from core.models import SavedCalculation
+        calc = SavedCalculation.objects.create(
+            user=self.user,
+            calc_type='sip',
+            calc_name='SIP Calculator',
+            name='My SIP',
+            input_values={'monthly': 5000},
+            calculated_results={'corpus': 500000}
+        )
+
+        response = self.client.post(f'/calc/api/delete/{calc.id}/')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(SavedCalculation.objects.count(), 0)
+
+

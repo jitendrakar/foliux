@@ -741,12 +741,12 @@
       </div>
 
       <!-- My FOLIUX Personal Simulators Section -->
-      <div class="mb-5">
+      <div id="myFoliuxSimulatorsSection" class="mb-5" style="display: none;">
         <h3 class="fw-bold h4 mb-3 d-flex align-items-center">
-          <i class="fas fa-user-lock text-primary me-2"></i>My FOLIUX Simulators
+          <i class="fas fa-wallet text-primary me-2"></i>My Calculators
           <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 ms-2 small" style="font-size: 0.7rem;">Login Required</span>
         </h3>
-        <p class="text-muted small mb-4">Connect directly to your FOLIUX Portfolio to run advanced projections and tax planning.</p>
+        <p class="text-muted small mb-4">Save and manage your simulations. Connect directly to your FOLIUX Portfolio to run advanced projections and tax planning.</p>
         
         <div class="row g-4">
           <!-- Spotlight Card: My Tax Calculator -->
@@ -841,6 +841,46 @@
             </div>
           </div>
         </div>
+
+        <!-- Saved Calculations Grid & Metrics Section -->
+        <div id="savedCalculationsSubSection" class="mt-5 pt-4 border-top" style="display: none;">
+          <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+            <div>
+              <h4 class="fw-bold mb-1 text-slate-900 d-flex align-items-center">
+                <i class="fas fa-history text-primary me-2"></i>Saved Calculations
+                <span id="savedCalcCountBadge" class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 ms-2 small" style="font-size: 0.75rem;">0 Saved</span>
+              </h4>
+              <p class="text-muted small mb-0">Your recently saved simulations. Click Edit to reload them in the workspace.</p>
+            </div>
+            
+            <!-- Search for saved calculations -->
+            <div class="search-wrapper" style="border-radius:12px; border-color:var(--calc-border); width: 250px; margin-bottom: 0;">
+              <i class="fas fa-search" style="font-size:0.8rem; left:0.85rem;"></i>
+              <input type="text" id="savedCalcSearchInput" style="padding:0.4rem 0.55rem 0.4rem 2.2rem; font-size:0.8rem;" placeholder="Search saved calculations..." oninput="filterSavedCalculations(this.value)">
+            </div>
+          </div>
+
+          <!-- Metrics Row -->
+          <div class="row g-3 mb-4">
+            <div class="col-6 col-sm-4 col-md-3">
+              <div class="metric-box bg-primary bg-opacity-5 border border-primary border-opacity-10 rounded-3 p-3 text-center">
+                <div class="metric-box-title small text-muted text-uppercase tracking-wider fw-bold">Total Saved</div>
+                <div class="metric-box-value fs-4 fw-extrabold text-primary" id="savedCalcTotalCount">0</div>
+              </div>
+            </div>
+            <div class="col-6 col-sm-4 col-md-3">
+              <div class="metric-box bg-warning bg-opacity-5 border border-warning border-opacity-10 rounded-3 p-3 text-center">
+                <div class="metric-box-title small text-muted text-uppercase tracking-wider fw-bold">Favorites</div>
+                <div class="metric-box-value fs-4 fw-extrabold text-warning" id="savedCalcFavoritesCount">0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Saved Calculations Cards Row -->
+          <div class="row g-4" id="savedCalculationsContainer">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
       </div>
 
       <!-- General Simulators categories container -->
@@ -854,7 +894,11 @@
     <div id="calculatorWorkspaceView" style="display: none;">
       <!-- Workspace Header / Nav -->
       <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3 border-bottom pb-3">
-        <button class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1.5 small fw-bold" onclick="closeCalculatorWorkspace()"><i class="fas fa-arrow-left me-1.5"></i>Back to Simulators Hub</button>
+        <button id="backToHubBtn" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1.5 small fw-bold" onclick="closeCalculatorWorkspace()"><i class="fas fa-arrow-left me-1.5"></i>Back to Simulators Hub</button>
+        <div id="headerSearchWrapper" class="search-wrapper" style="border-radius:12px; border-color:var(--calc-border); width: 220px; margin-bottom: 0; display: none;">
+          <i class="fas fa-search" style="font-size:0.8rem; left:0.85rem;"></i>
+          <input type="text" id="headerCalcSearchInput" style="padding:0.4rem 0.55rem 0.4rem 2.2rem; font-size:0.8rem;" placeholder="Search in list..." oninput="syncHeaderSearch(this.value)">
+        </div>
         <div class="d-flex flex-nowrap overflow-x-auto gap-2" id="categoryTabWrapper">
           <button class="category-pill rounded-pill text-nowrap active category-btn-all" onclick="filterCategory('all', this)"><i class="fas fa-th-large me-2"></i>All</button>
           <button class="category-pill rounded-pill text-nowrap category-btn-investment" onclick="filterCategory('investment', this)"><i class="fas fa-piggy-bank me-2"></i>Investment</button>
@@ -872,11 +916,11 @@
         <!-- Left Sidebar: Calculator List -->
         <div class="col-12 col-lg-3 mb-4 mb-lg-0 d-none d-lg-block">
           <div class="premium-card p-3" style="max-height: 75vh; overflow-y: auto;">
-            <div class="search-wrapper mb-3" style="border-radius:12px; border-color:var(--calc-border);">
+            <div id="sidebarSearchWrapper" class="search-wrapper mb-3" style="border-radius:12px; border-color:var(--calc-border);">
               <i class="fas fa-search" style="font-size:0.8rem; left:0.85rem;"></i>
               <input type="text" id="calcSearchInput" style="padding:0.55rem 0.55rem 0.55rem 2.2rem; font-size:0.8rem;" placeholder="Search in list...">
             </div>
-            <h5 class="fw-bold mb-3 small text-uppercase tracking-wider" style="color: var(--calc-muted);">Calculators</h5>
+            <h5 id="sidebarHeading" class="fw-bold mb-3 small text-uppercase tracking-wider" style="color: var(--calc-muted);">Calculators</h5>
             <div id="calculatorListContainer">
               <!-- Dynamically populated calculator items -->
             </div>
@@ -904,10 +948,10 @@
               <h2 class="h3 fw-extrabold mb-1" id="activeCalcTitle">Loading Calculator...</h2>
               <p class="text-muted small mb-0" id="activeCalcDescription">Please wait while the computational engine initializes.</p>
             </div>
-            <div class="d-flex flex-wrap gap-2 mt-2 mt-sm-0" id="standardCalcHeaderActions">
-              <button class="btn btn-sm btn-outline-secondary rounded-pill" onclick="saveToHistory()" title="Save calculation details to local history"><i class="fas fa-history me-1"></i>Save</button>
-              <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="copyShareableSummary()" title="Copy shareable text summary"><i class="fas fa-share-alt me-1"></i>Share</button>
-              <button class="btn btn-sm btn-success rounded-pill px-3" onclick="downloadPDFReport()" title="Download personalized PDF report"><i class="fas fa-file-pdf me-1"></i>PDF Report</button>
+             <div class="d-flex flex-wrap gap-2 mt-2 mt-sm-0" id="standardCalcHeaderActions">
+              <button class="btn btn-sm btn-primary rounded-pill px-3" onclick="triggerDBSave()" title="Save calculation to My Calculators"><i class="fas fa-cloud-upload-alt me-1.5"></i>Save Calculator</button>
+              <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="copyShareableSummary()" title="Copy shareable text summary"><i class="fas fa-share-alt me-1.5"></i>Share</button>
+              <button class="btn btn-sm btn-success rounded-pill px-3" onclick="downloadPDFReport()" title="Download personalized PDF report"><i class="fas fa-file-pdf me-1.5"></i>PDF Report</button>
             </div>
           </div>
 
@@ -1426,6 +1470,58 @@
       </div>
     </div>
 
+    <!-- Login Modal -->
+    <div class="modal fade" id="calculatorLoginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow" style="background-color: var(--calc-card); color: var(--calc-text); border: 1px solid var(--calc-border) !important;">
+          <div class="modal-header border-bottom pb-3">
+            <h5 class="modal-title fw-bold text-dark" id="loginModalLabel"><i class="fas fa-lock text-primary me-2"></i>Login to FOLIUX</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body py-4 text-dark">
+            <p class="small text-muted mb-4">To save your calculations under <strong>My Calculators</strong>, please sign in to your FOLIUX account.</p>
+            <div id="loginErrorMsg" class="alert alert-danger d-none small py-2"></div>
+            <form id="calculatorLoginForm" onsubmit="handleAjaxLogin(event)">
+              <div class="mb-3">
+                <label class="form-label small fw-bold">Username or Email</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-light text-dark"><i class="fas fa-user"></i></span>
+                  <input type="text" id="loginUsername" class="form-control text-dark" required placeholder="Enter username or email">
+                </div>
+              </div>
+              <div class="mb-4">
+                <label class="form-label small fw-bold">Password</label>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text bg-light text-dark"><i class="fas fa-key"></i></span>
+                  <input type="password" id="loginPassword" class="form-control text-dark" required placeholder="Enter password">
+                </div>
+              </div>
+              <button type="submit" class="btn btn-primary rounded-pill w-100 py-2 fw-bold">Login & Save <i class="fas fa-sign-in-alt ms-2"></i></button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Save Name Modal -->
+    <div class="modal fade" id="saveCalcNameModal" tabindex="-1" aria-labelledby="saveCalcNameLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow" style="background-color: var(--calc-card); color: var(--calc-text); border: 1px solid var(--calc-border) !important;">
+          <div class="modal-header border-bottom pb-3">
+            <h5 class="modal-title fw-bold text-dark" id="saveCalcNameLabel"><i class="fas fa-save text-primary me-2"></i>Save Calculation</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body py-4 text-dark">
+            <div class="mb-3">
+              <label class="form-label small fw-bold">Give this calculation a name</label>
+              <input type="text" id="saveCalcCustomName" class="form-control text-dark" required placeholder="e.g. My Retirement SIP">
+            </div>
+            <button type="button" onclick="confirmDBSave()" class="btn btn-primary rounded-pill w-100 py-2 fw-bold">Save Calculation <i class="fas fa-check ms-2"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 {% endblock %}
@@ -1438,7 +1534,7 @@
   }
 </script>
 <script>
-    const isUserAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
+    let isUserAuthenticated = {{ request.user.is_authenticated|yesno:"true,false" }};
 
     // Complete JavaScript Simulators Registry & Computational Core
     const CALCULATORS_REGISTRY = {
@@ -2257,6 +2353,7 @@
 
   // State Engine Setup
   let activeCalculatorId = 'sip';
+  let isStandaloneMode = false;
   let chartInstance = null;
 
   // Active theme management (managed globally in base.html)
@@ -2447,6 +2544,13 @@
     if (!container) return;
     container.innerHTML = '';
 
+    const personalSection = document.getElementById('myFoliuxSimulatorsSection');
+    if (personalSection) {
+      personalSection.style.display = 'none';
+    }
+
+    let personalSectionRendered = false;
+
     Object.entries(CATEGORY_DETAILS).forEach(([catKey, catDetails]) => {
       if (activeCategory !== 'all' && activeCategory !== catKey) {
         return;
@@ -2506,7 +2610,50 @@
 
       section.innerHTML = header + cardsHtml;
       container.appendChild(section);
+
+      // If we just rendered the Investment category, place the FOLIUX Personal Simulators Section below it
+      if (catKey === 'investment' && personalSection) {
+        if (activeCategory === 'all' || activeCategory === 'investment') {
+          let showPersonal = true;
+          if (searchQuery) {
+            const q = searchQuery.toLowerCase().trim();
+            const personalCalcs = [
+              { title: 'My Tax Calculator', desc: 'Compare tax liabilities under Old vs New regimes with your real-time portfolio data automatically synced from FOLIUX.' },
+              { title: 'My Net Worth Projection', desc: 'Project your asset-class growth and net worth milestones based on historical compounding rates.' },
+              { title: 'My Retirement Planner', desc: 'Model real inflation scenarios and calculate the exact age you can claim financial freedom.' },
+              { title: 'My Portfolio XIRR', desc: 'Compute exact annualized returns for your cash inflows and outflows across all assets.' },
+              { title: 'My Cashflow Forecast', desc: 'Forecast monthly liquid capital balances by syncing regular investments and expenses.' }
+            ];
+            showPersonal = personalCalcs.some(c => c.title.toLowerCase().includes(q) || c.desc.toLowerCase().includes(q));
+          }
+          if (showPersonal) {
+            personalSection.style.display = 'block';
+            container.appendChild(personalSection);
+            personalSectionRendered = true;
+          }
+        }
+      }
     });
+
+    // Fallback: If not rendered and active category matches categories relevant to the personal simulators, display it at the end
+    if (!personalSectionRendered && personalSection && ['all', 'investment', 'retirement', 'tax'].includes(activeCategory)) {
+      let showPersonal = true;
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase().trim();
+        const personalCalcs = [
+          { title: 'My Tax Calculator', desc: 'Compare tax liabilities under Old vs New regimes with your real-time portfolio data automatically synced from FOLIUX.' },
+          { title: 'My Net Worth Projection', desc: 'Project your asset-class growth and net worth milestones based on historical compounding rates.' },
+          { title: 'My Retirement Planner', desc: 'Model real inflation scenarios and calculate the exact age you can claim financial freedom.' },
+          { title: 'My Portfolio XIRR', desc: 'Compute exact annualized returns for your cash inflows and outflows across all assets.' },
+          { title: 'My Cashflow Forecast', desc: 'Forecast monthly liquid capital balances by syncing regular investments and expenses.' }
+        ];
+        showPersonal = personalCalcs.some(c => c.title.toLowerCase().includes(q) || c.desc.toLowerCase().includes(q));
+      }
+      if (showPersonal) {
+        personalSection.style.display = 'block';
+        container.appendChild(personalSection);
+      }
+    }
   };
 
   // Smooth route transition into Interactive Workspace
@@ -2583,6 +2730,9 @@
         selectCalculator(firstCalc.id);
       }
     }
+    
+    // Refresh header search and back button display
+    updateHeaderControls();
   };
 
   // Populate calculator cards based on selected filter and keywords
@@ -2631,9 +2781,39 @@
     });
   }
 
+  // Update header controls (search box vs back button visibility)
+  function updateHeaderControls() {
+    const backBtn = document.getElementById('backToHubBtn');
+    const headerSearch = document.getElementById('headerSearchWrapper');
+    const sidebarSearch = document.getElementById('sidebarSearchWrapper');
+    const sidebarHeading = document.getElementById('sidebarHeading');
+    
+    if (backBtn && headerSearch) {
+      if (isStandaloneMode) {
+        backBtn.style.display = 'none';
+        headerSearch.style.display = 'block';
+      } else {
+        backBtn.style.display = 'block';
+        headerSearch.style.display = 'none';
+      }
+    }
+
+    if (sidebarSearch && sidebarHeading) {
+      if (isStandaloneMode) {
+        sidebarSearch.style.display = 'none';
+        sidebarHeading.style.display = 'none';
+      } else {
+        sidebarSearch.style.display = 'block';
+        sidebarHeading.style.display = 'block';
+      }
+    }
+  }
+
   // Select active calculator view
   window.selectCalculator = function(calcId) {
     activeCalculatorId = calcId;
+    
+    updateHeaderControls();
     
     // Update active highlight classes
     document.querySelectorAll('.calc-list-item').forEach(el => el.classList.remove('selected'));
@@ -2971,12 +3151,15 @@
     document.getElementById('compLumpResult').innerText = formatIndianCurrency(lumpVal);
   };
 
-  // Search logic for dynamic filtering
-  document.getElementById('calcSearchInput').addEventListener('input', (e) => {
+  // Sync header search to sidebar search and filter
+  window.syncHeaderSearch = function(val) {
+    const sidebarSearch = document.getElementById('calcSearchInput');
+    if (sidebarSearch) {
+      sidebarSearch.value = val;
+    }
     const activeCatTab = document.querySelector('#categoryTabWrapper button.active');
     let cat = 'all';
     if (activeCatTab) {
-      // Find category key from text or let's just parse
       const txt = activeCatTab.innerText.toLowerCase();
       if (txt.includes('investment')) cat = 'investment';
       else if (txt.includes('retirement')) cat = 'retirement';
@@ -2985,7 +3168,28 @@
       else if (txt.includes('trading')) cat = 'trading';
       else if (txt.includes('crypto')) cat = 'crypto';
     }
-    populateCalculatorList(cat, e.target.value);
+    populateCalculatorList(cat, val);
+  };
+
+  // Search logic for dynamic filtering
+  document.getElementById('calcSearchInput').addEventListener('input', (e) => {
+    const val = e.target.value;
+    const headerInp = document.getElementById('headerCalcSearchInput');
+    if (headerInp) {
+      headerInp.value = val;
+    }
+    const activeCatTab = document.querySelector('#categoryTabWrapper button.active');
+    let cat = 'all';
+    if (activeCatTab) {
+      const txt = activeCatTab.innerText.toLowerCase();
+      if (txt.includes('investment')) cat = 'investment';
+      else if (txt.includes('retirement')) cat = 'retirement';
+      else if (txt.includes('loan')) cat = 'loan';
+      else if (txt.includes('tax')) cat = 'tax';
+      else if (txt.includes('trading')) cat = 'trading';
+      else if (txt.includes('crypto')) cat = 'crypto';
+    }
+    populateCalculatorList(cat, val);
   });
 
   // PDF Report Generation Core with client personalization and seamless login redirection
@@ -3534,6 +3738,396 @@
     return cookieValue;
   }
 
+  // Database-backed Calculator Save & Load Logic
+  let activeSavedCalcId = null;
+  let savedCalculations = [];
+
+  window.triggerDBSave = function() {
+    if (!isUserAuthenticated) {
+      // Show login modal
+      const errEl = document.getElementById('loginErrorMsg');
+      if (errEl) errEl.classList.add('d-none');
+      document.getElementById('loginUsername').value = '';
+      document.getElementById('loginPassword').value = '';
+      const loginModal = new bootstrap.Modal(document.getElementById('calculatorLoginModal'));
+      loginModal.show();
+    } else {
+      // Show save name modal
+      const nameInput = document.getElementById('saveCalcCustomName');
+      if (nameInput) {
+        // Pre-fill name if we loaded an existing saved calc
+        if (activeSavedCalcId) {
+          const activeCalc = savedCalculations.find(c => c.id === activeSavedCalcId);
+          nameInput.value = activeCalc ? activeCalc.name : '';
+        } else {
+          nameInput.value = '';
+        }
+      }
+      const saveModal = new bootstrap.Modal(document.getElementById('saveCalcNameModal'));
+      saveModal.show();
+    }
+  };
+
+  window.handleAjaxLogin = function(e) {
+    e.preventDefault();
+    const errorEl = document.getElementById('loginErrorMsg');
+    if (errorEl) errorEl.classList.add('d-none');
+
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value;
+
+    if (!username || !password) {
+      if (errorEl) {
+        errorEl.innerText = "Username and password are required.";
+        errorEl.classList.remove('d-none');
+      }
+      return;
+    }
+
+    fetch('/calc/api/login/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify({ username: username, password: password })
+    })
+    .then(response => {
+      if (!response.ok) {
+        return response.json().then(errData => { throw new Error(errData.message || "Invalid credentials"); });
+      }
+      return response.json();
+    })
+    .then(data => {
+      // Login successful!
+      isUserAuthenticated = true;
+      
+      // Hide login modal
+      const loginModalEl = document.getElementById('calculatorLoginModal');
+      const loginModal = bootstrap.Modal.getInstance(loginModalEl);
+      if (loginModal) loginModal.hide();
+      
+      // Show the personal calculators section and saved calculations sub-section
+      const personalSection = document.getElementById('myFoliuxSimulatorsSection');
+      if (personalSection) personalSection.style.display = 'block';
+      const subSection = document.getElementById('savedCalculationsSubSection');
+      if (subSection) subSection.style.display = 'block';
+
+      // Load saved calculations
+      fetchSavedCalculations();
+
+      // Show save name modal to let user complete the save
+      const nameInput = document.getElementById('saveCalcCustomName');
+      if (nameInput) nameInput.value = '';
+      const saveModal = new bootstrap.Modal(document.getElementById('saveCalcNameModal'));
+      saveModal.show();
+    })
+    .catch(error => {
+      if (errorEl) {
+        errorEl.innerText = error.message || "Authentication failed.";
+        errorEl.classList.remove('d-none');
+      }
+    });
+  };
+
+  window.confirmDBSave = function() {
+    const nameInput = document.getElementById('saveCalcCustomName');
+    const name = nameInput ? nameInput.value.trim() : '';
+    if (!name) {
+      alert("Please enter a custom name for this calculation.");
+      return;
+    }
+
+    const calc = CALCULATORS_REGISTRY[activeCalculatorId];
+    if (!calc) return;
+
+    // Gather inputs
+    const input_values = {};
+    calc.inputs.forEach(inp => {
+      const inputEl = document.getElementById(`input_${inp.key}`);
+      if (inputEl) {
+        input_values[inp.key] = parseFloat(inputEl.value);
+      }
+    });
+
+    // Run active calculation to get the latest output/results
+    const calculated_results = calc.calculate(input_values);
+
+    const payload = {
+      calc_type: activeCalculatorId,
+      calc_name: calc.title,
+      name: name,
+      input_values: input_values,
+      calculated_results: calculated_results
+    };
+
+    if (activeSavedCalcId) {
+      payload.id = activeSavedCalcId;
+    }
+
+    fetch('/calc/api/save/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify(payload)
+    })
+    .then(response => {
+      if (!response.ok) {
+        return response.json().then(errData => { throw new Error(errData.message || "Failed to save calculation"); });
+      }
+      return response.json();
+    })
+    .then(data => {
+      // Hide save modal
+      const saveModalEl = document.getElementById('saveCalcNameModal');
+      const saveModal = bootstrap.Modal.getInstance(saveModalEl);
+      if (saveModal) saveModal.hide();
+
+      // Set active ID to the newly saved calculation
+      activeSavedCalcId = data.id;
+
+      // Refresh saved calculations list
+      fetchSavedCalculations();
+    })
+    .catch(error => {
+      alert(error.message || "Error saving calculation.");
+    });
+  };
+
+  window.fetchSavedCalculations = function(query = '') {
+    if (!isUserAuthenticated) return;
+    
+    fetch('/calc/api/list/?q=' + encodeURIComponent(query))
+    .then(response => {
+      if (!response.ok) throw new Error("Failed to fetch saved calculations");
+      return response.json();
+    })
+    .then(data => {
+      savedCalculations = data.data || [];
+      renderSavedCalculationsList();
+    })
+    .catch(error => {
+      console.error("Error fetching calculations:", error);
+    });
+  };
+
+  window.renderSavedCalculationsList = function() {
+    const container = document.getElementById('savedCalculationsContainer');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    const totalSaved = savedCalculations.length;
+    const favoritesCount = savedCalculations.filter(c => c.is_favorite).length;
+    
+    // Update metrics UI
+    const totalEl = document.getElementById('savedCalcTotalCount');
+    if (totalEl) totalEl.innerText = totalSaved;
+    
+    const favsEl = document.getElementById('savedCalcFavoritesCount');
+    if (favsEl) favsEl.innerText = favoritesCount;
+    
+    const badgeEl = document.getElementById('savedCalcCountBadge');
+    if (badgeEl) badgeEl.innerText = `${totalSaved} Saved`;
+    
+    if (savedCalculations.length === 0) {
+      container.innerHTML = `
+        <div class="col-12 text-center py-5 text-muted">
+          <i class="fas fa-folder-open fs-2 mb-2 d-block"></i>
+          No calculations found. Run any calculator and click "Save Calculator" to see it here!
+        </div>
+      `;
+      return;
+    }
+    
+    savedCalculations.forEach((calc, index) => {
+      let inputsHtml = '';
+      const schema = CALCULATORS_REGISTRY[calc.calc_type];
+      
+      if (schema) {
+        schema.inputs.forEach(inp => {
+          const val = calc.input_values[inp.key];
+          let valStr = '';
+          if (val !== undefined && val !== null) {
+            if (inp.type === 'currency') {
+              valStr = formatIndianCurrency(val);
+            } else if (inp.type === 'percent') {
+              valStr = `${val}%`;
+            } else {
+              valStr = val.toLocaleString();
+            }
+            inputsHtml += `<span class="badge bg-light text-dark me-1 mb-1 border" style="font-size:0.72rem; font-weight: 500;">${inp.label}: ${valStr}</span>`;
+          }
+        });
+      } else {
+        for (const [key, val] of Object.entries(calc.input_values)) {
+          inputsHtml += `<span class="badge bg-light text-dark me-1 mb-1 border" style="font-size:0.72rem; font-weight: 500;">${key}: ${val}</span>`;
+        }
+      }
+      
+      let primaryMetricHtml = '';
+      if (calc.calculated_results && calc.calculated_results.metrics && calc.calculated_results.metrics.length > 0) {
+        const lastMetric = calc.calculated_results.metrics[calc.calculated_results.metrics.length - 1];
+        let valStr = '';
+        if (lastMetric.type === 'currency') {
+          valStr = formatIndianCurrency(lastMetric.value);
+        } else if (lastMetric.type === 'percent') {
+          valStr = `${lastMetric.value.toFixed(2)}%`;
+        } else {
+          valStr = lastMetric.value.toLocaleString();
+        }
+        primaryMetricHtml = `
+          <div class="mt-3 p-2.5 rounded bg-primary bg-opacity-5 border border-primary border-opacity-10 d-flex justify-content-between align-items-center">
+            <span class="small fw-semibold text-muted" style="font-size: 0.75rem;">${lastMetric.label}:</span>
+            <span class="fw-extrabold text-primary" style="font-size: 0.85rem;">${valStr}</span>
+          </div>
+        `;
+      }
+      
+      const favStarClass = calc.is_favorite ? 'fas text-warning' : 'far text-muted';
+      
+      const cardCol = document.createElement('div');
+      cardCol.className = 'col-12 col-md-6 col-lg-4';
+      cardCol.innerHTML = `
+        <div class="premium-card p-3 h-100 d-flex flex-column justify-content-between position-relative overflow-hidden" style="border: 1px solid var(--calc-border);">
+          <div>
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-15 mb-1.5" style="font-size:0.62rem; letter-spacing: 0.02em;">
+                  ${calc.calc_name}
+                </span>
+                <h5 class="fw-bold mb-0.5 text-slate-900 text-truncate" style="max-width: 170px;" title="${calc.name}">${calc.name}</h5>
+                <div class="text-muted" style="font-size: 0.62rem;"><i class="far fa-calendar-alt me-1"></i>${calc.created_at}</div>
+              </div>
+              <button class="btn btn-link p-1 text-decoration-none border-0 bg-transparent" onclick="toggleFavoriteDBCalc(${calc.id})" title="Toggle Favorite">
+                <i class="${favStarClass} fa-star" style="font-size: 1.05rem;"></i>
+              </button>
+            </div>
+            
+            <div class="my-2.5 d-flex flex-wrap">
+              ${inputsHtml}
+            </div>
+            
+            ${primaryMetricHtml}
+          </div>
+          
+          <div class="d-flex gap-2 mt-4 pt-2 border-top">
+            <button class="btn btn-sm btn-outline-primary rounded-pill px-2.5 flex-grow-1 small fw-bold" onclick="loadDBCalculation(${index})">
+              <i class="fas fa-edit me-1"></i>Edit
+            </button>
+            <button class="btn btn-sm btn-outline-secondary rounded-pill px-2.5 flex-grow-1 small fw-bold" onclick="duplicateDBCalc(${calc.id})" title="Duplicate">
+              <i class="fas fa-copy me-1"></i>Copy
+            </button>
+            <button class="btn btn-sm btn-outline-danger rounded-pill px-2" onclick="deleteDBCalc(${calc.id})" title="Delete">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+          </div>
+        </div>
+      `;
+      container.appendChild(cardCol);
+    });
+  };
+
+  window.filterSavedCalculations = function(query) {
+    fetchSavedCalculations(query);
+  };
+
+  window.toggleFavoriteDBCalc = function(id) {
+    fetch(`/calc/api/toggle-favorite/${id}/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': getCookie('csrftoken')
+      }
+    })
+    .then(response => {
+      if (!response.ok) throw new Error("Failed to toggle favorite");
+      return response.json();
+    })
+    .then(data => {
+      fetchSavedCalculations();
+    })
+    .catch(error => {
+      console.error("Error favoriting:", error);
+    });
+  };
+
+  window.duplicateDBCalc = function(id) {
+    fetch(`/calc/api/duplicate/${id}/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': getCookie('csrftoken')
+      }
+    })
+    .then(response => {
+      if (!response.ok) throw new Error("Failed to duplicate calculation");
+      return response.json();
+    })
+    .then(data => {
+      fetchSavedCalculations();
+    })
+    .catch(error => {
+      console.error("Error duplicating:", error);
+    });
+  };
+
+  window.deleteDBCalc = function(id) {
+    if (!confirm("Are you sure you want to delete this saved calculation?")) return;
+    
+    fetch(`/calc/api/delete/${id}/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': getCookie('csrftoken')
+      }
+    })
+    .then(response => {
+      if (!response.ok) throw new Error("Failed to delete calculation");
+      return response.json();
+    })
+    .then(data => {
+      if (activeSavedCalcId === id) {
+        activeSavedCalcId = null;
+      }
+      fetchSavedCalculations();
+    })
+    .catch(error => {
+      console.error("Error deleting:", error);
+    });
+  };
+
+  window.loadDBCalculation = function(index) {
+    const calcData = savedCalculations[index];
+    if (!calcData) return;
+    
+    // Select the calculator type (which resets activeSavedCalcId to null)
+    selectCalculator(calcData.calc_type);
+    
+    // Set activeSavedCalcId to the loaded calculation's id
+    activeSavedCalcId = calcData.id;
+    
+    // Hide dashboard and show workspace
+    document.getElementById('calculatorDashboardView').style.display = 'none';
+    document.getElementById('calculatorWorkspaceView').style.display = 'block';
+    
+    // Populate inputs u/s
+    const schema = CALCULATORS_REGISTRY[calcData.calc_type];
+    if (schema) {
+      schema.inputs.forEach(inp => {
+        const savedVal = calcData.input_values[inp.key];
+        if (savedVal !== undefined && savedVal !== null) {
+          const slider = document.getElementById(`slider_${inp.key}`);
+          const input = document.getElementById(`input_${inp.key}`);
+          if (slider) slider.value = savedVal;
+          if (input) input.value = savedVal;
+          updateUnitBadge(inp.key, savedVal, inp.type);
+        }
+      });
+      // Re-run computation
+      runActiveCalculation();
+    }
+  };
+
   // Initialization Core
   window.addEventListener('DOMContentLoaded', () => {
     initTheme();
@@ -3546,6 +4140,10 @@
     // Parse URL query parameters to pre-load customized calculation parameters
     const urlParams = new URLSearchParams(window.location.search);
     const calcId = urlParams.get('calc_id');
+    
+    if (calcId === 'sip') {
+      isStandaloneMode = true;
+    }
     
     if (calcId) {
       selectCalculator(calcId);
@@ -3582,6 +4180,14 @@
     
     loadHistory();
     runTaxComparison();
+
+    if (isUserAuthenticated) {
+      const subSection = document.getElementById('savedCalculationsSubSection');
+      if (subSection) {
+        subSection.style.display = 'block';
+      }
+      fetchSavedCalculations();
+    }
     
     // Automatically trigger PDF download if redirected back after authentication
     if (urlParams.get('trigger_download') === 'true') {

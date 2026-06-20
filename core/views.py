@@ -6630,6 +6630,180 @@ def download_tax_report(request):
     return response
 
 
+# =========================================================================
+# CALCULATOR SAVE & MANAGEMENT API VIEWS
+# =========================================================================
+from django.contrib.auth import authenticate, login
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from django.db import models
+from .models import SavedCalculation
+import json
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def ajax_login_api(request):
+    try:
+        data = json.loads(request.body)
+        username = data.get('username')
+        password = data.get('password')
+        if not username or not password:
+            return JsonResponse({'status': 'error', 'message': 'Username and password are required'}, status=400)
+        
+        user = authenticate(username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return JsonResponse({'status': 'success', 'message': 'Authenticated successfully'})
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Invalid username/email or password'}, status=401)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+@csrf_exempt
+@login_required
+@require_http_methods(["POST"])
+def save_calculation_api(request):
+    try:
+        data = json.loads(request.body)
+        calc_id = data.get('id') # Optional, if updating an existing one
+        calc_type = data.get('calc_type')
+        calc_name = data.get('calc_name')
+        name = data.get('name')
+        input_values = data.get('input_values', {})
+        calculated_results = data.get('calculated_results', {})
+        is_favorite = data.get('is_favorite', False)
+
+        if not calc_type or not calc_name or not name:
+            return JsonResponse({'status': 'error', 'message': 'Calculator type, calculator name, and custom name are required'}, status=400)
+
+        if calc_id:
+            try:
+                calc = SavedCalculation.objects.get(id=calc_id, user=request.user)
+                calc.calc_type = calc_type
+                calc.calc_name = calc_name
+                calc.name = name
+                calc.input_values = input_values
+                calc.calculated_results = calculated_results
+                calc.is_favorite = is_favorite
+                calc.save()
+            except SavedCalculation.DoesNotExist:
+                return JsonResponse({'status': 'error', 'message': 'Saved calculation not found'}, status=404)
+        else:
+            calc = SavedCalculation.objects.create(
+                user=request.user,
+                calc_type=calc_type,
+                calc_name=calc_name,
+                name=name,
+                input_values=input_values,
+                calculated_results=calculated_results,
+                is_favorite=is_favorite
+            )
+            calc_id = calc.id
+
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Calculation saved successfully',
+            'id': calc_id
+        })
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+@login_required
+@require_http_methods(["GET"])
+def saved_calculations_list_api(request):
+    try:
+        query = request.GET.get('q', '').strip().lower()
+        calcs = SavedCalculation.objects.filter(user=request.user)
+        
+        if query:
+            # Simple keyword search inside custom name, calculator name, or calculator type
+            calcs = calcs.filter(
+                models.Q(name__icontains=query) |
+                models.Q(calc_name__icontains=query) |
+                models.Q(calc_type__icontains=query)
+            )
+
+        results = []
+        for c in calcs:
+            results.append({
+                'id': c.id,
+                'calc_type': c.calc_type,
+                'calc_name': c.calc_name,
+                'name': c.name,
+                'input_values': c.input_values,
+                'calculated_results': c.calculated_results,
+                'is_favorite': c.is_favorite,
+                'created_at': c.created_at.strftime('%d-%m-%Y %H:%M'),
+                'updated_at': c.updated_at.strftime('%d-%m-%Y %H:%M')
+            })
+
+        return JsonResponse({
+            'status': 'success',
+            'data': results,
+            'total_count': len(results)
+        })
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+@csrf_exempt
+@login_required
+@require_http_methods(["POST"])
+def delete_calculation_api(request, pk):
+    try:
+        calc = SavedCalculation.objects.get(id=pk, user=request.user)
+        calc.delete()
+        return JsonResponse({'status': 'success', 'message': 'Calculation deleted successfully'})
+    except SavedCalculation.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Calculation not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+@csrf_exempt
+@login_required
+@require_http_methods(["POST"])
+def toggle_favorite_calculation_api(request, pk):
+    try:
+        calc = SavedCalculation.objects.get(id=pk, user=request.user)
+        calc.is_favorite = not calc.is_favorite
+        calc.save()
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Calculation updated successfully',
+            'is_favorite': calc.is_favorite
+        })
+    except SavedCalculation.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Calculation not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+@csrf_exempt
+@login_required
+@require_http_methods(["POST"])
+def duplicate_calculation_api(request, pk):
+    try:
+        calc = SavedCalculation.objects.get(id=pk, user=request.user)
+        # Duplicate by setting pk = None and updating the name
+        calc.pk = None
+        calc.name = f"{calc.name} (Copy)"
+        calc.save()
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Calculation duplicated successfully',
+            'id': calc.id
+        })
+    except SavedCalculation.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'Calculation not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
 
 
 

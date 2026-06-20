@@ -672,7 +672,7 @@
     </a>
 </li>
 <li class="nav-item">
-    <a class="nav-link" href="{% url 'wealth_calculators' %}{% if is_family_view %}?user_id={{ target_user.id }}{% elif is_consolidated %}?user_id=consolidated{% endif %}">Calc</a>
+    <a class="nav-link" href="{% url 'wealth_calculators' %}?calc_id=sip{% if is_family_view %}&user_id={{ target_user.id }}{% elif is_consolidated %}&user_id=consolidated{% endif %}">Calc</a>
 </li>
 <li class="nav-item">
     <a class="nav-link" href="{% url 'cashflow_dashboard' %}{% if is_family_view %}?user_id={{ target_user.id }}{% elif is_consolidated %}?user_id=consolidated{% endif %}">Cashflow</a>

@@ -1285,6 +1285,25 @@ class UserTaxProfile(models.Model):
         return f"{self.user.username} - {self.financial_year}"
 
 
+class SavedCalculation(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='saved_calculations')
+    calc_type = models.CharField(max_length=50) # e.g. 'sip', 'cagr', 'swp', 'emi'
+    calc_name = models.CharField(max_length=100) # e.g. 'SIP Calculator'
+    name = models.CharField(max_length=150) # custom name
+    input_values = models.JSONField(default=dict)
+    calculated_results = models.JSONField(default=dict)
+    is_favorite = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.calc_name} - {self.name}"
+
+
+
 
 
 
