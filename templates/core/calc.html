@@ -2570,6 +2570,19 @@
     document.querySelectorAll('#categoryTabWrapper button').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     populateCalculatorList(cat, document.getElementById('calcSearchInput').value);
+    
+    // Auto-select the first matching calculator in the selected category if the current one is not in it
+    const activeCalc = CALCULATORS_REGISTRY[activeCalculatorId];
+    if (activeCalc && cat !== 'all' && activeCalc.category !== cat) {
+      const firstCalc = Object.values(CALCULATORS_REGISTRY).find(c => {
+        if (c.category !== cat) return false;
+        if (c.id === 'my-tax' && !isUserAuthenticated) return false;
+        return true;
+      });
+      if (firstCalc) {
+        selectCalculator(firstCalc.id);
+      }
+    }
   };
 
   // Populate calculator cards based on selected filter and keywords
