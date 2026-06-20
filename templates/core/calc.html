@@ -2462,6 +2462,11 @@
         return;
       }
       
+      if (activeCalculatorId === 'my-tax') {
+        triggerReportDownload('statement');
+        return;
+      }
+      
       // User is logged in, let's generate the PDF!
       let jsPDFClass;
       if (window.jspdf && window.jspdf.jsPDF) {
