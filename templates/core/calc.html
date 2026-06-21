@@ -895,11 +895,11 @@
       <!-- Workspace Header / Nav -->
       <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3 border-bottom pb-3">
         <button id="backToHubBtn" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1.5 small fw-bold" onclick="closeCalculatorWorkspace()"><i class="fas fa-arrow-left me-1.5"></i>Back to Simulators Hub</button>
-        <div id="headerSearchWrapper" class="search-wrapper" style="border-radius:12px; border-color:var(--calc-border); width: 220px; margin-bottom: 0; display: none;">
-          <i class="fas fa-search" style="font-size:0.8rem; left:0.85rem;"></i>
-          <input type="text" id="headerCalcSearchInput" style="padding:0.4rem 0.55rem 0.4rem 2.2rem; font-size:0.8rem;" placeholder="Search in list..." oninput="syncHeaderSearch(this.value)">
-        </div>
-        <div class="d-flex flex-nowrap overflow-x-auto gap-2" id="categoryTabWrapper">
+        <div class="d-flex flex-nowrap overflow-x-auto gap-2 align-items-center" id="categoryTabWrapper">
+          <div id="headerSearchWrapper" class="search-wrapper" style="border-radius:12px; border-color:var(--calc-border); width: 220px; margin-bottom: 0; display: none;">
+            <i class="fas fa-search" style="font-size:0.8rem; left:0.85rem;"></i>
+            <input type="text" id="headerCalcSearchInput" style="padding:0.4rem 0.55rem 0.4rem 2.2rem; font-size:0.8rem;" placeholder="Search in list..." oninput="syncHeaderSearch(this.value)">
+          </div>
           <button class="category-pill rounded-pill text-nowrap active category-btn-all" onclick="filterCategory('all', this)"><i class="fas fa-th-large me-2"></i>All</button>
           <button class="category-pill rounded-pill text-nowrap category-btn-investment" onclick="filterCategory('investment', this)"><i class="fas fa-piggy-bank me-2"></i>Investment</button>
           <button class="category-pill rounded-pill text-nowrap category-btn-retirement" onclick="filterCategory('retirement', this)"><i class="fas fa-couch me-2"></i>Retirement</button>
