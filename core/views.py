@@ -853,12 +853,17 @@ def mf_detail(request, pk):
     
     # If no scheme_code, try to find it by name if it's a new integration
     if not fund.scheme_code:
-        from .mf_utils import search_mf_schemes
-        search_results = search_mf_schemes(fund.name)
-        if search_results:
-            # Pick the best match (simple heuristic: first result)
-            fund.scheme_code = search_results[0]['schemeCode']
-            fund.save()
+        try:
+            from core.models import MutualFundScheme
+            from django.db.models import Q
+            scheme = MutualFundScheme.objects.filter(
+                Q(scheme_name__icontains=fund.name) | Q(scheme_code=fund.name)
+            ).first()
+            if scheme:
+                fund.scheme_code = scheme.scheme_code
+                fund.save()
+        except Exception as e:
+            logger.error(f"Error finding scheme_code locally: {e}")
             
     history = fund.get_nav_history()
     
@@ -3828,21 +3833,23 @@ def mf_suggestions_api(request):
             'nav': float(f.nav) if f.nav else 0
         })
         
-    # Query mfapi.in
+    # Search locally in MutualFundScheme model
     try:
-        from .mf_utils import search_mf_schemes
-        online_funds = search_mf_schemes(query)
-        for item in online_funds[:15]:
-            code = str(item['schemeCode'])
+        from core.models import MutualFundScheme
+        local_schemes = MutualFundScheme.objects.filter(
+            Q(scheme_name__icontains=query) | Q(scheme_code__icontains=query)
+        )[:15]
+        for item in local_schemes:
+            code = str(item.scheme_code)
             if code.upper() not in seen_symbols:
                 seen_symbols.add(code.upper())
                 results.append({
-                    'name': item['schemeName'],
+                    'name': item.scheme_name,
                     'symbol': code,
                     'nav': 0.0
                 })
     except Exception as e:
-        logger.error(f"Error calling mfapi.in search: {e}")
+        logger.error(f"Error querying local MutualFundScheme: {e}")
         
     return JsonResponse(results[:15], safe=False)
 

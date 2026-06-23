@@ -446,6 +446,16 @@ class MutualFund(models.Model):
             return history
         return []
 
+class MutualFundScheme(models.Model):
+    scheme_code = models.CharField(max_length=20, unique=True)
+    scheme_name = models.CharField(max_length=300)
+    isin_growth = models.CharField(max_length=50, null=True, blank=True)
+    isin_div_reinvestment = models.CharField(max_length=50, null=True, blank=True)
+    last_updated = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.scheme_code} - {self.scheme_name}"
+
 class MFPortfolio(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='mf_portfolios')
     fund = models.ForeignKey(MutualFund, on_delete=models.CASCADE)
