@@ -239,7 +239,7 @@
                     </div>
                 </div>
                 <div class="text-end">
-                    <div class="text-muted small mb-1">
+                    <div id="liveUpdateBtn" class="text-muted small mb-1" style="cursor: pointer;">
                         <i class="fas fa-sync-alt fa-spin me-1"></i> Live Update
                     </div>
                     <div class="badge bg-light text-dark border fw-normal">
@@ -935,6 +935,14 @@
                         viewTitle.innerHTML = '<i class="fas fa-list me-2"></i>Folio';
                     }
                 }
+            });
+        }
+
+        // Live Update Manual Click Handler
+        const liveUpdateBtn = document.getElementById('liveUpdateBtn');
+        if (liveUpdateBtn) {
+            liveUpdateBtn.addEventListener('click', function() {
+                location.reload();
             });
         }
 
