@@ -402,14 +402,19 @@ def sync_mutual_funds_from_sheet():
                 fund, created = MutualFund.objects.get_or_create(symbol=symbol)
                 
                 # Store previous nav for day change calculation
-                if not created:
-                    fund.prev_nav = fund.nav
+                if sheet_change != 0:
+                    prev_est = float(target_nav) / (1 + (sheet_change / 100))
+                    fund.prev_nav = Decimal(str(round(prev_est, 4)))
                 else:
-                    # For new records, try to estimate previous NAV from sheet's percentage change if available
-                    if sheet_change != 0:
-                        # sheet_change is usually a percentage (e.g., 1.5 for 1.5%)
-                        prev_est = float(target_nav) / (1 + (sheet_change / 100))
-                        fund.prev_nav = Decimal(str(round(prev_est, 4)))
+                    if not created:
+                        import pytz
+                        kolkata_tz = pytz.timezone('Asia/Kolkata')
+                        now_local = timezone.now().astimezone(kolkata_tz)
+                        last_updated_local = fund.last_updated.astimezone(kolkata_tz) if fund.last_updated else None
+                        
+                        # Only transition nav to prev_nav if the last update was on a different calendar day
+                        if not last_updated_local or last_updated_local.date() < now_local.date():
+                            fund.prev_nav = fund.nav
                     else:
                         fund.prev_nav = Decimal(str(target_nav))
                 
@@ -452,12 +457,34 @@ def sync_nps_from_sheet():
                 
                 nav = clean_float(row.iloc[1], default=0.0) if len(row) > 1 else 0
 
+                # Extract daily change percentage (1D)
+                sheet_change = 0.0
+                if len(row) > 2 and pd.notna(row.iloc[2]):
+                    try:
+                        pct_str = str(row.iloc[2]).replace('%', '').strip()
+                        sheet_change = float(pct_str)
+                    except ValueError:
+                        sheet_change = 0.0
+
                 # Update or create NPSFund record
                 fund, created = NPSFund.objects.get_or_create(name=name)
                 
                 # Store previous nav for day change calculation
-                if not created:
-                    fund.prev_nav = fund.nav
+                if sheet_change != 0:
+                    prev_est = float(nav) / (1 + (sheet_change / 100))
+                    fund.prev_nav = Decimal(str(round(prev_est, 4)))
+                else:
+                    if not created:
+                        import pytz
+                        kolkata_tz = pytz.timezone('Asia/Kolkata')
+                        now_local = timezone.now().astimezone(kolkata_tz)
+                        last_updated_local = fund.last_updated.astimezone(kolkata_tz) if fund.last_updated else None
+                        
+                        # Only transition nav to prev_nav if the last update was on a different calendar day
+                        if not last_updated_local or last_updated_local.date() < now_local.date():
+                            fund.prev_nav = fund.nav
+                    else:
+                        fund.prev_nav = Decimal(str(nav))
                 
                 fund.nav = Decimal(str(nav))
                 fund.save()
@@ -539,7 +566,15 @@ def sync_coins_from_sheet():
                 # Update or create Coin record
                 coin = Coin.objects.filter(symbol=symbol).first()
                 if coin:
-                    coin.prev_price = coin.price
+                    import pytz
+                    kolkata_tz = pytz.timezone('Asia/Kolkata')
+                    now_local = timezone.now().astimezone(kolkata_tz)
+                    last_updated_local = coin.last_updated.astimezone(kolkata_tz) if coin.last_updated else None
+                    
+                    # Only transition price to prev_price if the last update happened on a different calendar day
+                    if not last_updated_local or last_updated_local.date() < now_local.date():
+                        coin.prev_price = coin.price
+                        
                     coin.price = Decimal(str(price))
                     coin.name = raw_name
                     coin.last_updated = timezone.now()

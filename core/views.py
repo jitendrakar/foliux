@@ -107,12 +107,22 @@ def _auto_update_mf():
         from datetime import timedelta
         from .models import MutualFund
         from .utils import sync_mutual_funds_from_sheet
+        from .mf_utils import sync_fund_from_mfapi
         
+        # Sync from Google Sheets first
+        sync_mutual_funds_from_sheet()
+        
+        # Then, sync any manually added funds (which have a scheme_code) that are stale
         two_hours_ago = timezone.now() - timedelta(minutes=120)
-        stale_funds = MutualFund.objects.filter(last_updated__lt=two_hours_ago)
-        if stale_funds.exists():
-            # This function syncs names and data from Google Sheets
-            sync_mutual_funds_from_sheet()
+        stale_manual_funds = MutualFund.objects.filter(
+            scheme_code__isnull=False,
+            last_updated__lt=two_hours_ago
+        )
+        for fund in stale_manual_funds:
+            try:
+                sync_fund_from_mfapi(fund)
+            except Exception as e:
+                logger.error(f"Failed to sync manual fund {fund.scheme_code}: {e}")
     except Exception as e:
         logger.error(f"Auto update MF failed: {e}")
 
@@ -1123,12 +1133,27 @@ def mf_transaction_history(request):
 
 @login_required
 def refresh_mf_navs(request):
-    """Fetch latest NAVs for all funds by triggering a master sync from Google Sheets and yfinance."""
+    """Fetch latest NAVs for all funds by triggering a master sync from Google Sheets and mfapi.in."""
     from .utils import sync_mutual_funds_from_sheet
+    from .mf_utils import sync_fund_from_mfapi
+    from .models import MutualFund
+    
     try:
         count = sync_mutual_funds_from_sheet()
-        if count > 0:
-            messages.success(request, f"Synced {count} Mutual Funds with latest NAVs.")
+        
+        # Sync all manually added funds (which have a scheme_code)
+        manual_funds = MutualFund.objects.filter(scheme_code__isnull=False)
+        manual_count = 0
+        for fund in manual_funds:
+            try:
+                if sync_fund_from_mfapi(fund):
+                    manual_count += 1
+            except Exception as e:
+                logger.error(f"Manual refresh failed for fund {fund.scheme_code}: {e}")
+                
+        total_count = count + manual_count
+        if total_count > 0:
+            messages.success(request, f"Synced {total_count} Mutual Funds with latest NAVs (Sheets: {count}, Manual: {manual_count}).")
         else:
             messages.info(request, "Mutual fund sync completed.")
     except Exception as e:
@@ -3878,9 +3903,18 @@ def coin_price_api(request):
             price_val = info.get('regularMarketPrice') or info.get('previousClose') or info.get('navPrice')
             if price_val:
                 name_val = info.get('longName') or info.get('shortName') or symbol.split('-')[0]
+                prev_price_val = info.get('previousClose')
+                
+                defaults = {
+                    'name': name_val,
+                    'price': Decimal(str(price_val))
+                }
+                if prev_price_val:
+                    defaults['prev_price'] = Decimal(str(prev_price_val))
+                
                 coin, _ = Coin.objects.update_or_create(
                     symbol=ticker_symbol,
-                    defaults={'name': name_val, 'price': Decimal(str(price_val))}
+                    defaults=defaults
                 )
         except Exception as e:
             logger.error(f"Error fetching coin price from yfinance for {symbol}: {e}")

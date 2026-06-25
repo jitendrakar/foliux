@@ -67,7 +67,12 @@ def sync_fund_from_mfapi(fund):
     latest_nav_data = details['data'][0]
     nav = Decimal(str(latest_nav_data['nav']))
     
-    fund.prev_nav = fund.nav
+    if len(details['data']) > 1:
+        prev_nav = Decimal(str(details['data'][1]['nav']))
+    else:
+        prev_nav = nav
+        
+    fund.prev_nav = prev_nav
     fund.nav = nav
     fund.last_updated = timezone.now()
     
