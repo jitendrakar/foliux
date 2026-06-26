@@ -214,41 +214,50 @@ def perform_sync():
         
         # Override with real 52W High from yfinance for verified instruments
         try:
-            from core.models import Instrument
-            verified_symbols = list(Instrument.objects.filter(is_verified=True).values_list('symbol', flat=True))
-            if verified_symbols:
-                # Prepare symbols for yfinance (append .NS if needed)
-                yf_symbols = []
-                for s in verified_symbols:
-                    if not any(x in s for x in ['^', '.', '=F']):
-                        yf_symbols.append(f"{s}.NS")
-                    else:
-                        yf_symbols.append(s)
-                
-                # Fetch 1y data in batches to get max High (52W High)
-                # Batching for reliability
-                batch_size = 50
-                for i in range(0, len(yf_symbols), batch_size):
-                    batch = yf_symbols[i:i+batch_size]
-                    tickers = yf.Tickers(" ".join(batch))
-                    hist = tickers.history(period='1y', interval='1d')
-                    if not hist.empty and 'High' in hist:
-                        highs = hist['High'].max()
-                        for s_full in batch:
-                            s_clean = s_full.replace('.NS', '').upper()
-                            if s_full in highs and not pd.isna(highs[s_full]):
-                                h52 = float(highs[s_full])
-                                if s_clean in ltp_map:
-                                    # Update ltp_map if it exists (index 4 is high_52w)
-                                    m = list(ltp_map[s_clean])
-                                    m[4] = h52
-                                    ltp_map[s_clean] = tuple(m)
-                                else:
-                                    # Placeholder ltp/change if not in sheet map - use existing LTP if available
-                                    inst_obj = Instrument.objects.filter(symbol=s_clean).first()
-                                    existing_ltp = float(inst_obj.last_price) if inst_obj else 0
-                                    # Map: (ltp, change, pe, lh_diff, h52, pct)
-                                    ltp_map[s_clean] = (existing_ltp, 0, None, None, h52, 0)
+            cache_key_52w = 'yfinance_52w_highs_synced'
+            if not cache.get(cache_key_52w):
+                from core.models import Instrument
+                verified_symbols = list(Instrument.objects.filter(is_verified=True).values_list('symbol', flat=True))
+                if verified_symbols:
+                    logger.info(f"Syncing 52W Highs via yfinance for {len(verified_symbols)} instruments...")
+                    # Prepare symbols for yfinance (append .NS if needed)
+                    yf_symbols = []
+                    for s in verified_symbols:
+                        if not any(x in s for x in ['^', '.', '=F']):
+                            yf_symbols.append(f"{s}.NS")
+                        else:
+                            yf_symbols.append(s)
+                    
+                    # Fetch 1y data in batches to get max High (52W High)
+                    # Batching for reliability
+                    batch_size = 50
+                    for i in range(0, len(yf_symbols), batch_size):
+                        batch = yf_symbols[i:i+batch_size]
+                        tickers = yf.Tickers(" ".join(batch))
+                        hist = tickers.history(period='1y', interval='1d')
+                        if not hist.empty and 'High' in hist:
+                            highs = hist['High'].max()
+                            for s_full in batch:
+                                s_clean = s_full.replace('.NS', '').upper()
+                                if s_full in highs and not pd.isna(highs[s_full]):
+                                    h52 = float(highs[s_full])
+                                    if s_clean in ltp_map:
+                                        # Update ltp_map if it exists (index 4 is high_52w)
+                                        m = list(ltp_map[s_clean])
+                                        m[4] = h52
+                                        ltp_map[s_clean] = tuple(m)
+                                    else:
+                                        # Placeholder ltp/change if not in sheet map - use existing LTP if available
+                                        inst_obj = Instrument.objects.filter(symbol=s_clean).first()
+                                        existing_ltp = float(inst_obj.last_price) if inst_obj else 0
+                                        # Map: (ltp, change, pe, lh_diff, h52, pct)
+                                        ltp_map[s_clean] = (existing_ltp, 0, None, None, h52, 0)
+                    
+                    # Cache the successful sync status for 12 hours
+                    cache.set(cache_key_52w, True, 43200)
+                    logger.info("Successfully updated 52W Highs via yfinance.")
+            else:
+                logger.info("Skipping 52W High yfinance sync (cached recently).")
         except Exception as ey:
             logger.error(f"Error fetching real 52W High via yfinance: {ey}")
 
@@ -271,7 +280,8 @@ def perform_sync():
                     inst.previous_close = ltp - change
                     inst.pe_ratio = pe
                     inst.diff_from_lh_pct = lh_diff
-                    inst.high_52w = h52
+                    if h52 is not None and h52 > 0:
+                        inst.high_52w = h52
                     inst.last_updated = timezone.now()
                     inst.save(update_fields=['last_price', 'price_change', 'previous_close', 'pe_ratio', 'diff_from_lh_pct', 'high_52w', 'last_updated'])
                 

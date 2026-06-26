@@ -942,7 +942,26 @@
         const liveUpdateBtn = document.getElementById('liveUpdateBtn');
         if (liveUpdateBtn) {
             liveUpdateBtn.addEventListener('click', function() {
-                location.reload();
+                // Change UI to show syncing in progress
+                const icon = liveUpdateBtn.querySelector('i');
+                if (icon) {
+                    icon.classList.add('fa-spin');
+                }
+                liveUpdateBtn.style.pointerEvents = 'none';
+                liveUpdateBtn.style.opacity = '0.6';
+                const originalText = liveUpdateBtn.innerHTML;
+                liveUpdateBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin me-1"></i> Syncing...';
+
+                fetch('/api/sync-data/')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Sync result:', data);
+                        location.reload();
+                    })
+                    .catch(error => {
+                        console.error('Error syncing data:', error);
+                        location.reload();
+                    });
             });
         }
 
