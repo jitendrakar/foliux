@@ -610,6 +610,55 @@
         white-space: nowrap !important;
       }
     }
+
+    /* Social Media Icons Styling */
+    .social-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background-color: #f8f9fa;
+      color: #6c757d;
+      font-size: 1.05rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid #e9ecef;
+      text-decoration: none;
+    }
+    .social-icon:hover {
+      color: #fff !important;
+      transform: translateY(-3px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+    }
+    .social-icon.facebook:hover {
+      background-color: #1877f2;
+      border-color: #1877f2;
+    }
+    .social-icon.twitter:hover {
+      background-color: #1da1f2;
+      border-color: #1da1f2;
+    }
+    .social-icon.instagram:hover {
+      background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
+      border-color: transparent;
+    }
+    .social-icon.linkedin:hover {
+      background-color: #0077b5;
+      border-color: #0077b5;
+    }
+    .social-icon.youtube:hover {
+      background-color: #ff0000;
+      border-color: #ff0000;
+    }
+    html[data-theme="dark"] .social-icon {
+      background-color: #151f32;
+      color: #94a3b8;
+      border-color: #2e3a4e;
+    }
+    html[data-theme="dark"] .social-icon:hover {
+      color: #fff !important;
+    }
   </style>
   {% block extra_css %}{% endblock %}
   <script>
@@ -792,6 +841,27 @@
         <a href="{% url 'education_hub' %}" class="text-decoration-none text-muted small fw-bold text-uppercase">Education</a>
         <a href="{% url 'stock_news' %}" class="text-decoration-none text-muted small fw-bold text-uppercase">News</a>
         <a href="{% url 'feedback' %}" class="text-decoration-none text-muted small fw-bold text-uppercase">Feedback</a>
+      </div>
+      <!-- Social Media Links -->
+      <div class="mb-4 animate__animated animate__fadeIn">
+        <span class="text-muted small fw-bold text-uppercase d-block mb-3" style="letter-spacing: 1px;">Follow Us On</span>
+        <div class="d-flex justify-content-center gap-3">
+          <a href="https://facebook.com/" target="_blank" rel="noopener noreferrer" class="social-icon facebook" title="Facebook" aria-label="Follow us on Facebook">
+            <i class="fa-brands fa-facebook-f"></i>
+          </a>
+          <a href="https://twitter.com/" target="_blank" rel="noopener noreferrer" class="social-icon twitter" title="Twitter" aria-label="Follow us on Twitter">
+            <i class="fa-brands fa-twitter"></i>
+          </a>
+          <a href="https://instagram.com/" target="_blank" rel="noopener noreferrer" class="social-icon instagram" title="Instagram" aria-label="Follow us on Instagram">
+            <i class="fa-brands fa-instagram"></i>
+          </a>
+          <a href="https://linkedin.com/" target="_blank" rel="noopener noreferrer" class="social-icon linkedin" title="LinkedIn" aria-label="Follow us on LinkedIn">
+            <i class="fa-brands fa-linkedin-in"></i>
+          </a>
+          <a href="https://youtube.com/" target="_blank" rel="noopener noreferrer" class="social-icon youtube" title="YouTube" aria-label="Follow us on YouTube">
+            <i class="fa-brands fa-youtube"></i>
+          </a>
+        </div>
       </div>
       <hr class="my-4 opacity-25" style="max-width: 800px; margin: 0 auto;">
       <p class="mb-0 text-muted small">© 2026 FOLIUX. Rule-based investing for disciplined wealth creation.</p>
