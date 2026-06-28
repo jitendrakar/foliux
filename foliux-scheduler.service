@@ -1,0 +1,16 @@
+[Unit]
+Description=Foliux Master Scheduler
+After=network.target
+
+[Service]
+User={{USER}}
+WorkingDirectory={{LIVE_DIR}}
+ExecStart={{LIVE_DIR}}/venv/bin/python manage.py master_scheduler
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=foliux-scheduler
+
+[Install]
+WantedBy=multi-user.target

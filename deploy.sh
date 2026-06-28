@@ -139,12 +139,22 @@ else
     echo -e "${YELLOW}systemctl not found, skipping service restart.${NC}"
 fi
 
-# Restart Master Scheduler
-if [ -f "./start_scheduler.sh" ]; then
-    echo -e "${YELLOW}Restarting Master Scheduler background process...${NC}"
-    chmod +x start_scheduler.sh
-    ./start_scheduler.sh
+# Setup and Restart Master Scheduler systemd service
+SCHEDULER_SERVICE="foliux-scheduler"
+if [ -f "./foliux-scheduler.service" ]; then
+    echo -e "${YELLOW}Configuring Master Scheduler systemd service...${NC}"
+    # Replace placeholders with actual deployment user and directory
+    sed -e "s|{{USER}}|$USER|g" \
+        -e "s|{{LIVE_DIR}}|$LIVE_DIR|g" \
+        ./foliux-scheduler.service > /tmp/foliux-scheduler.service
+    sudo mv /tmp/foliux-scheduler.service /etc/systemd/system/
+    
+    sudo systemctl daemon-reload
+    sudo systemctl enable $SCHEDULER_SERVICE
+    sudo systemctl restart $SCHEDULER_SERVICE
+    check_status "Restarting Master Scheduler service"
 fi
+
 
 echo -e "\n${GREEN}==========================================${NC}"
 echo -e "${GREEN}   DEPLOYMENT COMPLETED SUCCESSFULLY!     ${NC}"
