@@ -104,9 +104,26 @@ fi
 # Venv, Dependencies and Migrations
 if [ -d "$VENV_PATH" ]; then
     source "$VENV_PATH/bin/activate"
-    echo -e "${YELLOW}Installing dependencies...${NC}"
-    pip install -r requirements.txt > /dev/null
-    check_status "Installing dependencies"
+    
+    echo -e "${YELLOW}Upgrading pip...${NC}"
+    pip install --upgrade pip > /dev/null 2>&1
+    
+    echo -e "${YELLOW}Installing dependencies (this may take a minute)...${NC}"
+    PIP_OUTPUT=$(pip install -r requirements.txt 2>&1)
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}SUCCESS: Dependencies installed successfully.${NC}"
+    else
+        echo -e "${YELLOW}Pip install failed. Installing system libraries to compile dependencies...${NC}"
+        if command -v apt-get >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq python3-dev build-essential libssl-dev libffi-dev rustc pkg-config
+            echo -e "${YELLOW}Retrying dependencies installation...${NC}"
+            PIP_OUTPUT=$(pip install -r requirements.txt 2>&1)
+            check_status "Dependencies installation (retry)" "$PIP_OUTPUT"
+        else
+            check_status "Dependencies installation" "$PIP_OUTPUT"
+        fi
+    fi
     
     echo -e "${YELLOW}Running database migrations...${NC}"
     python manage.py migrate --noinput
