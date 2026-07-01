@@ -1327,12 +1327,12 @@ class IncomeTaxBaseModel(models.Model):
 
 
 class IncomeTaxProfile(IncomeTaxBaseModel):
-    pan = models.CharField(max_length=10)
-    aadhaar = models.CharField(max_length=12, blank=True, null=True)
+    pan = models.CharField(max_length=50)
+    aadhaar = models.CharField(max_length=50, blank=True, null=True)
     name = models.CharField(max_length=255)
-    dob = models.CharField(max_length=10) # DDMMYYYY or YYYY-MM-DD
+    dob = models.CharField(max_length=50) # DDMMYYYY or YYYY-MM-DD
     email = models.CharField(max_length=255, blank=True, null=True)
-    mobile = models.CharField(max_length=20, blank=True, null=True)
+    mobile = models.CharField(max_length=50, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
 
     class Meta:
@@ -1343,12 +1343,12 @@ class IncomeTaxProfile(IncomeTaxBaseModel):
 
 class IncomeTaxTds(IncomeTaxBaseModel):
     deductor_name = models.CharField(max_length=255, blank=True, null=True)
-    tan = models.CharField(max_length=10, blank=True, null=True)
-    section = models.CharField(max_length=10, blank=True, null=True)
+    tan = models.CharField(max_length=50, blank=True, null=True)
+    section = models.CharField(max_length=50, blank=True, null=True)
     amount_paid = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0'))
     tax_deducted = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0'))
     tax_collected = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0'))
-    quarter = models.CharField(max_length=2, blank=True, null=True) # e.g. 'Q1'
+    quarter = models.CharField(max_length=50, blank=True, null=True) # e.g. 'Q1'
 
     class Meta:
         db_table = 'income_tax_tds'
@@ -1377,7 +1377,7 @@ class IncomeTaxInterest(IncomeTaxBaseModel):
 
 class IncomeTaxDividend(IncomeTaxBaseModel):
     company_name = models.CharField(max_length=255, blank=True, null=True)
-    isin = models.CharField(max_length=12, blank=True, null=True)
+    isin = models.CharField(max_length=50, blank=True, null=True)
     amount = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0'))
     date = models.DateField(blank=True, null=True)
 
@@ -1387,7 +1387,7 @@ class IncomeTaxDividend(IncomeTaxBaseModel):
 
 class IncomeTaxEquity(IncomeTaxBaseModel):
     broker = models.CharField(max_length=255, blank=True, null=True)
-    isin = models.CharField(max_length=12, blank=True, null=True)
+    isin = models.CharField(max_length=50, blank=True, null=True)
     buy_value = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0'))
     sell_value = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0'))
     quantity = models.DecimalField(max_digits=15, decimal_places=4, default=Decimal('0'))
@@ -1423,8 +1423,8 @@ class IncomeTaxSft(IncomeTaxBaseModel):
 class IncomeTaxTaxPaid(IncomeTaxBaseModel):
     tax_type = models.CharField(max_length=100) # e.g. 'Advance Tax', 'Self Assessment Tax'
     challan_details = models.TextField(blank=True, null=True)
-    bsr_code = models.CharField(max_length=10, blank=True, null=True)
-    challan_number = models.CharField(max_length=20, blank=True, null=True)
+    bsr_code = models.CharField(max_length=50, blank=True, null=True)
+    challan_number = models.CharField(max_length=50, blank=True, null=True)
     date = models.DateField(blank=True, null=True)
     amount = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0'))
 
@@ -1435,7 +1435,7 @@ class IncomeTaxTaxPaid(IncomeTaxBaseModel):
 class IncomeTaxRefund(IncomeTaxBaseModel):
     refund_amount = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0'))
     date = models.DateField(blank=True, null=True)
-    assessment_year = models.CharField(max_length=9) # e.g. '2025-26'
+    assessment_year = models.CharField(max_length=50) # e.g. '2025-26'
     status = models.CharField(max_length=100, blank=True, null=True)
 
     class Meta:
@@ -1443,7 +1443,7 @@ class IncomeTaxRefund(IncomeTaxBaseModel):
 
 
 class IncomeTaxDemand(IncomeTaxBaseModel):
-    assessment_year = models.CharField(max_length=9)
+    assessment_year = models.CharField(max_length=50)
     outstanding_demand = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0'))
     status = models.CharField(max_length=100, blank=True, null=True)
 
