@@ -798,10 +798,31 @@ function render(data) {
 }
 
 function updateStatCards(data) {
-  // Salary
-  const totalSalary = (data.salary || []).reduce((s, r) => s + parseFloat(r.salary || 0), 0);
+  // Salary: Group by employer to prioritize Annexure II gross values over Section 192 TDS values to avoid double-counting
+  const empSalaries = {};
+  (data.salary || []).forEach(r => {
+    const baseName = (r.employer_name || '').split(' - ')[0] || 'Unknown';
+    const isAnnexureII = (r.employer_name || '').includes('Annexure II');
+    const amt = parseFloat(r.salary || 0) + parseFloat(r.perquisites || 0);
+    
+    if (!empSalaries[baseName]) {
+      empSalaries[baseName] = { annexure: null, tds: null };
+    }
+    if (isAnnexureII) {
+      empSalaries[baseName].annexure = amt;
+    } else {
+      empSalaries[baseName].tds = amt;
+    }
+  });
+  
+  let totalSalary = 0;
+  for (const name in empSalaries) {
+    const val = empSalaries[name];
+    totalSalary += val.annexure !== null ? val.annexure : (val.tds || 0);
+  }
+  
   document.getElementById('sc-salary').textContent = fmt(totalSalary);
-  document.getElementById('sc-salary-sub').textContent = `${(data.salary||[]).length} record(s)`;
+  document.getElementById('sc-salary-sub').textContent = `${(data.salary||[]).length} category rows`;
   // TDS
   const totalTds = (data.tds || []).reduce((s, r) => s + parseFloat(r.tax_deducted || 0), 0);
   document.getElementById('sc-tds').textContent = fmt(totalTds);

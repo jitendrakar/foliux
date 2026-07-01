@@ -237,6 +237,7 @@ def parse_and_import_ais(user, decrypted_text, financial_year, duplicate_action=
 
     imported_on = timezone.now()
     source = 'AIS JSON'
+    salary_aggregates = {}
 
     # Save/Update Profile
     profile_record, created = IncomeTaxProfile.objects.get_or_create(
@@ -327,9 +328,11 @@ def parse_and_import_ais(user, decrypted_text, financial_year, duplicate_action=
                     code = ''
                     deductor_name = ''
                     tan_val = ''
+                    info_desc = ''
                     for l2_row in l2_rows:
                         code = get_field_by_label(l2_row, l2_labels, ['code']) or code
                         source_str = get_field_by_label(l2_row, l2_labels, ['source']) or ''
+                        info_desc = get_field_by_label(l2_row, l2_labels, ['description', 'desc']) or info_desc
                         if source_str:
                             deductor_name, tan_val = parse_source_name_and_id(source_str)
 
@@ -351,14 +354,22 @@ def parse_and_import_ais(user, decrypted_text, financial_year, duplicate_action=
                         counts['tds'] += 1
 
                         if '192' in code or 'salary' in title.lower():
-                            if duplicate_action == 'merge':
-                                if IncomeTaxSalary.objects.filter(user=user, financial_year=financial_year, employer_name=deductor_name, salary=amount_paid, tax_deducted=tax_deducted).exists():
-                                    continue
-                            IncomeTaxSalary.objects.create(
-                                user=user, financial_year=financial_year, source=source, imported_on=imported_on, json_reference=l1_row,
-                                employer_name=deductor_name, salary=amount_paid, perquisites=Decimal('0'), tax_deducted=tax_deducted
-                            )
-                            counts['salary'] += 1
+                            emp_key = source_str if source_str else deductor_name
+                            if not emp_key:
+                                emp_key = 'Unknown Employer'
+                            
+                            suffix = f" - {info_desc}" if info_desc else (f" - {title}" if title else " - Salary received (Section 192)")
+                            full_emp_name = f"{emp_key}{suffix}"
+                            
+                            if full_emp_name not in salary_aggregates:
+                                salary_aggregates[full_emp_name] = {
+                                    'salary': Decimal('0'),
+                                    'perquisites': Decimal('0'),
+                                    'tax_deducted': Decimal('0'),
+                                    'json_reference': l1_row
+                                }
+                            salary_aggregates[full_emp_name]['salary'] += amount_paid
+                            salary_aggregates[full_emp_name]['tax_deducted'] += tax_deducted
                 
                 # --- SECTION: sft ---
                 elif sec_key == 'sft':
@@ -515,6 +526,7 @@ def parse_and_import_ais(user, decrypted_text, financial_year, duplicate_action=
                         code = get_field_by_label(l2_row, l2_labels, ['code']) or ''
                         source_str = get_field_by_label(l2_row, l2_labels, ['source']) or ''
                         source_name, source_id = parse_source_name_and_id(source_str)
+                        info_desc = get_field_by_label(l2_row, l2_labels, ['description', 'desc']) or ''
                         
                         for l1_row in l1_rows:
                             row_str = str(l1_row)
@@ -525,20 +537,20 @@ def parse_and_import_ais(user, decrypted_text, financial_year, duplicate_action=
                                 gross = parse_decimal(get_field_by_label(l1_row, l1_labels, ['grossSalary', 'gross']))
                                 perks = parse_decimal(get_field_by_label(l1_row, l1_labels, ['perquisites', 'valueOfPerquisites172']))
                                 
-                                salary_record = IncomeTaxSalary.objects.filter(user=user, financial_year=financial_year, employer_name=source_name).first()
-                                if salary_record:
-                                    salary_record.salary = gross
-                                    salary_record.perquisites = perks
-                                    salary_record.save()
-                                else:
-                                    if duplicate_action == 'merge':
-                                        if IncomeTaxSalary.objects.filter(user=user, financial_year=financial_year, employer_name=source_name, salary=gross).exists():
-                                            continue
-                                    IncomeTaxSalary.objects.create(
-                                        user=user, financial_year=financial_year, source=source, imported_on=imported_on, json_reference=l1_row,
-                                        employer_name=source_name, salary=gross, perquisites=perks, tax_deducted=Decimal('0')
-                                    )
-                                    counts['salary'] += 1
+                                emp_key = source_str if source_str else source_name
+                                if not emp_key:
+                                    emp_key = 'Unknown Employer'
+                                
+                                suffix = f" - {info_desc}" if info_desc else (f" - {title}" if title else " - Salary (TDS Annexure II)")
+                                full_emp_name = f"{emp_key}{suffix}"
+                                
+                                if full_emp_name not in salary_aggregates:
+                                    salary_aggregates[full_emp_name] = {
+                                        'salary': gross,
+                                        'perquisites': perks,
+                                        'tax_deducted': Decimal('0'),
+                                        'json_reference': l1_row
+                                    }
     else:
         # LEGACY/SIMPLE FALLBACK (uses find_all_lists_matching_key for flat formats)
         tds_entries = find_all_lists_matching_key(data, 'tds') or find_all_lists_matching_key(data, 'tcs')
@@ -570,14 +582,19 @@ def parse_and_import_ais(user, decrypted_text, financial_year, duplicate_action=
             counts['tds'] += 1
 
             if section == '192' or 'salary' in str(entry).lower():
-                if duplicate_action == 'merge':
-                    if IncomeTaxSalary.objects.filter(user=user, financial_year=financial_year, employer_name=deductor_name, salary=amount_paid, tax_deducted=tax_deducted).exists():
-                        continue
-                IncomeTaxSalary.objects.create(
-                    user=user, financial_year=financial_year, source=source, imported_on=imported_on, json_reference=entry,
-                    employer_name=deductor_name, salary=amount_paid, perquisites=Decimal('0'), tax_deducted=tax_deducted
-                )
-                counts['salary'] += 1
+                emp_key = deductor_name or 'Unknown Employer'
+                suffix = " - Salary received (Section 192)"
+                full_emp_name = f"{emp_key}{suffix}"
+                
+                if full_emp_name not in salary_aggregates:
+                    salary_aggregates[full_emp_name] = {
+                        'salary': Decimal('0'),
+                        'perquisites': Decimal('0'),
+                        'tax_deducted': Decimal('0'),
+                        'json_reference': entry
+                    }
+                salary_aggregates[full_emp_name]['salary'] += amount_paid
+                salary_aggregates[full_emp_name]['tax_deducted'] += tax_deducted
 
         # 2. Process SFT Entries
         for entry in sft_entries:
@@ -722,6 +739,17 @@ def parse_and_import_ais(user, decrypted_text, financial_year, duplicate_action=
                 category=category, description=desc, amount=amount
             )
             counts['other'] += 1
+
+    # Write aggregated salary records to database
+    for emp_name, agg in salary_aggregates.items():
+        if duplicate_action == 'merge':
+            if IncomeTaxSalary.objects.filter(user=user, financial_year=financial_year, employer_name=emp_name, salary=agg['salary']).exists():
+                continue
+        IncomeTaxSalary.objects.create(
+            user=user, financial_year=financial_year, source=source, imported_on=imported_on, json_reference=agg['json_reference'],
+            employer_name=emp_name, salary=agg['salary'], perquisites=agg['perquisites'], tax_deducted=agg['tax_deducted']
+        )
+        counts['salary'] += 1
 
     update_user_tax_profile(user, financial_year, counts)
 
