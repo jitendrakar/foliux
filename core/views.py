@@ -5284,6 +5284,133 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 import json
+import re
+from .ais_importer import decrypt_ais_json, parse_and_import_ais
+
+import logging
+logger = logging.getLogger(__name__)
+
+def extract_fy_from_filename(filename):
+    match = re.search(r'(\d{4}-\d{2,4})', filename)
+    if match:
+        return match.group(1)
+    return None
+
+@login_required
+@require_POST
+def import_ais_api(request):
+    if 'ais_file' not in request.FILES:
+        return JsonResponse({'status': 'error', 'message': 'No file uploaded.'}, status=400)
+    
+    ais_file = request.FILES['ais_file']
+    password = request.POST.get('password', '').strip()
+    duplicate_action = request.POST.get('duplicate_action', '')
+    
+    if ais_file.size == 0:
+        return JsonResponse({'status': 'error', 'message': 'Empty File.'}, status=400)
+    if not (ais_file.name.lower().endswith('.json') or ais_file.name.lower().endswith('.zip')):
+        return JsonResponse({'status': 'error', 'message': 'Accept only .json or .zip files.'}, status=400)
+
+    fy = extract_fy_from_filename(ais_file.name)
+    if not fy:
+        return JsonResponse({'status': 'error', 'message': 'Unsupported AIS Version: Could not determine Financial Year from filename. Expected format like XXXPK3598X_2025-26_AIS_01072026.json or .zip.'}, status=400)
+
+    try:
+        content_bytes = ais_file.read()
+    except Exception:
+        return JsonResponse({'status': 'error', 'message': 'Corrupted File.'}, status=400)
+
+    try:
+        decrypted_text = decrypt_ais_json(content_bytes, password)
+    except ValueError as e:
+        logger.error(f"AIS decrypt ValueError: {e}")
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    except Exception as e:
+        import traceback
+        logger.error(f"AIS decrypt Exception: {e}\n{traceback.format_exc()}")
+        return JsonResponse({'status': 'error', 'message': f'Decryption failed: {e}'}, status=400)
+
+    try:
+        counts_or_duplicate, err_msg = parse_and_import_ais(request.user, decrypted_text, fy, duplicate_action=duplicate_action)
+    except Exception as e:
+        import traceback
+        logger.error(f"AIS parse/import Exception: {e}\n{traceback.format_exc()}")
+        return JsonResponse({'status': 'error', 'message': f'Import failed: {e}'}, status=500)
+
+    if err_msg:
+        return JsonResponse({'status': 'error', 'message': err_msg}, status=400)
+
+    if counts_or_duplicate and 'status' in counts_or_duplicate and counts_or_duplicate['status'] == 'duplicate_detected':
+        return JsonResponse({
+            'status': 'duplicate_detected',
+            'financial_year': counts_or_duplicate['financial_year'],
+            'message': f"Existing records found for Financial Year {counts_or_duplicate['financial_year']}."
+        })
+
+    return JsonResponse({
+        'status': 'success',
+        'financial_year': fy,
+        'counts': counts_or_duplicate
+    })
+
+
+@login_required
+def ais_dashboard(request):
+    from .models import IncomeTaxProfile
+    user = request.user
+    available_fys = list(IncomeTaxProfile.objects.filter(user=user).values_list('financial_year', flat=True).distinct().order_by('-financial_year'))
+    selected_fy = request.GET.get('fy', available_fys[0] if available_fys else '')
+    return render(request, 'core/ais_dashboard.html', {
+        'available_fys': available_fys,
+        'selected_fy': selected_fy,
+    })
+
+
+@login_required
+def ais_data_api(request):
+    from decimal import Decimal
+    from django.forms.models import model_to_dict
+    from .models import (
+        IncomeTaxProfile, IncomeTaxTds, IncomeTaxSalary, IncomeTaxInterest,
+        IncomeTaxDividend, IncomeTaxEquity, IncomeTaxMutualFund, IncomeTaxSft,
+        IncomeTaxTaxPaid, IncomeTaxRefund, IncomeTaxDemand, IncomeTaxOther
+    )
+    
+    fy = request.GET.get('fy')
+    if not fy:
+        return JsonResponse({'status': 'error', 'message': 'Missing Financial Year parameter.'}, status=400)
+        
+    user = request.user
+    
+    def serialize_qs(qs):
+        return [model_to_dict(obj, exclude=['user', 'json_reference']) for obj in qs]
+        
+    data = {
+        'profile': serialize_qs(IncomeTaxProfile.objects.filter(user=user, financial_year=fy)),
+        'tds': serialize_qs(IncomeTaxTds.objects.filter(user=user, financial_year=fy)),
+        'salary': serialize_qs(IncomeTaxSalary.objects.filter(user=user, financial_year=fy)),
+        'interest': serialize_qs(IncomeTaxInterest.objects.filter(user=user, financial_year=fy)),
+        'dividend': serialize_qs(IncomeTaxDividend.objects.filter(user=user, financial_year=fy)),
+        'equity': serialize_qs(IncomeTaxEquity.objects.filter(user=user, financial_year=fy)),
+        'mutual_fund': serialize_qs(IncomeTaxMutualFund.objects.filter(user=user, financial_year=fy)),
+        'sft': serialize_qs(IncomeTaxSft.objects.filter(user=user, financial_year=fy)),
+        'tax_payment': serialize_qs(IncomeTaxTaxPaid.objects.filter(user=user, financial_year=fy)),
+        'refund': serialize_qs(IncomeTaxRefund.objects.filter(user=user, financial_year=fy)),
+        'demand': serialize_qs(IncomeTaxDemand.objects.filter(user=user, financial_year=fy)),
+        'other': serialize_qs(IncomeTaxOther.objects.filter(user=user, financial_year=fy)),
+    }
+    
+    import datetime
+    for key, items in data.items():
+        for item in items:
+            for k, v in list(item.items()):
+                if isinstance(v, (datetime.datetime, datetime.date)):
+                    item[k] = v.isoformat()
+                elif isinstance(v, Decimal):
+                    item[k] = float(v)
+                    
+    return JsonResponse({'status': 'success', 'financial_year': fy, 'data': data})
+
 
 @login_required
 @require_POST

@@ -1,0 +1,981 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  /* ═══════════════════════════════════════
+     AIS COMMAND CENTRE — Theme-Aware Design
+     Light: clean slate/white
+     Dark:  midnight navy × electric indigo
+  ═══════════════════════════════════════ */
+
+  /* ── LIGHT MODE (default) ── */
+  :root {
+    --ais-bg:        #f1f5f9;
+    --ais-surface:   #ffffff;
+    --ais-panel:     #f8fafc;
+    --ais-border:    rgba(0,0,0,0.08);
+    --ais-border2:   rgba(0,0,0,0.14);
+    --ais-text:      #1e293b;
+    --ais-muted:     #64748b;
+    --ais-topbar-bg: #ffffff;
+    --ais-sidebar-bg:#ffffff;
+    --ais-th-bg:     rgba(0,0,0,0.03);
+    --ais-row-hover: rgba(0,0,0,0.02);
+    --ais-row-sep:   rgba(0,0,0,0.04);
+    --ais-overlay:   rgba(241,245,249,0.75);
+    --ais-loader-border: rgba(99,102,241,0.2);
+    --ais-indigo:    #6366f1;
+    --ais-violet:    #8b5cf6;
+    --ais-cyan:      #06b6d4;
+    --ais-emerald:   #059669;
+    --ais-amber:     #d97706;
+    --ais-rose:      #e11d48;
+    --ais-gold:      #f59e0b;
+    --ais-sidebar-w: 240px;
+  }
+
+  /* ── DARK MODE ── */
+  html[data-theme="dark"] {
+    --ais-bg:        #07090f;
+    --ais-surface:   #0d1117;
+    --ais-panel:     #111827;
+    --ais-border:    rgba(255,255,255,0.07);
+    --ais-border2:   rgba(255,255,255,0.12);
+    --ais-text:      #e2e8f0;
+    --ais-muted:     #64748b;
+    --ais-topbar-bg: #0d1117;
+    --ais-sidebar-bg:#0d1117;
+    --ais-th-bg:     rgba(255,255,255,0.04);
+    --ais-row-hover: rgba(255,255,255,0.03);
+    --ais-row-sep:   rgba(255,255,255,0.04);
+    --ais-overlay:   rgba(7,9,15,0.7);
+    --ais-loader-border: rgba(99,102,241,0.2);
+    --ais-indigo:    #6366f1;
+    --ais-violet:    #8b5cf6;
+    --ais-cyan:      #06b6d4;
+    --ais-emerald:   #10b981;
+    --ais-amber:     #f59e0b;
+    --ais-rose:      #f43f5e;
+  }
+
+  * { box-sizing: border-box; }
+
+  .ais-root {
+    font-family: 'Inter', sans-serif;
+    background: var(--ais-bg);
+    min-height: 100vh;
+    color: var(--ais-text);
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── TOP HEADER BAR ── */
+  .ais-topbar {
+    background: var(--ais-topbar-bg);
+    border-bottom: 1px solid var(--ais-border);
+    padding: 0.9rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .ais-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .ais-brand-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--ais-indigo), var(--ais-violet));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; color: #fff;
+    box-shadow: 0 0 16px rgba(99,102,241,0.3);
+  }
+
+  .ais-brand-title {
+    font-size: 1.05rem; font-weight: 800;
+    color: var(--ais-text);
+    letter-spacing: -0.02em; margin: 0;
+  }
+
+  .ais-brand-sub {
+    font-size: 0.7rem; color: var(--ais-muted);
+    font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
+  }
+
+  .ais-topbar-right { display: flex; align-items: center; gap: 0.75rem; }
+
+  .ais-fy-select {
+    background: var(--ais-panel);
+    border: 1px solid var(--ais-border2);
+    color: var(--ais-text);
+    border-radius: 8px;
+    padding: 0.4rem 0.85rem;
+    font-size: 0.82rem;
+    font-family: 'JetBrains Mono', monospace; font-weight: 600;
+    cursor: pointer; outline: none; transition: border-color 0.2s;
+  }
+  .ais-fy-select:focus { border-color: var(--ais-indigo); }
+  html[data-theme="dark"] .ais-fy-select option { background: #1e293b; color: #fff; }
+
+  .ais-topbar-btn {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.4rem 0.9rem; border-radius: 8px;
+    font-size: 0.8rem; font-weight: 600;
+    text-decoration: none; transition: all 0.2s;
+    border: 1px solid var(--ais-border2);
+    background: transparent; color: var(--ais-muted); cursor: pointer;
+  }
+  .ais-topbar-btn:hover { border-color: var(--ais-indigo); color: var(--ais-indigo); }
+
+  /* ── BODY LAYOUT ── */
+  .ais-body { display: flex; flex: 1; }
+
+  /* ── SIDEBAR ── */
+  .ais-sidebar {
+    width: var(--ais-sidebar-w);
+    background: var(--ais-sidebar-bg);
+    border-right: 1px solid var(--ais-border);
+    display: flex; flex-direction: column;
+    padding: 1.5rem 0.75rem; gap: 0.25rem;
+    position: sticky; top: 58px;
+    height: calc(100vh - 58px); overflow-y: auto; flex-shrink: 0;
+  }
+
+  .ais-nav-group-label {
+    font-size: 0.65rem; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ais-muted);
+    padding: 0.5rem 0.75rem 0.25rem; margin-top: 0.5rem;
+  }
+  .ais-nav-group-label:first-child { margin-top: 0; }
+
+  .ais-nav-item {
+    display: flex; align-items: center; gap: 0.65rem;
+    padding: 0.6rem 0.75rem; border-radius: 8px;
+    font-size: 0.83rem; font-weight: 500;
+    color: var(--ais-muted); cursor: pointer;
+    border: none; background: transparent; width: 100%;
+    text-align: left; transition: all 0.15s; position: relative;
+  }
+  .ais-nav-item:hover { background: var(--ais-row-hover); color: var(--ais-text); }
+  .ais-nav-item.active {
+    background: rgba(99,102,241,0.1);
+    color: var(--ais-indigo); font-weight: 700;
+  }
+  html[data-theme="dark"] .ais-nav-item.active { color: #fff; background: rgba(99,102,241,0.15); }
+  .ais-nav-item.active::before {
+    content: ''; position: absolute; left: 0; top: 20%; height: 60%; width: 3px;
+    background: linear-gradient(180deg, var(--ais-indigo), var(--ais-violet));
+    border-radius: 0 3px 3px 0;
+  }
+  .ais-nav-item .nav-icon { width: 16px; opacity: 0.6; flex-shrink: 0; }
+  .ais-nav-item.active .nav-icon { opacity: 1; }
+  .ais-nav-badge {
+    margin-left: auto;
+    background: rgba(99,102,241,0.12); color: var(--ais-indigo);
+    font-size: 0.65rem; font-weight: 700;
+    padding: 0.1rem 0.45rem; border-radius: 20px; min-width: 20px; text-align: center;
+  }
+
+  /* ── MAIN CONTENT ── */
+  .ais-main { flex: 1; padding: 2rem; min-width: 0; overflow-x: hidden; }
+
+  /* ── STAT CARDS ── */
+  .ais-stat-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem; margin-bottom: 2rem;
+  }
+  .ais-stat-card {
+    background: var(--ais-surface);
+    border: 1px solid var(--ais-border);
+    border-radius: 14px; padding: 1.1rem 1.25rem;
+    position: relative; overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+  }
+  .ais-stat-card:hover { transform: translateY(-2px); border-color: var(--ais-border2); box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+  html[data-theme="dark"] .ais-stat-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+  .ais-stat-card::after {
+    content: ''; position: absolute; top: 0; right: 0;
+    width: 60px; height: 60px; border-radius: 0 14px 0 60px; opacity: 0.07;
+  }
+  html[data-theme="dark"] .ais-stat-card::after { opacity: 0.12; }
+  .ais-stat-card.indigo::after  { background: var(--ais-indigo); }
+  .ais-stat-card.cyan::after    { background: var(--ais-cyan); }
+  .ais-stat-card.emerald::after { background: var(--ais-emerald); }
+  .ais-stat-card.amber::after   { background: var(--ais-amber); }
+  .ais-stat-card.violet::after  { background: var(--ais-violet); }
+  .ais-stat-card.rose::after    { background: var(--ais-rose); }
+
+  .ais-stat-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem; margin-bottom: 0.75rem;
+  }
+  .ais-stat-icon.indigo  { background: rgba(99,102,241,0.12); color: var(--ais-indigo); }
+  .ais-stat-icon.cyan    { background: rgba(6,182,212,0.12);  color: var(--ais-cyan); }
+  .ais-stat-icon.emerald { background: rgba(5,150,105,0.12);  color: var(--ais-emerald); }
+  .ais-stat-icon.amber   { background: rgba(217,119,6,0.12);  color: var(--ais-amber); }
+  .ais-stat-icon.violet  { background: rgba(139,92,246,0.12); color: var(--ais-violet); }
+  .ais-stat-icon.rose    { background: rgba(225,29,72,0.12);  color: var(--ais-rose); }
+
+  .ais-stat-label { font-size: 0.7rem; color: var(--ais-muted); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 0.2rem; }
+  .ais-stat-value { font-size: 1.3rem; font-weight: 800; color: var(--ais-text); letter-spacing: -0.02em; line-height: 1; }
+  .ais-stat-sub   { font-size: 0.72rem; color: var(--ais-muted); margin-top: 0.3rem; }
+
+  /* ── SECTION ── */
+  .ais-section { display: none; }
+  .ais-section.active { display: block; }
+
+  .ais-section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.25rem;
+  }
+  .ais-section-title {
+    font-size: 1rem; font-weight: 700; color: var(--ais-text);
+    display: flex; align-items: center; gap: 0.5rem; margin: 0;
+  }
+  .ais-section-title .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* ── SEARCH ── */
+  .ais-search-wrap { position: relative; }
+  .ais-search-wrap input {
+    background: var(--ais-surface); border: 1px solid var(--ais-border);
+    border-radius: 8px; color: var(--ais-text);
+    font-size: 0.8rem; padding: 0.4rem 0.75rem 0.4rem 2rem;
+    outline: none; width: 220px; transition: border-color 0.2s;
+  }
+  .ais-search-wrap input:focus { border-color: var(--ais-indigo); }
+  .ais-search-wrap input::placeholder { color: var(--ais-muted); }
+  .ais-search-wrap .si { position: absolute; left: 0.6rem; top: 50%; transform: translateY(-50%); color: var(--ais-muted); font-size: 0.75rem; }
+
+  /* ── TABLE ── */
+  .ais-table-wrap {
+    background: var(--ais-surface); border: 1px solid var(--ais-border);
+    border-radius: 12px; overflow: hidden; margin-bottom: 1.5rem;
+  }
+  .ais-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  .ais-table thead tr { background: var(--ais-th-bg); border-bottom: 1px solid var(--ais-border); }
+  .ais-table th {
+    padding: 0.7rem 1rem; font-weight: 700; font-size: 0.7rem;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--ais-muted); white-space: nowrap;
+  }
+  .ais-table td {
+    padding: 0.75rem 1rem; border-bottom: 1px solid var(--ais-row-sep);
+    vertical-align: middle; color: var(--ais-text);
+  }
+  .ais-table tbody tr:last-child td { border-bottom: none; }
+  .ais-table tbody tr { transition: background 0.12s; }
+  .ais-table tbody tr:hover { background: var(--ais-row-hover); }
+  .ais-table .text-right { text-align: right; }
+  .ais-table .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; }
+
+  .ais-table .val-green  { color: var(--ais-emerald); font-weight: 700; }
+  .ais-table .val-red    { color: var(--ais-rose);    font-weight: 700; }
+  .ais-table .val-amber  { color: var(--ais-amber);   font-weight: 700; }
+  .ais-table .val-white  { color: var(--ais-text);    font-weight: 600; }
+  .ais-table .val-muted  { color: var(--ais-muted); }
+
+  /* ── PILLS ── */
+  .ais-pill {
+    display: inline-block; padding: 0.18rem 0.6rem; border-radius: 20px;
+    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.02em;
+  }
+  .ais-pill-indigo  { background: rgba(99,102,241,0.1);  color: var(--ais-indigo);  border: 1px solid rgba(99,102,241,0.2); }
+  .ais-pill-cyan    { background: rgba(6,182,212,0.1);   color: var(--ais-cyan);    border: 1px solid rgba(6,182,212,0.2); }
+  .ais-pill-emerald { background: rgba(5,150,105,0.1);   color: var(--ais-emerald); border: 1px solid rgba(5,150,105,0.2); }
+  .ais-pill-rose    { background: rgba(225,29,72,0.1);   color: var(--ais-rose);    border: 1px solid rgba(225,29,72,0.2); }
+  .ais-pill-amber   { background: rgba(217,119,6,0.1);   color: var(--ais-amber);   border: 1px solid rgba(217,119,6,0.2); }
+  .ais-pill-violet  { background: rgba(139,92,246,0.1);  color: var(--ais-violet);  border: 1px solid rgba(139,92,246,0.2); }
+  .ais-pill-slate   { background: rgba(100,116,139,0.1); color: var(--ais-muted);   border: 1px solid rgba(100,116,139,0.2); }
+
+  /* ── PROFILE ── */
+  .ais-profile-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+  .ais-profile-card { background: var(--ais-surface); border: 1px solid var(--ais-border); border-radius: 10px; padding: 1rem 1.1rem; }
+  .ais-profile-card.wide { grid-column: 1 / -1; }
+  .ais-profile-label { font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ais-muted); margin-bottom: 0.3rem; }
+  .ais-profile-value { font-size: 0.95rem; font-weight: 600; color: var(--ais-text); }
+  .ais-profile-value.mono { font-family: 'JetBrains Mono', monospace; color: var(--ais-indigo); letter-spacing: 0.08em; }
+
+  /* ── EMPTY ── */
+  .ais-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 3rem 1rem; text-align: center; }
+  .ais-empty-icon { font-size: 2rem; opacity: 0.2; margin-bottom: 0.75rem; }
+  .ais-empty-text { color: var(--ais-muted); font-size: 0.85rem; }
+
+  /* ── NO DATA SCREEN ── */
+  .ais-no-data-screen { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 4rem 2rem; }
+  .ais-no-data-glow {
+    width: 110px; height: 110px; border-radius: 50%;
+    background: rgba(99,102,241,0.08);
+    border: 1px solid rgba(99,102,241,0.15);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.2rem; color: var(--ais-indigo); margin-bottom: 1.5rem;
+  }
+
+  /* ── SUCCESS BANNER ── */
+  .ais-success-banner {
+    background: rgba(5,150,105,0.06); border: 1px solid rgba(5,150,105,0.2);
+    border-radius: 10px; padding: 0.85rem 1.25rem;
+    display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem; font-size: 0.85rem;
+  }
+  .ais-success-banner .icon { color: var(--ais-emerald); font-size: 1rem; }
+  .ais-success-banner .msg { color: var(--ais-text); flex: 1; }
+  .ais-success-banner .close-btn { background: none; border: none; color: var(--ais-muted); cursor: pointer; padding: 0; }
+  .ais-success-banner .close-btn:hover { color: var(--ais-text); }
+
+  /* ── LOADING OVERLAY ── */
+  #aisLoadingOverlay {
+    position: fixed; inset: 0; background: var(--ais-overlay);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1000; backdrop-filter: blur(4px);
+  }
+  .ais-spinner {
+    width: 44px; height: 44px;
+    border: 3px solid var(--ais-loader-border);
+    border-top-color: var(--ais-indigo);
+    border-radius: 50%; animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .ais-sidebar { display: none; }
+    .ais-main { padding: 1rem; }
+    .ais-stat-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ais-root">
+
+  <!-- ═══ LOADING OVERLAY ═══ -->
+  <div id="aisLoadingOverlay" class="d-none">
+    <div class="ais-spinner"></div>
+  </div>
+
+  <!-- ═══ TOP BAR ═══ -->
+  <div class="ais-topbar">
+    <div class="ais-brand">
+      <div class="ais-brand-icon"><i class="fas fa-shield-alt"></i></div>
+      <div>
+        <div class="ais-brand-title">AIS Command Centre</div>
+        <div class="ais-brand-sub">Annual Information Statement · Income Tax Dept</div>
+      </div>
+    </div>
+    <div class="ais-topbar-right">
+      {% if available_fys %}
+      <select id="aisFYSelector" class="ais-fy-select" onchange="loadAisData()">
+        {% for fy in available_fys %}
+          <option value="{{ fy }}" {% if fy == selected_fy %}selected{% endif %}>FY {{ fy }}</option>
+        {% endfor %}
+      </select>
+      {% endif %}
+      <a href="/calc/" class="ais-topbar-btn ais-topbar-btn-outline">
+        <i class="fas fa-calculator"></i> Tax Calculator
+      </a>
+    </div>
+  </div>
+
+  <!-- ═══ BODY ═══ -->
+  <div class="ais-body">
+
+    {% if available_fys %}
+    <!-- ── SIDEBAR ── -->
+    <nav class="ais-sidebar">
+      <div class="ais-nav-group-label">Overview</div>
+      <button class="ais-nav-item active" onclick="showSection('s-overview', this)">
+        <i class="fas fa-th-large nav-icon"></i> Dashboard
+      </button>
+      <button class="ais-nav-item" onclick="showSection('s-profile', this)">
+        <i class="fas fa-id-card nav-icon"></i> Profile
+      </button>
+
+      <div class="ais-nav-group-label">Income</div>
+      <button class="ais-nav-item" onclick="showSection('s-salary', this)">
+        <i class="fas fa-briefcase nav-icon"></i> Salary
+        <span class="ais-nav-badge" id="nb-salary">—</span>
+      </button>
+      <button class="ais-nav-item" onclick="showSection('s-tds', this)">
+        <i class="fas fa-percentage nav-icon"></i> TDS / TCS
+        <span class="ais-nav-badge" id="nb-tds">—</span>
+      </button>
+      <button class="ais-nav-item" onclick="showSection('s-interest', this)">
+        <i class="fas fa-piggy-bank nav-icon"></i> Interest
+        <span class="ais-nav-badge" id="nb-interest">—</span>
+      </button>
+      <button class="ais-nav-item" onclick="showSection('s-dividend', this)">
+        <i class="fas fa-chart-pie nav-icon"></i> Dividends
+        <span class="ais-nav-badge" id="nb-dividend">—</span>
+      </button>
+
+      <div class="ais-nav-group-label">Securities</div>
+      <button class="ais-nav-item" onclick="showSection('s-equity', this)">
+        <i class="fas fa-building nav-icon"></i> Equity
+        <span class="ais-nav-badge" id="nb-equity">—</span>
+      </button>
+      <button class="ais-nav-item" onclick="showSection('s-mf', this)">
+        <i class="fas fa-layer-group nav-icon"></i> Mutual Funds
+        <span class="ais-nav-badge" id="nb-mf">—</span>
+      </button>
+      <button class="ais-nav-item" onclick="showSection('s-sft', this)">
+        <i class="fas fa-list nav-icon"></i> SFT Entries
+        <span class="ais-nav-badge" id="nb-sft">—</span>
+      </button>
+
+      <div class="ais-nav-group-label">Taxes</div>
+      <button class="ais-nav-item" onclick="showSection('s-taxpaid', this)">
+        <i class="fas fa-receipt nav-icon"></i> Taxes Paid
+        <span class="ais-nav-badge" id="nb-taxpaid">—</span>
+      </button>
+      <button class="ais-nav-item" onclick="showSection('s-refund', this)">
+        <i class="fas fa-undo-alt nav-icon"></i> Refunds
+        <span class="ais-nav-badge" id="nb-refund">—</span>
+      </button>
+      <button class="ais-nav-item" onclick="showSection('s-demand', this)">
+        <i class="fas fa-exclamation-triangle nav-icon"></i> Demands
+        <span class="ais-nav-badge" id="nb-demand">—</span>
+      </button>
+    </nav>
+
+    <!-- ── MAIN CONTENT ── -->
+    <main class="ais-main">
+
+      <!-- Success Banner -->
+      {% if selected_fy and request.GET.fy %}
+      <div class="ais-success-banner" id="importSuccessBanner">
+        <span class="icon"><i class="fas fa-check-circle"></i></span>
+        <span class="msg">
+          <strong>AIS Imported Successfully</strong> — FY <strong>{{ selected_fy }}</strong> data is now available across all sections.
+        </span>
+        <button class="close-btn" onclick="this.closest('.ais-success-banner').remove()"><i class="fas fa-times"></i></button>
+      </div>
+      {% endif %}
+
+      <!-- ═══ OVERVIEW / DASHBOARD SECTION ═══ -->
+      <div class="ais-section active" id="s-overview">
+        <div class="ais-section-header">
+          <h2 class="ais-section-title"><span class="dot" style="background:var(--ais-indigo);"></span> Dashboard Overview</h2>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="ais-stat-grid" id="statGrid">
+          <div class="ais-stat-card indigo">
+            <div class="ais-stat-icon indigo"><i class="fas fa-briefcase"></i></div>
+            <div class="ais-stat-label">Gross Salary</div>
+            <div class="ais-stat-value" id="sc-salary">₹—</div>
+            <div class="ais-stat-sub" id="sc-salary-sub">— records</div>
+          </div>
+          <div class="ais-stat-card cyan">
+            <div class="ais-stat-icon cyan"><i class="fas fa-percentage"></i></div>
+            <div class="ais-stat-label">Total TDS Deducted</div>
+            <div class="ais-stat-value" id="sc-tds">₹—</div>
+            <div class="ais-stat-sub" id="sc-tds-sub">— entries</div>
+          </div>
+          <div class="ais-stat-card emerald">
+            <div class="ais-stat-icon emerald"><i class="fas fa-piggy-bank"></i></div>
+            <div class="ais-stat-label">Interest Income</div>
+            <div class="ais-stat-value" id="sc-interest">₹—</div>
+            <div class="ais-stat-sub" id="sc-interest-sub">— accounts</div>
+          </div>
+          <div class="ais-stat-card amber">
+            <div class="ais-stat-icon amber"><i class="fas fa-chart-pie"></i></div>
+            <div class="ais-stat-label">Dividend Income</div>
+            <div class="ais-stat-value" id="sc-dividend">₹—</div>
+            <div class="ais-stat-sub" id="sc-dividend-sub">— companies</div>
+          </div>
+          <div class="ais-stat-card violet">
+            <div class="ais-stat-icon violet"><i class="fas fa-chart-line"></i></div>
+            <div class="ais-stat-label">Equity Transactions</div>
+            <div class="ais-stat-value" id="sc-equity">—</div>
+            <div class="ais-stat-sub" id="sc-equity-sub">buy + sell</div>
+          </div>
+          <div class="ais-stat-card rose">
+            <div class="ais-stat-icon rose"><i class="fas fa-layer-group"></i></div>
+            <div class="ais-stat-label">Mutual Fund Txns</div>
+            <div class="ais-stat-value" id="sc-mf">—</div>
+            <div class="ais-stat-sub" id="sc-mf-sub">purchase + redemption</div>
+          </div>
+        </div>
+
+        <!-- Salary Quick Table -->
+        <div class="ais-section-header">
+          <h3 class="ais-section-title" style="font-size:0.9rem;">
+            <span class="dot" style="background:var(--ais-indigo);box-shadow:0 0 6px var(--ais-indigo);"></span> Salary Breakdown
+          </h3>
+        </div>
+        <div class="ais-table-wrap">
+          <table class="ais-table">
+            <thead><tr>
+              <th>Employer</th>
+              <th class="text-right">Gross Salary</th>
+              <th class="text-right">Perquisites</th>
+              <th class="text-right">TDS Deducted</th>
+            </tr></thead>
+            <tbody id="ov-salaryBody"><tr><td colspan="4" class="ais-empty"><span class="ais-empty-text">Loading…</span></td></tr></tbody>
+          </table>
+        </div>
+
+        <!-- TDS Quick Table -->
+        <div class="ais-section-header">
+          <h3 class="ais-section-title" style="font-size:0.9rem;">
+            <span class="dot" style="background:var(--ais-cyan);box-shadow:0 0 6px var(--ais-cyan);"></span> Top TDS Deductors
+          </h3>
+        </div>
+        <div class="ais-table-wrap">
+          <table class="ais-table">
+            <thead><tr>
+              <th>Deductor</th>
+              <th class="mono">TAN</th>
+              <th>Section</th>
+              <th>Quarter</th>
+              <th class="text-right">Amount Paid</th>
+              <th class="text-right">TDS</th>
+            </tr></thead>
+            <tbody id="ov-tdsBody"><tr><td colspan="6" class="ais-empty"><span class="ais-empty-text">Loading…</span></td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══ PROFILE ═══ -->
+      <div class="ais-section" id="s-profile">
+        <div class="ais-section-header">
+          <h2 class="ais-section-title"><span class="dot" style="background:var(--ais-violet);"></span> Assessee Profile</h2>
+        </div>
+        <div class="ais-profile-grid" id="profileGrid">
+          <div class="ais-empty" style="grid-column:1/-1;"><div class="ais-empty-icon">👤</div><div class="ais-empty-text">Loading profile…</div></div>
+        </div>
+      </div>
+
+      <!-- ═══ SALARY ═══ -->
+      <div class="ais-section" id="s-salary">
+        <div class="ais-section-header">
+          <h2 class="ais-section-title"><span class="dot" style="background:var(--ais-indigo);"></span> Salary Income Records</h2>
+          <div class="ais-search-wrap"><i class="fas fa-search si"></i><input type="text" placeholder="Search employer…" oninput="filterTbl('salaryTbl', this.value)"></div>
+        </div>
+        <div class="ais-table-wrap">
+          <table class="ais-table" id="salaryTbl">
+            <thead><tr><th>Employer Name</th><th class="text-right">Gross Salary</th><th class="text-right">Perquisites</th><th class="text-right">TDS Deducted</th></tr></thead>
+            <tbody id="salaryTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══ TDS ═══ -->
+      <div class="ais-section" id="s-tds">
+        <div class="ais-section-header">
+          <h2 class="ais-section-title"><span class="dot" style="background:var(--ais-cyan);"></span> TDS / TCS Entries</h2>
+          <div class="ais-search-wrap"><i class="fas fa-search si"></i><input type="text" placeholder="Search deductor, TAN…" oninput="filterTbl('tdsTbl', this.value)"></div>
+        </div>
+        <div class="ais-table-wrap">
+          <table class="ais-table" id="tdsTbl">
+            <thead><tr><th>Deductor Name</th><th class="mono">TAN</th><th>Section</th><th>Quarter</th><th class="text-right">Amount Paid</th><th class="text-right">TDS</th><th class="text-right">TCS</th></tr></thead>
+            <tbody id="tdsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══ INTEREST ═══ -->
+      <div class="ais-section" id="s-interest">
+        <div class="ais-section-header">
+          <h2 class="ais-section-title"><span class="dot" style="background:var(--ais-emerald);"></span> Interest Income</h2>
+          <div class="ais-search-wrap"><i class="fas fa-search si"></i><input type="text" placeholder="Search bank…" oninput="filterTbl('interestTbl', this.value)"></div>
+        </div>
+        <div class="ais-table-wrap">
+          <table class="ais-table" id="interestTbl">
+            <thead><tr><th>Bank / Payer</th><th>Interest Type</th><th class="text-right">Amount</th></tr></thead>
+            <tbody id="interestTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══ DIVIDENDS ═══ -->
+      <div class="ais-section" id="s-dividend">
+        <div class="ais-section-header">
+          <h2 class="ais-section-title"><span class="dot" style="background:var(--ais-amber);"></span> Dividend Income</h2>
+          <div class="ais-search-wrap"><i class="fas fa-search si"></i><input type="text" placeholder="Search company…" oninput="filterTbl('dividendTbl', this.value)"></div>
+        </div>
+        <div class="ais-table-wrap">
+          <table class="ais-table" id="dividendTbl">
+            <thead><tr><th>Company Name</th><th class="text-right">Dividend Amount</th></tr></thead>
+            <tbody id="dividendTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══ EQUITY ═══ -->
+      <div class="ais-section" id="s-equity">
+        <div class="ais-section-header">
+          <h2 class="ais-section-title"><span class="dot" style="background:var(--ais-violet);"></span> Equity Share Transactions</h2>
+          <div class="ais-search-wrap"><i class="fas fa-search si"></i><input type="text" placeholder="Search broker, ISIN…" oninput="filterTbl('equityTbl', this.value)"></div>
+        </div>
+        <div class="ais-table-wrap">
+          <table class="ais-table" id="equityTbl">
+            <thead><tr><th>Broker</th><th class="mono">ISIN</th><th class="text-right">Buy Value</th><th class="text-right">Sell Value</th></tr></thead>
+            <tbody id="equityTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══ MUTUAL FUNDS ═══ -->
+      <div class="ais-section" id="s-mf">
+        <div class="ais-section-header">
+          <h2 class="ais-section-title"><span class="dot" style="background:var(--ais-rose);"></span> Mutual Fund Transactions</h2>
+          <div class="ais-search-wrap"><i class="fas fa-search si"></i><input type="text" placeholder="Search AMC, scheme…" oninput="filterTbl('mfTbl', this.value)"></div>
+        </div>
+        <div class="ais-table-wrap">
+          <table class="ais-table" id="mfTbl">
+            <thead><tr><th>AMC</th><th>Scheme</th><th class="text-right">Purchase</th><th class="text-right">Redemption</th><th class="text-right">Units</th></tr></thead>
+            <tbody id="mfTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══ SFT ═══ -->
+      <div class="ais-section" id="s-sft">
+        <div class="ais-section-header">
+          <h2 class="ais-section-title"><span class="dot" style="background:var(--ais-muted);"></span> SFT Entries</h2>
+          <div class="ais-search-wrap"><i class="fas fa-search si"></i><input type="text" placeholder="Search…" oninput="filterTbl('sftTbl', this.value)"></div>
+        </div>
+        <div class="ais-table-wrap">
+          <table class="ais-table" id="sftTbl">
+            <thead><tr><th>Transaction Type</th><th>Description</th><th class="text-right">Amount</th><th>Date</th></tr></thead>
+            <tbody id="sftTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══ TAXES PAID ═══ -->
+      <div class="ais-section" id="s-taxpaid">
+        <div class="ais-section-header">
+          <h2 class="ais-section-title"><span class="dot" style="background:var(--ais-cyan);"></span> Taxes Paid</h2>
+        </div>
+        <div class="ais-table-wrap">
+          <table class="ais-table">
+            <thead><tr><th>Tax Type</th><th class="mono">BSR Code</th><th class="mono">Challan No.</th><th>Date</th><th class="text-right">Amount</th></tr></thead>
+            <tbody id="taxPaymentTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══ REFUNDS ═══ -->
+      <div class="ais-section" id="s-refund">
+        <div class="ais-section-header">
+          <h2 class="ais-section-title"><span class="dot" style="background:var(--ais-emerald);"></span> Tax Refunds</h2>
+        </div>
+        <div class="ais-table-wrap">
+          <table class="ais-table">
+            <thead><tr><th>Assessment Year</th><th>Status</th><th>Date</th><th class="text-right">Refund Amount</th></tr></thead>
+            <tbody id="refundTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ═══ DEMANDS ═══ -->
+      <div class="ais-section" id="s-demand">
+        <div class="ais-section-header">
+          <h2 class="ais-section-title"><span class="dot" style="background:var(--ais-rose);"></span> Outstanding Tax Demands</h2>
+        </div>
+        <div class="ais-table-wrap">
+          <table class="ais-table">
+            <thead><tr><th>Assessment Year</th><th>Status / Section</th><th class="text-right">Demand Amount</th></tr></thead>
+            <tbody id="demandTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+
+    {% else %}
+    <!-- ── NO DATA SCREEN ── -->
+    <div class="ais-no-data-screen" style="flex:1;">
+      <div class="ais-no-data-glow"><i class="fas fa-file-import"></i></div>
+      <h2 style="color:#fff;font-weight:800;font-size:1.4rem;margin-bottom:0.5rem;">No AIS Data Imported</h2>
+      <p style="color:var(--ais-muted);max-width:380px;margin-bottom:1.5rem;font-size:0.9rem;">
+        Upload your password-protected AIS JSON from the Income Tax Calculator to see all your records here.
+      </p>
+      <a href="/calc/" style="background:linear-gradient(135deg,var(--ais-indigo),var(--ais-violet));color:#fff;padding:0.65rem 1.75rem;border-radius:10px;font-weight:700;font-size:0.9rem;text-decoration:none;display:inline-flex;align-items:center;gap:0.5rem;box-shadow:0 0 20px rgba(99,102,241,0.3);">
+        <i class="fas fa-upload"></i> Import AIS JSON
+      </a>
+    </div>
+    {% endif %}
+
+  </div><!-- /.ais-body -->
+</div><!-- /.ais-root -->
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/* ═══════════════════════════════════════
+   AIS Command Centre — JavaScript Engine
+═══════════════════════════════════════ */
+
+// ── Nav switching ──
+function showSection(id, btn) {
+  document.querySelectorAll('.ais-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.ais-nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── Currency formatter ──
+function fmt(amount) {
+  if (amount === undefined || amount === null || isNaN(amount)) return '₹0';
+  const n = parseFloat(amount);
+  if (n === 0) return '₹0';
+  let x = n.toFixed(2);
+  let [intPart, dec] = x.split('.');
+  let lastThree = intPart.slice(-3);
+  let other = intPart.slice(0, intPart.length - 3);
+  if (other) lastThree = ',' + lastThree;
+  let res = other.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + lastThree;
+  return '₹' + (dec && dec !== '00' ? res + '.' + dec : res);
+}
+
+function fmtNum(n) {
+  if (!n && n !== 0) return '—';
+  return parseFloat(n).toLocaleString('en-IN', {maximumFractionDigits: 2});
+}
+
+function fmtDate(s) {
+  if (!s) return '—';
+  try { const d = new Date(s); return isNaN(d) ? s : d.toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'}); }
+  catch(e) { return s; }
+}
+
+function empty(cols, msg = 'No records found') {
+  return `<tr><td colspan="${cols}"><div class="ais-empty"><div class="ais-empty-icon">📭</div><div class="ais-empty-text">${msg}</div></div></td></tr>`;
+}
+
+function setBadge(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val || '0';
+}
+
+// ── Load & render ──
+document.addEventListener('DOMContentLoaded', function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const fyParam = urlParams.get('fy');
+  if (fyParam) {
+    const sel = document.getElementById('aisFYSelector');
+    if (sel) { const opt = Array.from(sel.options).find(o => o.value === fyParam); if (opt) sel.value = fyParam; }
+  }
+  loadAisData();
+});
+
+function loadAisData() {
+  const sel = document.getElementById('aisFYSelector');
+  if (!sel || !sel.value) return;
+  const fy = sel.value;
+  document.getElementById('aisLoadingOverlay').classList.remove('d-none');
+  fetch(`/calc/ais/data/?fy=${fy}`)
+    .then(r => r.json())
+    .then(res => { if (res.status === 'success') render(res.data); })
+    .catch(err => console.error(err))
+    .finally(() => document.getElementById('aisLoadingOverlay').classList.add('d-none'));
+}
+
+function render(data) {
+  renderProfile(data.profile || []);
+  renderSalary(data.salary || []);
+  renderTds(data.tds || []);
+  renderInterest(data.interest || []);
+  renderDividend(data.dividend || []);
+  renderEquity(data.equity || []);
+  renderMF(data.mutual_fund || []);
+  renderSFT(data.sft || []);
+  renderTaxPaid(data.tax_payment || []);
+  renderRefund(data.refund || []);
+  renderDemand(data.demand || []);
+  updateStatCards(data);
+}
+
+function updateStatCards(data) {
+  // Salary
+  const totalSalary = (data.salary || []).reduce((s, r) => s + parseFloat(r.salary || 0), 0);
+  document.getElementById('sc-salary').textContent = fmt(totalSalary);
+  document.getElementById('sc-salary-sub').textContent = `${(data.salary||[]).length} record(s)`;
+  // TDS
+  const totalTds = (data.tds || []).reduce((s, r) => s + parseFloat(r.tax_deducted || 0), 0);
+  document.getElementById('sc-tds').textContent = fmt(totalTds);
+  document.getElementById('sc-tds-sub').textContent = `${(data.tds||[]).length} entries`;
+  // Interest
+  const totalInt = (data.interest || []).reduce((s, r) => s + parseFloat(r.amount || 0), 0);
+  document.getElementById('sc-interest').textContent = fmt(totalInt);
+  document.getElementById('sc-interest-sub').textContent = `${(data.interest||[]).length} accounts`;
+  // Dividend
+  const totalDiv = (data.dividend || []).reduce((s, r) => s + parseFloat(r.amount || 0), 0);
+  document.getElementById('sc-dividend').textContent = fmt(totalDiv);
+  document.getElementById('sc-dividend-sub').textContent = `${(data.dividend||[]).length} companies`;
+  // Equity
+  document.getElementById('sc-equity').textContent = `${(data.equity||[]).length}`;
+  // MF
+  document.getElementById('sc-mf').textContent = `${(data.mutual_fund||[]).length}`;
+  // Nav badges
+  setBadge('nb-salary',   (data.salary||[]).length);
+  setBadge('nb-tds',      (data.tds||[]).length);
+  setBadge('nb-interest', (data.interest||[]).length);
+  setBadge('nb-dividend', (data.dividend||[]).length);
+  setBadge('nb-equity',   (data.equity||[]).length);
+  setBadge('nb-mf',       (data.mutual_fund||[]).length);
+  setBadge('nb-sft',      (data.sft||[]).length);
+  setBadge('nb-taxpaid',  (data.tax_payment||[]).length);
+  setBadge('nb-refund',   (data.refund||[]).length);
+  setBadge('nb-demand',   (data.demand||[]).length);
+}
+
+function renderProfile(rows) {
+  const g = document.getElementById('profileGrid');
+  if (!rows.length) { g.innerHTML = '<div class="ais-empty" style="grid-column:1/-1;"><div class="ais-empty-icon">👤</div><div class="ais-empty-text">No profile data.</div></div>'; return; }
+  const p = rows[0];
+  g.innerHTML = `
+    <div class="ais-profile-card"><div class="ais-profile-label">Name of Assessee</div><div class="ais-profile-value">${p.name||'—'}</div></div>
+    <div class="ais-profile-card"><div class="ais-profile-label">PAN</div><div class="ais-profile-value mono">${p.pan||'—'}</div></div>
+    <div class="ais-profile-card"><div class="ais-profile-label">Aadhaar Number</div><div class="ais-profile-value mono">${p.aadhaar||'—'}</div></div>
+    <div class="ais-profile-card"><div class="ais-profile-label">Date of Birth</div><div class="ais-profile-value">${p.dob||'—'}</div></div>
+    <div class="ais-profile-card"><div class="ais-profile-label">E-mail Address</div><div class="ais-profile-value">${p.email||'—'}</div></div>
+    <div class="ais-profile-card"><div class="ais-profile-label">Mobile Number</div><div class="ais-profile-value">${p.mobile||'—'}</div></div>
+    <div class="ais-profile-card wide"><div class="ais-profile-label">Address</div><div class="ais-profile-value" style="font-size:0.88rem;color:var(--ais-text);">${p.address||'—'}</div></div>
+  `;
+}
+
+function renderSalary(rows) {
+  const salRow = r => `<tr>
+    <td class="val-white">${r.employer_name||'—'}</td>
+    <td class="text-right val-green">${fmt(r.salary)}</td>
+    <td class="text-right val-muted">${fmt(r.perquisites)}</td>
+    <td class="text-right val-red">${fmt(r.tax_deducted)}</td>
+  </tr>`;
+  const html = rows.length ? rows.map(salRow).join('') : empty(4, 'No salary records imported.');
+  document.getElementById('salaryTableBody').innerHTML = html;
+  document.getElementById('ov-salaryBody').innerHTML = html;
+}
+
+function renderTds(rows) {
+  const tdsRow = r => `<tr>
+    <td class="val-white">${r.deductor_name||'—'}</td>
+    <td class="mono">${r.tan||'—'}</td>
+    <td><span class="ais-pill ais-pill-indigo">${r.section||'—'}</span></td>
+    <td><span class="ais-pill ais-pill-slate">${r.quarter||'—'}</span></td>
+    <td class="text-right">${fmt(r.amount_paid)}</td>
+    <td class="text-right val-red">${fmt(r.tax_deducted)}</td>
+    <td class="text-right val-emerald">${fmt(r.tax_collected)}</td>
+  </tr>`;
+  // Full table
+  document.getElementById('tdsTableBody').innerHTML = rows.length ? rows.map(tdsRow).join('') : empty(7,'No TDS records imported.');
+  // Overview (top 8)
+  const top = rows.slice(0,8);
+  document.getElementById('ov-tdsBody').innerHTML = top.length ? top.map(r => `<tr>
+    <td class="val-white">${r.deductor_name||'—'}</td>
+    <td class="mono">${r.tan||'—'}</td>
+    <td><span class="ais-pill ais-pill-indigo">${r.section||'—'}</span></td>
+    <td><span class="ais-pill ais-pill-slate">${r.quarter||'—'}</span></td>
+    <td class="text-right">${fmt(r.amount_paid)}</td>
+    <td class="text-right val-red">${fmt(r.tax_deducted)}</td>
+  </tr>`).join('') : empty(6,'No TDS records.');
+}
+
+function renderInterest(rows) {
+  document.getElementById('interestTableBody').innerHTML = rows.length
+    ? rows.map(r => `<tr>
+        <td class="val-white">${r.bank_name||'—'}</td>
+        <td><span class="ais-pill ais-pill-cyan">${r.interest_type||'Savings/FD'}</span></td>
+        <td class="text-right val-green">${fmt(r.amount)}</td>
+      </tr>`).join('')
+    : empty(3, 'No interest records imported.');
+}
+
+function renderDividend(rows) {
+  document.getElementById('dividendTableBody').innerHTML = rows.length
+    ? rows.map(r => `<tr>
+        <td class="val-white">${r.company_name||'—'}</td>
+        <td class="text-right val-amber">${fmt(r.amount)}</td>
+      </tr>`).join('')
+    : empty(2, 'No dividend records imported.');
+}
+
+function renderEquity(rows) {
+  document.getElementById('equityTableBody').innerHTML = rows.length
+    ? rows.map(r => `<tr>
+        <td class="val-white">${r.broker||'—'}</td>
+        <td class="mono val-muted">${r.isin||'—'}</td>
+        <td class="text-right val-green">${fmt(r.buy_value)}</td>
+        <td class="text-right val-red">${fmt(r.sell_value)}</td>
+      </tr>`).join('')
+    : empty(4, 'No equity transactions.');
+}
+
+function renderMF(rows) {
+  document.getElementById('mfTableBody').innerHTML = rows.length
+    ? rows.map(r => `<tr>
+        <td class="val-white">${r.amc||'—'}</td>
+        <td class="val-muted" style="font-size:0.78rem;">${r.scheme||'—'}</td>
+        <td class="text-right val-green">${fmt(r.purchase)}</td>
+        <td class="text-right val-red">${fmt(r.redemption)}</td>
+        <td class="text-right val-muted">${fmtNum(r.units)}</td>
+      </tr>`).join('')
+    : empty(5, 'No mutual fund transactions.');
+}
+
+function renderSFT(rows) {
+  document.getElementById('sftTableBody').innerHTML = rows.length
+    ? rows.map(r => `<tr>
+        <td><span class="ais-pill ais-pill-violet">${r.transaction_type||'—'}</span></td>
+        <td class="val-muted">${r.description||'—'}</td>
+        <td class="text-right val-white">${fmt(r.amount)}</td>
+        <td class="val-muted">${fmtDate(r.date)}</td>
+      </tr>`).join('')
+    : empty(4, 'No SFT entries.');
+}
+
+function renderTaxPaid(rows) {
+  document.getElementById('taxPaymentTableBody').innerHTML = rows.length
+    ? rows.map(r => `<tr>
+        <td><span class="ais-pill ais-pill-cyan">${r.tax_type||'Tax Payment'}</span></td>
+        <td class="mono val-muted">${r.bsr_code||'—'}</td>
+        <td class="mono val-muted">${r.challan_number||'—'}</td>
+        <td class="val-muted">${fmtDate(r.date)}</td>
+        <td class="text-right val-green">${fmt(r.amount)}</td>
+      </tr>`).join('')
+    : empty(5, 'No tax payment records.');
+}
+
+function renderRefund(rows) {
+  document.getElementById('refundTableBody').innerHTML = rows.length
+    ? rows.map(r => `<tr>
+        <td>AY ${r.assessment_year||'—'}</td>
+        <td><span class="ais-pill ais-pill-emerald">${r.status||'—'}</span></td>
+        <td class="val-muted">${fmtDate(r.date)}</td>
+        <td class="text-right val-green">${fmt(r.refund_amount)}</td>
+      </tr>`).join('')
+    : empty(4, 'No refund records.');
+}
+
+function renderDemand(rows) {
+  document.getElementById('demandTableBody').innerHTML = rows.length
+    ? rows.map(r => `<tr>
+        <td>AY ${r.assessment_year||'—'}</td>
+        <td><span class="ais-pill ais-pill-rose">${r.status||'—'}</span></td>
+        <td class="text-right val-red">${fmt(r.outstanding_demand)}</td>
+      </tr>`).join('')
+    : empty(3, 'No demand records.');
+}
+
+// ── Filter ──
+function filterTbl(tableId, q) {
+  const f = q.toLowerCase();
+  document.querySelectorAll(`#${tableId} tbody tr`).forEach(row => {
+    if (row.cells.length === 1 && row.cells[0].colSpan > 1) return;
+    const match = Array.from(row.cells).some(c => c.innerText.toLowerCase().includes(f));
+    row.style.display = match ? '' : 'none';
+  });
+}
+</script>
+{% endblock %}
