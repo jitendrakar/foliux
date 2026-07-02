@@ -548,16 +548,10 @@
             <div class="ais-stat-sub" id="sc-dividend-sub">— companies</div>
           </div>
           <div class="ais-stat-card violet">
-            <div class="ais-stat-icon violet"><i class="fas fa-chart-line"></i></div>
-            <div class="ais-stat-label">Equity Transactions</div>
-            <div class="ais-stat-value" id="sc-equity">—</div>
-            <div class="ais-stat-sub" id="sc-equity-sub">buy + sell</div>
-          </div>
-          <div class="ais-stat-card rose">
-            <div class="ais-stat-icon rose"><i class="fas fa-layer-group"></i></div>
-            <div class="ais-stat-label">Mutual Fund Txns</div>
-            <div class="ais-stat-value" id="sc-mf">—</div>
-            <div class="ais-stat-sub" id="sc-mf-sub">purchase + redemption</div>
+            <div class="ais-stat-icon violet"><i class="fas fa-wallet"></i></div>
+            <div class="ais-stat-label">Equity Capital Gains</div>
+            <div class="ais-stat-value" id="sc-equity">₹—</div>
+            <div class="ais-stat-sub" id="sc-equity-sub">net profit / loss</div>
           </div>
         </div>
 
@@ -904,13 +898,16 @@ function fmt(amount) {
   if (amount === undefined || amount === null || isNaN(amount)) return '₹0';
   const n = parseFloat(amount);
   if (n === 0) return '₹0';
-  let x = n.toFixed(2);
+  const isNeg = n < 0;
+  const absN = Math.abs(n);
+  let x = absN.toFixed(2);
   let [intPart, dec] = x.split('.');
   let lastThree = intPart.slice(-3);
   let other = intPart.slice(0, intPart.length - 3);
   if (other) lastThree = ',' + lastThree;
   let res = other.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + lastThree;
-  return '₹' + (dec && dec !== '00' ? res + '.' + dec : res);
+  const formatted = dec && dec !== '00' ? res + '.' + dec : res;
+  return (isNeg ? '-' : '') + '₹' + formatted;
 }
 
 function fmtNum(n) {
@@ -1008,10 +1005,13 @@ function updateStatCards(data) {
   const totalDiv = (data.dividend || []).reduce((s, r) => s + parseFloat(r.amount || 0), 0);
   document.getElementById('sc-dividend').textContent = fmt(totalDiv);
   document.getElementById('sc-dividend-sub').textContent = `${(data.dividend||[]).length} companies`;
-  // Equity
-  document.getElementById('sc-equity').textContent = `${(data.equity||[]).length}`;
-  // MF
-  document.getElementById('sc-mf').textContent = `${(data.mutual_fund||[]).length}`;
+  // Equity Capital Gains
+  const records = parseAisSecurities(data.equity || [], data.mutual_fund || []);
+  let totalProfit = 0;
+  records.forEach(r => {
+    totalProfit += (r.saleCons - r.costAcq);
+  });
+  document.getElementById('sc-equity').textContent = fmt(totalProfit);
   // Nav badges
   setBadge('nb-salary',   (data.salary||[]).length);
   setBadge('nb-tds',      (data.tds||[]).length);
