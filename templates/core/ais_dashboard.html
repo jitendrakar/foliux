@@ -400,6 +400,14 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+  #cgSummaryTbl th, #cgSummaryTbl td {
+    padding: 0.6rem 0.4rem;
+  }
+  #cgSummaryTbl td {
+    white-space: normal;
+    word-break: break-word;
+    font-size: 0.8rem;
+  }
 
   /* ── RESPONSIVE ── */
   @media (max-width: 768px) {
@@ -480,6 +488,9 @@
       <button class="ais-nav-item" onclick="showSection('s-equity', this)">
         <i class="fas fa-building nav-icon"></i> Equity
         <span class="ais-nav-badge" id="nb-equity">—</span>
+      </button>
+      <button class="ais-nav-item" onclick="showSection('s-cg-summary', this)">
+        <i class="fas fa-calculator nav-icon"></i> Capital Gain Summary
       </button>
       <button class="ais-nav-item" onclick="showSection('s-sft', this)">
         <i class="fas fa-list nav-icon"></i> SFT Entries
@@ -737,6 +748,39 @@
         </div>
       </div>
 
+      <!-- ═══ CAPITAL GAIN SUMMARY ═══ -->
+      <div class="ais-section" id="s-cg-summary">
+        <div class="ais-section-header">
+          <h2 class="ais-section-title"><span class="dot" style="background:var(--ais-rose);"></span> Capital Gain Summary (Advance Tax Periods)</h2>
+        </div>
+        <div class="ais-table-wrap">
+          <table class="ais-table" id="cgSummaryTbl" style="table-layout: fixed; width: 100%;">
+            <colgroup>
+              <col style="width: 40%;">
+              <col style="width: 10%;">
+              <col style="width: 10%;">
+              <col style="width: 10%;">
+              <col style="width: 10%;">
+              <col style="width: 10%;">
+              <col style="width: 10%;">
+            </colgroup>
+            <thead>
+              <tr>
+                <th style="text-align: left;">Computation</th>
+                <th class="text-right" style="white-space: nowrap;">Upto 15/6</th>
+                <th class="text-right" style="white-space: nowrap;">16/6 to 15/9</th>
+                <th class="text-right" style="white-space: nowrap;">16/9 to 15/12</th>
+                <th class="text-right" style="white-space: nowrap;">16/12 to 15/3</th>
+                <th class="text-right" style="white-space: nowrap;">16/3 to 31/3</th>
+                <th class="text-right" style="white-space: nowrap;">Total</th>
+              </tr>
+            </thead>
+            <tbody id="cgSummaryTableBody">
+              <!-- Dynamically populated via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
 
       <!-- ═══ SFT ═══ -->
       <div class="ais-section" id="s-sft">
@@ -960,6 +1004,7 @@ function render(data) {
   renderInterest(data.interest || []);
   renderDividend(data.dividend || []);
   renderEquity(data.equity || [], data.mutual_fund || []);
+  renderCgSummary(data.equity || [], data.mutual_fund || []);
   renderSFT(data.sft || []);
   renderTaxPaid(data.tax_payment || []);
   renderRefund(data.refund || []);
@@ -1125,12 +1170,14 @@ function parseAisSecurities(equityItems, mfItems) {
     let indexedCost = 0;
     let isin = item.isin || '';
 
+    let saleDateStr = '';
     if (Array.isArray(ref) && ref.length >= 11) {
       secName = cleanString(ref[2]) || secName;
       secClass = cleanString(ref[3]) || secClass;
       assetType = cleanString(ref[6]) || assetType;
       saleCons = parseVal(ref[9]) || saleCons;
       costAcq = parseVal(ref[10]) || costAcq;
+      saleDateStr = cleanString(ref[1]);
       if (ref.length >= 14) {
         indexedCost = parseVal(ref[13]);
       }
@@ -1155,7 +1202,8 @@ function parseAisSecurities(equityItems, mfItems) {
       isin: isin,
       saleCons: saleCons,
       costAcq: costAcq,
-      indexedCost: indexedCost
+      indexedCost: indexedCost,
+      date: saleDateStr
     });
   });
 
@@ -1170,12 +1218,14 @@ function parseAisSecurities(equityItems, mfItems) {
     let indexedCost = 0;
     let isin = '';
 
+    let saleDateStr = '';
     if (Array.isArray(ref) && ref.length >= 13) {
       secClass = cleanString(ref[3]) || secClass;
       secName = cleanString(ref[4]) || secName;
       assetType = cleanString(ref[7]) || assetType;
       saleCons = parseVal(ref[10]) || saleCons;
       costAcq = parseVal(ref[12]) || costAcq;
+      saleDateStr = cleanString(ref[2]);
       if (ref.length >= 16) {
         indexedCost = parseVal(ref[15]);
       }
@@ -1200,7 +1250,8 @@ function parseAisSecurities(equityItems, mfItems) {
       isin: isin,
       saleCons: saleCons,
       costAcq: costAcq,
-      indexedCost: indexedCost
+      indexedCost: indexedCost,
+      date: saleDateStr
     });
   });
 
@@ -1733,6 +1784,176 @@ function showImportError(msg, type) {
     <div class="small">${msg}</div>
   `;
   resultDiv.classList.remove('d-none');
+}
+
+// ── Capital Gain Summary ──
+function getAdvanceTaxPeriod(dateStr) {
+  if (!dateStr) return '16/3 to 31/3';
+  
+  let day, month;
+  if (dateStr.includes('/')) {
+    const parts = dateStr.split('/');
+    day = parseInt(parts[0], 10);
+    month = parseInt(parts[1], 10);
+  } else if (dateStr.includes('-')) {
+    const parts = dateStr.split('-');
+    if (parts[0].length === 4) {
+      day = parseInt(parts[2], 10);
+      month = parseInt(parts[1], 10);
+    } else {
+      day = parseInt(parts[0], 10);
+      month = parseInt(parts[1], 10);
+    }
+  } else {
+    return '16/3 to 31/3';
+  }
+
+  if (isNaN(day) || isNaN(month)) return '16/3 to 31/3';
+
+  if (month === 4 || month === 5 || (month === 6 && day <= 15)) {
+    return 'Upto 15/6';
+  } else if ((month === 6 && day >= 16) || month === 7 || month === 8 || (month === 9 && day <= 15)) {
+    return '16/6 to 15/9';
+  } else if ((month === 9 && day >= 16) || month === 10 || month === 11 || (month === 12 && day <= 15)) {
+    return '16/9 to 15/12';
+  } else if ((month === 12 && day >= 16) || month === 1 || month === 2 || (month === 3 && day <= 15)) {
+    return '16/12 to 15/3';
+  } else {
+    return '16/3 to 31/3';
+  }
+}
+
+function renderCgSummary(equityRows, mfRows) {
+  const records = parseAisSecurities(equityRows, mfRows);
+  const periods = ['Upto 15/6', '16/6 to 15/9', '16/9 to 15/12', '16/12 to 15/3', '16/3 to 31/3'];
+
+  const rows = [
+    {
+      title: 'Short Term Capital Gain from sale of equity share or unit of equity oriented Mutual Fund (MF) or unit of a business trust on which STT is paid',
+      stcgOnly: true,
+      classes: ['Listed Equity Share', 'Unit of Equity Oriented Mutual Fund', 'Unit of Business Trust'],
+      values: { 'Upto 15/6': 0, '16/6 to 15/9': 0, '16/9 to 15/12': 0, '16/12 to 15/3': 0, '16/3 to 31/3': 0 }
+    },
+    {
+      title: 'Short Term Capital Gain from sale of shares or debentures of an Indian company',
+      stcgOnly: true,
+      classes: ['shares or debentures of an Indian company'],
+      values: { 'Upto 15/6': 0, '16/6 to 15/9': 0, '16/9 to 15/12': 0, '16/12 to 15/3': 0, '16/3 to 31/3': 0 }
+    },
+    {
+      title: 'Short Term Capital Gain from sale of securities (other than those covered earlier)',
+      stcgOnly: true,
+      excludeClasses: ['Listed Equity Share', 'Unit of Equity Oriented Mutual Fund', 'Unit of Business Trust', 'shares or debentures of an Indian company'],
+      values: { 'Upto 15/6': 0, '16/6 to 15/9': 0, '16/9 to 15/12': 0, '16/12 to 15/3': 0, '16/3 to 31/3': 0 }
+    },
+    {
+      title: 'Long Term Capital Gain from sale of bonds or debenture (other than capital indexed bonds issued by Government) - Without Indexation',
+      ltcgOnly: true,
+      indexed: false,
+      classes: ['Bonds or debenture'],
+      values: { 'Upto 15/6': 0, '16/6 to 15/9': 0, '16/9 to 15/12': 0, '16/12 to 15/3': 0, '16/3 to 31/3': 0 }
+    },
+    {
+      title: 'Long Term Capital Gain from sale of equity share or unit of equity oriented Mutual Fund (MF) or unit of a business trust on which STT is paid - Without Indexation',
+      ltcgOnly: true,
+      indexed: false,
+      classes: ['Listed Equity Share', 'Unit of Equity Oriented Mutual Fund', 'Unit of Business Trust'],
+      values: { 'Upto 15/6': 0, '16/6 to 15/9': 0, '16/9 to 15/12': 0, '16/12 to 15/3': 0, '16/3 to 31/3': 0 }
+    },
+    {
+      title: 'Long Term Capital Gain from sale of listed securities (other than a unit) or zero coupon bonds where proviso under section 112(1) is applicable - With Indexation',
+      ltcgOnly: true,
+      indexed: true,
+      classes: ['Listed listed securities zero coupon bonds proviso 112(1)'],
+      values: { 'Upto 15/6': 0, '16/6 to 15/9': 0, '16/9 to 15/12': 0, '16/12 to 15/3': 0, '16/3 to 31/3': 0 }
+    },
+    {
+      title: 'Long Term Capital Gain from sale of listed securities (other than a unit) or zero coupon bonds where proviso under section 112(1) is applicable - Without Indexation',
+      ltcgOnly: true,
+      indexed: false,
+      classes: ['Listed listed securities zero coupon bonds proviso 112(1) no index'],
+      values: { 'Upto 15/6': 0, '16/6 to 15/9': 0, '16/9 to 15/12': 0, '16/12 to 15/3': 0, '16/3 to 31/3': 0 }
+    },
+    {
+      title: 'Long Term Capital Gain from sale of listed securities (other than those covered earlier) - With Indexation',
+      ltcgOnly: true,
+      indexed: true,
+      excludeClasses: ['Listed Equity Share', 'Unit of Equity Oriented Mutual Fund', 'Unit of Business Trust'],
+      values: { 'Upto 15/6': 0, '16/6 to 15/9': 0, '16/9 to 15/12': 0, '16/12 to 15/3': 0, '16/3 to 31/3': 0 }
+    },
+    {
+      title: 'Long Term Capital Gain from sale of listed securities (other than those covered earlier) - Without indexation',
+      ltcgOnly: true,
+      indexed: false,
+      excludeClasses: ['Listed Equity Share', 'Unit of Equity Oriented Mutual Fund', 'Unit of Business Trust'],
+      values: { 'Upto 15/6': 0, '16/6 to 15/9': 0, '16/9 to 15/12': 0, '16/12 to 15/3': 0, '16/3 to 31/3': 0 }
+    }
+  ];
+
+  records.forEach(rec => {
+    const period = getAdvanceTaxPeriod(rec.date);
+    const gain = rec.saleCons - rec.costAcq;
+    const isST = rec.assetType === 'Short term';
+    const isLT = rec.assetType === 'Long term';
+    const isIndexed = rec.indexedCost > 0 && rec.indexedCost !== rec.costAcq;
+
+    rows.forEach(row => {
+      if (row.stcgOnly && !isST) return;
+      if (row.ltcgOnly && !isLT) return;
+      
+      if (row.ltcgOnly) {
+        if (row.indexed && !isIndexed) return;
+        if (!row.indexed && isIndexed) return;
+      }
+
+      if (row.classes) {
+        if (!row.classes.includes(rec.secClass)) return;
+      }
+      
+      if (row.excludeClasses) {
+        if (row.excludeClasses.includes(rec.secClass)) return;
+      }
+
+      row.values[period] += gain;
+    });
+  });
+
+  const totals = { 'Upto 15/6': 0, '16/6 to 15/9': 0, '16/9 to 15/12': 0, '16/12 to 15/3': 0, '16/3 to 31/3': 0 };
+  rows.forEach(row => {
+    periods.forEach(p => {
+      totals[p] += row.values[p];
+    });
+  });
+
+  const tbody = document.getElementById('cgSummaryTableBody');
+  if (!tbody) return;
+
+  let html = rows.map(row => {
+    let rowTotal = periods.reduce((sum, p) => sum + row.values[p], 0);
+    
+    return `<tr>
+      <td style="text-align: left; font-weight: 500;">${row.title}</td>
+      <td class="text-right mono ${row.values['Upto 15/6'] < 0 ? 'val-red' : (row.values['Upto 15/6'] > 0 ? 'val-green' : '')}">${row.values['Upto 15/6'] === 0 ? '0' : fmtNum(row.values['Upto 15/6'])}</td>
+      <td class="text-right mono ${row.values['16/6 to 15/9'] < 0 ? 'val-red' : (row.values['16/6 to 15/9'] > 0 ? 'val-green' : '')}">${row.values['16/6 to 15/9'] === 0 ? '0' : fmtNum(row.values['16/6 to 15/9'])}</td>
+      <td class="text-right mono ${row.values['16/9 to 15/12'] < 0 ? 'val-red' : (row.values['16/9 to 15/12'] > 0 ? 'val-green' : '')}">${row.values['16/9 to 15/12'] === 0 ? '0' : fmtNum(row.values['16/9 to 15/12'])}</td>
+      <td class="text-right mono ${row.values['16/12 to 15/3'] < 0 ? 'val-red' : (row.values['16/12 to 15/3'] > 0 ? 'val-green' : '')}">${row.values['16/12 to 15/3'] === 0 ? '0' : fmtNum(row.values['16/12 to 15/3'])}</td>
+      <td class="text-right mono ${row.values['16/3 to 31/3'] < 0 ? 'val-red' : (row.values['16/3 to 31/3'] > 0 ? 'val-green' : '')}">${row.values['16/3 to 31/3'] === 0 ? '0' : fmtNum(row.values['16/3 to 31/3'])}</td>
+      <td class="text-right mono fw-bold ${rowTotal < 0 ? 'val-red' : (rowTotal > 0 ? 'val-green' : '')}">${rowTotal === 0 ? '0' : fmtNum(rowTotal)}</td>
+    </tr>`;
+  }).join('');
+
+  let grandTotal = periods.reduce((sum, p) => sum + totals[p], 0);
+  html += `<tr class="row-grand-total">
+    <td style="text-align: left;">Grand Total</td>
+    <td class="text-right mono ${totals['Upto 15/6'] < 0 ? 'val-red' : (totals['Upto 15/6'] > 0 ? 'val-green' : '')}">${totals['Upto 15/6'] === 0 ? '0' : fmtNum(totals['Upto 15/6'])}</td>
+    <td class="text-right mono ${totals['16/6 to 15/9'] < 0 ? 'val-red' : (totals['16/6 to 15/9'] > 0 ? 'val-green' : '')}">${totals['16/6 to 15/9'] === 0 ? '0' : fmtNum(totals['16/6 to 15/9'])}</td>
+    <td class="text-right mono ${totals['16/9 to 15/12'] < 0 ? 'val-red' : (totals['16/9 to 15/12'] > 0 ? 'val-green' : '')}">${totals['16/9 to 15/12'] === 0 ? '0' : fmtNum(totals['16/9 to 15/12'])}</td>
+    <td class="text-right mono ${totals['16/12 to 15/3'] < 0 ? 'val-red' : (totals['16/12 to 15/3'] > 0 ? 'val-green' : '')}">${totals['16/12 to 15/3'] === 0 ? '0' : fmtNum(totals['16/12 to 15/3'])}</td>
+    <td class="text-right mono ${totals['16/3 to 31/3'] < 0 ? 'val-red' : (totals['16/3 to 31/3'] > 0 ? 'val-green' : '')}">${totals['16/3 to 31/3'] === 0 ? '0' : fmtNum(totals['16/3 to 31/3'])}</td>
+    <td class="text-right mono fw-bold ${grandTotal < 0 ? 'val-red' : (grandTotal > 0 ? 'val-green' : '')}">${grandTotal === 0 ? '0' : fmtNum(grandTotal)}</td>
+  </tr>`;
+
+  tbody.innerHTML = html;
 }
 </script>
 {% endblock %}
