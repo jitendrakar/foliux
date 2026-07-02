@@ -259,7 +259,7 @@
   /* ── TABLE ── */
   .ais-table-wrap {
     background: var(--ais-surface); border: 1px solid var(--ais-border);
-    border-radius: 12px; overflow: hidden; margin-bottom: 1.5rem;
+    border-radius: 12px; overflow-x: auto; margin-bottom: 1.5rem;
   }
   .ais-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
   .ais-table thead tr { background: var(--ais-th-bg); border-bottom: 1px solid var(--ais-border); }
@@ -344,6 +344,63 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  /* ── TREE TABLE STYLING ── */
+  .row-level-0 {
+    font-weight: 700;
+    background: rgba(99, 102, 241, 0.04);
+    border-bottom: 2px solid var(--ais-border2) !important;
+  }
+  .row-level-1 {
+    font-weight: 600;
+    background: rgba(0, 0, 0, 0.015);
+    border-bottom: 1px solid var(--ais-border) !important;
+  }
+  html[data-theme="dark"] .row-level-1 {
+    background: rgba(255, 255, 255, 0.015);
+  }
+  .row-level-2 {
+    color: var(--ais-text);
+    font-size: 0.8rem;
+  }
+  .row-level-2:hover {
+    background: var(--ais-row-hover);
+  }
+  .row-grand-total {
+    font-weight: 800;
+    background: rgba(99, 102, 241, 0.08) !important;
+    border-top: 2px solid var(--ais-indigo) !important;
+    border-bottom: 3px double var(--ais-indigo) !important;
+  }
+  .tree-toggle {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    text-align: center;
+    line-height: 14px;
+    margin-right: 6px;
+    color: var(--ais-indigo);
+    transition: transform 0.15s ease;
+  }
+  .tree-leaf-icon {
+    display: inline-block;
+    width: 14px;
+    margin-right: 6px;
+    text-align: center;
+  }
+  .tree-name {
+    vertical-align: middle;
+  }
+  #equityTbl th, #equityTbl td {
+    padding: 0.6rem 0.4rem;
+  }
+  .row-level-2 .tree-name {
+    display: inline-block;
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   /* ── RESPONSIVE ── */
   @media (max-width: 768px) {
     .ais-sidebar { display: none; }
@@ -397,6 +454,9 @@
       <button class="ais-nav-item" onclick="showSection('s-profile', this)">
         <i class="fas fa-id-card nav-icon"></i> Profile
       </button>
+      <button class="ais-nav-item btn-import-ais-nav" onclick="showSection('s-import', this)">
+        <i class="fas fa-cloud-upload-alt nav-icon"></i> Import AIS
+      </button>
 
       <div class="ais-nav-group-label">Income</div>
       <button class="ais-nav-item" onclick="showSection('s-salary', this)">
@@ -420,10 +480,6 @@
       <button class="ais-nav-item" onclick="showSection('s-equity', this)">
         <i class="fas fa-building nav-icon"></i> Equity
         <span class="ais-nav-badge" id="nb-equity">—</span>
-      </button>
-      <button class="ais-nav-item" onclick="showSection('s-mf', this)">
-        <i class="fas fa-layer-group nav-icon"></i> Mutual Funds
-        <span class="ais-nav-badge" id="nb-mf">—</span>
       </button>
       <button class="ais-nav-item" onclick="showSection('s-sft', this)">
         <i class="fas fa-list nav-icon"></i> SFT Entries
@@ -554,6 +610,55 @@
         </div>
       </div>
 
+      <!-- ═══ IMPORT AIS ═══ -->
+      <div class="ais-section" id="s-import">
+        <div class="ais-section-header">
+          <h2 class="ais-section-title"><span class="dot" style="background:var(--ais-indigo);"></span> Import Income Tax AIS</h2>
+        </div>
+        
+        <div class="card p-4 border rounded-3 text-dark mb-4" style="background: var(--ais-surface); border-color: var(--ais-border) !important; color: var(--ais-text) !important;">
+          <form id="aisImportForm" onsubmit="submitAisImport(event, 'sidebar')" enctype="multipart/form-data">
+            <div class="mb-3">
+              <label class="form-label small fw-bold" style="color: var(--ais-text);">Upload AIS JSON or ZIP File</label>
+              <input type="file" id="ais_file_sidebar" name="ais_file" class="form-control form-control-sm text-dark bg-light" accept=".json,.zip" required style="border-color: var(--ais-border2);">
+              <div class="form-text small text-muted">Example: XXXPK3598X_2025-26_AIS_01072026.json or .zip</div>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label small fw-bold" style="color: var(--ais-text);">Password</label>
+              <input type="password" id="ais_password_sidebar" name="password" class="form-control form-control-sm text-dark bg-light" placeholder="Enter AIS JSON Password" required style="border-color: var(--ais-border2);">
+            </div>
+            
+            <button type="submit" class="ais-topbar-btn" id="aisImportBtnsidebar" style="background: linear-gradient(135deg, var(--ais-indigo), var(--ais-violet)); color: #fff; border: none; padding: 0.5rem 1.5rem; font-weight: 700;">
+              <i class="fas fa-cloud-upload-alt me-1.5"></i> Import AIS JSON
+            </button>
+          </form>
+        </div>
+
+        <!-- How to Import AIS JSON File Instructions -->
+        <div class="card p-4 border rounded-3 text-dark mb-4" style="background: var(--ais-panel) !important; border-color: var(--ais-border) !important; color: var(--ais-text) !important; font-size: 0.85rem; line-height: 1.5;">
+          <h5 class="fw-bold mb-3" style="color: var(--ais-text); font-size: 1rem;"><i class="fas fa-info-circle text-info me-2"></i>How to Import AIS JSON File</h5>
+          <p class="mb-3">To import the AIS (Annual Information Statement) JSON file, please follow these steps:</p>
+          <ol class="ps-3 mb-3" style="color: var(--ais-muted);">
+            <li class="mb-2">Log in to the <a href="https://eportal.incometax.gov.in/iec/foservices/#/login" target="_blank" class="fw-semibold text-primary" style="text-decoration: underline;">Income Tax Portal</a>.</li>
+            <li class="mb-2">Enter your PAN/User ID and Password.</li>
+            <li class="mb-2">After logging in, navigate to the <strong>AIS</strong> section.</li>
+            <li class="mb-2">Click on <strong>Annual Information Statement (AIS)</strong>.</li>
+            <li class="mb-2">Click on the <strong>Download</strong> tab.</li>
+            <li class="mb-2">Select <strong>Annual Information Statement (AIS) – JSON (for AIS Utility)</strong>.</li>
+            <li class="mb-2">Download the JSON file.</li>
+          </ol>
+          <div class="p-3 rounded border small bg-white text-dark" style="border-color: var(--ais-border2) !important;">
+            <i class="fas fa-key text-warning me-1.5"></i><strong>Note:</strong> The downloaded JSON file is password-protected. The password is your <strong>PAN number in lowercase combined with your Date of Birth</strong> in DDMMYYYY format (e.g., <code class="text-success fw-bold">abcde1234f03021982</code>).
+          </div>
+        </div>
+
+        <!-- Summary / Result Alert -->
+        <div id="aisImportResultsidebar" class="d-none alert alert-danger rounded-3 p-3">
+          <!-- Dynamically populated via JS -->
+        </div>
+      </div>
+
       <!-- ═══ SALARY ═══ -->
       <div class="ais-section" id="s-salary">
         <div class="ais-section-header">
@@ -612,31 +717,32 @@
 
       <!-- ═══ EQUITY ═══ -->
       <div class="ais-section" id="s-equity">
-        <div class="ais-section-header">
-          <h2 class="ais-section-title"><span class="dot" style="background:var(--ais-violet);"></span> Equity Share Transactions</h2>
-          <div class="ais-search-wrap"><i class="fas fa-search si"></i><input type="text" placeholder="Search broker, ISIN…" oninput="filterTbl('equityTbl', this.value)"></div>
+        <div class="ais-section-header" style="align-items: center; justify-content: space-between;">
+          <h2 class="ais-section-title"><span class="dot" style="background:var(--ais-violet);"></span> Consolidated Capital Gains (Equity & Mutual Funds)</h2>
+          <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
+            <button class="ais-topbar-btn" onclick="expandAll()"><i class="fas fa-expand-arrows-alt"></i> Expand All</button>
+            <button class="ais-topbar-btn" onclick="collapseAll()"><i class="fas fa-compress-arrows-alt"></i> Collapse All</button>
+            <div class="ais-search-wrap">
+              <i class="fas fa-search si"></i>
+              <input type="text" placeholder="Search security name, class…" oninput="filterTreeTable(this.value)">
+            </div>
+          </div>
         </div>
         <div class="ais-table-wrap">
           <table class="ais-table" id="equityTbl">
-            <thead><tr><th>Broker</th><th class="mono">ISIN</th><th class="text-right">Buy Value</th><th class="text-right">Sell Value</th></tr></thead>
+            <thead><tr>
+              <th style="min-width: 220px; text-align: left;">Asset / Security / Name</th>
+              <th class="text-right" style="white-space: nowrap;">LTCG (Indexed)<br><span style="font-size:0.62rem;text-transform:none;font-weight:normal;opacity:0.8;">Count</span></th>
+              <th class="text-right" style="white-space: nowrap;">LTCG (No Index)<br><span style="font-size:0.62rem;text-transform:none;font-weight:normal;opacity:0.8;">Sum</span></th>
+              <th class="text-right" style="white-space: nowrap;">STCG<br><span style="font-size:0.62rem;text-transform:none;font-weight:normal;opacity:0.8;">Sum</span></th>
+              <th class="text-right" style="white-space: nowrap;">Sale Value<br><span style="font-size:0.62rem;text-transform:none;font-weight:normal;opacity:0.8;">Sum</span></th>
+              <th class="text-right" style="white-space: nowrap;">Acq. Cost<br><span style="font-size:0.62rem;text-transform:none;font-weight:normal;opacity:0.8;">Sum</span></th>
+            </tr></thead>
             <tbody id="equityTableBody"></tbody>
           </table>
         </div>
       </div>
 
-      <!-- ═══ MUTUAL FUNDS ═══ -->
-      <div class="ais-section" id="s-mf">
-        <div class="ais-section-header">
-          <h2 class="ais-section-title"><span class="dot" style="background:var(--ais-rose);"></span> Mutual Fund Transactions</h2>
-          <div class="ais-search-wrap"><i class="fas fa-search si"></i><input type="text" placeholder="Search AMC, scheme…" oninput="filterTbl('mfTbl', this.value)"></div>
-        </div>
-        <div class="ais-table-wrap">
-          <table class="ais-table" id="mfTbl">
-            <thead><tr><th>AMC</th><th>Scheme</th><th class="text-right">Purchase</th><th class="text-right">Redemption</th><th class="text-right">Units</th></tr></thead>
-            <tbody id="mfTableBody"></tbody>
-          </table>
-        </div>
-      </div>
 
       <!-- ═══ SFT ═══ -->
       <div class="ais-section" id="s-sft">
@@ -695,19 +801,87 @@
 
     {% else %}
     <!-- ── NO DATA SCREEN ── -->
-    <div class="ais-no-data-screen" style="flex:1;">
+    <div class="ais-no-data-screen" style="flex:1; align-items: center; justify-content: center; padding: 2rem;">
       <div class="ais-no-data-glow"><i class="fas fa-file-import"></i></div>
       <h2 style="color:#fff;font-weight:800;font-size:1.4rem;margin-bottom:0.5rem;">No AIS Data Imported</h2>
       <p style="color:var(--ais-muted);max-width:380px;margin-bottom:1.5rem;font-size:0.9rem;">
-        Upload your password-protected AIS JSON from the Income Tax Calculator to see all your records here.
+        Upload your password-protected AIS JSON or ZIP file downloaded from the Income Tax Department portal to populate your dashboard.
       </p>
-      <a href="/calc/" style="background:linear-gradient(135deg,var(--ais-indigo),var(--ais-violet));color:#fff;padding:0.65rem 1.75rem;border-radius:10px;font-weight:700;font-size:0.9rem;text-decoration:none;display:inline-flex;align-items:center;gap:0.5rem;box-shadow:0 0 20px rgba(99,102,241,0.3);">
-        <i class="fas fa-upload"></i> Import AIS JSON
-      </a>
+      
+      <div class="card p-4 border rounded-3 text-start mb-4 mx-auto" style="background: var(--ais-surface); border-color: var(--ais-border) !important; color: var(--ais-text) !important; max-width: 450px;">
+        <form id="aisImportFormEmpty" onsubmit="submitAisImport(event, 'empty')" enctype="multipart/form-data">
+          <div class="mb-3">
+            <label class="form-label small fw-bold" style="color: var(--ais-text);">Upload AIS JSON or ZIP File</label>
+            <input type="file" id="ais_file_empty" name="ais_file" class="form-control form-control-sm text-dark bg-light" accept=".json,.zip" required style="border-color: var(--ais-border2);">
+            <div class="form-text small text-muted">Example: XXXPK3598X_2025-26_AIS_01072026.json or .zip</div>
+          </div>
+          
+          <div class="mb-3">
+            <label class="form-label small fw-bold" style="color: var(--ais-text);">Password</label>
+            <input type="password" id="ais_password_empty" name="password" class="form-control form-control-sm text-dark bg-light" placeholder="Enter AIS JSON Password" required style="border-color: var(--ais-border2);">
+          </div>
+          
+          <button type="submit" class="ais-topbar-btn w-100" id="aisImportBtnempty" style="background: linear-gradient(135deg, var(--ais-indigo), var(--ais-violet)); color: #fff; border: none; padding: 0.5rem 1.5rem; font-weight: 700;">
+            <i class="fas fa-cloud-upload-alt me-1.5"></i> Import AIS JSON
+          </button>
+        </form>
+      </div>
+
+      <!-- How to Import AIS JSON File Instructions -->
+      <div class="card p-3 border text-start rounded-3 bg-light mx-auto mb-4" style="background: var(--ais-panel) !important; border-color: var(--ais-border) !important; color: var(--ais-text) !important; max-width: 450px; font-size: 0.82rem; line-height: 1.4;">
+        <h6 class="fw-bold mb-2" style="font-size:0.85rem; color: var(--ais-text);"><i class="fas fa-info-circle text-info me-1.5"></i>How to Import AIS JSON File</h6>
+        <p class="mb-2">To import the AIS JSON file, follow these steps:</p>
+        <ol class="ps-3 mb-2" style="color: var(--ais-muted);">
+          <li class="mb-1">Log in to the <a href="https://eportal.incometax.gov.in/iec/foservices/#/login" target="_blank" class="fw-semibold text-primary" style="text-decoration: underline;">Income Tax Portal</a>.</li>
+          <li class="mb-1">Enter your PAN/User ID and Password.</li>
+          <li class="mb-1">Go to <strong>AIS</strong> &gt; <strong>Annual Information Statement (AIS)</strong>.</li>
+          <li class="mb-1">Click <strong>Download</strong> and select <strong>Annual Information Statement (AIS) – JSON (for AIS Utility)</strong>.</li>
+        </ol>
+        <div class="p-2 rounded border small bg-white text-dark mt-2" style="border-color: var(--ais-border2) !important; font-size: 0.78rem;">
+          <i class="fas fa-key text-warning me-1"></i><strong>Note:</strong> Password is your <strong>PAN number in lowercase combined with your Date of Birth</strong> in DDMMYYYY format (e.g., <code class="text-success fw-bold">abcde1234f03021982</code>).
+        </div>
+      </div>
+      
+      <div id="aisImportResultempty" class="d-none alert alert-danger rounded-3 p-3 mt-3 mx-auto" style="max-width: 450px;"></div>
     </div>
     {% endif %}
 
   </div><!-- /.ais-body -->
+
+  <!-- Duplicate Import Action Modal -->
+  <div class="modal fade" id="aisDuplicateModal" tabindex="-1" aria-labelledby="aisDuplicateLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 rounded-4 shadow" style="background-color: var(--ais-surface); color: var(--ais-text); border: 1px solid var(--ais-border) !important;">
+        <div class="modal-header border-bottom pb-3">
+          <h5 class="modal-title fw-bold" id="aisDuplicateLabel" style="color: var(--ais-text);"><i class="fas fa-exclamation-triangle text-warning me-2"></i>Duplicate Import Detected</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="filter: var(--ais-close-filter);"></button>
+        </div>
+        <div class="modal-body py-4" style="color: var(--ais-text);">
+          <p class="mb-3">Existing AIS data was found for Financial Year <strong id="aisDupFY">2025-26</strong>. Please choose how you want to proceed:</p>
+          
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="radio" name="aisDupAction" id="aisActionReplace" value="replace" checked>
+            <label class="form-check-label fw-semibold" for="aisActionReplace">
+              Replace Existing Data (Recommended)
+            </label>
+            <div class="form-text small text-muted">This deletes previous imported records for this Financial Year and replaces them with the new file contents.</div>
+          </div>
+          
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="radio" name="aisDupAction" id="aisActionMerge" value="merge">
+            <label class="form-check-label fw-semibold" for="aisActionMerge">
+              Merge Data
+            </label>
+            <div class="form-text small text-muted">This keeps existing records and only adds new, non-duplicate entries from the uploaded file.</div>
+          </div>
+        </div>
+        <div class="modal-footer border-top pt-3">
+          <button type="button" class="btn btn-outline-secondary rounded-pill px-4 btn-sm" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary rounded-pill px-4 btn-sm" onclick="confirmAisImport()">Proceed</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div><!-- /.ais-root -->
 {% endblock %}
 
@@ -788,8 +962,7 @@ function render(data) {
   renderTds(data.tds || []);
   renderInterest(data.interest || []);
   renderDividend(data.dividend || []);
-  renderEquity(data.equity || []);
-  renderMF(data.mutual_fund || []);
+  renderEquity(data.equity || [], data.mutual_fund || []);
   renderSFT(data.sft || []);
   renderTaxPaid(data.tax_payment || []);
   renderRefund(data.refund || []);
@@ -922,27 +1095,491 @@ function renderDividend(rows) {
     : empty(2, 'No dividend records imported.');
 }
 
-function renderEquity(rows) {
-  document.getElementById('equityTableBody').innerHTML = rows.length
-    ? rows.map(r => `<tr>
-        <td class="val-white">${r.broker||'—'}</td>
-        <td class="mono val-muted">${r.isin||'—'}</td>
-        <td class="text-right val-green">${fmt(r.buy_value)}</td>
-        <td class="text-right val-red">${fmt(r.sell_value)}</td>
-      </tr>`).join('')
-    : empty(4, 'No equity transactions.');
+let collapsedNodes = new Set();
+let allTreeRows = [];
+
+function parseAisSecurities(equityItems, mfItems) {
+  const records = [];
+
+  function cleanString(s) {
+    if (!s) return '';
+    return s.trim();
+  }
+
+  function parseVal(val) {
+    if (!val) return 0;
+    if (typeof val === 'number') return val;
+    const cleaned = String(val).replace(/,/g, '');
+    const parsed = parseFloat(cleaned);
+    return isNaN(parsed) ? 0 : parsed;
+  }
+
+  // Parse Equity items
+  equityItems.forEach(item => {
+    const ref = item.json_reference;
+    let assetType = 'Short term';
+    let secClass = 'Listed Equity Share';
+    let secName = item.broker || 'Unknown Share';
+    let saleCons = parseVal(item.sell_value);
+    let costAcq = parseVal(item.buy_value);
+    let indexedCost = 0;
+    let isin = item.isin || '';
+
+    if (Array.isArray(ref) && ref.length >= 11) {
+      secName = cleanString(ref[2]) || secName;
+      secClass = cleanString(ref[3]) || secClass;
+      assetType = cleanString(ref[6]) || assetType;
+      saleCons = parseVal(ref[9]) || saleCons;
+      costAcq = parseVal(ref[10]) || costAcq;
+      if (ref.length >= 14) {
+        indexedCost = parseVal(ref[13]);
+      }
+    }
+
+    // Normalize assetType
+    let normAsset = assetType.trim().toLowerCase();
+    if (normAsset.includes('long')) {
+      assetType = 'Long term';
+    } else if (normAsset.includes('short')) {
+      assetType = 'Short term';
+    } else {
+      // Ignore this record as it is not a sale/redemption with capital gains details
+      return;
+    }
+
+    records.push({
+      isMF: false,
+      assetType: assetType,
+      secClass: secClass,
+      secName: secName,
+      isin: isin,
+      saleCons: saleCons,
+      costAcq: costAcq,
+      indexedCost: indexedCost
+    });
+  });
+
+  // Parse Mutual Fund items
+  mfItems.forEach(item => {
+    const ref = item.json_reference;
+    let assetType = 'Short term';
+    let secClass = 'Unit of Equity Oriented Mutual Fund';
+    let secName = item.scheme || 'Unknown Mutual Fund';
+    let saleCons = parseVal(item.redemption);
+    let costAcq = parseVal(item.purchase);
+    let indexedCost = 0;
+    let isin = '';
+
+    if (Array.isArray(ref) && ref.length >= 13) {
+      secClass = cleanString(ref[3]) || secClass;
+      secName = cleanString(ref[4]) || secName;
+      assetType = cleanString(ref[7]) || assetType;
+      saleCons = parseVal(ref[10]) || saleCons;
+      costAcq = parseVal(ref[12]) || costAcq;
+      if (ref.length >= 16) {
+        indexedCost = parseVal(ref[15]);
+      }
+    }
+
+    // Normalize assetType
+    let normAsset = assetType.trim().toLowerCase();
+    if (normAsset.includes('long')) {
+      assetType = 'Long term';
+    } else if (normAsset.includes('short')) {
+      assetType = 'Short term';
+    } else {
+      // Ignore this record as it is not a sale/redemption with capital gains details
+      return;
+    }
+
+    records.push({
+      isMF: true,
+      assetType: assetType,
+      secClass: secClass,
+      secName: secName,
+      isin: isin,
+      saleCons: saleCons,
+      costAcq: costAcq,
+      indexedCost: indexedCost
+    });
+  });
+
+  return records;
 }
 
-function renderMF(rows) {
-  document.getElementById('mfTableBody').innerHTML = rows.length
-    ? rows.map(r => `<tr>
-        <td class="val-white">${r.amc||'—'}</td>
-        <td class="val-muted" style="font-size:0.78rem;">${r.scheme||'—'}</td>
-        <td class="text-right val-green">${fmt(r.purchase)}</td>
-        <td class="text-right val-red">${fmt(r.redemption)}</td>
-        <td class="text-right val-muted">${fmtNum(r.units)}</td>
-      </tr>`).join('')
-    : empty(5, 'No mutual fund transactions.');
+function buildPivotTree(records) {
+  const tree = {
+    name: 'Grand Total',
+    level: -1,
+    countLtcgWithIndex: 0,
+    ltcgWithoutIndex: 0,
+    stcg: 0,
+    saleCons: 0,
+    costAcq: 0,
+    children: {}
+  };
+
+  records.forEach(rec => {
+    const assetType = rec.assetType;
+    const secClass = rec.secClass;
+    
+    // Clean securityName to display it nicely (strip trailing ISIN/Scheme code in parentheses)
+    let secNameClean = rec.secName;
+    const match = rec.secName.match(/^(.*?)\s*\([A-Z0-9]{12}\)$/);
+    if (match) {
+      secNameClean = match[1].trim();
+    }
+
+    // Capital Gains Calculations
+    let ltcgWithIndex = 0;
+    let ltcgWithoutIndex = 0;
+    let stcg = 0;
+    let countLtcgWithIndex = 0;
+
+    let gain = rec.saleCons - rec.costAcq;
+    if (assetType === 'Long term') {
+      if (rec.indexedCost > 0 && rec.indexedCost !== rec.costAcq) {
+        ltcgWithIndex = gain;
+        countLtcgWithIndex = 1;
+      } else {
+        ltcgWithoutIndex = gain;
+      }
+    } else {
+      stcg = gain;
+    }
+
+    // 1. Asset Type level
+    if (!tree.children[assetType]) {
+      tree.children[assetType] = {
+        name: assetType,
+        level: 0,
+        countLtcgWithIndex: 0,
+        ltcgWithoutIndex: 0,
+        stcg: 0,
+        saleCons: 0,
+        costAcq: 0,
+        children: {}
+      };
+    }
+    const assetNode = tree.children[assetType];
+
+    // 2. Security Class level
+    if (!assetNode.children[secClass]) {
+      assetNode.children[secClass] = {
+        name: secClass,
+        level: 1,
+        countLtcgWithIndex: 0,
+        ltcgWithoutIndex: 0,
+        stcg: 0,
+        saleCons: 0,
+        costAcq: 0,
+        children: {}
+      };
+    }
+    const classNode = assetNode.children[secClass];
+
+    // 3. Security Name level (leaf)
+    if (!classNode.children[secNameClean]) {
+      classNode.children[secNameClean] = {
+        name: secNameClean,
+        level: 2,
+        countLtcgWithIndex: 0,
+        ltcgWithoutIndex: 0,
+        stcg: 0,
+        saleCons: 0,
+        costAcq: 0
+      };
+    }
+    const leafNode = classNode.children[secNameClean];
+
+    // Add values to leaf node
+    leafNode.countLtcgWithIndex += countLtcgWithIndex;
+    leafNode.ltcgWithoutIndex += ltcgWithoutIndex;
+    leafNode.stcg += stcg;
+    leafNode.saleCons += rec.saleCons;
+    leafNode.costAcq += rec.costAcq;
+
+    // Accumulate values to parents
+    classNode.countLtcgWithIndex += countLtcgWithIndex;
+    classNode.ltcgWithoutIndex += ltcgWithoutIndex;
+    classNode.stcg += stcg;
+    classNode.saleCons += rec.saleCons;
+    classNode.costAcq += rec.costAcq;
+
+    assetNode.countLtcgWithIndex += countLtcgWithIndex;
+    assetNode.ltcgWithoutIndex += ltcgWithoutIndex;
+    assetNode.stcg += stcg;
+    assetNode.saleCons += rec.saleCons;
+    assetNode.costAcq += rec.costAcq;
+
+    tree.countLtcgWithIndex += countLtcgWithIndex;
+    tree.ltcgWithoutIndex += ltcgWithoutIndex;
+    tree.stcg += stcg;
+    tree.saleCons += rec.saleCons;
+    tree.costAcq += rec.costAcq;
+  });
+
+  return tree;
+}
+
+function flattenTree(node) {
+  const rows = [];
+  const assetKeys = Object.keys(node.children).sort((a, b) => b.localeCompare(a)); // Long term first
+  
+  assetKeys.forEach(assetKey => {
+    const assetNode = node.children[assetKey];
+    const assetId = `asset_${assetKey.replace(/[^a-zA-Z0-9]/g, '_')}`;
+    rows.push({
+      id: assetId,
+      parentId: null,
+      level: 0,
+      name: assetNode.name,
+      countLtcgWithIndex: assetNode.countLtcgWithIndex,
+      ltcgWithoutIndex: assetNode.ltcgWithoutIndex,
+      stcg: assetNode.stcg,
+      saleCons: assetNode.saleCons,
+      costAcq: assetNode.costAcq,
+      hasChildren: Object.keys(assetNode.children).length > 0
+    });
+    
+    const classKeys = Object.keys(assetNode.children).sort();
+    classKeys.forEach(classKey => {
+      const classNode = assetNode.children[classKey];
+      const classId = `${assetId}_class_${classKey.replace(/[^a-zA-Z0-9]/g, '_')}`;
+      rows.push({
+        id: classId,
+        parentId: assetId,
+        level: 1,
+        name: classNode.name,
+        countLtcgWithIndex: classNode.countLtcgWithIndex,
+        ltcgWithoutIndex: classNode.ltcgWithoutIndex,
+        stcg: classNode.stcg,
+        saleCons: classNode.saleCons,
+        costAcq: classNode.costAcq,
+        hasChildren: Object.keys(classNode.children).length > 0
+      });
+      
+      const leafKeys = Object.keys(classNode.children).sort();
+      leafKeys.forEach(leafKey => {
+        const leafNode = classNode.children[leafKey];
+        const leafId = `${classId}_leaf_${leafKey.replace(/[^a-zA-Z0-9]/g, '_')}`;
+        rows.push({
+          id: leafId,
+          parentId: classId,
+          level: 2,
+          name: leafNode.name,
+          countLtcgWithIndex: leafNode.countLtcgWithIndex,
+          ltcgWithoutIndex: leafNode.ltcgWithoutIndex,
+          stcg: leafNode.stcg,
+          saleCons: leafNode.saleCons,
+          costAcq: leafNode.costAcq,
+          hasChildren: false
+        });
+      });
+    });
+  });
+  
+  if (rows.length > 0) {
+    rows.push({
+      id: 'grand_total',
+      parentId: null,
+      level: -1,
+      name: 'Grand Total',
+      countLtcgWithIndex: node.countLtcgWithIndex,
+      ltcgWithoutIndex: node.ltcgWithoutIndex,
+      stcg: node.stcg,
+      saleCons: node.saleCons,
+      costAcq: node.costAcq,
+      hasChildren: false
+    });
+  }
+  
+  return rows;
+}
+
+function toggleNode(nodeId) {
+  if (collapsedNodes.has(nodeId)) {
+    collapsedNodes.delete(nodeId);
+  } else {
+    collapsedNodes.add(nodeId);
+  }
+  renderTreeTable();
+}
+
+function expandAll() {
+  collapsedNodes.clear();
+  renderTreeTable();
+}
+
+function collapseAll() {
+  allTreeRows.forEach(row => {
+    if (row.hasChildren) {
+      collapsedNodes.add(row.id);
+    }
+  });
+  renderTreeTable();
+}
+
+function renderTreeTable() {
+  const tbody = document.getElementById('equityTableBody');
+  if (!allTreeRows.length || (allTreeRows.length === 1 && allTreeRows[0].id === 'grand_total' && allTreeRows[0].saleCons === 0)) {
+    tbody.innerHTML = empty(6, 'No equity or mutual fund transactions found.');
+    return;
+  }
+
+  const html = allTreeRows.map(row => {
+    let isVisible = true;
+    if (row.parentId) {
+      if (collapsedNodes.has(row.parentId)) {
+        isVisible = false;
+      } else {
+        const parentRow = allTreeRows.find(r => r.id === row.parentId);
+        if (parentRow && parentRow.parentId && collapsedNodes.has(parentRow.parentId)) {
+          isVisible = false;
+        }
+      }
+    }
+
+    if (!isVisible) return '';
+
+    let indent = '';
+    let icon = '';
+    let rowClass = '';
+    
+    if (row.level === 0) {
+      indent = 'padding-left: 12px;';
+      icon = collapsedNodes.has(row.id) ? '<i class="fas fa-chevron-right tree-toggle"></i>' : '<i class="fas fa-chevron-down tree-toggle"></i>';
+      rowClass = 'row-level-0';
+    } else if (row.level === 1) {
+      indent = 'padding-left: 32px;';
+      icon = collapsedNodes.has(row.id) ? '<i class="fas fa-chevron-right tree-toggle"></i>' : '<i class="fas fa-chevron-down tree-toggle"></i>';
+      rowClass = 'row-level-1';
+    } else if (row.level === 2) {
+      indent = 'padding-left: 56px;';
+      icon = '<i class="fas fa-minus tree-leaf-icon" style="font-size:0.6rem; opacity:0.4;"></i>';
+      rowClass = 'row-level-2';
+    } else if (row.level === -1) {
+      rowClass = 'row-grand-total';
+    }
+
+    const countLtcg = row.countLtcgWithIndex > 0 ? fmtNum(row.countLtcgWithIndex) : '—';
+    const ltcgWithout = row.ltcgWithoutIndex !== 0 ? fmt(row.ltcgWithoutIndex) : '—';
+    const stcg = row.stcg !== 0 ? fmt(row.stcg) : '—';
+    const saleCons = row.saleCons !== 0 ? fmt(row.saleCons) : '—';
+    const costAcq = row.costAcq !== 0 ? fmt(row.costAcq) : '—';
+
+    const ltcgClass = row.ltcgWithoutIndex > 0 ? 'val-green' : (row.ltcgWithoutIndex < 0 ? 'val-red' : '');
+    const stcgClass = row.stcg > 0 ? 'val-green' : (row.stcg < 0 ? 'val-red' : '');
+
+    const onClickAttr = row.hasChildren ? `onclick="toggleNode('${row.id}')" style="cursor: pointer;"` : '';
+
+    return `<tr class="${rowClass}" ${onClickAttr}>
+      <td style="${indent}">
+        ${icon}
+        <span class="tree-name" title="${row.name}">${row.name}</span>
+      </td>
+      <td class="text-right mono">${countLtcg}</td>
+      <td class="text-right mono ${ltcgClass}">${ltcgWithout}</td>
+      <td class="text-right mono ${stcgClass}">${stcg}</td>
+      <td class="text-right val-white mono">${saleCons}</td>
+      <td class="text-right val-white mono">${costAcq}</td>
+    </tr>`;
+  }).join('');
+
+  tbody.innerHTML = html;
+}
+
+function filterTreeTable(q) {
+  const query = q.toLowerCase().trim();
+  if (!query) {
+    renderTreeTable();
+    return;
+  }
+
+  allTreeRows.forEach(row => {
+    if (row.name.toLowerCase().includes(query)) {
+      if (row.parentId) {
+        collapsedNodes.delete(row.parentId);
+        const parentRow = allTreeRows.find(r => r.id === row.parentId);
+        if (parentRow && parentRow.parentId) {
+          collapsedNodes.delete(parentRow.parentId);
+        }
+      }
+    }
+  });
+
+  const tbody = document.getElementById('equityTableBody');
+  const html = allTreeRows.map(row => {
+    const hasMatchingDescendant = allTreeRows.some(r => {
+      if (r.parentId === row.id && r.name.toLowerCase().includes(query)) return true;
+      if (r.parentId) {
+        const p = allTreeRows.find(parent => parent.id === r.parentId);
+        if (p && p.parentId === row.id && r.name.toLowerCase().includes(query)) return true;
+      }
+      return false;
+    });
+
+    const matchesSelf = row.name.toLowerCase().includes(query);
+    const matchesParent = row.parentId && allTreeRows.find(r => r.id === row.parentId).name.toLowerCase().includes(query);
+    
+    let isVisible = matchesSelf || hasMatchingDescendant || matchesParent;
+    if (row.level === -1) isVisible = true;
+
+    if (!isVisible) return '';
+
+    let indent = '';
+    let icon = '';
+    let rowClass = '';
+    
+    if (row.level === 0) {
+      indent = 'padding-left: 12px;';
+      icon = collapsedNodes.has(row.id) ? '<i class="fas fa-chevron-right tree-toggle"></i>' : '<i class="fas fa-chevron-down tree-toggle"></i>';
+      rowClass = 'row-level-0';
+    } else if (row.level === 1) {
+      indent = 'padding-left: 32px;';
+      icon = collapsedNodes.has(row.id) ? '<i class="fas fa-chevron-right tree-toggle"></i>' : '<i class="fas fa-chevron-down tree-toggle"></i>';
+      rowClass = 'row-level-1';
+    } else if (row.level === 2) {
+      indent = 'padding-left: 56px;';
+      icon = '<i class="fas fa-minus tree-leaf-icon" style="font-size:0.6rem; opacity:0.4;"></i>';
+      rowClass = 'row-level-2';
+    } else if (row.level === -1) {
+      rowClass = 'row-grand-total';
+    }
+
+    const countLtcg = row.countLtcgWithIndex > 0 ? fmtNum(row.countLtcgWithIndex) : '—';
+    const ltcgWithout = row.ltcgWithoutIndex !== 0 ? fmt(row.ltcgWithoutIndex) : '—';
+    const stcg = row.stcg !== 0 ? fmt(row.stcg) : '—';
+    const saleCons = row.saleCons !== 0 ? fmt(row.saleCons) : '—';
+    const costAcq = row.costAcq !== 0 ? fmt(row.costAcq) : '—';
+
+    const ltcgClass = row.ltcgWithoutIndex > 0 ? 'val-green' : (row.ltcgWithoutIndex < 0 ? 'val-red' : '');
+    const stcgClass = row.stcg > 0 ? 'val-green' : (row.stcg < 0 ? 'val-red' : '');
+
+    const onClickAttr = row.hasChildren ? `onclick="toggleNode('${row.id}')" style="cursor: pointer;"` : '';
+
+    return `<tr class="${rowClass}" ${onClickAttr}>
+      <td style="${indent}">
+        ${icon}
+        <span class="tree-name" title="${row.name}">${row.name}</span>
+      </td>
+      <td class="text-right mono">${countLtcg}</td>
+      <td class="text-right mono ${ltcgClass}">${ltcgWithout}</td>
+      <td class="text-right mono ${stcgClass}">${stcg}</td>
+      <td class="text-right val-white mono">${saleCons}</td>
+      <td class="text-right val-white mono">${costAcq}</td>
+    </tr>`;
+  }).join('');
+
+  tbody.innerHTML = html;
+}
+
+function renderEquity(equityRows, mfRows) {
+  const records = parseAisSecurities(equityRows, mfRows);
+  const tree = buildPivotTree(records);
+  allTreeRows = flattenTree(tree);
+  collapsedNodes.clear();
+  renderTreeTable();
 }
 
 function renderSFT(rows) {
@@ -997,6 +1634,105 @@ function filterTbl(tableId, q) {
     const match = Array.from(row.cells).some(c => c.innerText.toLowerCase().includes(f));
     row.style.display = match ? '' : 'none';
   });
+}
+
+// ── AIS Import JS Logic ──
+let pendingAisFormData = null;
+let pendingImportType = '';
+
+window.submitAisImport = function(event, type) {
+  event.preventDefault();
+  
+  const suffix = type === 'empty' ? 'empty' : 'sidebar';
+  const fileInput = document.getElementById('ais_file_' + suffix);
+  const passwordInput = document.getElementById('ais_password_' + suffix);
+  const importBtn = document.getElementById('aisImportBtn' + suffix);
+  
+  if (!fileInput.files || fileInput.files.length === 0) {
+    alert('Please select an AIS JSON file.');
+    return;
+  }
+  
+  const file = fileInput.files[0];
+  if (!file.name.toLowerCase().endsWith('.json') && !file.name.toLowerCase().endsWith('.zip')) {
+    alert('Accept only .json or .zip files.');
+    return;
+  }
+  
+  const formData = new FormData();
+  formData.append('ais_file', file);
+  formData.append('password', passwordInput.value);
+  
+  importBtn.disabled = true;
+  importBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1.5"></i>Decrypting & Importing...';
+  
+  sendAisImportRequest(formData, type);
+};
+
+function sendAisImportRequest(formData, type) {
+  const suffix = type === 'empty' ? 'empty' : 'sidebar';
+  const importBtn = document.getElementById('aisImportBtn' + suffix);
+  
+  fetch('/calc/ais/import/', {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': '{{ csrf_token }}'
+    },
+    body: formData
+  })
+  .then(response => response.json().then(data => ({ status: response.status, body: data })))
+  .then(res => {
+    if (res.status === 200 && res.body.status === 'success') {
+      window.location.href = '/calc/ais/dashboard/?fy=' + encodeURIComponent(res.body.financial_year);
+    } else if (res.body.status === 'duplicate_detected') {
+      pendingAisFormData = formData;
+      pendingImportType = type;
+      document.getElementById('aisDupFY').innerText = res.body.financial_year;
+      const dupModal = new bootstrap.Modal(document.getElementById('aisDuplicateModal'));
+      dupModal.show();
+    } else {
+      showImportError(res.body.message || 'An error occurred during import.', type);
+    }
+  })
+  .catch(err => {
+    showImportError('Invalid password or corrupted AIS JSON file.', type);
+  })
+  .finally(() => {
+    importBtn.disabled = false;
+    importBtn.innerHTML = '<i class="fas fa-cloud-upload-alt me-1.5"></i>Import AIS JSON';
+  });
+}
+
+window.confirmAisImport = function() {
+  if (!pendingAisFormData) return;
+  
+  const dupModalEl = document.getElementById('aisDuplicateModal');
+  const dupModal = bootstrap.Modal.getInstance(dupModalEl);
+  if (dupModal) dupModal.hide();
+  
+  const action = document.querySelector('input[name="aisDupAction"]:checked').value;
+  pendingAisFormData.set('duplicate_action', action);
+  
+  const suffix = pendingImportType === 'empty' ? 'empty' : 'sidebar';
+  const importBtn = document.getElementById('aisImportBtn' + suffix);
+  importBtn.disabled = true;
+  importBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1.5"></i>Processing...';
+  
+  sendAisImportRequest(pendingAisFormData, pendingImportType);
+};
+
+function showImportError(msg, type) {
+  const suffix = type === 'empty' ? 'empty' : 'sidebar';
+  const resultDiv = document.getElementById('aisImportResult' + suffix);
+  resultDiv.className = 'alert alert-danger rounded-3 p-3 mt-3';
+  resultDiv.innerHTML = `
+    <div class="d-flex align-items-center gap-2 mb-1">
+      <i class="fas fa-exclamation-circle text-danger h5 mb-0"></i>
+      <strong class="text-danger">Import Failed</strong>
+    </div>
+    <div class="small">${msg}</div>
+  `;
+  resultDiv.classList.remove('d-none');
 }
 </script>
 {% endblock %}

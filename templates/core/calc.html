@@ -1027,9 +1027,6 @@
                   <li class="nav-item" role="presentation">
                     <button class="nav-link rounded-pill px-3 py-1.5 small fw-bold" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports" type="button" role="tab"><i class="fas fa-download me-1.5"></i>Reports</button>
                   </li>
-                  <li class="nav-item" role="presentation">
-                    <button class="nav-link rounded-pill px-3 py-1.5 small fw-bold" id="ais-tab" data-bs-toggle="tab" data-bs-target="#ais" type="button" role="tab"><i class="fas fa-file-upload me-1.5"></i>Import AIS</button>
-                  </li>
                 </ul>
 
                 <div class="tab-content" id="taxTabContent">
@@ -1282,50 +1279,7 @@
                     </div>
                   </div>
 
-                  <!-- AIS Tab -->
-                  <div class="tab-pane fade" id="ais" role="tabpanel">
-                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                      <h6 class="fw-bold mb-0"><i class="fas fa-file-upload text-primary me-2"></i>Import Income Tax AIS</h6>
-                      <a href="/calc/ais/dashboard/" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold" style="font-size:0.75rem;"><i class="fas fa-chart-line me-1"></i>View AIS Dashboard</a>
-                    </div>
-                    <p class="text-muted small">Upload your password-protected AIS JSON or ZIP file downloaded from the Income Tax Department portal to auto-populate all records.</p>
-                    
-                    <div class="card p-4 border rounded-3 bg-white text-dark mb-4">
-                      <form id="aisImportForm" onsubmit="submitAisImport(event)" enctype="multipart/form-data">
-                        <div class="mb-3">
-                          <label class="form-label small fw-bold">Upload AIS JSON or ZIP File</label>
-                          <input type="file" id="ais_file" name="ais_file" class="form-control form-control-sm text-dark" accept=".json,.zip" required>
-                          <div class="form-text small text-muted">Example: XXXPK3598X_2025-26_AIS_01072026.json or .zip (Accepts .json or .zip files)</div>
-                        </div>
-                        
-                        <div class="mb-3">
-                          <label class="form-label small fw-bold">Password</label>
-                          <input type="password" id="ais_password" name="password" class="form-control form-control-sm text-dark" placeholder="Enter AIS JSON Password" required>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-primary rounded-pill btn-sm px-4" id="aisImportBtn">
-                          <i class="fas fa-cloud-upload-alt me-1.5"></i>Import AIS JSON
-                        </button>
-                      </form>
-                    </div>
 
-                    <!-- Password Info Card -->
-                    <div class="card p-3 border rounded-3 bg-light text-dark mb-4">
-                      <h6 class="fw-bold mb-2 text-slate-800" style="font-size:0.85rem;"><i class="fas fa-info-circle text-info me-1.5"></i>AIS JSON Password Format</h6>
-                      <div class="small text-muted mb-2">Password = PAN (lowercase) + Date of Birth (DDMMYYYY)</div>
-                      <div class="bg-white p-2.5 rounded border small">
-                        <strong>Example:</strong><br>
-                        PAN: <code class="text-primary">ATKPK3598G</code><br>
-                        Date of Birth: <code class="text-primary">04/08/1982</code><br>
-                        Password: <code class="text-success fw-bold">atkpk3598g04081982</code>
-                      </div>
-                    </div>
-
-                    <!-- Summary / Result Alert -->
-                    <div id="aisImportResult" class="d-none">
-                      <!-- Dynamically populated via JS -->
-                    </div>
-                  </div>
                 </div>
               </div>
 
@@ -1515,41 +1469,6 @@
         <div class="col-md-6">
           <p class="mb-2"><strong>Stocks & Cryptocurrencies Risk Warning:</strong> Trading high-volatility financial instruments carries a highly significant risk of capital loss. Simulators model linear rate expectations; real market assets incur compounding volatility and potential drawdown events.</p>
           <p class="mb-0"><strong>Tax Calculation Disclaimer:</strong> Tax regimes, HRA exempt rules, and salary breakdowns are estimated under the provisions of the Income Tax Act, 1961 (and subsequent amendments). Surcharges, rebates, and individual deductions may vary; consult a qualified Chartered Accountant (CA) or certified tax advisor before filing.</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Duplicate Import Action Modal -->
-    <div class="modal fade" id="aisDuplicateModal" tabindex="-1" aria-labelledby="aisDuplicateLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 rounded-4 shadow" style="background-color: var(--calc-card); color: var(--calc-text); border: 1px solid var(--calc-border) !important;">
-          <div class="modal-header border-bottom pb-3">
-            <h5 class="modal-title fw-bold text-dark" id="aisDuplicateLabel"><i class="fas fa-exclamation-triangle text-warning me-2"></i>Duplicate Import Detected</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body py-4 text-dark">
-            <p class="mb-3">Existing AIS data was found for Financial Year <strong id="aisDupFY">2025-26</strong>. Please choose how you want to proceed:</p>
-            
-            <div class="form-check mb-3">
-              <input class="form-check-input" type="radio" name="aisDupAction" id="aisActionReplace" value="replace" checked>
-              <label class="form-check-label fw-semibold" for="aisActionReplace">
-                Replace Existing Data (Recommended)
-              </label>
-              <div class="form-text small text-muted">This deletes previous imported records for this Financial Year and replaces them with the new file contents.</div>
-            </div>
-            
-            <div class="form-check mb-3">
-              <input class="form-check-input" type="radio" name="aisDupAction" id="aisActionMerge" value="merge">
-              <label class="form-check-label fw-semibold" for="aisActionMerge">
-                Merge Data
-              </label>
-              <div class="form-text small text-muted">This keeps existing records and only adds new, non-duplicate entries from the uploaded file.</div>
-            </div>
-          </div>
-          <div class="modal-footer border-top pt-3">
-            <button type="button" class="btn btn-outline-secondary rounded-pill px-4 btn-sm" data-bs-dismiss="modal">Cancel</button>
-            <button type="button" class="btn btn-primary rounded-pill px-4 btn-sm" onclick="confirmAisImport()">Proceed</button>
-          </div>
         </div>
       </div>
     </div>
@@ -4285,169 +4204,6 @@
     }
   });
 
-  // AIS Import JavaScript Logic
-  let pendingAisFormData = null;
 
-  window.submitAisImport = function(event) {
-    event.preventDefault();
-    
-    const fileInput = document.getElementById('ais_file');
-    const passwordInput = document.getElementById('ais_password');
-    const importBtn = document.getElementById('aisImportBtn');
-    
-    if (!fileInput.files || fileInput.files.length === 0) {
-      alert('Please select an AIS JSON file.');
-      return;
-    }
-    
-    const file = fileInput.files[0];
-    if (!file.name.toLowerCase().endsWith('.json') && !file.name.toLowerCase().endsWith('.zip')) {
-      alert('Accept only .json or .zip files.');
-      return;
-    }
-    
-    const formData = new FormData();
-    formData.append('ais_file', file);
-    formData.append('password', passwordInput.value);
-    
-    // Set UI to loading state
-    importBtn.disabled = true;
-    importBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1.5"></i>Decrypting & Importing...';
-    
-    sendAisImportRequest(formData);
-  };
-  
-  function sendAisImportRequest(formData) {
-    const importBtn = document.getElementById('aisImportBtn');
-    const resultDiv = document.getElementById('aisImportResult');
-    
-    fetch('/calc/ais/import/', {
-      method: 'POST',
-      headers: {
-        'X-CSRFToken': '{{ csrf_token }}'
-      },
-      body: formData
-    })
-    .then(response => response.json().then(data => ({ status: response.status, body: data })))
-    .then(res => {
-      if (res.status === 200 && res.body.status === 'success') {
-        // Redirect to AIS dashboard and pass the imported financial year
-        window.location.href = '/calc/ais/dashboard/?fy=' + encodeURIComponent(res.body.financial_year);
-      } else if (res.body.status === 'duplicate_detected') {
-        // Show duplicate modal
-        pendingAisFormData = formData;
-        document.getElementById('aisDupFY').innerText = res.body.financial_year;
-        const dupModal = new bootstrap.Modal(document.getElementById('aisDuplicateModal'));
-        dupModal.show();
-      } else {
-        // Error
-        showImportError(res.body.message || 'An error occurred during import.');
-      }
-    })
-    .catch(err => {
-      showImportError('Invalid password or corrupted AIS JSON file.');
-    })
-    .finally(() => {
-      importBtn.disabled = false;
-      importBtn.innerHTML = '<i class="fas fa-cloud-upload-alt me-1.5"></i>Import AIS JSON';
-    });
-  }
-  
-  window.confirmAisImport = function() {
-    if (!pendingAisFormData) return;
-    
-    // Hide modal
-    const dupModalEl = document.getElementById('aisDuplicateModal');
-    const dupModal = bootstrap.Modal.getInstance(dupModalEl);
-    if (dupModal) dupModal.hide();
-    
-    const action = document.querySelector('input[name="aisDupAction"]:checked').value;
-    pendingAisFormData.set('duplicate_action', action);
-    
-    const importBtn = document.getElementById('aisImportBtn');
-    importBtn.disabled = true;
-    importBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1.5"></i>Processing...';
-    
-    sendAisImportRequest(pendingAisFormData);
-  };
-  
-  function showImportError(msg) {
-    const resultDiv = document.getElementById('aisImportResult');
-    resultDiv.className = 'alert alert-danger rounded-3 p-3';
-    resultDiv.innerHTML = `
-      <div class="d-flex align-items-center gap-2 mb-1">
-        <i class="fas fa-exclamation-circle text-danger h5 mb-0"></i>
-        <strong class="text-danger">Import Failed</strong>
-      </div>
-      <div class="small">${msg}</div>
-    `;
-    resultDiv.classList.remove('d-none');
-  }
-  
-  function displayImportSummary(fy, counts) {
-    const resultDiv = document.getElementById('aisImportResult');
-    resultDiv.className = 'alert alert-success rounded-3 p-3 text-dark';
-    
-    let html = `
-      <div class="d-flex align-items-center gap-2 mb-3 border-bottom pb-2">
-        <i class="fas fa-check-circle text-success h5 mb-0"></i>
-        <strong class="text-success" style="font-size:1.05rem;">Import Successful</strong>
-      </div>
-      <div class="small mb-3"><strong>Financial Year:</strong> ${fy}</div>
-      <div class="row g-2 text-dark" style="font-size: 0.85rem;">
-    `;
-    
-    const labels = {
-      salary: 'Salary Records',
-      tds: 'TDS Entries',
-      interest: 'Interest Records',
-      dividend: 'Dividend Records',
-      equity: 'Equity Transactions',
-      mutual_fund: 'Mutual Fund Transactions',
-      sft: 'SFT Entries',
-      tax_payment: 'Tax Payments',
-      refund: 'Refunds',
-      demand: 'Demands',
-      other: 'Other Information'
-    };
-    
-    for (const [key, label] of Object.entries(labels)) {
-      const val = counts[key] || 0;
-      html += `
-        <div class="col-6 d-flex justify-content-between border-bottom py-1">
-          <span>${label}:</span>
-          <span class="fw-bold">${val}</span>
-        </div>
-      `;
-    }
-    
-    html += `
-      </div>
-      <div class="mt-3 small text-muted">
-        <i class="fas fa-sync me-1"></i>My Tax Calculator inputs have been automatically updated.
-      </div>
-    `;
-    
-    resultDiv.innerHTML = html;
-    resultDiv.classList.remove('d-none');
-    
-    // Switch the active FY dropdown option to match the imported FY
-    const fySelect = document.getElementById('taxFYSelect');
-    if (fySelect) {
-      let normalizedFy = fy;
-      if (fy.length === 7) { // 2025-26 -> 2025-2026
-        const parts = fy.split('-');
-        normalizedFy = `${parts[0]}-20${parts[1]}`;
-      }
-      fySelect.value = normalizedFy;
-    }
-    
-    // Automatically trigger runTaxComparison to re-calculate values on the page!
-    if (typeof loadMyTaxData === 'function') {
-      loadMyTaxData();
-    } else {
-      setTimeout(() => { window.location.reload(); }, 2000);
-    }
-  }
 </script>
 {% endblock %}

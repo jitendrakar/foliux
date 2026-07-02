@@ -5382,8 +5382,11 @@ def ais_data_api(request):
         
     user = request.user
     
-    def serialize_qs(qs):
-        return [model_to_dict(obj, exclude=['user', 'json_reference']) for obj in qs]
+    def serialize_qs(qs, exclude_json=True):
+        exclude = ['user']
+        if exclude_json:
+            exclude.append('json_reference')
+        return [model_to_dict(obj, exclude=exclude) for obj in qs]
         
     data = {
         'profile': serialize_qs(IncomeTaxProfile.objects.filter(user=user, financial_year=fy)),
@@ -5391,8 +5394,8 @@ def ais_data_api(request):
         'salary': serialize_qs(IncomeTaxSalary.objects.filter(user=user, financial_year=fy)),
         'interest': serialize_qs(IncomeTaxInterest.objects.filter(user=user, financial_year=fy)),
         'dividend': serialize_qs(IncomeTaxDividend.objects.filter(user=user, financial_year=fy)),
-        'equity': serialize_qs(IncomeTaxEquity.objects.filter(user=user, financial_year=fy)),
-        'mutual_fund': serialize_qs(IncomeTaxMutualFund.objects.filter(user=user, financial_year=fy)),
+        'equity': serialize_qs(IncomeTaxEquity.objects.filter(user=user, financial_year=fy), exclude_json=False),
+        'mutual_fund': serialize_qs(IncomeTaxMutualFund.objects.filter(user=user, financial_year=fy), exclude_json=False),
         'sft': serialize_qs(IncomeTaxSft.objects.filter(user=user, financial_year=fy)),
         'tax_payment': serialize_qs(IncomeTaxTaxPaid.objects.filter(user=user, financial_year=fy)),
         'refund': serialize_qs(IncomeTaxRefund.objects.filter(user=user, financial_year=fy)),
