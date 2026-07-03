@@ -1674,9 +1674,227 @@
       width: 20px;
       height: 20px;
     }
+
+    /* ==================================================== */
+    /* Floating Demo Customizer Panel Styles */
+    /* ==================================================== */
+    .demo-customizer {
+      position: fixed;
+      top: 100px;
+      left: -320px; /* Collapsed position */
+      width: 320px;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 0 16px 16px 0;
+      box-shadow: 0 15px 35px rgba(15, 23, 42, 0.08);
+      z-index: 1500;
+      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      padding: 24px;
+    }
+
+    .demo-customizer.active {
+      transform: translateX(320px); /* Expanded position */
+    }
+
+    .customizer-toggle {
+      position: absolute;
+      right: -56px;
+      top: 20px;
+      width: 56px;
+      height: 56px;
+      background: var(--primary);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-left: none;
+      border-radius: 0 12px 12px 0;
+      color: white;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 6px 4px 18px rgba(13, 148, 136, 0.15);
+      transition: var(--transition);
+    }
+
+    .customizer-toggle:hover {
+      background: var(--primary-hover);
+      box-shadow: 8px 6px 22px rgba(13, 148, 136, 0.25);
+    }
+
+    .customizer-toggle svg {
+      width: 24px;
+      height: 24px;
+      transition: transform 0.5s ease;
+    }
+
+    .demo-customizer.active .customizer-toggle svg {
+      transform: rotate(180deg);
+    }
+
+    .customizer-header {
+      margin-bottom: 20px;
+      border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+      padding-bottom: 12px;
+    }
+
+    .customizer-header h3 {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--secondary);
+      margin-bottom: 4px;
+    }
+
+    .customizer-header p {
+      font-size: 12px;
+      color: var(--text-light);
+      line-height: 1.4;
+    }
+
+    .customizer-group {
+      margin-bottom: 16px;
+    }
+
+    .customizer-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .customizer-input {
+      width: 100%;
+      background: rgba(248, 250, 252, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 13px;
+      color: var(--secondary);
+      outline: none;
+      transition: var(--transition);
+    }
+
+    .customizer-input:focus {
+      background: white;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.08);
+    }
+
+    .theme-selector {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .color-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid white;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+      position: relative;
+    }
+
+    .color-btn:hover {
+      transform: scale(1.15);
+    }
+
+    .color-btn.active::after {
+      content: '✓';
+      color: white;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .color-btn.active[data-color="teal"]::after { color: white; }
+    
+    .color-btn[data-color="teal"] { background: #0d9488; }
+    .color-btn[data-color="blue"] { background: #2563eb; }
+    .color-btn[data-color="green"] { background: #16a34a; }
+    .color-btn[data-color="indigo"] { background: #4f46e5; }
+    .color-btn[data-color="coral"] { background: #ea580c; }
+
+    .customizer-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .btn-customizer-reset {
+      flex: 1;
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #cbd5e1;
+      padding: 10px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: var(--transition);
+      text-align: center;
+    }
+
+    .btn-customizer-reset:hover {
+      background: #e2e8f0;
+      color: #334155;
+    }
   </style>
 </head>
 <body>
+
+  <!-- Floating Demo Customizer Panel -->
+  <div class="demo-customizer" id="customizer-panel">
+    <button class="customizer-toggle" id="customizer-toggle-btn" aria-label="Customize Demo">
+      <!-- Paint Brush SVG -->
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22C17.5228 22 22 17.5228 22 12C22 11.5 21.5 11 21 11H12V2H11C5.47715 2 1 6.47715 1 12C1 17.5228 5.47715 22 11 22H12Z"/><circle cx="7.5" cy="10.5" r="1.5" fill="currentColor"/><circle cx="11.5" cy="7.5" r="1.5" fill="currentColor"/><circle cx="16.5" cy="9.5" r="1.5" fill="currentColor"/><circle cx="15.5" cy="14.5" r="1.5" fill="currentColor"/><circle cx="10.5" cy="17.5" r="1.5" fill="currentColor"/></svg>
+    </button>
+    <div class="customizer-header">
+      <h3>Customize Site Demo</h3>
+      <p>Personalize doctor details and styling presets to showcase this portfolio template.</p>
+    </div>
+    <div class="customizer-group">
+      <label for="input-doc-name">Doctor Name</label>
+      <input type="text" id="input-doc-name" class="customizer-input" value="Dr. Alex Mercer">
+    </div>
+    <div class="customizer-group">
+      <label for="input-doc-specialty">Primary Specialty</label>
+      <input type="text" id="input-doc-specialty" class="customizer-input" value="General Physician & Family Specialist">
+    </div>
+    <div class="customizer-group">
+      <label for="input-doc-phone">Phone Number</label>
+      <input type="text" id="input-doc-phone" class="customizer-input" value="+1 (555) 019-2834">
+    </div>
+    <div class="customizer-group">
+      <label for="input-doc-email">Email Address</label>
+      <input type="email" id="input-doc-email" class="customizer-input" value="contact@dralexmercer.com">
+    </div>
+    <div class="customizer-group">
+      <label for="input-doc-address">Clinic Location</label>
+      <input type="text" id="input-doc-address" class="customizer-input" value="123 Medical Center Plaza, Suite 100, New York, NY 10001">
+    </div>
+    <div class="customizer-group">
+      <label>Theme Color Preset</label>
+      <div class="theme-selector">
+        <button class="color-btn active" data-color="teal" aria-label="Teal Theme"></button>
+        <button class="color-btn" data-color="blue" aria-label="Blue Theme"></button>
+        <button class="color-btn" data-color="green" aria-label="Green Theme"></button>
+        <button class="color-btn" data-color="indigo" aria-label="Indigo Theme"></button>
+        <button class="color-btn" data-color="coral" aria-label="Coral Theme"></button>
+      </div>
+    </div>
+    <div class="customizer-actions">
+      <button class="btn-customizer-reset" id="customizer-reset-btn">Reset Defaults</button>
+    </div>
+  </div>
 
   <!-- Header Navigation -->
   <header class="sticky-nav" id="header">
@@ -1686,7 +1904,7 @@
           <!-- Heart Beat / Pulse SVG -->
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
         </div>
-        <div class="logo-text">Dr. Inam's <span>Clinic</span></div>
+        <div class="logo-text"><span data-custom="logo-name">Dr. Alex</span>'s <span>Clinic</span></div>
       </a>
       
       <button class="hamburger" id="menu-toggle" aria-label="Toggle Menu">
@@ -1716,16 +1934,16 @@
         <h1 class="hero-title">
           Compassionate & <br><span class="gradient-text">Expert Healthcare</span>
         </h1>
-        <p class="hero-subtitle">Dr. Inam Ul Haque (MD, DNB)</p>
+        <p class="hero-subtitle" data-custom="doc-fullname">Dr. Alex Mercer (MD)</p>
         <p class="hero-description">
-          Senior Internal Medicine & Diabetes Specialist offering evidence-based medical consultation and personalized disease management in New Delhi.
+          Senior <span data-custom="doc-specialty">General Physician & Family Specialist</span> offering evidence-based medical consultation and personalized disease management in <span data-custom="doc-location-city">New York, NY</span>.
         </p>
         <div class="hero-actions">
           <a href="#booking" class="btn-primary" id="hero-btn-book">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             Book Appointment
           </a>
-          <a href="https://wa.me/917042691198" class="btn-whatsapp" target="_blank" rel="noopener">
+          <a href="https://wa.me/15550192834" class="btn-whatsapp main-whatsapp-btn" target="_blank" rel="noopener" data-custom="whatsapp-link" id="hero-whatsapp-btn">
             <!-- WhatsApp SVG -->
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
             WhatsApp Support
@@ -1750,7 +1968,7 @@
 
       <div class="hero-image-wrapper">
         <div class="hero-image-container">
-          <img src="clinic1.webp" alt="Dr. Inam Ul Haque's Consultation Desk">
+          <img src="clinic1.png" alt="Doctor's Consultation Desk" data-custom="image-clinic1">
         </div>
         
         <!-- Floating Elements -->
@@ -1760,7 +1978,7 @@
           </div>
           <div class="floating-info">
             <h4>Clinic Location</h4>
-            <p>Jasola Vihar, Delhi</p>
+            <p data-custom="doc-location-short">New York, NY</p>
           </div>
         </div>
 
@@ -1770,7 +1988,7 @@
           </div>
           <div class="floating-info">
             <h4>Quick Contact</h4>
-            <p>+91 70426 91198</p>
+            <p data-custom="doc-phone">+1 (555) 019-2834</p>
           </div>
         </div>
       </div>
@@ -1783,15 +2001,15 @@
       <div class="about-image-wrapper">
         <div class="about-image-bg"></div>
         <div class="about-image-container">
-          <img src="clinic2.webp" alt="Dr. Inam's Clinic Reception and Waiting Lounge">
+          <img src="clinic2.png" alt="Clinic Reception and Waiting Lounge">
         </div>
       </div>
       
       <div class="about-content">
         <div class="section-badge">Qualified Medical Care</div>
-        <h2>Meet Dr. Inam Ul Haque</h2>
+        <h2>Meet <span data-custom="doc-name">Dr. Alex Mercer</span></h2>
         <p class="about-text">
-          Dr. Inam Ul Haque is a highly regarded Internal Medicine and Diabetes Specialist holding MD and DNB qualifications. With over 15 years of active clinical practice, his clinic provides comprehensive health evaluations and structured recovery pathways for acute and chronic systemic conditions.
+          <span data-custom="doc-name">Dr. Alex Mercer</span> is a highly regarded <span data-custom="doc-specialty">General Physician & Family Specialist</span> holding advanced medical qualifications. With over 15 years of active clinical practice, their clinic provides comprehensive health evaluations and structured recovery pathways for acute and chronic systemic conditions.
         </p>
         <p class="about-text">
           We prioritize thorough diagnostics, customized pharmaceutical management, preventive monitoring, and long-term health coaching for lifestyle diseases.
@@ -1965,7 +2183,7 @@
           <div class="appointment-banner-top">
             <div class="section-badge" style="background: rgba(255,255,255,0.15); color: white; margin-bottom: 20px;">Fast Response</div>
             <h2>Schedule Your Consultation</h2>
-            <p>Fill out the appointment request form. Submitting will launch WhatsApp to send your request directly to Dr. Inam's clinic coordination desk for immediate scheduling confirmation.</p>
+            <p>Fill out the appointment request form. Submitting will launch WhatsApp to send your request directly to <span data-custom="doc-name">Dr. Alex Mercer</span>'s clinic coordination desk for immediate scheduling confirmation.</p>
             
             <ul class="appointment-features">
               <li class="appointment-feature-item">
@@ -1991,7 +2209,7 @@
               
               <div class="form-group">
                 <label for="patient-phone">Mobile Number *</label>
-                <input type="tel" id="patient-phone" class="form-control" placeholder="10-digit mobile number" pattern="[0-9]{10}" required>
+                <input type="tel" id="patient-phone" class="form-control" placeholder="Enter mobile number" required>
               </div>
 
               <div class="form-group">
@@ -2039,7 +2257,7 @@
       <div class="section-header">
         <span class="section-badge">Patient Feedback</span>
         <h2 class="section-title">Trusted By Hundreds</h2>
-        <p class="section-subtitle">Read what our patients say about their clinical journeys with Dr. Inam Ul Haque.</p>
+        <p class="section-subtitle">Read what our patients say about their clinical journeys with <span data-custom="doc-name">Dr. Alex Mercer</span>.</p>
       </div>
 
       <div class="testimonial-grid">
@@ -2055,7 +2273,7 @@
               <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
             </div>
             <p class="testimonial-quote">
-              "Dr. Inam is an excellent physician. I was diagnosed with highly fluctuated blood sugar levels. Under his structured guidance, my HbA1c dropped from 9.2 to 6.1 in 3 months. His detailed explanations are incredibly reassuring."
+              "Dr. <span data-custom="doc-lastname">Mercer</span> is an excellent physician. I was diagnosed with highly fluctuated blood sugar levels. Under his structured guidance, my HbA1c dropped from 9.2 to 6.1 in 3 months. His detailed explanations are incredibly reassuring."
             </p>
           </div>
           <div class="patient-info">
@@ -2078,7 +2296,7 @@
               <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
             </div>
             <p class="testimonial-quote">
-              "We consult Dr. Inam for our entire family's medical requirements. He doesn't prescribe unnecessary medicines or tests. His diagnosis of my mother's acute viral fever was accurate, leading to quick recovery. A gem of a doctor."
+              "We consult Dr. <span data-custom="doc-lastname">Mercer</span> for our entire family's medical requirements. He doesn't prescribe unnecessary medicines or tests. His diagnosis of my mother's acute viral fever was accurate, leading to quick recovery. A gem of a doctor."
             </p>
           </div>
           <div class="patient-info">
@@ -2101,7 +2319,7 @@
               <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
             </div>
             <p class="testimonial-quote">
-              "The clinic is clean, and the booking management is very smooth. Dr. Inam took his time checking my high blood pressure status and thyroid reports. Strongly recommend his clinic to everyone in Jasola and Sarita Vihar."
+              "The clinic is clean, and the booking management is very smooth. Dr. <span data-custom="doc-lastname">Mercer</span> took their time checking my high blood pressure status and thyroid reports. Strongly recommend their clinic to everyone in the local area."
             </p>
           </div>
           <div class="patient-info">
@@ -2127,7 +2345,7 @@
 
       <div class="gallery-grid">
         <div class="gallery-item" data-index="0" onclick="openLightbox(0)">
-          <img src="clinic1.webp" alt="Consultation Desk and Equipment">
+          <img src="clinic1.png" alt="Consultation Desk and Equipment">
           <div class="gallery-overlay">
             <div class="gallery-zoom-icon">
               <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
@@ -2136,7 +2354,7 @@
         </div>
 
         <div class="gallery-item" data-index="1" onclick="openLightbox(1)">
-          <img src="clinic2.webp" alt="Patient Waiting Lounge and Reception">
+          <img src="clinic2.png" alt="Patient Waiting Lounge and Reception">
           <div class="gallery-overlay">
             <div class="gallery-zoom-icon">
               <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
@@ -2145,7 +2363,7 @@
         </div>
 
         <div class="gallery-item" data-index="2" onclick="openLightbox(2)">
-          <img src="clinic3.webp" alt="Clinical Diagnosis Area">
+          <img src="clinic3.png" alt="Clinical Diagnosis Area">
           <div class="gallery-overlay">
             <div class="gallery-zoom-icon">
               <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
@@ -2175,12 +2393,12 @@
             </div>
             <div class="contact-details">
               <h3>Clinic Location</h3>
-              <p id="clinic-address-text">196A Pocket 12A, Jasola Vihar, New Delhi - 110025</p>
+              <p id="clinic-address-text" data-custom="doc-address">123 Medical Center Plaza, Suite 100, New York, NY 10001</p>
               <div class="contact-action-row">
-                <button class="btn-action-small" onclick="copyText('196A Pocket 12A, Jasola Vihar, New Delhi - 110025', 'Address copied!')">
+                <button class="btn-action-small" onclick="copyText(document.getElementById('clinic-address-text').innerText, 'Address copied!')">
                   Copy Address
                 </button>
-                <a href="https://maps.google.com/maps?q=196A%20Pocket%2012A%20Jasola%20Vihar%20New%20Delhi" target="_blank" class="btn-action-small" rel="noopener">
+                <a id="clinic-maps-link" href="https://maps.google.com/maps?q=123%20Medical%20Center%20Plaza%20New%20York" target="_blank" class="btn-action-small" rel="noopener">
                   Open Maps
                 </a>
               </div>
@@ -2194,10 +2412,10 @@
             </div>
             <div class="contact-details">
               <h3>Phone Helpline</h3>
-              <p id="clinic-phone-text">+91 70426 91198</p>
+              <p id="clinic-phone-text" data-custom="doc-phone">+1 (555) 019-2834</p>
               <div class="contact-action-row">
-                <a href="tel:+917042691198" class="btn-action-small">Call Now</a>
-                <button class="btn-action-small" onclick="copyText('+91 70426 91198', 'Phone number copied!')">Copy Phone</button>
+                <a id="clinic-phone-link" href="tel:+15550192834" class="btn-action-small">Call Now</a>
+                <button class="btn-action-small" onclick="copyText(document.getElementById('clinic-phone-text').innerText, 'Phone number copied!')">Copy Phone</button>
               </div>
             </div>
           </div>
@@ -2209,9 +2427,9 @@
             </div>
             <div class="contact-details">
               <h3>Digital Desk</h3>
-              <p>support@drinamclinic.com</p>
+              <p id="clinic-email-text" data-custom="doc-email">contact@dralexmercer.com</p>
               <div class="contact-action-row">
-                <a href="mailto:support@drinamclinic.com" class="btn-action-small">Send Mail</a>
+                <a id="clinic-email-link" href="mailto:contact@dralexmercer.com" class="btn-action-small">Send Mail</a>
               </div>
             </div>
           </div>
@@ -2220,10 +2438,11 @@
         <!-- Embedded Map -->
         <div class="map-container">
           <iframe
-            src="https://maps.google.com/maps?q=196A%20Pocket%2012A%20Jasola%20Vihar%20New%20Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed"
+            id="clinic-map-iframe"
+            src="https://maps.google.com/maps?q=123%20Medical%20Center%20Plaza%20New%20York&t=&z=16&ie=UTF8&iwloc=&output=embed"
             allowfullscreen=""
             loading="lazy"
-            title="Dr. Inam's Clinic Location Map">
+            title="Clinic Location Map">
           </iframe>
         </div>
       </div>
@@ -2234,7 +2453,7 @@
   <footer>
     <div class="container footer-grid">
       <div class="footer-brand">
-        <h2>Dr. Inam's <span>Clinic</span></h2>
+        <h2 id="footer-logo"><span data-custom="logo-name">Dr. Alex</span>'s <span>Clinic</span></h2>
         <p>Providing expert diagnostic and curative healthcare services for adults, specializing in diabetes, hypertension, and thyroid regulation.</p>
       </div>
       
@@ -2260,7 +2479,7 @@
     </div>
 
     <div class="container footer-bottom">
-      <p>&copy; 2026 Dr. Inam's Clinic. All Rights Reserved. Designed for patient ease and accessibility.</p>
+      <p>&copy; 2026 <span data-custom="logo-name">Dr. Alex</span>'s Clinic. All Rights Reserved. Designed for patient ease and accessibility.</p>
     </div>
   </footer>
 
@@ -2455,7 +2674,10 @@
         statusBadge.className = 'live-badge open';
         statusTextBadge.innerText = 'Open Now';
         statusTitle.innerText = 'The Clinic is Currently Open';
-        statusDesc.innerText = 'Dr. Inam is actively consulting. Walk-ins are welcome, or you can book an appointment using the form below.';
+        
+        const docName = document.getElementById('input-doc-name')?.value || 'Dr. Alex Mercer';
+        statusDesc.innerText = `${docName} is actively consulting. Walk-ins are welcome, or you can book an appointment using the form below.`;
+        
         liveCard.style.border = '1px solid rgba(16, 185, 129, 0.4)';
       } else {
         statusBadge.className = 'live-badge closed';
@@ -2491,10 +2713,14 @@
         day: 'numeric'
       });
 
+      // Get customized doctor and contact info
+      const docName = document.getElementById('input-doc-name')?.value || 'Dr. Alex Mercer';
+      const docPhone = document.getElementById('input-doc-phone')?.value || '+1 (555) 019-2834';
+      const cleanPhone = docPhone.replace(/\D/g, ""); // strip non-digits for API call
+
       // Construct WhatsApp message
-      const wpNumber = "917042691198";
       const baseMessage = 
-        `Hello Dr. Inam's Clinic,\n\n` +
+        `Hello ${docName}'s Clinic,\n\n` +
         `I would like to request an appointment:\n\n` +
         `• Patient Name: ${name}\n` +
         `• Contact Phone: ${phone}\n` +
@@ -2504,7 +2730,7 @@
         `Please confirm this booking slot. Thank you!`;
 
       const encodedMessage = encodeURIComponent(baseMessage);
-      const whatsappUrl = `https://wa.me/${wpNumber}?text=${encodedMessage}`;
+      const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodedMessage}`;
 
       // Reset form
       appointmentForm.reset();
@@ -2519,9 +2745,9 @@
     // ----------------------------------------------------
     let currentImageIndex = 0;
     const galleryImages = [
-      'clinic1.webp',
-      'clinic2.webp',
-      'clinic3.webp'
+      'clinic1.png',
+      'clinic2.png',
+      'clinic3.png'
     ];
     const galleryImageAlts = [
       'Consultation Desk and Equipment',
@@ -2574,6 +2800,170 @@
         if (e.key === 'ArrowLeft') changeLightboxImage(-1);
       }
     });
+
+    // ----------------------------------------------------
+    // Demo Customizer Scripting
+    // ----------------------------------------------------
+    const customizerPanel = document.getElementById('customizer-panel');
+    const customizerToggleBtn = document.getElementById('customizer-toggle-btn');
+    
+    customizerToggleBtn.addEventListener('click', () => {
+      customizerPanel.classList.toggle('active');
+    });
+
+    const customizerInputs = {
+      name: document.getElementById('input-doc-name'),
+      specialty: document.getElementById('input-doc-specialty'),
+      phone: document.getElementById('input-doc-phone'),
+      email: document.getElementById('input-doc-email'),
+      address: document.getElementById('input-doc-address')
+    };
+
+    function updateCustomText() {
+      const docName = customizerInputs.name.value;
+      const docSpecialty = customizerInputs.specialty.value;
+      const docPhone = customizerInputs.phone.value;
+      const docEmail = customizerInputs.email.value;
+      const docAddress = customizerInputs.address.value;
+      
+      // Calculate doctor's last name
+      let docLastName = 'Mercer';
+      if (docName) {
+        const parts = docName.trim().split(/\s+/);
+        if (parts.length > 0) {
+          const lastWord = parts[parts.length - 1];
+          // Strip parenthesis if any (like (MD))
+          docLastName = lastWord.replace(/[()]/g, '');
+        }
+      }
+
+      // Update all matching elements
+      document.querySelectorAll('[data-custom="doc-name"]').forEach(el => el.innerText = docName);
+      document.querySelectorAll('[data-custom="doc-fullname"]').forEach(el => el.innerText = docName + " (MD)");
+      document.querySelectorAll('[data-custom="doc-lastname"]').forEach(el => el.innerText = docLastName);
+      document.querySelectorAll('[data-custom="logo-name"]').forEach(el => {
+        const parts = docName.trim().split(/\s+/);
+        if (parts.length > 1) {
+          el.innerText = parts.slice(0, parts.length - 1).join(" ");
+        } else {
+          el.innerText = docName;
+        }
+      });
+      document.querySelectorAll('[data-custom="doc-specialty"]').forEach(el => el.innerText = docSpecialty);
+      document.querySelectorAll('[data-custom="doc-phone"]').forEach(el => el.innerText = docPhone);
+      document.querySelectorAll('[data-custom="doc-email"]').forEach(el => el.innerText = docEmail);
+      document.querySelectorAll('[data-custom="doc-address"]').forEach(el => el.innerText = docAddress);
+      
+      // Short/City location parsing (last part of address)
+      const locationShortString = (() => {
+        const parts = docAddress.split(',');
+        if (parts.length > 1) {
+          const stateZip = parts[parts.length - 1].trim().split(/\s+/);
+          return parts[parts.length - 2].trim() + ', ' + stateZip[0];
+        }
+        return docAddress;
+      })();
+      
+      document.querySelectorAll('[data-custom="doc-location-city"]').forEach(el => el.innerText = locationShortString);
+      document.querySelectorAll('[data-custom="doc-location-short"]').forEach(el => el.innerText = locationShortString);
+
+      // Update active links
+      const phoneLink = document.getElementById('clinic-phone-link');
+      if (phoneLink) phoneLink.href = `tel:${docPhone.replace(/\s+/g, '')}`;
+      
+      const emailLink = document.getElementById('clinic-email-link');
+      if (emailLink) emailLink.href = `mailto:${docEmail}`;
+      
+      const mapsLink = document.getElementById('clinic-maps-link');
+      const mapIframe = document.getElementById('clinic-map-iframe');
+      const encodedQuery = encodeURIComponent(docAddress);
+      if (mapsLink) mapsLink.href = `https://maps.google.com/maps?q=${encodedQuery}`;
+      if (mapIframe) mapIframe.src = `https://maps.google.com/maps?q=${encodedQuery}&t=&z=16&ie=UTF8&iwloc=&output=embed`;
+      
+      const cleanPhone = docPhone.replace(/\D/g, "");
+      const heroWp = document.getElementById('hero-whatsapp-btn');
+      const stickyWp = document.querySelector('.whatsapp-sticky');
+      if (heroWp) heroWp.href = `https://wa.me/${cleanPhone}`;
+      if (stickyWp) stickyWp.href = `https://wa.me/${cleanPhone}`;
+
+      // Re-trigger live status update to use new name
+      updateClinicLiveStatus();
+    }
+
+    // Bind inputs to dynamic updater
+    Object.values(customizerInputs).forEach(input => {
+      input.addEventListener('input', updateCustomText);
+    });
+
+    // Color theme switcher logic
+    const colorThemes = {
+      teal: {
+        primary: '#0d9488',
+        primaryHover: '#0f766e',
+        primaryLight: '#ccfbf1',
+        primarySoft: 'rgba(13, 148, 136, 0.06)'
+      },
+      blue: {
+        primary: '#2563eb',
+        primaryHover: '#1d4ed8',
+        primaryLight: '#dbeafe',
+        primarySoft: 'rgba(37, 99, 235, 0.06)'
+      },
+      green: {
+        primary: '#16a34a',
+        primaryHover: '#15803d',
+        primaryLight: '#dcfce7',
+        primarySoft: 'rgba(22, 163, 74, 0.06)'
+      },
+      indigo: {
+        primary: '#4f46e5',
+        primaryHover: '#4338ca',
+        primaryLight: '#e0e7ff',
+        primarySoft: 'rgba(79, 70, 229, 0.06)'
+      },
+      coral: {
+        primary: '#ea580c',
+        primaryHover: '#c2410c',
+        primaryLight: '#ffedd5',
+        primarySoft: 'rgba(234, 88, 12, 0.06)'
+      }
+    };
+
+    const colorButtons = document.querySelectorAll('.color-btn');
+    colorButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const themeName = btn.getAttribute('data-color');
+        const theme = colorThemes[themeName];
+        
+        if (theme) {
+          document.documentElement.style.setProperty('--primary', theme.primary);
+          document.documentElement.style.setProperty('--primary-hover', theme.primaryHover);
+          document.documentElement.style.setProperty('--primary-light', theme.primaryLight);
+          document.documentElement.style.setProperty('--primary-soft', theme.primarySoft);
+          
+          colorButtons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        }
+      });
+    });
+
+    // Reset button logic
+    const resetBtn = document.getElementById('customizer-reset-btn');
+    resetBtn.addEventListener('click', () => {
+      customizerInputs.name.value = "Dr. Alex Mercer";
+      customizerInputs.specialty.value = "General Physician & Family Specialist";
+      customizerInputs.phone.value = "+1 (555) 019-2834";
+      customizerInputs.email.value = "contact@dralexmercer.com";
+      customizerInputs.address.value = "123 Medical Center Plaza, Suite 100, New York, NY 10001";
+      
+      updateCustomText();
+      
+      const tealBtn = document.querySelector('.color-btn[data-color="teal"]');
+      if (tealBtn) tealBtn.click();
+    });
+
+    // Run custom text initial update to bind values on load
+    updateCustomText();
   </script>
 </body>
 </html>
