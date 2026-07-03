@@ -6975,6 +6975,36 @@ def duplicate_calculation_api(request, pk):
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 
+def serve_dr(request, path=''):
+    """
+    Serves static files from the 'dr' directory.
+    If the path is empty or a directory, it defaults to 'index.html'.
+    Prevents directory traversal attacks by validating the path.
+    """
+    import os
+    from django.http import FileResponse, Http404
+    from django.conf import settings
+    
+    dr_dir = os.path.join(settings.BASE_DIR, 'dr')
+    
+    # Default to index.html for empty path or directory paths
+    if not path or path.endswith('/'):
+        path = os.path.join(path, 'index.html')
+        
+    full_path = os.path.join(dr_dir, path)
+    
+    # Normalize and verify that the target file is inside the 'dr' directory
+    normalized_path = os.path.abspath(full_path)
+    if not normalized_path.startswith(os.path.abspath(dr_dir)):
+        raise Http404("File not found")
+        
+    if os.path.exists(normalized_path) and os.path.isfile(normalized_path):
+        return FileResponse(open(normalized_path, 'rb'))
+    else:
+        raise Http404("File not found")
+
+
+
 
 
 

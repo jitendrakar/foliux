@@ -1,0 +1,2579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dr. Inam's Clinic | Internal Medicine & Diabetes Specialist</title>
+  <meta name="description" content="Expert, evidence-based treatment for Diabetes, Hypertension, Thyroid Disorders, Fever, Infections, and adult medical conditions by Dr. Inam Ul Haque (MD, DNB) in Jasola Vihar, New Delhi.">
+  <meta name="keywords" content="Dr Inam Ul Haque, General Physician Jasola, Diabetes Specialist Delhi, Internal Medicine Delhi, Jasola Vihar Clinic">
+  
+  <!-- Modern Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary: #0d9488;
+      --primary-hover: #0f766e;
+      --primary-light: #ccfbf1;
+      --primary-soft: rgba(13, 148, 136, 0.06);
+      --secondary: #0f172a;
+      --text-main: #334155;
+      --text-light: #64748b;
+      --bg-main: #f8fafc;
+      --bg-card: #ffffff;
+      --border-color: #e2e8f0;
+      
+      --accent-green: #10b981;
+      --accent-red: #ef4444;
+      --whatsapp-color: #25d366;
+      --whatsapp-hover: #20ba5a;
+      
+      --shadow-sm: 0 2px 8px -1px rgba(15, 23, 42, 0.04), 0 1px 3px -1px rgba(15, 23, 42, 0.02);
+      --shadow-md: 0 12px 20px -3px rgba(15, 23, 42, 0.06), 0 4px 6px -2px rgba(15, 23, 42, 0.03);
+      --shadow-lg: 0 20px 30px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -5px rgba(15, 23, 42, 0.03);
+      --shadow-glass: 0 8px 32px 0 rgba(13, 148, 136, 0.05);
+      
+      --radius-sm: 8px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--bg-main);
+      color: var(--text-main);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* Selection Color */
+    ::selection {
+      background: var(--primary-light);
+      color: var(--primary-hover);
+    }
+
+    /* Container Utilities */
+    .container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-padding {
+      padding: 100px 0;
+    }
+
+    @media (max-width: 768px) {
+      .section-padding {
+        padding: 60px 0;
+      }
+    }
+
+    /* Header & Navigation */
+    header.sticky-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+      transition: var(--transition);
+    }
+
+    header.sticky-nav.scrolled {
+      box-shadow: var(--shadow-md);
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    .nav-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 80px;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--primary-light);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+    }
+
+    .logo-text {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--secondary);
+      letter-spacing: -0.5px;
+    }
+
+    .logo-text span {
+      color: var(--primary);
+    }
+
+    .nav-menu {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-link {
+      text-decoration: none;
+      color: var(--text-main);
+      font-weight: 600;
+      font-size: 15px;
+      transition: var(--transition);
+      position: relative;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      color: var(--primary);
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--primary);
+      transition: var(--transition);
+      border-radius: 2px;
+    }
+
+    .nav-link:hover::after, .nav-link.active::after {
+      width: 100%;
+    }
+
+    .btn-nav {
+      background: var(--primary);
+      color: white;
+      text-decoration: none;
+      padding: 12px 24px;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 14px;
+      transition: var(--transition);
+      box-shadow: 0 4px 14px rgba(13, 148, 136, 0.2);
+    }
+
+    .btn-nav:hover {
+      background: var(--primary-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(13, 148, 136, 0.3);
+    }
+
+    .hamburger {
+      display: none;
+      cursor: pointer;
+      background: none;
+      border: none;
+      outline: none;
+      padding: 5px;
+    }
+
+    .hamburger span {
+      display: block;
+      width: 25px;
+      height: 3px;
+      background: var(--secondary);
+      margin: 5px 0;
+      transition: var(--transition);
+      border-radius: 3px;
+    }
+
+    /* Mobile Nav Menu styles */
+    @media (max-width: 992px) {
+      .nav-menu {
+        position: fixed;
+        top: 80px;
+        left: -100%;
+        width: 100%;
+        height: calc(100vh - 80px);
+        background: white;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: stretch;
+        padding: 40px 20px;
+        gap: 24px;
+        transition: var(--transition);
+        box-shadow: var(--shadow-lg);
+        overflow-y: auto;
+      }
+
+      .nav-menu.active {
+        left: 0;
+      }
+
+      .nav-link {
+        font-size: 18px;
+        display: block;
+        padding: 10px 0;
+      }
+
+      .hamburger {
+        display: block;
+      }
+
+      .hamburger.active span:nth-child(1) {
+        transform: rotate(-45deg) translate(-5px, 6px);
+      }
+      .hamburger.active span:nth-child(2) {
+        opacity: 0;
+      }
+      .hamburger.active span:nth-child(3) {
+        transform: rotate(45deg) translate(-5px, -6px);
+      }
+
+      .btn-nav {
+        text-align: center;
+        margin-top: 10px;
+      }
+    }
+
+    /* Common Buttons */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: var(--primary);
+      color: white;
+      text-decoration: none;
+      padding: 16px 32px;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 16px;
+      transition: var(--transition);
+      box-shadow: 0 4px 18px rgba(13, 148, 136, 0.25);
+      border: 2px solid transparent;
+      cursor: pointer;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(13, 148, 136, 0.35);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: var(--bg-card);
+      color: var(--secondary);
+      text-decoration: none;
+      padding: 16px 32px;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 16px;
+      transition: var(--transition);
+      border: 2px solid var(--border-color);
+      cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-main);
+      border-color: var(--text-light);
+      transform: translateY(-2px);
+    }
+
+    .btn-whatsapp {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: var(--whatsapp-color);
+      color: white;
+      text-decoration: none;
+      padding: 16px 32px;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 16px;
+      transition: var(--transition);
+      box-shadow: 0 4px 18px rgba(37, 211, 102, 0.25);
+      border: 2px solid transparent;
+      cursor: pointer;
+    }
+
+    .btn-whatsapp:hover {
+      background: var(--whatsapp-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(37, 211, 102, 0.35);
+    }
+
+    /* Gradient Text */
+    .gradient-text {
+      background: linear-gradient(135deg, var(--primary), #0ea5e9);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline;
+    }
+
+    /* Section Header styling */
+    .section-header {
+      text-align: center;
+      max-width: 650px;
+      margin: 0 auto 60px auto;
+    }
+
+    .section-badge {
+      display: inline-block;
+      background: var(--primary-light);
+      color: var(--primary-hover);
+      padding: 6px 16px;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--secondary);
+      letter-spacing: -0.5px;
+      margin-bottom: 16px;
+    }
+
+    .section-subtitle {
+      font-size: 16px;
+      color: var(--text-light);
+    }
+
+    @media (max-width: 768px) {
+      .section-title {
+        font-size: 28px;
+      }
+    }
+
+    /* Hero Section */
+    .hero-section {
+      padding-top: 160px;
+      padding-bottom: 100px;
+      position: relative;
+      overflow: hidden;
+      background: radial-gradient(circle at 100% 0%, rgba(13, 148, 136, 0.05) 0%, transparent 60%);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+
+    .hero-tagline {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: white;
+      border: 1px solid var(--border-color);
+      padding: 8px 16px;
+      border-radius: 50px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--secondary);
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--accent-green);
+      border-radius: 50%;
+      display: inline-block;
+      animation: pulse-ping 1.5s infinite;
+    }
+
+    @keyframes pulse-ping {
+      0% {
+        transform: scale(0.9);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+      }
+      70% {
+        transform: scale(1);
+        box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+      }
+      100% {
+        transform: scale(0.9);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+      }
+    }
+
+    .hero-title {
+      font-size: 54px;
+      font-weight: 800;
+      line-height: 1.15;
+      color: var(--secondary);
+      letter-spacing: -1.5px;
+      margin-bottom: 20px;
+    }
+
+    .hero-subtitle {
+      font-size: 20px;
+      color: var(--primary-hover);
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .hero-description {
+      font-size: 16px;
+      color: var(--text-main);
+      margin-bottom: 32px;
+      max-width: 580px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .hero-meta-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      border-top: 1px solid var(--border-color);
+      padding-top: 30px;
+    }
+
+    .hero-meta-item h3 {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .hero-meta-item p {
+      font-size: 13px;
+      color: var(--text-light);
+      font-weight: 500;
+    }
+
+    .hero-image-wrapper {
+      position: relative;
+    }
+
+    .hero-image-container {
+      width: 100%;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      border: 8px solid white;
+      aspect-ratio: 4/3;
+    }
+
+    .hero-image-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: var(--transition);
+    }
+
+    .hero-image-container img:hover {
+      transform: scale(1.03);
+    }
+
+    /* Floating Cards on Hero */
+    .floating-card {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      padding: 16px 20px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: float 4s ease-in-out infinite alternate;
+      z-index: 5;
+    }
+
+    .floating-card-1 {
+      bottom: 24px;
+      left: -30px;
+      animation-delay: 0s;
+    }
+
+    .floating-card-2 {
+      top: 40px;
+      right: -20px;
+      animation-delay: 1.5s;
+    }
+
+    .floating-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--primary-light);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .floating-info h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--secondary);
+    }
+
+    .floating-info p {
+      font-size: 12px;
+      color: var(--text-light);
+      white-space: nowrap;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0px);
+      }
+      100% {
+        transform: translateY(-12px);
+      }
+    }
+
+    @media (max-width: 992px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+        gap: 50px;
+      }
+      
+      .hero-image-container {
+        max-width: 500px;
+        margin: 0 auto;
+        aspect-ratio: 4/3;
+      }
+      
+      .floating-card-1 {
+        left: 20px;
+      }
+      .floating-card-2 {
+        right: 20px;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .hero-title {
+        font-size: 38px;
+      }
+      
+      .hero-actions {
+        flex-direction: column;
+      }
+      
+      .hero-actions a {
+        width: 100%;
+      }
+      
+      .floating-card {
+        display: none;
+      }
+    }
+
+    /* About Section */
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 60px;
+      align-items: center;
+    }
+
+    .about-image-wrapper {
+      position: relative;
+    }
+
+    .about-image-bg {
+      position: absolute;
+      top: 20px;
+      left: -20px;
+      width: 100%;
+      height: 100%;
+      border: 3px dashed var(--primary);
+      border-radius: var(--radius-lg);
+      z-index: 1;
+    }
+
+    .about-image-container {
+      position: relative;
+      z-index: 2;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      background: white;
+      border: 6px solid white;
+    }
+
+    .about-image-container img {
+      width: 100%;
+      display: block;
+      transition: var(--transition);
+    }
+
+    .about-image-container img:hover {
+      transform: scale(1.02);
+    }
+
+    .about-content h2 {
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--secondary);
+      margin-bottom: 20px;
+      letter-spacing: -0.5px;
+    }
+
+    .about-text {
+      color: var(--text-main);
+      margin-bottom: 24px;
+      font-size: 16px;
+    }
+
+    .interests-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--secondary);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .interests-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .interest-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .interest-icon {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      color: var(--primary);
+    }
+
+    @media (max-width: 992px) {
+      .about-grid {
+        grid-template-columns: 1fr;
+        gap: 50px;
+      }
+      
+      .about-image-wrapper {
+        max-width: 500px;
+        margin: 0 auto;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .interests-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Services Section */
+    .services-section {
+      background: white;
+    }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 30px;
+    }
+
+    .service-card {
+      background: var(--bg-main);
+      padding: 40px 30px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-color);
+      transition: var(--transition);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .service-card:hover {
+      transform: translateY(-8px);
+      background: white;
+      border-color: var(--primary-light);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .service-icon-box {
+      width: 60px;
+      height: 60px;
+      border-radius: var(--radius-sm);
+      background: white;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+    }
+
+    .service-card:hover .service-icon-box {
+      background: var(--primary);
+      color: white;
+      transform: scale(1.1) rotate(5deg);
+    }
+
+    .service-card h3 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--secondary);
+      margin-bottom: 12px;
+      transition: var(--transition);
+    }
+
+    .service-card:hover h3 {
+      color: var(--primary);
+    }
+
+    .service-card p {
+      font-size: 14px;
+      color: var(--text-light);
+      line-height: 1.6;
+    }
+
+    /* Consultation Timings Section & Live Status */
+    .timings-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-bottom: 50px;
+    }
+
+    .timing-card {
+      background: white;
+      padding: 40px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border-color);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .timing-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--primary);
+    }
+
+    .timing-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .timing-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--primary-soft);
+      border-radius: 50%;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .timing-header h3 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--secondary);
+    }
+
+    .timing-hours {
+      font-size: 34px;
+      font-weight: 800;
+      color: var(--primary);
+      letter-spacing: -0.5px;
+      margin-bottom: 12px;
+    }
+
+    .timing-card p {
+      font-size: 14px;
+      color: var(--text-light);
+    }
+
+    /* Live Clinic Status Card */
+    .live-status-container {
+      background: linear-gradient(135deg, var(--secondary), #1e293b);
+      color: white;
+      padding: 40px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .live-status-container::after {
+      content: '';
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      background: rgba(13, 148, 136, 0.15);
+      border-radius: 50%;
+      bottom: -60px;
+      right: -60px;
+      filter: blur(40px);
+    }
+
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 50px;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .live-badge.open {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .live-badge.closed {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .live-badge .pulse-dot-live {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .live-badge.open .pulse-dot-live {
+      background: var(--accent-green);
+      animation: pulse-green 1.5s infinite;
+    }
+
+    .live-badge.closed .pulse-dot-live {
+      background: var(--accent-red);
+      animation: pulse-red 1.5s infinite;
+    }
+
+    @keyframes pulse-green {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+      70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    @keyframes pulse-red {
+      0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+      70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
+    .live-title {
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .live-text {
+      font-size: 15px;
+      color: #94a3b8;
+      max-width: 420px;
+      z-index: 1;
+    }
+
+    @media (max-width: 992px) {
+      .timings-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Appointment Form Section */
+    .appointment-section {
+      background: linear-gradient(180deg, var(--bg-main) 0%, #f0fdfa 100%);
+    }
+
+    .appointment-wrapper {
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .appointment-banner {
+      background: linear-gradient(135deg, var(--primary) 0%, #0d9488 100%);
+      color: white;
+      padding: 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .appointment-banner::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at 100% 0%, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
+    }
+
+    .appointment-banner-top h2 {
+      font-size: 34px;
+      font-weight: 800;
+      margin-bottom: 20px;
+      line-height: 1.2;
+    }
+
+    .appointment-banner-top p {
+      font-size: 16px;
+      opacity: 0.9;
+      line-height: 1.6;
+    }
+
+    .appointment-features {
+      list-style: none;
+      margin-top: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .appointment-feature-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .appointment-feature-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    .appointment-form-container {
+      padding: 60px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group.full-width {
+      grid-column: span 2;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--secondary);
+      margin-bottom: 8px;
+    }
+
+    .form-control {
+      width: 100%;
+      background: var(--bg-main);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      padding: 14px 18px;
+      font-size: 15px;
+      color: var(--secondary);
+      outline: none;
+      transition: var(--transition);
+    }
+
+    .form-control:focus {
+      background: white;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.1);
+    }
+
+    .form-control::placeholder {
+      color: var(--text-light);
+    }
+
+    select.form-control {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23334155' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 18px center;
+      background-size: 16px;
+      padding-right: 40px;
+    }
+
+    .form-submit-btn {
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 992px) {
+      .appointment-wrapper {
+        grid-template-columns: 1fr;
+      }
+      .appointment-banner {
+        padding: 40px;
+      }
+      .appointment-form-container {
+        padding: 40px;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      .form-group.full-width {
+        grid-column: span 1;
+      }
+      .appointment-banner {
+        padding: 30px 20px;
+      }
+      .appointment-form-container {
+        padding: 30px 20px;
+      }
+    }
+
+    /* Testimonials Section */
+    .testimonial-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 30px;
+    }
+
+    .testimonial-card {
+      background: white;
+      padding: 40px 30px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: var(--transition);
+    }
+
+    .testimonial-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--primary-light);
+    }
+
+    .stars {
+      display: flex;
+      gap: 4px;
+      color: #fbbf24;
+      margin-bottom: 20px;
+    }
+
+    .star-icon {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    .testimonial-quote {
+      font-size: 15px;
+      color: var(--text-main);
+      line-height: 1.7;
+      margin-bottom: 24px;
+      font-style: italic;
+    }
+
+    .patient-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .patient-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--primary-light);
+    }
+
+    .patient-details h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--secondary);
+    }
+
+    .patient-details p {
+      font-size: 12px;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .patient-details p span {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      color: var(--accent-green);
+    }
+
+    /* Gallery Section */
+    .gallery-section {
+      background: white;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .gallery-item {
+      position: relative;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      aspect-ratio: 4/3;
+      cursor: pointer;
+      border: 4px solid white;
+      transition: var(--transition);
+    }
+
+    .gallery-item:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--primary-light);
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: var(--transition);
+    }
+
+    .gallery-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(13, 148, 136, 0.85);
+      opacity: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+    }
+
+    .gallery-item:hover .gallery-overlay {
+      opacity: 1;
+    }
+
+    .gallery-item:hover img {
+      transform: scale(1.08);
+    }
+
+    .gallery-zoom-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      transform: translateY(10px);
+      transition: var(--transition);
+    }
+
+    .gallery-item:hover .gallery-zoom-icon {
+      transform: translateY(0);
+    }
+
+    @media (max-width: 768px) {
+      .gallery-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+    }
+
+    /* Custom Lightbox Styles */
+    .lightbox-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(10px);
+      z-index: 2000;
+      opacity: 0;
+      visibility: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+    }
+
+    .lightbox-modal.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .lightbox-content {
+      max-width: 90%;
+      max-height: 80%;
+      position: relative;
+    }
+
+    .lightbox-image {
+      max-width: 100%;
+      max-height: 80vh;
+      object-fit: contain;
+      border-radius: var(--radius-sm);
+      border: 4px solid white;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      transform: scale(0.95);
+      transition: var(--transition);
+    }
+
+    .lightbox-modal.active .lightbox-image {
+      transform: scale(1);
+    }
+
+    .lightbox-close {
+      position: absolute;
+      top: 30px;
+      right: 30px;
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: white;
+      font-size: 30px;
+      cursor: pointer;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      z-index: 2100;
+    }
+
+    .lightbox-close:hover {
+      background: var(--accent-red);
+      transform: rotate(90deg);
+    }
+
+    .lightbox-nav-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: white;
+      font-size: 24px;
+      cursor: pointer;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      z-index: 2100;
+    }
+
+    .lightbox-nav-btn:hover {
+      background: var(--primary);
+    }
+
+    .lightbox-prev {
+      left: 30px;
+    }
+
+    .lightbox-next {
+      right: 30px;
+    }
+
+    @media (max-width: 576px) {
+      .lightbox-nav-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+      }
+      .lightbox-prev { left: 10px; }
+      .lightbox-next { right: 10px; }
+      .lightbox-close { top: 15px; right: 15px; width: 40px; height: 40px; }
+    }
+
+    /* Contact & Location Section */
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 50px;
+    }
+
+    .contact-info-card {
+      background: white;
+      padding: 40px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+    }
+
+    .contact-item {
+      display: flex;
+      gap: 20px;
+    }
+
+    .contact-icon-box {
+      width: 50px;
+      height: 50px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .contact-details h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--secondary);
+      margin-bottom: 6px;
+    }
+
+    .contact-details p {
+      font-size: 15px;
+      color: var(--text-main);
+      line-height: 1.6;
+    }
+
+    .contact-action-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .btn-action-small {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--primary);
+      text-decoration: none;
+      background: var(--primary-soft);
+      padding: 6px 12px;
+      border-radius: 4px;
+      transition: var(--transition);
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-action-small:hover {
+      background: var(--primary);
+      color: white;
+    }
+
+    .map-container {
+      width: 100%;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      border: 8px solid white;
+      height: 480px;
+    }
+
+    .map-container iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    @media (max-width: 992px) {
+      .contact-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+      .map-container {
+        height: 350px;
+      }
+    }
+
+    /* Footer Styles */
+    footer {
+      background: var(--secondary);
+      color: white;
+      padding: 80px 0 30px 0;
+      border-top: 5px solid var(--primary);
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr;
+      gap: 50px;
+      margin-bottom: 50px;
+    }
+
+    .footer-brand h2 {
+      font-size: 24px;
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+
+    .footer-brand h2 span {
+      color: var(--primary);
+    }
+
+    .footer-brand p {
+      color: #94a3b8;
+      font-size: 14px;
+      line-height: 1.7;
+      margin-bottom: 20px;
+      max-width: 320px;
+    }
+
+    .footer-links h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      position: relative;
+      padding-bottom: 8px;
+    }
+
+    .footer-links h3::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 30px;
+      height: 2px;
+      background: var(--primary);
+    }
+
+    .footer-links ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .footer-links a {
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 14px;
+      transition: var(--transition);
+    }
+
+    .footer-links a:hover {
+      color: white;
+      padding-left: 5px;
+    }
+
+    .footer-bottom {
+      border-top: 1px solid #1e293b;
+      padding-top: 30px;
+      text-align: center;
+      color: #64748b;
+      font-size: 13px;
+    }
+
+    @media (max-width: 768px) {
+      .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+      footer {
+        padding: 50px 0 20px 0;
+      }
+    }
+
+    /* WhatsApp Sticky Floating Button */
+    .whatsapp-sticky {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: var(--whatsapp-color);
+      color: white;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      box-shadow: 0 10px 25px rgba(37, 211, 102, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      transition: var(--transition);
+      z-index: 999;
+    }
+
+    .whatsapp-sticky:hover {
+      background: var(--whatsapp-hover);
+      transform: scale(1.1) rotate(10deg);
+      box-shadow: 0 12px 30px rgba(37, 211, 102, 0.5);
+    }
+
+    .whatsapp-sticky svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    .whatsapp-tooltip {
+      position: absolute;
+      right: 75px;
+      background: white;
+      color: var(--secondary);
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      box-shadow: var(--shadow-lg);
+      white-space: nowrap;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateX(10px);
+      transition: var(--transition);
+      border: 1px solid var(--border-color);
+    }
+
+    .whatsapp-tooltip::after {
+      content: '';
+      position: absolute;
+      right: -6px;
+      top: 50%;
+      transform: translateY(-50%) rotate(45deg);
+      width: 10px;
+      height: 10px;
+      background: white;
+      border-right: 1px solid var(--border-color);
+      border-top: 1px solid var(--border-color);
+    }
+
+    .whatsapp-sticky:hover .whatsapp-tooltip {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* Notification Alert System for Copying Address/Phone */
+    .toast-notification {
+      position: fixed;
+      bottom: 30px;
+      left: 30px;
+      background: var(--secondary);
+      color: white;
+      padding: 16px 24px;
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-xl);
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 3000;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: var(--transition);
+    }
+
+    .toast-notification.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .toast-icon {
+      color: var(--accent-green);
+      width: 20px;
+      height: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Navigation -->
+  <header class="sticky-nav" id="header">
+    <div class="container nav-container">
+      <a href="#hero" class="logo-container" id="logo-nav">
+        <div class="logo-icon">
+          <!-- Heart Beat / Pulse SVG -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </div>
+        <div class="logo-text">Dr. Inam's <span>Clinic</span></div>
+      </a>
+      
+      <button class="hamburger" id="menu-toggle" aria-label="Toggle Menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <ul class="nav-menu" id="nav-menu">
+        <li><a href="#about" class="nav-link">About Doctor</a></li>
+        <li><a href="#services" class="nav-link">Services</a></li>
+        <li><a href="#timings" class="nav-link">Consultation Hours</a></li>
+        <li><a href="#gallery" class="nav-link">Gallery</a></li>
+        <li><a href="#contact" class="nav-link">Contact</a></li>
+        <li><a href="#booking" class="btn-nav">Book Appointment</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section" id="hero">
+    <div class="container hero-grid">
+      <div class="hero-content">
+        <div class="hero-tagline">
+          <span class="pulse-dot"></span> Accepting Patients • In-Person & Online
+        </div>
+        <h1 class="hero-title">
+          Compassionate & <br><span class="gradient-text">Expert Healthcare</span>
+        </h1>
+        <p class="hero-subtitle">Dr. Inam Ul Haque (MD, DNB)</p>
+        <p class="hero-description">
+          Senior Internal Medicine & Diabetes Specialist offering evidence-based medical consultation and personalized disease management in New Delhi.
+        </p>
+        <div class="hero-actions">
+          <a href="#booking" class="btn-primary" id="hero-btn-book">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Book Appointment
+          </a>
+          <a href="https://wa.me/917042691198" class="btn-whatsapp" target="_blank" rel="noopener">
+            <!-- WhatsApp SVG -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            WhatsApp Support
+          </a>
+        </div>
+        
+        <div class="hero-meta-grid">
+          <div class="hero-meta-item">
+            <h3>15+</h3>
+            <p>Years Experience</p>
+          </div>
+          <div class="hero-meta-item">
+            <h3>10k+</h3>
+            <p>Patients Cured</p>
+          </div>
+          <div class="hero-meta-item">
+            <h3>4.9★</h3>
+            <p>Patient Ratings</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-image-wrapper">
+        <div class="hero-image-container">
+          <img src="clinic1.webp" alt="Dr. Inam Ul Haque's Consultation Desk">
+        </div>
+        
+        <!-- Floating Elements -->
+        <div class="floating-card floating-card-1">
+          <div class="floating-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div class="floating-info">
+            <h4>Clinic Location</h4>
+            <p>Jasola Vihar, Delhi</p>
+          </div>
+        </div>
+
+        <div class="floating-card floating-card-2">
+          <div class="floating-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          </div>
+          <div class="floating-info">
+            <h4>Quick Contact</h4>
+            <p>+91 70426 91198</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section class="section-padding" id="about">
+    <div class="container about-grid">
+      <div class="about-image-wrapper">
+        <div class="about-image-bg"></div>
+        <div class="about-image-container">
+          <img src="clinic2.webp" alt="Dr. Inam's Clinic Reception and Waiting Lounge">
+        </div>
+      </div>
+      
+      <div class="about-content">
+        <div class="section-badge">Qualified Medical Care</div>
+        <h2>Meet Dr. Inam Ul Haque</h2>
+        <p class="about-text">
+          Dr. Inam Ul Haque is a highly regarded Internal Medicine and Diabetes Specialist holding MD and DNB qualifications. With over 15 years of active clinical practice, his clinic provides comprehensive health evaluations and structured recovery pathways for acute and chronic systemic conditions.
+        </p>
+        <p class="about-text">
+          We prioritize thorough diagnostics, customized pharmaceutical management, preventive monitoring, and long-term health coaching for lifestyle diseases.
+        </p>
+        
+        <h3 class="interests-title">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Core Areas of Specialization
+        </h3>
+        
+        <div class="interests-grid">
+          <div class="interest-item">
+            <svg class="interest-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            Diabetes Control & Therapy
+          </div>
+          <div class="interest-item">
+            <svg class="interest-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            Hypertension Management
+          </div>
+          <div class="interest-item">
+            <svg class="interest-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            Thyroid Disorders Control
+          </div>
+          <div class="interest-item">
+            <svg class="interest-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            Fever & Infectious Diseases
+          </div>
+          <div class="interest-item">
+            <svg class="interest-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            Respiratory Illnesses
+          </div>
+          <div class="interest-item">
+            <svg class="interest-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            Preventive Screenings
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services Section -->
+  <section class="section-padding services-section" id="services">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge">What We Do</span>
+        <h2 class="section-title">Comprehensive Clinical Services</h2>
+        <p class="section-subtitle">Providing a broad scope of internal medicine assessments and clinical care to secure your medical wellness.</p>
+      </div>
+
+      <div class="services-grid">
+        <!-- Service Card 1 -->
+        <div class="service-card">
+          <div class="service-icon-box">
+            <!-- Blood drop/health icon SVG -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-4.3-7-11-7-11S5 10.7 5 15a7 7 0 0 0 7 7z"/></svg>
+          </div>
+          <h3>Diabetes Care</h3>
+          <p>Holistic diabetes diagnosis, continuous glucose monitoring programs, personalized diet integration, and advanced therapeutic interventions to prevent diabetic complications.</p>
+        </div>
+
+        <!-- Service Card 2 -->
+        <div class="service-card">
+          <div class="service-icon-box">
+            <!-- Stethoscope SVG -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.8 2.3A10.4 10.4 0 0 0 2 10a10.4 10.4 0 0 0 2.8 7.7l1.4-1.4A8.5 8.5 0 0 1 4 10a8.5 8.5 0 0 1 2.2-6.3L4.8 2.3z"/><path d="M19.2 2.3A10.4 10.4 0 0 1 22 10a10.4 10.4 0 0 1-2.8 7.7l-1.4-1.4a8.5 8.5 0 0 0 2.2-6.3 8.5 8.5 0 0 0-2.2-6.3l1.4-1.4z"/><circle cx="12" cy="10" r="4"/><path d="M12 14v6m-4 0h8"/></svg>
+          </div>
+          <h3>General Physician</h3>
+          <p>First-contact diagnostic consultation for acute infectious diseases, seasonal viral fevers, respiratory infections, gastrointestinal disorders, and general adult conditions.</p>
+        </div>
+
+        <!-- Service Card 3 -->
+        <div class="service-card">
+          <div class="service-icon-box">
+            <!-- Pulse SVG -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          </div>
+          <h3>Blood Pressure Control</h3>
+          <p>Comprehensive monitoring of primary and secondary hypertension, cardiovascular risk profiling, medication adjustments, and critical target-organ protective therapies.</p>
+        </div>
+
+        <!-- Service Card 4 -->
+        <div class="service-card">
+          <div class="service-icon-box">
+            <!-- Medical Flask SVG -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12M12 3v13M10 21h4M7.8 9.5h8.4"/></svg>
+          </div>
+          <h3>Thyroid Management</h3>
+          <p>Precise hormonal diagnostic workups, medical management of Hyperthyroidism, Hypothyroidism, thyroid nodules, and structured hormone level balancing protocols.</p>
+        </div>
+
+        <!-- Service Card 5 -->
+        <div class="service-card">
+          <div class="service-icon-box">
+            <!-- Heart Shield SVG -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3>Preventive Healthcare</h3>
+          <p>Executive health checkups, vaccination schedules for adults, lifestyle health coaching, early cancer screenings, and metabolic disorder prevention guides.</p>
+        </div>
+
+        <!-- Service Card 6 -->
+        <div class="service-card">
+          <div class="service-icon-box">
+            <!-- Pill / Clipboard SVG -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+          </div>
+          <h3>Chronic Disease Management</h3>
+          <p>Long-term therapeutic management pathways for chronic asthma, COPD, arthritis, kidney health diagnostics, and multi-system medical conditions.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Consultation Hours & Live Indicator Section -->
+  <section class="section-padding" id="timings">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge">Availability</span>
+        <h2 class="section-title">Consultation Hours</h2>
+        <p class="section-subtitle">Plan your visit during our regular operational hours. Walk-in and booking support are available.</p>
+      </div>
+
+      <div class="timings-grid">
+        <!-- Live Status Display Card -->
+        <div class="live-status-container" id="live-status-card">
+          <div class="live-badge closed" id="status-badge">
+            <span class="pulse-dot-live"></span>
+            <span id="status-text-badge">Closed Now</span>
+          </div>
+          <h3 class="live-title" id="status-title">Checking Clinic Status...</h3>
+          <p class="live-text" id="status-desc">We are analyzing the clinic's operating schedule according to your current local time.</p>
+          <a href="#booking" class="btn-primary" style="margin-top: 10px;">Book for Next Slot</a>
+        </div>
+
+        <!-- Timing Details Card -->
+        <div class="timing-card">
+          <div>
+            <div class="timing-header">
+              <div class="timing-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </div>
+              <h3>Monday - Saturday</h3>
+            </div>
+            <div class="timing-hours">6:00 PM - 11:00 PM</div>
+          </div>
+          <p>Convenient evening hours tailored for working professionals and follow-up consultations.</p>
+        </div>
+
+        <!-- Sunday Timing Details Card -->
+        <div class="timing-card">
+          <div>
+            <div class="timing-header">
+              <div class="timing-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <h3>Sunday</h3>
+            </div>
+            <div class="timing-hours">8:00 AM - 11:00 AM</div>
+          </div>
+          <p>Early morning clinical hours to ensure weekend emergency medicine coverage and checks.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Appointment Booking Section -->
+  <section class="section-padding appointment-section" id="booking">
+    <div class="container">
+      <div class="appointment-wrapper">
+        <div class="appointment-banner">
+          <div class="appointment-banner-top">
+            <div class="section-badge" style="background: rgba(255,255,255,0.15); color: white; margin-bottom: 20px;">Fast Response</div>
+            <h2>Schedule Your Consultation</h2>
+            <p>Fill out the appointment request form. Submitting will launch WhatsApp to send your request directly to Dr. Inam's clinic coordination desk for immediate scheduling confirmation.</p>
+            
+            <ul class="appointment-features">
+              <li class="appointment-feature-item">
+                <span class="appointment-feature-icon">✓</span> Direct WhatsApp Coordination
+              </li>
+              <li class="appointment-feature-item">
+                <span class="appointment-feature-icon">✓</span> Flexible Rescheduling Options
+              </li>
+              <li class="appointment-feature-item">
+                <span class="appointment-feature-icon">✓</span> Zero Booking Fee Charge
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="appointment-form-container">
+          <form id="appointment-form">
+            <div class="form-grid">
+              <div class="form-group full-width">
+                <label for="patient-name">Patient's Full Name *</label>
+                <input type="text" id="patient-name" class="form-control" placeholder="Enter patient's name" required>
+              </div>
+              
+              <div class="form-group">
+                <label for="patient-phone">Mobile Number *</label>
+                <input type="tel" id="patient-phone" class="form-control" placeholder="10-digit mobile number" pattern="[0-9]{10}" required>
+              </div>
+
+              <div class="form-group">
+                <label for="consult-service">Service Required *</label>
+                <select id="consult-service" class="form-control" required>
+                  <option value="" disabled selected>Select service</option>
+                  <option value="Diabetes Care">Diabetes Care</option>
+                  <option value="General Health Consultation">General Physician Consultation</option>
+                  <option value="Blood Pressure Management">Blood Pressure Control</option>
+                  <option value="Thyroid Management">Thyroid Management</option>
+                  <option value="Preventive Health Checkup">Preventive Health Checkup</option>
+                  <option value="Chronic Care Evaluation">Chronic Disease Care</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="appoint-date">Preferred Date *</label>
+                <input type="date" id="appoint-date" class="form-control" required>
+              </div>
+
+              <div class="form-group">
+                <label for="appoint-slot">Preferred Time Slot *</label>
+                <select id="appoint-slot" class="form-control" required>
+                  <option value="" disabled selected>Choose date first</option>
+                </select>
+              </div>
+
+              <div class="form-group full-width">
+                <button type="submit" class="btn-whatsapp form-submit-btn">
+                  <!-- Whatsapp Icon -->
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                  Book Appointment via WhatsApp
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Patient Testimonials Section -->
+  <section class="section-padding" id="testimonials">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge">Patient Feedback</span>
+        <h2 class="section-title">Trusted By Hundreds</h2>
+        <p class="section-subtitle">Read what our patients say about their clinical journeys with Dr. Inam Ul Haque.</p>
+      </div>
+
+      <div class="testimonial-grid">
+        <!-- Testimonial 1 -->
+        <div class="testimonial-card">
+          <div>
+            <div class="stars">
+              <!-- Star icons -->
+              <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            </div>
+            <p class="testimonial-quote">
+              "Dr. Inam is an excellent physician. I was diagnosed with highly fluctuated blood sugar levels. Under his structured guidance, my HbA1c dropped from 9.2 to 6.1 in 3 months. His detailed explanations are incredibly reassuring."
+            </p>
+          </div>
+          <div class="patient-info">
+            <div class="patient-avatar">RK</div>
+            <div class="patient-details">
+              <h4>Rajesh Kumar</h4>
+              <p>Diabetes Patient • Verified</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Testimonial 2 -->
+        <div class="testimonial-card">
+          <div>
+            <div class="stars">
+              <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            </div>
+            <p class="testimonial-quote">
+              "We consult Dr. Inam for our entire family's medical requirements. He doesn't prescribe unnecessary medicines or tests. His diagnosis of my mother's acute viral fever was accurate, leading to quick recovery. A gem of a doctor."
+            </p>
+          </div>
+          <div class="patient-info">
+            <div class="patient-avatar">SA</div>
+            <div class="patient-details">
+              <h4>Sarah Ahmed</h4>
+              <p>Family Consultation • Verified</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Testimonial 3 -->
+        <div class="testimonial-card">
+          <div>
+            <div class="stars">
+              <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+              <svg class="star-icon" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+            </div>
+            <p class="testimonial-quote">
+              "The clinic is clean, and the booking management is very smooth. Dr. Inam took his time checking my high blood pressure status and thyroid reports. Strongly recommend his clinic to everyone in Jasola and Sarita Vihar."
+            </p>
+          </div>
+          <div class="patient-info">
+            <div class="patient-avatar">AS</div>
+            <div class="patient-details">
+              <h4>Amit Sharma</h4>
+              <p>Hypertension Care • Verified</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Clinic Gallery Section -->
+  <section class="section-padding gallery-section" id="gallery">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge">Visuals</span>
+        <h2 class="section-title">Our Clinic Space</h2>
+        <p class="section-subtitle">Take a virtual tour of our modern diagnostic, consultation, and waiting room environments.</p>
+      </div>
+
+      <div class="gallery-grid">
+        <div class="gallery-item" data-index="0" onclick="openLightbox(0)">
+          <img src="clinic1.webp" alt="Consultation Desk and Equipment">
+          <div class="gallery-overlay">
+            <div class="gallery-zoom-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="gallery-item" data-index="1" onclick="openLightbox(1)">
+          <img src="clinic2.webp" alt="Patient Waiting Lounge and Reception">
+          <div class="gallery-overlay">
+            <div class="gallery-zoom-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="gallery-item" data-index="2" onclick="openLightbox(2)">
+          <img src="clinic3.webp" alt="Clinical Diagnosis Area">
+          <div class="gallery-overlay">
+            <div class="gallery-zoom-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact & Map Section -->
+  <section class="section-padding" id="contact">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-badge">Get In Touch</span>
+        <h2 class="section-title">Contact & Location Details</h2>
+        <p class="section-subtitle">Find directions to the clinic, call our helpline, or view operational location data easily.</p>
+      </div>
+
+      <div class="contact-grid">
+        <!-- Contact Details -->
+        <div class="contact-info-card">
+          <!-- Address -->
+          <div class="contact-item">
+            <div class="contact-icon-box">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <div class="contact-details">
+              <h3>Clinic Location</h3>
+              <p id="clinic-address-text">196A Pocket 12A, Jasola Vihar, New Delhi - 110025</p>
+              <div class="contact-action-row">
+                <button class="btn-action-small" onclick="copyText('196A Pocket 12A, Jasola Vihar, New Delhi - 110025', 'Address copied!')">
+                  Copy Address
+                </button>
+                <a href="https://maps.google.com/maps?q=196A%20Pocket%2012A%20Jasola%20Vihar%20New%20Delhi" target="_blank" class="btn-action-small" rel="noopener">
+                  Open Maps
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Phone -->
+          <div class="contact-item">
+            <div class="contact-icon-box">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            </div>
+            <div class="contact-details">
+              <h3>Phone Helpline</h3>
+              <p id="clinic-phone-text">+91 70426 91198</p>
+              <div class="contact-action-row">
+                <a href="tel:+917042691198" class="btn-action-small">Call Now</a>
+                <button class="btn-action-small" onclick="copyText('+91 70426 91198', 'Phone number copied!')">Copy Phone</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Support Email -->
+          <div class="contact-item">
+            <div class="contact-icon-box">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </div>
+            <div class="contact-details">
+              <h3>Digital Desk</h3>
+              <p>support@drinamclinic.com</p>
+              <div class="contact-action-row">
+                <a href="mailto:support@drinamclinic.com" class="btn-action-small">Send Mail</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Embedded Map -->
+        <div class="map-container">
+          <iframe
+            src="https://maps.google.com/maps?q=196A%20Pocket%2012A%20Jasola%20Vihar%20New%20Delhi&t=&z=16&ie=UTF8&iwloc=&output=embed"
+            allowfullscreen=""
+            loading="lazy"
+            title="Dr. Inam's Clinic Location Map">
+          </iframe>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <h2>Dr. Inam's <span>Clinic</span></h2>
+        <p>Providing expert diagnostic and curative healthcare services for adults, specializing in diabetes, hypertension, and thyroid regulation.</p>
+      </div>
+      
+      <div class="footer-links">
+        <h3>Quick Links</h3>
+        <ul>
+          <li><a href="#about">About Doctor</a></li>
+          <li><a href="#services">Clinical Services</a></li>
+          <li><a href="#timings">Consulting Timings</a></li>
+          <li><a href="#gallery">Gallery</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-links">
+        <h3>Primary Services</h3>
+        <ul>
+          <li><a href="#services">Diabetes Therapy</a></li>
+          <li><a href="#services">Hypertension Monitoring</a></li>
+          <li><a href="#services">Thyroid Management</a></li>
+          <li><a href="#services">Adult Immunization</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <p>&copy; 2026 Dr. Inam's Clinic. All Rights Reserved. Designed for patient ease and accessibility.</p>
+    </div>
+  </footer>
+
+  <!-- Gallery Lightbox Modal -->
+  <div class="lightbox-modal" id="lightbox">
+    <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+    <button class="lightbox-nav-btn lightbox-prev" onclick="changeLightboxImage(-1)">&#10094;</button>
+    <div class="lightbox-content">
+      <img src="" class="lightbox-image" id="lightbox-img" alt="Enlarged view">
+    </div>
+    <button class="lightbox-nav-btn lightbox-next" onclick="changeLightboxImage(1)">&#10095;</button>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast-notification" id="toast-notif">
+    <svg class="toast-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+    <span id="toast-message">Copied to clipboard!</span>
+  </div>
+
+  <!-- Sticky WhatsApp Bubble -->
+  <a href="https://wa.me/917042691198" class="whatsapp-sticky" target="_blank" rel="noopener" aria-label="Chat with Doctor via WhatsApp">
+    <!-- WhatsApp SVG -->
+    <svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.455 5.703 1.455h.008c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413"/></svg>
+    <div class="whatsapp-tooltip">Chat with clinic support desk</div>
+  </a>
+
+  <!-- JavaScript Logic -->
+  <script>
+    // ----------------------------------------------------
+    // Mobile Hamburger Navigation Toggle
+    // ----------------------------------------------------
+    const menuToggle = document.getElementById('menu-toggle');
+    const navMenu = document.getElementById('nav-menu');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    menuToggle.addEventListener('click', () => {
+      menuToggle.classList.toggle('active');
+      navMenu.classList.toggle('active');
+    });
+
+    navLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        menuToggle.classList.remove('active');
+        navMenu.classList.remove('active');
+      });
+    });
+
+    // ----------------------------------------------------
+    // Change Navbar styles on scroll
+    // ----------------------------------------------------
+    const header = document.getElementById('header');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+      highlightActiveLink();
+    });
+
+    // ----------------------------------------------------
+    // Active Link Highlight on Scroll
+    // ----------------------------------------------------
+    const sections = document.querySelectorAll('section');
+    function highlightActiveLink() {
+      let currentSection = '';
+      const scrollPos = window.scrollY + 100;
+
+      sections.forEach(section => {
+        const top = section.offsetTop;
+        const height = section.offsetHeight;
+        if (scrollPos >= top && scrollPos < top + height) {
+          currentSection = section.getAttribute('id');
+        }
+      });
+
+      navLinks.forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === `#${currentSection}`) {
+          link.classList.add('active');
+        }
+      });
+    }
+
+    // ----------------------------------------------------
+    // Toast Notification System
+    // ----------------------------------------------------
+    function copyText(text, successMsg) {
+      navigator.clipboard.writeText(text).then(() => {
+        const toast = document.getElementById('toast-notif');
+        const message = document.getElementById('toast-message');
+        message.innerText = successMsg;
+        toast.classList.add('show');
+        
+        setTimeout(() => {
+          toast.classList.remove('show');
+        }, 3000);
+      });
+    }
+
+    // ----------------------------------------------------
+    // Dynamic Time Slot Control based on Date Selection
+    // ----------------------------------------------------
+    const appointDateInput = document.getElementById('appoint-date');
+    const appointSlotSelect = document.getElementById('appoint-slot');
+
+    // Set minimum date to today
+    const todayStr = new Date().toISOString().split('T')[0];
+    appointDateInput.min = todayStr;
+
+    // Define slots
+    const weekdaySlots = [
+      "06:00 PM - 07:00 PM",
+      "07:00 PM - 08:00 PM",
+      "08:00 PM - 09:00 PM",
+      "09:00 PM - 10:00 PM",
+      "10:00 PM - 11:00 PM"
+    ];
+
+    const sundaySlots = [
+      "08:00 AM - 09:00 AM",
+      "09:00 AM - 10:00 AM",
+      "10:00 AM - 11:00 AM"
+    ];
+
+    appointDateInput.addEventListener('change', () => {
+      const selectedDate = new Date(appointDateInput.value);
+      const dayOfWeek = selectedDate.getDay(); // 0 = Sunday, 1-6 = Monday-Saturday
+
+      appointSlotSelect.innerHTML = '<option value="" disabled selected>Select a time slot</option>';
+      
+      const activeSlots = (dayOfWeek === 0) ? sundaySlots : weekdaySlots;
+      
+      activeSlots.forEach(slot => {
+        const option = document.createElement('option');
+        option.value = slot;
+        option.textContent = slot;
+        appointSlotSelect.appendChild(option);
+      });
+    });
+
+    // ----------------------------------------------------
+    // Live Clinic Status Calculator
+    // ----------------------------------------------------
+    function updateClinicLiveStatus() {
+      const statusBadge = document.getElementById('status-badge');
+      const statusTextBadge = document.getElementById('status-text-badge');
+      const statusTitle = document.getElementById('status-title');
+      const statusDesc = document.getElementById('status-desc');
+      const liveCard = document.getElementById('live-status-card');
+
+      const now = new Date();
+      const currentDay = now.getDay(); // 0 = Sunday, 1-6 = Mon-Sat
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+      const totalMinutes = currentHour * 60 + currentMinute;
+
+      let isOpen = false;
+      let nextOpeningMsg = '';
+
+      if (currentDay === 0) {
+        // Sunday: 8:00 AM - 11:00 AM (480 to 660 mins)
+        const openMin = 8 * 60;
+        const closeMin = 11 * 60;
+        if (totalMinutes >= openMin && totalMinutes < closeMin) {
+          isOpen = true;
+        } else if (totalMinutes < openMin) {
+          nextOpeningMsg = "Opens at 8:00 AM today";
+        } else {
+          nextOpeningMsg = "Opens Monday at 6:00 PM";
+        }
+      } else {
+        // Monday-Saturday: 6:00 PM - 11:00 PM (1080 to 1380 mins)
+        const openMin = 18 * 60;
+        const closeMin = 23 * 60;
+        if (totalMinutes >= openMin && totalMinutes < closeMin) {
+          isOpen = true;
+        } else if (totalMinutes < openMin) {
+          nextOpeningMsg = "Opens at 6:00 PM today";
+        } else {
+          // It's after 11 PM
+          if (currentDay === 6) {
+            // Saturday night
+            nextOpeningMsg = "Opens Sunday at 8:00 AM";
+          } else {
+            nextOpeningMsg = "Opens tomorrow at 6:00 PM";
+          }
+        }
+      }
+
+      if (isOpen) {
+        statusBadge.className = 'live-badge open';
+        statusTextBadge.innerText = 'Open Now';
+        statusTitle.innerText = 'The Clinic is Currently Open';
+        statusDesc.innerText = 'Dr. Inam is actively consulting. Walk-ins are welcome, or you can book an appointment using the form below.';
+        liveCard.style.border = '1px solid rgba(16, 185, 129, 0.4)';
+      } else {
+        statusBadge.className = 'live-badge closed';
+        statusTextBadge.innerText = 'Closed';
+        statusTitle.innerText = 'Clinic is Currently Closed';
+        statusDesc.innerText = `Consultation is currently unavailable. ${nextOpeningMsg}. You can request a booking in advance.`;
+        liveCard.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+      }
+    }
+
+    // Run status calculator on load and update every minute
+    updateClinicLiveStatus();
+    setInterval(updateClinicLiveStatus, 60000);
+
+    // ----------------------------------------------------
+    // WhatsApp Appointment Booking Handler
+    // ----------------------------------------------------
+    const appointmentForm = document.getElementById('appointment-form');
+    appointmentForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      const name = document.getElementById('patient-name').value;
+      const phone = document.getElementById('patient-phone').value;
+      const service = document.getElementById('consult-service').value;
+      const date = document.getElementById('appoint-date').value;
+      const slot = document.getElementById('appoint-slot').value;
+
+      // Format date for easier reading
+      const formattedDate = new Date(date).toLocaleDateString('en-US', {
+        weekday: 'short',
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+
+      // Construct WhatsApp message
+      const wpNumber = "917042691198";
+      const baseMessage = 
+        `Hello Dr. Inam's Clinic,\n\n` +
+        `I would like to request an appointment:\n\n` +
+        `• Patient Name: ${name}\n` +
+        `• Contact Phone: ${phone}\n` +
+        `• Clinical Service: ${service}\n` +
+        `• Preferred Date: ${formattedDate}\n` +
+        `• Time Slot: ${slot}\n\n` +
+        `Please confirm this booking slot. Thank you!`;
+
+      const encodedMessage = encodeURIComponent(baseMessage);
+      const whatsappUrl = `https://wa.me/${wpNumber}?text=${encodedMessage}`;
+
+      // Reset form
+      appointmentForm.reset();
+      appointSlotSelect.innerHTML = '<option value="" disabled selected>Choose date first</option>';
+
+      // Open whatsapp link
+      window.open(whatsappUrl, '_blank');
+    });
+
+    // ----------------------------------------------------
+    // Custom Gallery Lightbox Script
+    // ----------------------------------------------------
+    let currentImageIndex = 0;
+    const galleryImages = [
+      'clinic1.webp',
+      'clinic2.webp',
+      'clinic3.webp'
+    ];
+    const galleryImageAlts = [
+      'Consultation Desk and Equipment',
+      'Patient Waiting Lounge and Reception',
+      'Clinical Diagnosis Area'
+    ];
+
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+
+    function openLightbox(index) {
+      currentImageIndex = index;
+      updateLightboxContent();
+      lightbox.classList.add('active');
+      document.body.style.overflow = 'hidden'; // Lock scroll
+    }
+
+    function closeLightbox() {
+      lightbox.classList.remove('active');
+      document.body.style.overflow = ''; // Unlock scroll
+    }
+
+    function updateLightboxContent() {
+      lightboxImg.src = galleryImages[currentImageIndex];
+      lightboxImg.alt = galleryImageAlts[currentImageIndex];
+    }
+
+    function changeLightboxImage(direction) {
+      currentImageIndex += direction;
+      if (currentImageIndex >= galleryImages.length) {
+        currentImageIndex = 0;
+      } else if (currentImageIndex < 0) {
+        currentImageIndex = galleryImages.length - 1;
+      }
+      updateLightboxContent();
+    }
+
+    // Close lightbox on clicking outside content
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) {
+        closeLightbox();
+      }
+    });
+
+    // Close and Nav on Keyboard keys
+    document.addEventListener('keydown', (e) => {
+      if (lightbox.classList.contains('active')) {
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowRight') changeLightboxImage(1);
+        if (e.key === 'ArrowLeft') changeLightboxImage(-1);
+      }
+    });
+  </script>
+</body>
+</html>

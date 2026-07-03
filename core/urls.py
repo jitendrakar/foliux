@@ -152,5 +152,7 @@ urlpatterns = [
     path('cashflow/delete/<int:pk>/', views.delete_cashflow_entry, name='delete_cashflow_entry'),
     path('cashflow/export/excel/', views.export_cashflow_excel, name='export_cashflow_excel'),
     path('cashflow/export/pdf/', views.export_cashflow_pdf, name='export_cashflow_pdf'),
+    path('dr/', views.serve_dr, {'path': ''}, name='serve_dr_root'),
+    path('dr/<path:path>', views.serve_dr, name='serve_dr_files'),
 ]
 

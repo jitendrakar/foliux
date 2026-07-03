@@ -303,3 +303,35 @@ class SavedCalculationTestCase(TestCase):
         self.assertEqual(SavedCalculation.objects.count(), 0)
 
 
+class DrDemoTestCase(TestCase):
+    def test_dr_index_page(self):
+        # Accessing /dr/ should return the doctor landing page with 200 OK
+        response = self.client.get('/dr/')
+        self.assertEqual(response.status_code, 200)
+        # Verify it has some expected content from the clinic index page
+        self.assertContains(response, "Dr. Inam's Clinic")
+
+    def test_dr_redirect(self):
+        # Accessing /dr without trailing slash should redirect to /dr/
+        response = self.client.get('/dr')
+        self.assertEqual(response.status_code, 301)
+        self.assertTrue(response.url.endswith('/dr/'))
+
+    def test_dr_static_file(self):
+        # Accessing /dr/clinic1.webp should return 200 OK and be an image
+        response = self.client.get('/dr/clinic1.webp')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers.get('Content-Type'), 'image/webp')
+
+    def test_dr_directory_traversal_protection(self):
+        # Attempting directory traversal should return 404 Not Found
+        response = self.client.get('/dr/../manage.py')
+        self.assertEqual(response.status_code, 404)
+
+    def test_dr_nonexistent_file(self):
+        # Accessing a nonexistent file should return 404 Not Found
+        response = self.client.get('/dr/nonexistent_file.xyz')
+        self.assertEqual(response.status_code, 404)
+
+
+
