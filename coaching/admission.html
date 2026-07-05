@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Registration Portal - Success Academy</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom Style Sheet -->
+    <link href="assets/css/style.css?v=2" rel="stylesheet">
+</head>
+<body>
+
+<!-- Header Placeholder -->
+<div id="header-placeholder"></div>
+
+<!-- Banner Section -->
+<section class="bg-primary text-white py-5 text-center" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;">
+    <div class="container">
+        <h1 class="fw-bold display-4">Online Admission Form</h1>
+        <p class="lead mb-0">Academic Year 2026-27. Register online to secure your seat and batch timings.</p>
+    </div>
+</section>
+
+<!-- Admission Form Section -->
+<section class="py-5 bg-light">
+    <div class="container" style="max-width: 850px;">
+        
+        <div class="admission-form-card">
+            <div class="text-center mb-4">
+                <i class="fa-solid fa-graduation-cap text-secondary fs-1 mb-2"></i>
+                <h3 class="fw-bold text-primary-dark">Student Registration Form</h3>
+                <p class="text-muted small">Please fill out all details carefully. The photo size must not exceed 2MB (JPG/PNG).</p>
+                <hr>
+            </div>
+            
+            <div id="admissionAlert" class="alert alert-success" style="display:none;" role="alert"></div>
+            
+            <form id="admissionForm">
+                <div class="row g-4">
+                    
+                    <!-- Student details -->
+                    <div class="col-12"><h5 class="fw-bold text-primary-dark border-bottom pb-2">1. Personal Information</h5></div>
+                    
+                    <div class="col-md-6">
+                        <label for="ad_name" class="form-label">Student Name *</label>
+                        <input type="text" class="form-control" id="ad_name" placeholder="Enter Full Name" required>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="ad_father" class="form-label">Father's / Guardian's Name *</label>
+                        <input type="text" class="form-control" id="ad_father" placeholder="Enter Guardian Name" required>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="ad_phone" class="form-label">Mobile Number *</label>
+                        <input type="tel" class="form-control" id="ad_phone" placeholder="10-digit number" required>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="ad_email" class="form-label">Email Address *</label>
+                        <input type="email" class="form-control" id="ad_email" placeholder="student@gmail.com" required>
+                    </div>
+                    
+                    <!-- Academics details -->
+                    <div class="col-12 mt-5"><h5 class="fw-bold text-primary-dark border-bottom pb-2">2. Academic &amp; Course Selections</h5></div>
+                    
+                    <div class="col-md-6">
+                        <label for="ad_class" class="form-label">Current Study Class *</label>
+                        <select class="form-select" id="ad_class" required>
+                            <option value="">-- Select Class --</option>
+                            <option value="Class 6">Class 6</option>
+                            <option value="Class 7">Class 7</option>
+                            <option value="Class 8">Class 8</option>
+                            <option value="Class 9">Class 9</option>
+                            <option value="Class 10">Class 10</option>
+                            <option value="Class 11 Science">Class 11 Science (PCB/PCM)</option>
+                            <option value="Class 11 Commerce">Class 11 Commerce</option>
+                            <option value="Class 12 Science">Class 12 Science (PCB/PCM)</option>
+                            <option value="Class 12 Commerce">Class 12 Commerce</option>
+                            <option value="Class 12 Passed">Class 12 Passed (Repeaters)</option>
+                            <option value="Graduation / Other">Undergraduate / College</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="ad_course" class="form-label">Select Target Course *</label>
+                        <select class="form-select" id="ad_course" required>
+                            <option value="">-- Choose Target Program --</option>
+                            <!-- Dynamic options -->
+                        </select>
+                    </div>
+                    
+                    <!-- File Upload & Address -->
+                    <div class="col-12 mt-5"><h5 class="fw-bold text-primary-dark border-bottom pb-2">3. Files &amp; Address Details</h5></div>
+                    
+                    <div class="col-md-6">
+                        <label for="ad_photo" class="form-label">Upload Passport Photograph *</label>
+                        <input type="file" class="form-control" id="ad_photo" accept="image/jpeg, image/jpg, image/png" required>
+                        <div class="form-text text-muted">Only JPG, JPEG, and PNG formats. Maximum size: 2MB.</div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label for="ad_address" class="form-label">Correspondence Address *</label>
+                        <textarea class="form-control" id="ad_address" rows="3" placeholder="Enter complete home address" required></textarea>
+                    </div>
+                    
+                </div>
+                
+                <div class="form-check my-4">
+                    <input class="form-check-input" type="checkbox" id="ad_agree" required>
+                    <label class="form-check-label text-muted small" for="ad_agree">
+                        I hereby declare that all the entries made in this form are correct and true to the best of my knowledge. I agree to abide by the rules and calendar of Success Academy.
+                    </label>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-secondary btn-lg text-white py-3"><i class="fa-solid fa-file-invoice-dollar me-2"></i> Submit Application Form</button>
+                </div>
+            </form>
+        </div>
+        
+    </div>
+</section>
+
+<!-- Footer Placeholder -->
+<div id="footer-placeholder"></div>
+
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- JS Database and Components Loader -->
+<script src="assets/js/db.js"></script>
+<script src="assets/js/components.js"></script>
+<script src="assets/js/main.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (!window.DB) return;
+    
+    const db = window.DB;
+    const courses = db.getCourses();
+    const dropdown = document.getElementById('ad_course');
+    if (!dropdown) return;
+    
+    // Check preselected course
+    const params = new URLSearchParams(window.location.search);
+    const preselectedId = parseInt(params.get('course_id') || 0);
+    
+    let options = '<option value="">-- Choose Target Program --</option>';
+    courses.forEach(c => {
+        options += `<option value="${c.id}" ${c.id === preselectedId ? 'selected' : ''}>${c.title} (₹${parseFloat(c.fees).toLocaleString('en-IN')})</option>`;
+    });
+    dropdown.innerHTML = options;
+});
+</script>
+
+</body>
+</html>

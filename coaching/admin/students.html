@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Admissions - Success Academy Admin</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Admin custom styling -->
+    <link href="../assets/css/admin-style.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="admin-wrapper">
+    <!-- Sidebar Placeholder -->
+    <div id="admin-sidebar-placeholder"></div>
+    
+    <div class="admin-content-area">
+        <!-- Header Placeholder -->
+        <div id="admin-header-placeholder"></div>
+        
+        <div class="admin-body">
+            
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center" id="students-header-box">
+                    <!-- Dynamic Header -->
+                </div>
+                
+                <div class="card-body">
+                    <!-- LIST SECTION -->
+                    <div id="students-list-view" class="table-responsive" style="display:none;">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Student Details</th>
+                                    <th>Guardian</th>
+                                    <th>Applied Course</th>
+                                    <th>Class</th>
+                                    <th>Status</th>
+                                    <th>Registered On</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="students-tbody">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- DETAIL VIEW SECTION -->
+                    <div id="students-detail-view" style="display:none;">
+                        <div class="row g-4" id="student-detail-box">
+                            <!-- Dynamic detail data -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div> <!-- Close admin-body -->
+        
+        <!-- Footer Placeholder -->
+        <div id="admin-footer-placeholder"></div>
+    </div> <!-- Close admin-content-area -->
+</div> <!-- Close admin-wrapper -->
+
+<!-- Scripts -->
+<script src="../assets/js/db.js"></script>
+<script src="admin-auth.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (!window.DB) return;
+    
+    const db = window.DB;
+    const params = new URLSearchParams(window.location.search);
+    const act = params.get('act') || 'list';
+    const id = parseInt(params.get('id') || 0);
+    
+    const headerBox = document.getElementById('students-header-box');
+    const listView = document.getElementById('students-list-view');
+    const detailView = document.getElementById('students-detail-view');
+    
+    if (id > 0) {
+        // VIEW SINGLE STUDENT
+        headerBox.innerHTML = `
+            <h5 class="fw-bold mb-0 text-primary-dark"><i class="fa-solid fa-user-graduate text-secondary me-2"></i> Application # ${id}</h5>
+            <a href="students.html" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-arrow-left me-1"></i> Back to List</a>
+        `;
+        detailView.style.display = 'block';
+        
+        const s = db.getAdmissionById(id);
+        const detailBox = document.getElementById('student-detail-box');
+        if (s && detailBox) {
+            const regDate = new Date(s.created_at).toLocaleString('en-IN');
+            const imgHtml = s.photo_path 
+                ? `<img src="${s.photo_path}" class="img-fluid rounded border mb-3" style="max-height: 250px; object-fit: cover;" alt="Student Photo">`
+                : `<div class="bg-secondary text-white rounded mb-3 py-5" style="font-size: 4rem;"><i class="fa-solid fa-user"></i></div><span class="text-muted small">No photo uploaded</span>`;
+                
+            detailBox.innerHTML = `
+                <div class="col-md-4 text-center">
+                    <div class="border rounded p-3 bg-light">
+                        ${imgHtml}
+                        <h5 class="fw-bold mb-1">${s.student_name}</h5>
+                        <p class="text-muted small">Reference ID: # ${s.id}</p>
+                        
+                        <form id="statusForm" class="mt-4 border-top pt-3 text-start">
+                            <label class="form-label small fw-bold">Modify Status:</label>
+                            <div class="input-group">
+                                <select class="form-select form-select-sm" id="s_status">
+                                    <option value="Pending" ${s.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                                    <option value="Approved" ${s.status === 'Approved' ? 'selected' : ''}>Approved</option>
+                                    <option value="Rejected" ${s.status === 'Rejected' ? 'selected' : ''}>Rejected</option>
+                                </select>
+                                <button type="submit" class="btn btn-secondary text-white btn-sm">Update</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <div class="col-md-8">
+                    <h4 class="fw-bold text-primary-dark border-bottom pb-2">Student Application Details</h4>
+                    <div class="row g-3 py-3">
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">Student Name:</span>
+                            <strong class="text-dark fs-5">${s.student_name}</strong>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">Father / Guardian Name:</span>
+                            <strong class="text-dark fs-5">${s.father_name}</strong>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">Mobile / Whatsapp Number:</span>
+                            <strong class="text-dark">${s.mobile}</strong>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">Email Address:</span>
+                            <strong class="text-dark"><a href="mailto:${s.email}">${s.email}</a></strong>
+                        </div>
+                        <div class="col-12"><hr></div>
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">Target Course:</span>
+                            <strong class="text-primary">${s.course_title}</strong>
+                        </div>
+                        <div class="col-sm-6">
+                            <span class="text-muted small d-block">Class:</span>
+                            <strong class="text-dark">${s.class_name}</strong>
+                        </div>
+                        <div class="col-12">
+                            <span class="text-muted small d-block">Correspondence Address:</span>
+                            <p class="text-dark border p-3 rounded bg-light mb-0">${s.address.replace(/\n/g, '<br>')}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Handle Status Form Submit
+            document.getElementById('statusForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                const newStatus = document.getElementById('s_status').value;
+                if (db.updateAdmissionStatus(s.id, newStatus)) {
+                    alert('Admission status updated to ' + newStatus);
+                    window.location.reload();
+                }
+            });
+        }
+        
+    } else {
+        // LIST VIEW
+        headerBox.innerHTML = `
+            <h5 class="fw-bold mb-0 text-primary-dark"><i class="fa-solid fa-user-graduate text-secondary me-2"></i> Online Admission Registrations</h5>
+        `;
+        listView.style.display = 'block';
+        
+        const tbody = document.getElementById('students-tbody');
+        const list = db.getAdmissions();
+        
+        if (list.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">No student registrations logged.</td></tr>';
+        } else {
+            let rows = '';
+            list.slice().reverse().forEach(r => {
+                let badgeClass = 'badge-pending';
+                if (r.status === 'Approved') badgeClass = 'badge-approved';
+                if (r.status === 'Rejected') badgeClass = 'badge-rejected';
+                
+                const regDate = new Date(r.created_at).toLocaleDateString('en-IN', {
+                    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+                
+                rows += `
+                    <tr>
+                        <td># ${r.id}</td>
+                        <td>
+                            <div class="fw-bold">${r.student_name}</div>
+                            <small class="text-muted"><i class="fa-solid fa-phone fs-8 me-1"></i>${r.mobile}</small>
+                        </td>
+                        <td>${r.father_name}</td>
+                        <td><small class="text-truncate d-block" style="max-width: 150px;">${r.course_title}</small></td>
+                        <td><span class="badge bg-light text-dark border">${r.class_name}</span></td>
+                        <td><span class="badge ${badgeClass}">${r.status}</span></td>
+                        <td><small>${regDate}</small></td>
+                        <td class="text-end">
+                            <a href="students.html?id=${r.id}" class="btn btn-outline-primary btn-sm me-1"><i class="fa-solid fa-eye"></i> View</a>
+                            <button class="btn btn-outline-danger btn-sm" onclick="deleteAdmission(${r.id})"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = rows;
+        }
+    }
+});
+
+function deleteAdmission(id) {
+    if (confirm('Delete this admission registration record permanently?')) {
+        if (window.DB && window.DB.deleteAdmission(id)) {
+            window.location.reload();
+        }
+    }
+}
+</script>
+</body>
+</html>

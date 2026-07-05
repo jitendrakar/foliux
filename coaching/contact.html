@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - Success Academy Coaching Institute</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom Style Sheet -->
+    <link href="assets/css/style.css?v=2" rel="stylesheet">
+</head>
+<body>
+
+<!-- Header Placeholder -->
+<div id="header-placeholder"></div>
+
+<!-- Banner Section -->
+<section class="bg-primary text-white py-5 text-center" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;">
+    <div class="container">
+        <h1 class="fw-bold display-4">Contact Our Help Desk</h1>
+        <p class="lead mb-0">Have queries about admission slots, syllabus, or hostels? Get in touch today.</p>
+    </div>
+</section>
+
+<!-- Contact Form and Map Section -->
+<section class="py-5 bg-white">
+    <div class="container">
+        <div class="row g-5">
+            <!-- Left: Contact Details and Map -->
+            <div class="col-lg-6">
+                <h3 class="fw-bold text-primary-dark mb-4">Location &amp; Helpline</h3>
+                
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="bg-light p-3 rounded border h-100">
+                            <h6 class="fw-bold text-primary mb-1"><i class="fa-solid fa-location-dot me-2"></i>Campus Address:</h6>
+                            <p class="text-muted small mb-0" id="contact-address">Building No. 45, Vidya Nagar, Jaipur</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="bg-light p-3 rounded border h-100">
+                            <h6 class="fw-bold text-primary mb-1"><i class="fa-solid fa-clock me-2"></i>Office Hours:</h6>
+                            <p class="text-muted small mb-0" id="contact-hours">Monday - Saturday</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="bg-light p-3 rounded border h-100">
+                            <h6 class="fw-bold text-primary mb-1"><i class="fa-solid fa-phone me-2"></i>Helpline Numbers:</h6>
+                            <p class="text-muted small mb-0" id="contact-helpline">Call: +91 98765 43210</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="bg-light p-3 rounded border h-100">
+                            <h6 class="fw-bold text-primary mb-1"><i class="fa-solid fa-envelope me-2"></i>Email Desk:</h6>
+                            <p class="text-muted small mb-0" id="contact-email">info@successacademy.co.in</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Google Maps Embed -->
+                <div class="rounded border overflow-hidden shadow-sm" id="map-container">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3557.842792873138!2d75.78726581504445!3d26.907727983129598!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x396db406697bb3cb%3A0xe54d24177fe7753e!2sJaipur%20Central%20Library!5e0!3m2!1sen!2sin!4v1625482937210!5m2!1sen!2sin" width="100%" height="320" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                </div>
+            </div>
+            
+            <!-- Right: Contact Form -->
+            <div class="col-lg-6">
+                <div class="bg-light p-4 rounded border h-100">
+                    <h3 class="fw-bold text-primary-dark mb-2">Send Message</h3>
+                    <p class="text-muted small mb-4">Please submit your details below, and our central academic manager will get in touch shortly.</p>
+                    
+                    <div id="contactAlert" class="alert alert-success" style="display:none;" role="alert"></div>
+                    
+                    <form id="contactForm">
+                        <div class="mb-3">
+                            <label for="c_name" class="form-label small">Full Name *</label>
+                            <input type="text" class="form-control" id="c_name" placeholder="Enter Full Name" required>
+                        </div>
+                        
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="c_email" class="form-label small">Email Address *</label>
+                                <input type="email" class="form-control" id="c_email" placeholder="student@gmail.com" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="c_phone" class="form-label small">Phone Number *</label>
+                                <input type="tel" class="form-control" id="c_phone" placeholder="10-digit mobile number" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="c_subject" class="form-label small">Subject *</label>
+                            <input type="text" class="form-control" id="c_subject" placeholder="e.g. Admission Query, Fee structure" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="c_msg" class="form-label small">Detail Message *</label>
+                            <textarea class="form-control" id="c_msg" rows="5" placeholder="Write your questions here..." required></textarea>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-secondary text-white py-3"><i class="fa-solid fa-paper-plane me-2"></i> Submit Inquiry Message</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer Placeholder -->
+<div id="footer-placeholder"></div>
+
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- JS Database and Components Loader -->
+<script src="assets/js/db.js"></script>
+<script src="assets/js/components.js"></script>
+<script src="assets/js/main.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (!window.DB) return;
+    
+    const db = window.DB;
+    const settings = db.getSettings();
+    
+    document.getElementById('contact-address').innerText = settings.office_address;
+    document.getElementById('contact-hours').innerText = settings.working_hours;
+    document.getElementById('contact-helpline').innerHTML = `Call: <a href="tel:${settings.contact_phone.replace(/\s+/g, '')}">${settings.contact_phone}</a><br>WhatsApp: <a href="https://wa.me/${settings.contact_whatsapp.replace(/[\s+]+/g, '')}">${settings.contact_whatsapp}</a>`;
+    document.getElementById('contact-email').innerHTML = `<a href="mailto:${settings.contact_email}">${settings.contact_email}</a>`;
+    
+    if (settings.maps_embed) {
+        document.getElementById('map-container').innerHTML = settings.maps_embed;
+    }
+    
+    // Check pre-selected subject
+    const params = new URLSearchParams(window.location.search);
+    const preCourse = params.get('course');
+    if (preCourse) {
+        document.getElementById('c_subject').value = `Enquiry about: ${preCourse}`;
+    }
+});
+</script>
+
+</body>
+</html>

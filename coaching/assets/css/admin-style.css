@@ -1,0 +1,157 @@
+/* Admin Portal Stylesheet - Success Academy */
+
+:root {
+    --admin-sidebar-width: 250px;
+    --admin-primary: #0A1931;
+    --admin-accent: #FF6D00;
+    --admin-light: #F3F4F6;
+    --admin-border: #E5E7EB;
+}
+
+body {
+    background-color: var(--admin-light);
+    font-size: 14px;
+}
+
+/* Dashboard Sidebar Layout */
+.admin-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+.admin-sidebar {
+    width: var(--admin-sidebar-width);
+    background-color: var(--admin-primary);
+    color: rgba(255,255,255,0.75);
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding-top: 20px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+}
+
+.admin-sidebar-brand {
+    padding: 0 20px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 20px;
+}
+
+.admin-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.admin-nav-item a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    color: rgba(255,255,255,0.75);
+    font-weight: 500;
+    border-left: 3px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.admin-nav-item a:hover, .admin-nav-item.active a {
+    color: #FFFFFF;
+    background-color: rgba(255,255,255,0.06);
+    border-left-color: var(--admin-accent);
+}
+
+.admin-content-area {
+    margin-left: var(--admin-sidebar-width);
+    flex-grow: 1;
+    min-width: 0; /* flex wrap fix */
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-header {
+    background-color: #FFFFFF;
+    border-bottom: 1px solid var(--admin-border);
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.admin-body {
+    padding: 30px;
+    flex-grow: 1;
+}
+
+/* Card KPI values */
+.kpi-card {
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    border: 1px solid var(--admin-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.kpi-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--admin-primary);
+}
+.kpi-label {
+    color: #6B7280;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+}
+.kpi-icon {
+    font-size: 2.2rem;
+    color: rgba(13, 71, 161, 0.15);
+}
+
+/* Login Card styling */
+.admin-login-body {
+    background: linear-gradient(135deg, var(--admin-primary) 0%, #1565C0 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.admin-login-card {
+    background-color: #FFFFFF;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    width: 100%;
+    max-width: 400px;
+    padding: 40px 30px;
+}
+
+/* Status Badges */
+.badge-pending {
+    background-color: #FEF3C7;
+    color: #92400E;
+}
+.badge-approved {
+    background-color: #D1FAE5;
+    color: #065F46;
+}
+.badge-rejected {
+    background-color: #FEE2E2;
+    color: #991B1B;
+}
+
+/* Media adjustments */
+@media (max-width: 991px) {
+    .admin-sidebar {
+        width: 70px;
+    }
+    .admin-sidebar-brand span, .admin-nav-item span {
+        display: none;
+    }
+    .admin-content-area {
+        margin-left: 70px;
+    }
+}

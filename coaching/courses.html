@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Coaching Programs - Success Academy</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom Style Sheet -->
+    <link href="assets/css/style.css?v=2" rel="stylesheet">
+</head>
+<body>
+
+<!-- Header Placeholder -->
+<div id="header-placeholder"></div>
+
+<!-- Banner Section -->
+<section class="bg-primary text-white py-5 text-center" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;">
+    <div class="container">
+        <h1 class="fw-bold display-4">Our Coaching Programs</h1>
+        <p class="lead mb-0">Explore our premium classroom courses designed to accelerate academic and career results.</p>
+    </div>
+</section>
+
+<!-- Courses Filter & Grid -->
+<section class="py-5 bg-white">
+    <div class="container">
+        
+        <!-- Category Filter Pills -->
+        <div class="d-flex justify-content-center flex-wrap mb-5" id="pills-container">
+            <button class="gallery-filter-btn active" data-cat="all">All Programs</button>
+            <button class="gallery-filter-btn" data-cat="JEE">IIT-JEE</button>
+            <button class="gallery-filter-btn" data-cat="NEET">NEET Medical</button>
+            <button class="gallery-filter-btn" data-cat="UPSC">UPSC</button>
+            <button class="gallery-filter-btn" data-cat="Foundation">Class 6-10 Pre-Foundation</button>
+            <button class="gallery-filter-btn" data-cat="School">Class 11-12 Boards</button>
+            <button class="gallery-filter-btn" data-cat="Olympiad">Olympiads</button>
+            <button class="gallery-filter-btn" data-cat="Government">Govt Exams</button>
+        </div>
+        
+        <div class="row g-4" id="courses-catalog-grid">
+            <!-- Dynamic list -->
+        </div>
+        
+    </div>
+</section>
+
+<!-- Bottom CTA -->
+<section class="py-5 bg-light text-center border-top">
+    <div class="container" style="max-width: 650px;">
+        <h3 class="fw-bold mb-3 text-primary-dark">Not sure which course is right for you?</h3>
+        <p class="text-muted mb-4">Our admissions dean offers complimentary counseling appointments to evaluate mock results and recommend targeted learning tracks.</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="contact.html" class="btn btn-primary px-4 py-2"><i class="fa-solid fa-phone me-2"></i> Call Academic Advisor</a>
+            <a href="admission.html" class="btn btn-outline-secondary px-4 py-2"><i class="fa-solid fa-pen-nib me-2"></i> Register Online</a>
+        </div>
+    </div>
+</section>
+
+<!-- Footer Placeholder -->
+<div id="footer-placeholder"></div>
+
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- JS Database and Components Loader -->
+<script src="assets/js/db.js"></script>
+<script src="assets/js/components.js"></script>
+<script src="assets/js/main.js"></script>
+
+<!-- Filter Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (!window.DB) return;
+    
+    // Check url search params
+    const params = new URLSearchParams(window.location.search);
+    let selectedCat = params.get('cat') || 'all';
+    
+    // Set active button
+    const buttons = document.querySelectorAll('#pills-container .gallery-filter-btn');
+    buttons.forEach(btn => {
+        if (btn.getAttribute('data-cat') === selectedCat) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+        
+        // Add click listener
+        btn.addEventListener('click', function() {
+            buttons.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            renderCourses(this.getAttribute('data-cat'));
+        });
+    });
+    
+    renderCourses(selectedCat);
+});
+
+function renderCourses(cat) {
+    const db = window.DB;
+    let list = [];
+    
+    if (cat === 'Government') {
+        // Group government categories
+        const all = db.getAllCoursesAdmin().filter(c => c.status === 1);
+        list = all.filter(c => ['SSC', 'Banking', 'Railway', 'CUET', 'NDA'].includes(c.category));
+    } else {
+        list = db.getCourses(cat);
+    }
+    
+    const grid = document.getElementById('courses-catalog-grid');
+    if (!grid) return;
+    
+    if (list.length === 0) {
+        grid.innerHTML = `
+            <div class="col-12 text-center py-5">
+                <i class="fa-solid fa-magnifying-glass text-muted fs-1 mb-3"></i>
+                <h5 class="fw-bold">No Courses Found</h5>
+                <p class="text-muted">No programs match this category pill at the moment.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    let gridHtml = '';
+    list.forEach(c => {
+        const featuresList = c.features.split(',').map(f => `<li><i class="fa-solid fa-check text-success me-2"></i>${f.trim()}</li>`).join('');
+        gridHtml += `
+            <div class="col-lg-4 col-md-6">
+                <div class="course-card">
+                    <span class="course-badge">${c.category}</span>
+                    <div class="course-image">
+                        <img src="${c.image_path}" onerror="this.src='https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=400'" alt="${c.title}">
+                    </div>
+                    <div class="course-body">
+                        <h5 class="fw-bold mb-3">${c.title}</h5>
+                        
+                        <div class="course-meta">
+                            <span><i class="fa-regular fa-clock"></i> <strong>Duration:</strong> ${c.duration}</span>
+                            <span><i class="fa-regular fa-calendar-days text-secondary"></i> ${c.batch_timing}</span>
+                        </div>
+                        
+                        <p class="text-muted small mb-4">${c.description}</p>
+                        
+                        <div class="bg-light p-3 rounded mb-4 border-start border-primary border-3">
+                            <h6 class="fw-bold text-primary-dark mb-1 small">Course Highlights:</h6>
+                            <ul class="list-unstyled mb-0 row text-muted small">
+                                ${featuresList}
+                            </ul>
+                        </div>
+                        
+                        <div class="mt-auto pt-3 d-flex justify-content-between align-items-center border-top">
+                            <div>
+                                <span class="d-block small text-muted">Annual Fees</span>
+                                <span class="course-price text-primary">₹${parseFloat(c.fees).toLocaleString('en-IN')}</span>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="admission.html?course_id=${c.id}" class="btn btn-secondary btn-sm text-white">Apply Now</a>
+                                <a href="contact.html?course=${encodeURIComponent(c.title)}" class="btn btn-outline-primary btn-sm">Enquire</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    grid.innerHTML = gridHtml;
+}
+</script>
+
+</body>
+</html>

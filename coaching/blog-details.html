@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog - Success Academy</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom Style Sheet -->
+    <link href="assets/css/style.css" rel="stylesheet">
+</head>
+<body>
+
+<!-- Header Placeholder -->
+<div id="header-placeholder"></div>
+
+<!-- Banner Section -->
+<section class="bg-primary text-white py-5" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;">
+    <div class="container">
+        <span class="badge bg-warning text-dark text-uppercase mb-2 py-2 px-3 fw-bold" id="art-category">Category</span>
+        <h1 class="fw-bold display-5" id="art-title">Article Title</h1>
+        <p class="lead mb-0"><i class="fa-regular fa-calendar-days me-2"></i> Published: <span id="art-date">Date</span></p>
+    </div>
+</section>
+
+<!-- Main content section -->
+<section class="py-5 bg-white">
+    <div class="container">
+        <div class="row g-5">
+            <!-- Left: Article Content -->
+            <div class="col-lg-8">
+                <!-- Cover Image -->
+                <div class="mb-4 rounded-3 overflow-hidden shadow-sm">
+                    <img src="" class="img-fluid w-100" style="max-height: 400px; object-fit: cover;" id="art-cover" onerror="this.src='https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=800'">
+                </div>
+                
+                <!-- Article Body Content -->
+                <div class="article-body-content text-dark mb-5" style="font-size: 1.05rem; line-height: 1.8;" id="art-content">
+                    <!-- Dynamic body HTML -->
+                </div>
+                
+                <hr>
+                <div class="d-flex justify-content-between align-items-center flex-wrap pt-3 gap-3">
+                    <a href="blog.html" class="btn btn-outline-primary"><i class="fa-solid fa-chevron-left me-2"></i> Back to Blog list</a>
+                    
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="small text-muted">Share Article:</span>
+                        <a href="https://facebook.com" target="_blank" class="btn btn-outline-secondary btn-sm px-2"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="https://whatsapp.com" target="_blank" class="btn btn-outline-success btn-sm px-2"><i class="fa-brands fa-whatsapp"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right: Sidebar -->
+            <div class="col-lg-4">
+                <!-- Recent Posts -->
+                <div class="bg-light p-4 rounded border mb-4">
+                    <h5 class="fw-bold text-primary-dark mb-3 border-bottom pb-2">Recent Updates</h5>
+                    <div class="d-flex flex-column gap-3" id="sidebar-news">
+                        <!-- Dynamic list -->
+                    </div>
+                </div>
+                
+                <!-- Quick Apply -->
+                <div class="bg-primary text-white p-4 rounded shadow-sm border mb-4" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;">
+                    <h5 class="fw-bold text-white mb-2"><i class="fa-solid fa-graduation-cap text-warning me-2"></i> Admissions 2026-27</h5>
+                    <p class="small text-white-50 mb-4">Register your seat online today. Early registration grants access to weekend mock testing sets beforehand.</p>
+                    <div class="d-grid">
+                        <a href="admission.html" class="btn btn-secondary text-white btn-sm py-2">Apply Online Now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer Placeholder -->
+<div id="footer-placeholder"></div>
+
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- JS Database and Components Loader -->
+<script src="assets/js/db.js"></script>
+<script src="assets/js/components.js"></script>
+<script src="assets/js/main.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (!window.DB) return;
+    
+    const db = window.DB;
+    const params = new URLSearchParams(window.location.search);
+    const slug = params.get('slug');
+    
+    const article = db.getNewsBySlug(slug);
+    
+    if (!article) {
+        document.title = "Article Not Found - Success Academy";
+        document.querySelector('body').innerHTML = `
+            <div id="header-placeholder"></div>
+            <div class="container text-center py-5">
+                <h2 class="fw-bold mb-3">Article Not Found</h2>
+                <p class="text-muted">The guide you are trying to reach has been archived or deleted.</p>
+                <a href="blog.html" class="btn btn-primary mt-3">Back to Blog</a>
+            </div>
+            <div id="footer-placeholder"></div>
+        `;
+        // Reload components
+        const event = new Event('DOMContentLoaded');
+        document.dispatchEvent(event);
+        return;
+    }
+    
+    // Bind main elements
+    document.title = article.title + " - Success Academy";
+    document.getElementById('art-title').innerText = article.title;
+    document.getElementById('art-category').innerText = article.category;
+    document.getElementById('art-date').innerText = new Date(article.published_date).toLocaleDateString('en-IN', {
+        day: '2-digit', month: 'short', year: 'numeric'
+    });
+    document.getElementById('art-cover').src = article.image_path;
+    document.getElementById('art-content').innerHTML = article.content;
+    
+    // Bind recent articles in sidebar
+    const sidebarGrid = document.getElementById('sidebar-news');
+    if (sidebarGrid) {
+        const recent = db.getNews().filter(n => n.slug !== slug).slice(0, 4);
+        if (recent.length === 0) {
+            sidebarGrid.innerHTML = '<span class="text-muted small">No other recent articles.</span>';
+        } else {
+            let sidebarHtml = '';
+            recent.forEach(ra => {
+                const raDate = new Date(ra.published_date).toLocaleDateString('en-IN', {
+                    day: '2-digit', month: 'short', year: 'numeric'
+                });
+                sidebarHtml += `
+                    <div>
+                        <h6 class="fw-bold mb-1" style="font-size: 0.95rem;">
+                            <a href="blog-details.html?slug=${ra.slug}" class="text-dark text-primary-hover">${ra.title}</a>
+                        </h6>
+                        <small class="text-muted"><i class="fa-regular fa-calendar me-1"></i> ${raDate}</small>
+                    </div>
+                `;
+            });
+            sidebarGrid.innerHTML = sidebarHtml;
+        }
+    }
+});
+</script>
+
+</body>
+</html>

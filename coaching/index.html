@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Success Academy - Best Coaching for IIT-JEE, NEET, CUET & Foundation</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom Style Sheet -->
+    <link href="assets/css/style.css?v=2" rel="stylesheet">
+</head>
+<body>
+
+<!-- Header Placeholder -->
+<div id="header-placeholder"></div>
+
+<!-- 1. Hero Slider (Bootstrap Carousel) -->
+<div id="heroCarousel" class="carousel slide hero-slider-section" data-bs-ride="carousel">
+    <div class="carousel-indicators">
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+    </div>
+    <div class="carousel-inner">
+        <!-- Slide 1 -->
+        <div class="carousel-item active hero-slide" style="background-image: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1200');">
+            <div class="container">
+                <div class="hero-content text-start">
+                    <span class="badge bg-warning text-dark mb-3 px-3 py-2 fw-bold text-uppercase"><i class="fa-solid fa-graduation-cap me-1"></i> Admissions Open 2026-27</span>
+                    <h1 class="hero-title text-white">Unlock Your Potential for <span>IIT-JEE &amp; NEET</span></h1>
+                    <p class="hero-lead">Learn from India's top academic minds, solve rigorous assignments, and secure your seat in premier engineering and medical institutes.</p>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <a href="admission.html" class="btn btn-secondary btn-lg">Enroll Online Now</a>
+                        <a href="#quickEnquirySection" class="btn btn-outline-light btn-lg">Book Free Demo Class</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Slide 2 -->
+        <div class="carousel-item hero-slide" style="background-image: url('https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?q=80&w=1200');">
+            <div class="container">
+                <div class="hero-content text-start">
+                    <span class="badge bg-warning text-dark mb-3 px-3 py-2 fw-bold text-uppercase"><i class="fa-solid fa-star me-1"></i> Foundation Programs</span>
+                    <h1 class="hero-title text-white">Building Strong <span>Academic Roots</span></h1>
+                    <p class="hero-lead">Comprehensive pre-foundation courses for Class 6th to 10th. Excel in Olympiads, NTSE, and School Board Examinations with confidence.</p>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <a href="courses.html?cat=Foundation" class="btn btn-secondary btn-lg">Explore Courses</a>
+                        <a href="contact.html" class="btn btn-outline-light btn-lg">Contact Center</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Slide 3 -->
+        <div class="carousel-item hero-slide" style="background-image: url('https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=1200');">
+            <div class="container">
+                <div class="hero-content text-start">
+                    <span class="badge bg-warning text-dark mb-3 px-3 py-2 fw-bold text-uppercase"><i class="fa-solid fa-building-columns me-1"></i> Civil Services &amp; Govt Exams</span>
+                    <h1 class="hero-title text-white">Targeting <span>UPSC, SSC &amp; Banking</span></h1>
+                    <p class="hero-lead">Specialized batches with comprehensive GS coverage, current affairs reviews, speed math tricks, and weekly test evaluations.</p>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <a href="admission.html" class="btn btn-secondary btn-lg">Apply Online</a>
+                        <a href="about.html" class="btn btn-outline-light btn-lg">Why Choose Us</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+    </button>
+</div>
+
+<!-- 2. Highlights -->
+<section class="py-5 bg-white">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h6 class="text-secondary text-uppercase fw-bold mb-2">Our Pillars of Excellence</h6>
+            <h2 class="fw-bold">Success Academy Highlights</h2>
+            <div class="mx-auto bg-secondary mt-2" style="width: 60px; height: 3px;"></div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="highlight-card text-center">
+                    <div class="highlight-icon mx-auto"><i class="fa-solid fa-chalkboard-user"></i></div>
+                    <h5 class="fw-bold">Expert Mentors</h5>
+                    <p class="text-muted small mb-0">Learn from seasoned academicians including IITians, AIIMS graduates, and experienced government selectors.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="highlight-card text-center">
+                    <div class="highlight-icon mx-auto"><i class="fa-solid fa-book-open"></i></div>
+                    <h5 class="fw-bold">NCERT+ Curriculum</h5>
+                    <p class="text-muted small mb-0">Strictly aligned study materials with daily practice questions (DPPs) and detailed theory packages.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="highlight-card text-center">
+                    <div class="highlight-icon mx-auto"><i class="fa-solid fa-desktop"></i></div>
+                    <h5 class="fw-bold">Computer-Based Mock</h5>
+                    <p class="text-muted small mb-0">Simulated test engine mimicking NTA JEE/NEET patterns, with advanced analytical scorecards.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="highlight-card text-center">
+                    <div class="highlight-icon mx-auto"><i class="fa-solid fa-people-roof"></i></div>
+                    <h5 class="fw-bold">Hostel &amp; Library</h5>
+                    <p class="text-muted small mb-0">Safe residential options and 12-hour air-conditioned reference reading rooms for uninterrupted studies.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 3. Why Choose Us -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <h6 class="text-secondary text-uppercase fw-bold mb-2">Why Choose Success Academy</h6>
+                <h2 class="fw-bold mb-4">Empowering Minds, Delivering Results</h2>
+                <p class="text-muted">Success Academy has been a trust mark for parents and students in Northern and Central India. Our structured coaching methodology bridges school board concepts with competitive standards seamlessly.</p>
+                
+                <ul class="list-unstyled mt-4">
+                    <li class="d-flex mb-3">
+                        <i class="fa-solid fa-circle-check text-success fs-5 me-3 mt-1"></i>
+                        <div>
+                            <h6 class="fw-bold mb-1">Small Batch Size &amp; Personal Attention</h6>
+                            <p class="text-muted small mb-0">We maintain limited student count per batch to ensure doubt sessions are accessible to everyone.</p>
+                        </div>
+                    </li>
+                    <li class="d-flex mb-3">
+                        <i class="fa-solid fa-circle-check text-success fs-5 me-3 mt-1"></i>
+                        <div>
+                            <h6 class="fw-bold mb-1">Bi-weekly Parent-Teacher Interactions</h6>
+                            <p class="text-muted small mb-0">Detailed automated SMS feedback updates regarding student performance, marks, and attendance.</p>
+                        </div>
+                    </li>
+                    <li class="d-flex mb-3">
+                        <i class="fa-solid fa-circle-check text-success fs-5 me-3 mt-1"></i>
+                        <div>
+                            <h6 class="fw-bold mb-1">Special Board Answer Writing Practice</h6>
+                            <p class="text-muted small mb-0">Intense writing sessions for CBSE/ICSE board students to score 95%+ in theoretical papers.</p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-lg-6">
+                <!-- Statistics Blocks -->
+                <div class="row g-4 text-center">
+                    <div class="col-6">
+                        <div class="bg-white p-4 rounded-3 border shadow-sm">
+                            <h3 class="stat-number mb-1 text-primary">15K+</h3>
+                            <h6 class="fw-bold mb-0">Students Coached</h6>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="bg-white p-4 rounded-3 border shadow-sm">
+                            <h3 class="stat-number mb-1 text-primary">500+</h3>
+                            <h6 class="fw-bold mb-0">IIT-JEE Selections</h6>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="bg-white p-4 rounded-3 border shadow-sm">
+                            <h3 class="stat-number mb-1 text-primary">750+</h3>
+                            <h6 class="fw-bold mb-0">NEET Selections</h6>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="bg-white p-4 rounded-3 border shadow-sm">
+                            <h3 class="stat-number mb-1 text-primary">98%</h3>
+                            <h6 class="fw-bold mb-0">Board Success Rate</h6>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 4. Courses Offered (Popular Grid) -->
+<section class="py-5 bg-white">
+    <div class="container">
+        <div class="d-md-flex justify-content-between align-items-end mb-5">
+            <div>
+                <h6 class="text-secondary text-uppercase fw-bold mb-2">Our Programs</h6>
+                <h2 class="fw-bold mb-0">Popular Coaching Programs</h2>
+            </div>
+            <a href="courses.html" class="btn btn-outline-primary mt-3 mt-md-0">View All Courses <i class="fa-solid fa-arrow-right ms-2"></i></a>
+        </div>
+        
+        <div class="row g-4" id="popular-courses-grid">
+            <!-- Populated via Javascript -->
+        </div>
+    </div>
+</section>
+
+<!-- 5. Performance Stats Banner -->
+<section class="stats-section">
+    <div class="container text-center">
+        <h2 class="fw-bold mb-4">Our Performance in Numbers</h2>
+        <div class="row g-4">
+            <div class="col-md-3 col-6">
+                <div class="stat-item">
+                    <div class="stat-number">12+</div>
+                    <div class="stat-label">Years of Trust</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-item">
+                    <div class="stat-number">95.4%</div>
+                    <div class="stat-label">Avg Board Marks</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-item">
+                    <div class="stat-number">AIR 14</div>
+                    <div class="stat-label">JEE Top Rank</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="stat-item">
+                    <div class="stat-number">250+</div>
+                    <div class="stat-label">Government Jobs</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 6. Success Stories / Top Rankers -->
+<section class="py-5 bg-white">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h6 class="text-secondary text-uppercase fw-bold mb-2">Our Champions</h6>
+            <h2 class="fw-bold">Success Academy Hall of Fame</h2>
+            <div class="mx-auto bg-secondary mt-2" style="width: 60px; height: 3px;"></div>
+        </div>
+        
+        <div class="row g-4" id="rankers-grid">
+            <!-- Populated via Javascript -->
+        </div>
+        
+        <div class="text-center mt-5">
+            <a href="results.html" class="btn btn-outline-primary px-4 py-2">View All Rankers &amp; Testimonies</a>
+        </div>
+    </div>
+</section>
+
+<!-- 7. Upcoming Batches & Announcements -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row g-5">
+            <!-- Left: Ticker table of upcoming batches -->
+            <div class="col-lg-7">
+                <h4 class="fw-bold mb-4 text-primary-dark"><i class="fa-solid fa-calendar-days text-secondary me-2"></i> Upcoming Batches (2026-27)</h4>
+                <div class="table-responsive bg-white rounded-3 shadow-sm p-3 border">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Course</th>
+                                <th>Target Date</th>
+                                <th>Timings</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>JEE Target Batch</strong></td>
+                                <td>15-Jul-2026</td>
+                                <td>08:00 AM - 12:00 PM</td>
+                                <td><span class="badge bg-success">Filling Fast</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>NEET Repeater Batch</strong></td>
+                                <td>22-Jul-2026</td>
+                                <td>01:00 PM - 05:00 PM</td>
+                                <td><span class="badge bg-warning text-dark">Seats Available</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Class 10 Foundation</strong></td>
+                                <td>18-Jul-2026</td>
+                                <td>04:00 PM - 07:00 PM</td>
+                                <td><span class="badge bg-success">Filling Fast</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>UPSC GS Prelims</strong></td>
+                                <td>01-Aug-2026</td>
+                                <td>09:00 AM - 01:00 PM</td>
+                                <td><span class="badge bg-primary">Registrations Open</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>SSC CGL Batch-D</strong></td>
+                                <td>25-Jul-2026</td>
+                                <td>10:00 AM - 01:00 PM</td>
+                                <td><span class="badge bg-danger">Closed</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Right: Latest News -->
+            <div class="col-lg-5">
+                <h4 class="fw-bold mb-4 text-primary-dark"><i class="fa-solid fa-bullhorn text-secondary me-2"></i> Latest News &amp; Updates</h4>
+                <div class="d-flex flex-column gap-3" id="news-grid">
+                    <!-- Populated via Javascript -->
+                </div>
+                <div class="text-end mt-3">
+                    <a href="blog.html" class="text-primary font-weight-bold">Read All News Articles <i class="fa-solid fa-chevron-right fs-7 ms-1"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 8. Testimonials Section -->
+<section class="py-5 bg-white">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h6 class="text-secondary text-uppercase fw-bold mb-2">Student Reviews</h6>
+            <h2 class="fw-bold">What Our Students Say</h2>
+            <div class="mx-auto bg-secondary mt-2" style="width: 60px; height: 3px;"></div>
+        </div>
+        
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div id="testimonialCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner" id="testimonials-carousel-inner">
+                        <!-- Populated via Javascript -->
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="prev" style="filter: invert(1); width: 5%;">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="next" style="filter: invert(1); width: 5%;">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 9. FAQ Section -->
+<section class="py-5 bg-light">
+    <div class="container" style="max-width: 900px;">
+        <div class="text-center mb-5">
+            <h6 class="text-secondary text-uppercase fw-bold mb-2">Have Questions?</h6>
+            <h2 class="fw-bold">Frequently Asked Questions</h2>
+            <div class="mx-auto bg-secondary mt-2" style="width: 60px; height: 3px;"></div>
+        </div>
+        
+        <div class="accordion" id="faqAccordion">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingOne">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                        How can I book a free demo class?
+                    </button>
+                </h2>
+                <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        You can book a free demo class by filling out the Quick Enquiry Form on the right of the contact section, or by calling our counselor directly at +91 98765 43210.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingTwo">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                        What is the mode of instructions (Offline vs Online)?
+                    </button>
+                </h2>
+                <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        We primarily focus on rigorous classroom offline programs in our modern campus in Vidya Nagar, Jaipur. However, we also provide live online interactive sessions and recorded backup lectures for all major modules.
+                    </div>
+                </div>
+            </div>
+            
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingThree">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                        Is there a scholarship entrance test?
+                    </button>
+                </h2>
+                <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        Yes, Success Academy hosts the Scholarship Entrance Test (SET) twice a year. High rankers can win up to 100% tuition fee waivers. Check our latest blog updates for dates.
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingFour">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                        Do you provide study materials and tests?
+                    </button>
+                </h2>
+                <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#faqAccordion">
+                    <div class="accordion-body">
+                        Yes, our courses include complete physical study books, topic-wise practice sheets (DPPs), and weekly computer-based test series with performance reports.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 10. Contact / Quick Enquiry Section -->
+<section id="quickEnquirySection" class="py-5 bg-white border-top">
+    <div class="container">
+        <div class="row g-5">
+            <!-- Left: Contact Details -->
+            <div class="col-lg-6">
+                <h6 class="text-secondary text-uppercase fw-bold mb-2">Connect Now</h6>
+                <h2 class="fw-bold mb-4">Admissions &amp; General Enquiries</h2>
+                <p class="text-muted mb-4">Have doubts about selecting a career path? Speak with our experienced counselors. Walk into our campus for an absolute free counselling session.</p>
+                
+                <div class="d-flex gap-3 mb-4">
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; min-width: 50px;">
+                        <i class="fa-solid fa-location-dot"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1">Campus Address</h6>
+                        <p class="text-muted small mb-0" id="info-address">Building No. 45, Vidya Nagar, Near Central Library, Jaipur, Rajasthan - 302015</p>
+                    </div>
+                </div>
+                
+                <div class="d-flex gap-3 mb-4">
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; min-width: 50px;">
+                        <i class="fa-solid fa-phone"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1">Counsellor Contact Details</h6>
+                        <p class="text-muted small mb-0">Call: <a href="#" id="info-phone">+91 98765 43210</a><br>WhatsApp: <a href="#" id="info-whatsapp">+91 98765 43210</a></p>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-3">
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; min-width: 50px;">
+                        <i class="fa-solid fa-envelope"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-1">Email Helpline</h6>
+                        <p class="text-muted small mb-0"><a href="#" id="info-email">info@successacademy.co.in</a></p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right: Quick Enquiry Form -->
+            <div class="col-lg-6">
+                <div class="bg-light p-4 rounded-3 border">
+                    <h5 class="fw-bold text-primary-dark mb-3"><i class="fa-solid fa-graduation-cap text-secondary me-2"></i> Book a Free Demo / Enquiry Form</h5>
+                    
+                    <div id="enquiryAlert" class="alert alert-success" style="display:none;"></div>
+                    
+                    <form id="quickEnquiryForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="eq_name" class="form-label small">Student Name *</label>
+                                <input type="text" class="form-control form-control-sm" id="eq_name" placeholder="Enter Full Name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="eq_phone" class="form-label small">Mobile Number *</label>
+                                <input type="tel" class="form-control form-control-sm" id="eq_phone" placeholder="10-digit number" required>
+                            </div>
+                            <div class="col-md-12">
+                                <label for="eq_email" class="form-label small">Email Address *</label>
+                                <input type="email" class="form-control form-control-sm" id="eq_email" placeholder="student@gmail.com" required>
+                            </div>
+                            <div class="col-md-12">
+                                <label for="eq_course" class="form-label small">Select Program of Interest *</label>
+                                <select class="form-select form-select-sm" id="eq_course" required>
+                                    <!-- Dynamic options -->
+                                </select>
+                            </div>
+                            <div class="col-md-12">
+                                <label for="eq_msg" class="form-label small">Questions/Remarks (Optional)</label>
+                                <textarea class="form-control form-control-sm" id="eq_msg" rows="3" placeholder="Describe query..."></textarea>
+                            </div>
+                        </div>
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-secondary text-white btn-sm py-2"><i class="fa-solid fa-paper-plane me-2"></i> Submit Enquiry</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer Placeholder -->
+<div id="footer-placeholder"></div>
+
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- JS Database and Components Loader -->
+<script src="assets/js/db.js"></script>
+<script src="assets/js/components.js"></script>
+<script src="assets/js/main.js"></script>
+
+<!-- Inline Data Binder -->
+<script>
+document.addEventListener('SA_DB_Ready', renderHome);
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.DB) renderHome();
+});
+
+function renderHome() {
+    const db = window.DB;
+    const settings = db.getSettings();
+    
+    // Bind contact tags
+    document.getElementById('info-address').innerText = settings.office_address;
+    document.getElementById('info-phone').href = "tel:" + settings.contact_phone.replace(/\s+/g, '');
+    document.getElementById('info-phone').innerText = settings.contact_phone;
+    document.getElementById('info-whatsapp').href = "https://wa.me/" + settings.contact_whatsapp.replace(/[\s+]+/g, '');
+    document.getElementById('info-whatsapp').innerText = settings.contact_whatsapp;
+    document.getElementById('info-email').href = "mailto:" + settings.contact_email;
+    document.getElementById('info-email').innerText = settings.contact_email;
+    
+    // Bind Course dropdown
+    const courses = db.getCourses();
+    const dropdown = document.getElementById('eq_course');
+    if (dropdown) {
+        let options = '<option value="">-- Choose Course --</option>';
+        courses.forEach(c => {
+            options += `<option value="${c.id}">${c.title}</option>`;
+        });
+        dropdown.innerHTML = options;
+    }
+    
+    // Render Popular Courses
+    const coursesGrid = document.getElementById('popular-courses-grid');
+    if (coursesGrid) {
+        let gridHtml = '';
+        // Slice top 3 popular
+        const popular = courses.slice(0, 3);
+        popular.forEach(c => {
+            gridHtml += `
+                <div class="col-lg-4 col-md-6">
+                    <div class="course-card">
+                        <span class="course-badge">${c.category}</span>
+                        <div class="course-image">
+                            <img src="${c.image_path}" onerror="this.src='https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=400'" alt="${c.title}">
+                        </div>
+                        <div class="course-body">
+                            <div class="course-meta">
+                                <span><i class="fa-regular fa-clock"></i> ${c.duration}</span>
+                                <span><i class="fa-regular fa-calendar"></i> ${c.batch_timing}</span>
+                            </div>
+                            <h5 class="fw-bold mb-2">${c.title}</h5>
+                            <p class="text-muted small">${c.description.substring(0, 120)}...</p>
+                            
+                            <div class="mt-auto pt-3 d-flex justify-content-between align-items-center">
+                                <span class="course-price">₹${parseFloat(c.fees).toLocaleString('en-IN')}</span>
+                                <div>
+                                    <a href="admission.html?course_id=${c.id}" class="btn btn-secondary btn-sm">Enroll</a>
+                                    <a href="#quickEnquirySection" class="btn btn-outline-primary btn-sm ms-1">Enquire</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        coursesGrid.innerHTML = gridHtml;
+    }
+    
+    // Render Rankers
+    const rankersGrid = document.getElementById('rankers-grid');
+    if (rankersGrid) {
+        let rankHtml = '';
+        const rankers = db.getResults().slice(0, 3);
+        rankers.forEach(r => {
+            rankHtml += `
+                <div class="col-lg-4 col-md-6">
+                    <div class="result-card">
+                        <div class="result-img-box">
+                            <img src="${r.photo_path}" onerror="this.src='https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=400'" alt="${r.student_name}">
+                            <span class="result-rank-badge">AIR ${r.air_rank}</span>
+                        </div>
+                        <div class="result-body">
+                            <h5 class="fw-bold mb-1">${r.student_name}</h5>
+                            <p class="text-secondary fw-semibold mb-2">${r.exam_name} (${r.year})</p>
+                            <p class="badge bg-primary px-3 py-2 fs-6 mb-3">${r.score}</p>
+                            <p class="text-muted small mb-0">"${r.success_story.substring(0, 110)}..."</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        rankersGrid.innerHTML = rankHtml;
+    }
+    
+    // Render News
+    const newsGrid = document.getElementById('news-grid');
+    if (newsGrid) {
+        let newsHtml = '';
+        const articles = db.getNews().slice(0, 3);
+        articles.forEach(n => {
+            const pubDate = new Date(n.published_date);
+            const day = pubDate.getDate().toString().padStart(2, '0');
+            const month = pubDate.toLocaleString('en-IN', { month: 'short' });
+            
+            newsHtml += `
+                <a href="blog-details.html?slug=${n.slug}" class="text-decoration-none bg-white p-3 rounded border shadow-sm d-flex gap-3 align-items-start highlight-card">
+                    <div class="bg-secondary-light text-white rounded p-2 text-center" style="width: 60px; min-width: 60px;">
+                        <span class="d-block font-weight-bold fs-5">${day}</span>
+                        <span class="d-block small">${month}</span>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-dark mb-1">${n.title}</h6>
+                        <p class="text-muted small mb-0">${n.excerpt}</p>
+                    </div>
+                </a>
+            `;
+        });
+        newsGrid.innerHTML = newsHtml;
+    }
+    
+    // Render Testimonials
+    const testCarouselInner = document.getElementById('testimonials-carousel-inner');
+    if (testCarouselInner) {
+        let testHtml = '';
+        const testimonials = db.getTestimonials().slice(0, 3);
+        testimonials.forEach((t, index) => {
+            let ratingStars = '';
+            for (let i = 0; i < t.rating; i++) {
+                ratingStars += '<i class="fa-solid fa-star"></i>';
+            }
+            
+            testHtml += `
+                <div class="carousel-item ${index === 0 ? 'active' : ''}">
+                    <div class="testimonial-card text-center">
+                        <div class="testimonial-rating mb-3">
+                            ${ratingStars}
+                        </div>
+                        <p class="lead text-dark mb-4">"${t.review}"</p>
+                        <div class="d-flex justify-content-center align-items-center gap-3">
+                            <img src="${t.photo_path}" class="testimonial-avatar" onerror="this.src='https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=150'" alt="${t.student_name}">
+                            <div class="text-start">
+                                <h6 class="fw-bold mb-0 text-primary-dark">${t.student_name}</h6>
+                                <small class="text-muted">${t.course_name}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        testCarouselInner.innerHTML = testHtml;
+    }
+}
+</script>
+
+</body>
+</html>

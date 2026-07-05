@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Latest News &amp; Educational Articles - Success Academy</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom Style Sheet -->
+    <link href="assets/css/style.css?v=2" rel="stylesheet">
+</head>
+<body>
+
+<!-- Header Placeholder -->
+<div id="header-placeholder"></div>
+
+<!-- Banner Section -->
+<section class="bg-primary text-white py-5 text-center" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;">
+    <div class="container">
+        <h1 class="fw-bold display-4">Blog &amp; Exam Updates</h1>
+        <p class="lead mb-0">Stay informed with latest syllabus changes, exam dates, scholarship tests, and tips.</p>
+    </div>
+</section>
+
+<!-- Blog Cards Section -->
+<section class="py-5 bg-white">
+    <div class="container">
+        
+        <!-- Filter Tabs -->
+        <div class="d-flex justify-content-center flex-wrap mb-5" id="blog-filters">
+            <button class="gallery-filter-btn active" data-cat="all">All Articles</button>
+            <button class="gallery-filter-btn" data-cat="articles">Preparation Guides</button>
+            <button class="gallery-filter-btn" data-cat="exam_updates">Exam Updates</button>
+            <button class="gallery-filter-btn" data-cat="scholarship">Scholarships</button>
+        </div>
+        
+        <div class="row g-4" id="blog-articles-grid">
+            <!-- Dynamic cards -->
+        </div>
+        
+    </div>
+</section>
+
+<!-- Footer Placeholder -->
+<div id="footer-placeholder"></div>
+
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- JS Database and Components Loader -->
+<script src="assets/js/db.js"></script>
+<script src="assets/js/components.js"></script>
+<script src="assets/js/main.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (!window.DB) return;
+    
+    const db = window.DB;
+    const filterButtons = document.querySelectorAll('#blog-filters .gallery-filter-btn');
+    
+    filterButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            filterButtons.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            renderBlog(this.getAttribute('data-cat'));
+        });
+    });
+    
+    // Check url search parameter
+    const params = new URLSearchParams(window.location.search);
+    const cat = params.get('cat') || 'all';
+    
+    filterButtons.forEach(btn => {
+        if (btn.getAttribute('data-cat') === cat) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    
+    renderBlog(cat);
+});
+
+function renderBlog(cat) {
+    const db = window.DB;
+    const list = db.getNews(cat);
+    const grid = document.getElementById('blog-articles-grid');
+    if (!grid) return;
+    
+    if (list.length === 0) {
+        grid.innerHTML = '<div class="col-12 text-center py-5 text-muted"><h5>No articles found in this category.</h5></div>';
+        return;
+    }
+    
+    let gridHtml = '';
+    list.forEach(art => {
+        const pubDate = new Date(art.published_date).toLocaleDateString('en-IN', {
+            day: '2-digit', month: 'short', year: 'numeric'
+        });
+        
+        gridHtml += `
+            <div class="col-lg-4 col-md-6">
+                <div class="news-card border shadow-sm">
+                    <div class="news-card-img">
+                        <img src="${art.image_path}" onerror="this.src='https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=400'" alt="${art.title}">
+                    </div>
+                    <div class="news-card-body">
+                        <div class="news-meta">
+                            <span><i class="fa-regular fa-calendar me-1"></i> ${pubDate}</span>
+                            <span class="badge bg-light text-primary text-uppercase">${art.category}</span>
+                        </div>
+                        <h4 class="news-title fw-bold text-primary-dark">
+                            <a href="blog-details.html?slug=${art.slug}" class="text-dark text-primary-hover">${art.title}</a>
+                        </h4>
+                        <p class="text-muted small mb-4">${art.excerpt}</p>
+                        
+                        <div class="mt-auto pt-3 border-top">
+                            <a href="blog-details.html?slug=${art.slug}" class="text-primary fw-bold small">Read Full Guide <i class="fa-solid fa-arrow-right ms-1"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    grid.innerHTML = gridHtml;
+}
+</script>
+
+</body>
+</html>

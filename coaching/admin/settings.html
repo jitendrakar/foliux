@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configure Settings - Success Academy Admin</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Admin custom styling -->
+    <link href="../assets/css/admin-style.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="admin-wrapper">
+    <!-- Sidebar Placeholder -->
+    <div id="admin-sidebar-placeholder"></div>
+    
+    <div class="admin-content-area">
+        <!-- Header Placeholder -->
+        <div id="admin-header-placeholder"></div>
+        
+        <div class="admin-body">
+            
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="fw-bold mb-0 text-primary-dark"><i class="fa-solid fa-gears text-secondary me-2"></i> Website Configuration Settings</h5>
+                </div>
+                
+                <div class="card-body">
+                    <div id="settingsAlert" class="alert alert-success" style="display:none;" role="alert"></div>
+                    
+                    <form id="settingsForm">
+                        <div class="row g-3">
+                            <!-- Brand settings -->
+                            <div class="col-12"><h6 class="fw-bold text-primary border-bottom pb-2 mb-0">General Brand Identity</h6></div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label small">Institute Name *</label>
+                                <input type="text" class="form-control" id="s_site_name" required>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label small">Admissions Badge Toggle</label>
+                                <div class="form-check form-switch mt-2">
+                                    <input class="form-check-input" type="checkbox" id="s_admission_status">
+                                    <label class="form-check-label small" for="s_admission_status">Enable "Admissions Open 2026-27" ribbons</label>
+                                </div>
+                            </div>
+                            
+                            <!-- Contact info -->
+                            <div class="col-12 mt-4"><h6 class="fw-bold text-primary border-bottom pb-2 mb-0">Office Contact Details &amp; Hours</h6></div>
+                            
+                            <div class="col-md-4">
+                                <label class="form-label small">Direct Call Helpline *</label>
+                                <input type="text" class="form-control" id="s_contact_phone" required>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label class="form-label small">WhatsApp Business Helpline *</label>
+                                <input type="text" class="form-control" id="s_contact_whatsapp" required>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label class="form-label small">Helpline Email Desk *</label>
+                                <input type="email" class="form-control" id="s_contact_email" required>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label small">Office Hours Text *</label>
+                                <input type="text" class="form-control" id="s_working_hours" required>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label small">Full Office Address *</label>
+                                <textarea class="form-control" id="s_office_address" rows="1" required></textarea>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label class="form-label small">Google Maps Iframe Embed Code</label>
+                                <textarea class="form-control" id="s_maps_embed" rows="3"></textarea>
+                                <div class="form-text text-muted small">Insert the complete <code>&lt;iframe&gt;</code> embed block copied from Google Maps share options.</div>
+                            </div>
+                            
+                            <!-- Social media -->
+                            <div class="col-12 mt-4"><h6 class="fw-bold text-primary border-bottom pb-2 mb-0">Social Media Integrations</h6></div>
+                            
+                            <div class="col-md-4">
+                                <label class="form-label small">Facebook Profile URL</label>
+                                <input type="url" class="form-control" id="s_facebook_url">
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label class="form-label small">Instagram Profile URL</label>
+                                <input type="url" class="form-control" id="s_instagram_url">
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label class="form-label small">YouTube Channel URL</label>
+                                <input type="url" class="form-control" id="s_youtube_url">
+                            </div>
+                            
+                            <!-- SEO meta tags -->
+                            <div class="col-12 mt-4"><h6 class="fw-bold text-primary border-bottom pb-2 mb-0">Search Engine Optimization (SEO)</h6></div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label small">Global Homepage Title Tag</label>
+                                <input type="text" class="form-control" id="s_meta_title">
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label small">Global Meta Description Tag</label>
+                                <textarea class="form-control" id="s_meta_description" rows="2"></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 border-top pt-3">
+                            <button type="submit" class="btn btn-secondary text-white px-4 py-2">Update Global Configurations</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+        </div> <!-- Close admin-body -->
+        
+        <!-- Footer Placeholder -->
+        <div id="admin-footer-placeholder"></div>
+    </div> <!-- Close admin-content-area -->
+</div> <!-- Close admin-wrapper -->
+
+<!-- Scripts -->
+<script src="../assets/js/db.js"></script>
+<script src="admin-auth.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (!window.DB) return;
+    
+    const db = window.DB;
+    const settings = db.getSettings();
+    
+    // Populate form
+    document.getElementById('s_site_name').value = settings.site_name;
+    document.getElementById('s_admission_status').checked = settings.admission_status == 1;
+    document.getElementById('s_contact_phone').value = settings.contact_phone;
+    document.getElementById('s_contact_whatsapp').value = settings.contact_whatsapp;
+    document.getElementById('s_contact_email').value = settings.contact_email;
+    document.getElementById('s_working_hours').value = settings.working_hours;
+    document.getElementById('s_office_address').value = settings.office_address;
+    document.getElementById('s_maps_embed').value = settings.maps_embed;
+    document.getElementById('s_facebook_url').value = settings.facebook_url || '';
+    document.getElementById('s_instagram_url').value = settings.instagram_url || '';
+    document.getElementById('s_youtube_url').value = settings.youtube_url || '';
+    document.getElementById('s_meta_title').value = settings.meta_title || '';
+    document.getElementById('s_meta_description').value = settings.meta_description || '';
+    
+    // Form submit handler
+    document.getElementById('settingsForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const updated = db.saveSettings({
+            site_name: document.getElementById('s_site_name').value.trim(),
+            admission_status: document.getElementById('s_admission_status').checked ? 1 : 0,
+            contact_phone: document.getElementById('s_contact_phone').value.trim(),
+            contact_whatsapp: document.getElementById('s_contact_whatsapp').value.trim(),
+            contact_email: document.getElementById('s_contact_email').value.trim(),
+            working_hours: document.getElementById('s_working_hours').value.trim(),
+            office_address: document.getElementById('s_office_address').value.trim(),
+            maps_embed: document.getElementById('s_maps_embed').value.trim(),
+            facebook_url: document.getElementById('s_facebook_url').value.trim(),
+            instagram_url: document.getElementById('s_instagram_url').value.trim(),
+            youtube_url: document.getElementById('s_youtube_url').value.trim(),
+            meta_title: document.getElementById('s_meta_title').value.trim(),
+            meta_description: document.getElementById('s_meta_description').value.trim()
+        });
+        
+        if (updated) {
+            const alertBox = document.getElementById('settingsAlert');
+            alertBox.innerText = 'Website configurations updated successfully!';
+            alertBox.style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            setTimeout(() => { alertBox.style.display = 'none'; }, 4000);
+        }
+    });
+});
+</script>
+</body>
+</html>

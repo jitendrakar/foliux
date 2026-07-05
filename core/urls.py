@@ -161,6 +161,10 @@ urlpatterns = [
     path('bcp/', views.serve_bcp, {'path': ''}, name='serve_bcp_root'),
     path('bcp/<path:path>', views.serve_bcp, name='serve_bcp_files'),
     
+    # Coaching Routing
+    path('coaching/', views.serve_coaching, {'path': ''}, name='serve_coaching_root'),
+    path('coaching/<path:path>', views.serve_coaching, name='serve_coaching_files'),
+    
     # BCP APIs (Matching bcp/public/script.js relative fetch requests)
     path('api/menu', views.bcp_api_menu, name='bcp_api_menu'),
     path('api/orders', views.bcp_api_orders, name='bcp_api_orders'),

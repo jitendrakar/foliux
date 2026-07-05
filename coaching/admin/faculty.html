@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Faculty - Success Academy Admin</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Admin custom styling -->
+    <link href="../assets/css/admin-style.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="admin-wrapper">
+    <!-- Sidebar Placeholder -->
+    <div id="admin-sidebar-placeholder"></div>
+    
+    <div class="admin-content-area">
+        <!-- Header Placeholder -->
+        <div id="admin-header-placeholder"></div>
+        
+        <div class="admin-body">
+            
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center" id="faculty-header-box">
+                    <!-- Dynamic Header -->
+                </div>
+                
+                <div class="card-body">
+                    <!-- LIST SECTION -->
+                    <div id="faculty-list-view" class="table-responsive" style="display:none;">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Subject</th>
+                                    <th>Qualification</th>
+                                    <th>Experience</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="faculty-tbody">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- FORM SECTION -->
+                    <div id="faculty-form-view" style="display:none;">
+                        <form id="facultyForm">
+                            <input type="hidden" id="f_id" value="0">
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label font-weight-bold">Faculty Name *</label>
+                                    <input type="text" class="form-control" id="f_name" placeholder="e.g. Dr. Amit Patel" required>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label class="form-label">Subject Expertise *</label>
+                                    <input type="text" class="form-control" id="f_subject" placeholder="e.g. Physics, Chemistry, Biology" required>
+                                </div>
+                                
+                                <div class="col-md-8">
+                                    <label class="form-label">Qualification *</label>
+                                    <input type="text" class="form-control" id="f_qualification" placeholder="e.g. Ph.D. (IIT Delhi), MBBS (AIIMS)" required>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <label class="form-label">Teaching Experience</label>
+                                    <input type="text" class="form-control" id="f_experience" placeholder="e.g. 10+ Years">
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="form-check form-switch mt-2">
+                                        <input class="form-check-input" type="checkbox" id="f_status" checked>
+                                        <label class="form-check-label" for="f_status">Make Profile Active (Visible on Faculty page)</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-secondary text-white px-4">Save Faculty Profile</button>
+                                <a href="faculty.html" class="btn btn-light border ms-2">Cancel</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+        </div> <!-- Close admin-body -->
+        
+        <!-- Footer Placeholder -->
+        <div id="admin-footer-placeholder"></div>
+    </div> <!-- Close admin-content-area -->
+</div> <!-- Close admin-wrapper -->
+
+<!-- Scripts -->
+<script src="../assets/js/db.js"></script>
+<script src="admin-auth.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- CRUD script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (!window.DB) return;
+    
+    const db = window.DB;
+    const params = new URLSearchParams(window.location.search);
+    const act = params.get('act') || 'list';
+    const id = parseInt(params.get('id') || 0);
+    
+    const headerBox = document.getElementById('faculty-header-box');
+    const listView = document.getElementById('faculty-list-view');
+    const formView = document.getElementById('faculty-form-view');
+    
+    if (act === 'list') {
+        headerBox.innerHTML = `
+            <h5 class="fw-bold mb-0 text-primary-dark"><i class="fa-solid fa-chalkboard-user text-secondary me-2"></i> Faculty Database Management</h5>
+            <a href="faculty.html?act=add" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus me-1"></i> Add Faculty Profile</a>
+        `;
+        listView.style.display = 'block';
+        
+        const tbody = document.getElementById('faculty-tbody');
+        const list = db.getAllFacultyAdmin();
+        
+        if (list.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">No faculty members registered.</td></tr>';
+        } else {
+            let rows = '';
+            list.forEach(f => {
+                rows += `
+                    <tr>
+                        <td><strong>${f.name}</strong></td>
+                        <td><span class="badge bg-light text-primary border">${f.subject}</span></td>
+                        <td><small>${f.qualification}</small></td>
+                        <td>${f.experience}</td>
+                        <td>
+                            <span class="badge ${f.status == 1 ? 'bg-success' : 'bg-secondary'}">
+                                ${f.status == 1 ? 'Active' : 'Hidden'}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <a href="faculty.html?act=edit&id=${f.id}" class="btn btn-outline-primary btn-sm me-1"><i class="fa-solid fa-pen-to-square"></i></a>
+                            <button class="btn btn-outline-danger btn-sm" onclick="deleteFaculty(${f.id})"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = rows;
+        }
+        
+    } else if (act === 'add' || act === 'edit') {
+        headerBox.innerHTML = `
+            <h5 class="fw-bold mb-0 text-primary-dark"><i class="fa-solid fa-chalkboard-user text-secondary me-2"></i> ${act === 'add' ? 'Add Faculty Profile' : 'Edit Faculty Profile'}</h5>
+            <a href="faculty.html" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-arrow-left me-1"></i> Back to List</a>
+        `;
+        formView.style.display = 'block';
+        
+        if (act === 'edit' && id > 0) {
+            const fac = db.getFacultyById(id);
+            if (fac) {
+                document.getElementById('f_id').value = fac.id;
+                document.getElementById('f_name').value = fac.name;
+                document.getElementById('f_subject').value = fac.subject;
+                document.getElementById('f_qualification').value = fac.qualification;
+                document.getElementById('f_experience').value = fac.experience;
+                document.getElementById('f_status').checked = fac.status == 1;
+            }
+        }
+        
+        // Handle Submit
+        document.getElementById('facultyForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const saved = db.saveFaculty({
+                id: parseInt(document.getElementById('f_id').value),
+                name: document.getElementById('f_name').value.trim(),
+                subject: document.getElementById('f_subject').value.trim(),
+                qualification: document.getElementById('f_qualification').value.trim(),
+                experience: document.getElementById('f_experience').value.trim(),
+                status: document.getElementById('f_status').checked
+            });
+            
+            if (saved) {
+                window.location.href = 'faculty.html';
+            }
+        });
+    }
+});
+
+// Delete helper trigger
+function deleteFaculty(id) {
+    if (confirm('Are you sure you want to delete this faculty member?')) {
+        if (window.DB && window.DB.deleteFaculty(id)) {
+            window.location.reload();
+        }
+    }
+}
+</script>
+</body>
+</html>

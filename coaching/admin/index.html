@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Success Academy</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Admin custom styling -->
+    <link href="../assets/css/admin-style.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="admin-wrapper">
+    <!-- Sidebar Placeholder -->
+    <div id="admin-sidebar-placeholder"></div>
+    
+    <div class="admin-content-area">
+        <!-- Header Placeholder -->
+        <div id="admin-header-placeholder"></div>
+        
+        <div class="admin-body">
+            
+            <!-- KPI Counters Row -->
+            <div class="row g-4 mb-4">
+                <div class="col-xl-3 col-sm-6">
+                    <div class="kpi-card">
+                        <div>
+                            <span class="kpi-label d-block mb-1">Courses Offered</span>
+                            <span class="kpi-number" id="kpi-courses">0</span>
+                        </div>
+                        <div class="kpi-icon"><i class="fa-solid fa-book-open"></i></div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6">
+                    <div class="kpi-card">
+                        <div>
+                            <span class="kpi-label d-block mb-1">Expert Faculty</span>
+                            <span class="kpi-number" id="kpi-faculty">0</span>
+                        </div>
+                        <div class="kpi-icon"><i class="fa-solid fa-chalkboard-user"></i></div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6">
+                    <div class="kpi-card">
+                        <div>
+                            <span class="kpi-label d-block mb-1">Total Admissions</span>
+                            <span class="kpi-number" id="kpi-admissions">0</span>
+                        </div>
+                        <div class="kpi-icon"><i class="fa-solid fa-user-graduate"></i></div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6">
+                    <div class="kpi-card">
+                        <div>
+                            <span class="kpi-label d-block mb-1">User Enquiries</span>
+                            <span class="kpi-number" id="kpi-enquiries">0</span>
+                        </div>
+                        <div class="kpi-icon"><i class="fa-solid fa-envelope-open-text"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Lists Grid -->
+            <div class="row g-4">
+                <!-- Recent Admissions -->
+                <div class="col-xl-6">
+                    <div class="card border-0 shadow-sm rounded-3">
+                        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                            <h5 class="fw-bold mb-0 text-primary-dark"><i class="fa-solid fa-user-check text-secondary me-2"></i> Recent Registrations</h5>
+                            <a href="students.html" class="btn btn-outline-primary btn-sm">View All</a>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Student</th>
+                                            <th>Course</th>
+                                            <th>Status</th>
+                                            <th class="text-end">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recent-admissions-tbody">
+                                        <!-- Dynamic rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Enquiries -->
+                <div class="col-xl-6">
+                    <div class="card border-0 shadow-sm rounded-3">
+                        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+                            <h5 class="fw-bold mb-0 text-primary-dark"><i class="fa-solid fa-envelope-open-text text-secondary me-2"></i> Recent Enquiries</h5>
+                            <a href="enquiries.html" class="btn btn-outline-primary btn-sm">View All</a>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Type</th>
+                                            <th>Message</th>
+                                            <th class="text-end">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="recent-enquiries-tbody">
+                                        <!-- Dynamic rows -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div> <!-- Close admin-body -->
+        
+        <!-- Footer Placeholder -->
+        <div id="admin-footer-placeholder"></div>
+    </div> <!-- Close admin-content-area -->
+</div> <!-- Close admin-wrapper -->
+
+<!-- Scripts -->
+<script src="../assets/js/db.js"></script>
+<script src="admin-auth.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Dashboard Data binder -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (!window.DB) return;
+    
+    const db = window.DB;
+    
+    // Bind counts
+    const courses = db.getAllCoursesAdmin();
+    const faculty = db.getAllFacultyAdmin();
+    const admissions = db.getAdmissions();
+    const enquiries = db.getEnquiries();
+    
+    document.getElementById('kpi-courses').innerText = courses.length;
+    document.getElementById('kpi-faculty').innerText = faculty.length;
+    document.getElementById('kpi-admissions').innerText = admissions.length;
+    document.getElementById('kpi-enquiries').innerText = enquiries.length;
+    
+    // Bind recent admissions
+    const admissionsTbody = document.getElementById('recent-admissions-tbody');
+    const recentAdmissions = admissions.slice().reverse().slice(0, 5); // last 5
+    
+    if (recentAdmissions.length === 0) {
+        admissionsTbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted">No recent registrations.</td></tr>';
+    } else {
+        let rows = '';
+        recentAdmissions.forEach(a => {
+            let badgeClass = 'badge-pending';
+            if (a.status === 'Approved') badgeClass = 'badge-approved';
+            if (a.status === 'Rejected') badgeClass = 'badge-rejected';
+            
+            rows += `
+                <tr>
+                    <td>
+                        <div class="fw-semibold text-dark">${a.student_name}</div>
+                        <small class="text-muted">${a.mobile}</small>
+                    </td>
+                    <td class="small text-truncate" style="max-width: 150px;">${a.course_title}</td>
+                    <td><span class="badge ${badgeClass}">${a.status}</span></td>
+                    <td class="text-end">
+                        <a href="students.html?id=${a.id}" class="btn btn-light btn-sm text-primary"><i class="fa-solid fa-eye"></i></a>
+                    </td>
+                </tr>
+            `;
+        });
+        admissionsTbody.innerHTML = rows;
+    }
+    
+    // Bind recent enquiries
+    const enquiriesTbody = document.getElementById('recent-enquiries-tbody');
+    const recentEnquiries = enquiries.slice().reverse().slice(0, 5);
+    
+    if (recentEnquiries.length === 0) {
+        enquiriesTbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted">No recent enquiries.</td></tr>';
+    } else {
+        let rows = '';
+        recentEnquiries.forEach(e => {
+            rows += `
+                <tr>
+                    <td>
+                        <div class="fw-semibold text-dark">${e.name}</div>
+                        <small class="text-muted">${e.phone}</small>
+                    </td>
+                    <td><span class="badge bg-light text-primary border">${e.type}</span></td>
+                    <td class="small text-muted text-truncate" style="max-width: 150px;">${e.message}</td>
+                    <td class="text-end">
+                        <a href="enquiries.html?view=${e.id}" class="btn btn-light btn-sm text-primary"><i class="fa-solid fa-eye"></i></a>
+                    </td>
+                </tr>
+            `;
+        });
+        enquiriesTbody.innerHTML = rows;
+    }
+});
+</script>
+</body>
+</html>

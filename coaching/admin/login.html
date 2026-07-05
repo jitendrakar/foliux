@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Success Academy</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0A1931;
+            --secondary: #FF6D00;
+        }
+        body {
+            background: linear-gradient(135deg, var(--primary) 0%, #1565C0 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: sans-serif;
+            padding: 20px;
+        }
+        .login-card {
+            background-color: #FFFFFF;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 420px;
+            padding: 40px 30px;
+        }
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        .btn-primary:hover {
+            background-color: #050f21;
+            border-color: #050f21;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <div class="text-center mb-4">
+        <span class="fs-1 text-primary"><i class="fa-solid fa-user-lock"></i></span>
+        <h3 class="fw-bold mt-2 mb-0">Success Academy</h3>
+        <p class="text-muted small">Director &amp; Faculty Admin Login</p>
+    </div>
+    
+    <div id="loginError" class="alert alert-danger py-2 small" style="display:none;" role="alert"></div>
+    
+    <form id="loginForm">
+        <div class="mb-3">
+            <label for="username" class="form-label small">Username</label>
+            <input type="text" class="form-control form-control-sm" id="username" placeholder="e.g. admin" required>
+        </div>
+        
+        <div class="mb-4">
+            <label for="password" class="form-label small">Password</label>
+            <input type="password" class="form-control form-control-sm" id="password" placeholder="e.g. admin123" required>
+        </div>
+        
+        <div class="d-grid mb-3">
+            <button type="submit" class="btn btn-primary btn-sm py-2">Log In <i class="fa-solid fa-arrow-right-to-bracket ms-1"></i></button>
+        </div>
+        
+        <div class="text-center">
+            <a href="../index.html" class="text-decoration-none small text-muted"><i class="fa-solid fa-chevron-left me-1"></i> Back to Website</a>
+        </div>
+    </form>
+</div>
+
+<!-- Authentication Scripts -->
+<script src="admin-auth.js"></script>
+<script>
+document.getElementById('loginForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const user = document.getElementById('username').value.trim();
+    const pass = document.getElementById('password').value;
+    const errBox = document.getElementById('loginError');
+    
+    if (user === 'admin' && pass === 'admin123') {
+        sessionStorage.setItem('sa_admin_logged_in', 'true');
+        sessionStorage.setItem('sa_admin_name', 'Director Sir');
+        window.location.href = 'index.html';
+    } else {
+        errBox.innerText = 'Invalid Username or Password. Hint: admin / admin123';
+        errBox.style.display = 'block';
+    }
+});
+</script>
+</body>
+</html>

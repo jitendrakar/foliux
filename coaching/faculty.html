@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Expert Faculty - Success Academy</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom Style Sheet -->
+    <link href="assets/css/style.css?v=2" rel="stylesheet">
+</head>
+<body>
+
+<!-- Header Placeholder -->
+<div id="header-placeholder"></div>
+
+<!-- Banner Section -->
+<section class="bg-primary text-white py-5 text-center" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;">
+    <div class="container">
+        <h1 class="fw-bold display-4">Our Expert Faculty</h1>
+        <p class="lead mb-0">Learn from seasoned educators who have mentored thousands of top IIT-JEE &amp; NEET rankers.</p>
+    </div>
+</section>
+
+<!-- Faculty Grid Section -->
+<section class="py-5 bg-white">
+    <div class="container">
+        <div class="text-center mb-5" style="max-width: 700px; margin: 0 auto;">
+            <h6 class="text-secondary text-uppercase fw-bold mb-2">Subject Specialists</h6>
+            <h2 class="fw-bold">Mentoring with Academic Excellence</h2>
+            <div class="mx-auto bg-secondary mt-2 mb-3" style="width: 60px; height: 3px;"></div>
+            <p class="text-muted">Our core team comprises senior professors, doctorates, and engineering academicians who bring decades of combined training expertise to classrooms.</p>
+        </div>
+        
+        <div class="row g-4" id="faculty-catalog-grid">
+            <!-- Dynamic list -->
+        </div>
+        
+    </div>
+</section>
+
+<!-- Teaching Methodology Banner -->
+<section class="py-5 bg-light border-top">
+    <div class="container text-center" style="max-width: 800px;">
+        <h4 class="fw-bold mb-3 text-primary-dark">Want to experience a live classroom lecture?</h4>
+        <p class="text-muted mb-4">Book a complimentary demo seat in any of our running batches. Observe how our subject experts decompose complex numerical equations live.</p>
+        <div class="d-flex justify-content-center gap-3">
+            <a href="contact.html" class="btn btn-primary px-4 py-2">Schedule Free Class</a>
+            <a href="courses.html" class="btn btn-outline-secondary px-4 py-2">View Batches</a>
+        </div>
+    </div>
+</section>
+
+<!-- Footer Placeholder -->
+<div id="footer-placeholder"></div>
+
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- JS Database and Components Loader -->
+<script src="assets/js/db.js"></script>
+<script src="assets/js/components.js"></script>
+<script src="assets/js/main.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (!window.DB) return;
+    
+    const db = window.DB;
+    const list = db.getFaculty();
+    const grid = document.getElementById('faculty-catalog-grid');
+    if (!grid) return;
+    
+    if (list.length === 0) {
+        grid.innerHTML = '<div class="col-12 text-center text-muted py-5"><h5>No faculty profiles recorded.</h5></div>';
+        return;
+    }
+    
+    let gridHtml = '';
+    list.forEach(f => {
+        gridHtml += `
+            <div class="col-lg-4 col-md-6">
+                <div class="faculty-card border shadow-sm">
+                    <div class="faculty-img-wrapper">
+                        <img src="${f.photo_path}" onerror="this.src='https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=300'" alt="${f.name}">
+                    </div>
+                    <h4 class="fw-bold mb-1 text-primary-dark">${f.name}</h4>
+                    <p class="text-secondary fw-semibold mb-2">${f.subject}</p>
+                    
+                    <div class="bg-light p-3 rounded mb-3 border">
+                        <div class="mb-1 text-muted small"><i class="fa-solid fa-graduation-cap text-primary me-2"></i><strong>Credentials:</strong> ${f.qualification}</div>
+                        <div class="text-muted small"><i class="fa-solid fa-briefcase text-primary me-2"></i><strong>Experience:</strong> ${f.experience}</div>
+                    </div>
+                    
+                    <p class="text-muted small mb-0">Specializes in translating complicated academic derivations into simple intuitive visual mapping. Offers regular doubt sessions after lecture hours.</p>
+                </div>
+            </div>
+        `;
+    });
+    grid.innerHTML = gridHtml;
+});
+</script>
+
+</body>
+</html>

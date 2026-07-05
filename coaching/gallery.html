@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Gallery - Success Academy</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom Style Sheet -->
+    <link href="assets/css/style.css?v=2" rel="stylesheet">
+</head>
+<body>
+
+<!-- Header Placeholder -->
+<div id="header-placeholder"></div>
+
+<!-- Banner Section -->
+<section class="bg-primary text-white py-5 text-center" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;">
+    <div class="container">
+        <h1 class="fw-bold display-4">Success Academy Gallery</h1>
+        <p class="lead mb-0">Catch glimpses of life at Success Academy: classrooms, lab visits, events, and functions.</p>
+    </div>
+</section>
+
+<!-- Gallery Filter Grid -->
+<section class="py-5 bg-white">
+    <div class="container">
+        
+        <!-- Filter Tabs -->
+        <div class="d-flex justify-content-center flex-wrap mb-5" id="gallery-filters">
+            <button class="gallery-filter-btn active" data-filter="all">All Photos</button>
+            <button class="gallery-filter-btn" data-filter="campus">Campus Tour</button>
+            <button class="gallery-filter-btn" data-filter="classroom">Smart Classrooms</button>
+            <button class="gallery-filter-btn" data-filter="events">Academic Events</button>
+            <button class="gallery-filter-btn" data-filter="annual">Annual Functions</button>
+            <button class="gallery-filter-btn" data-filter="awards">Award Ceremonies</button>
+        </div>
+        
+        <!-- Gallery Grid -->
+        <div class="row g-4" id="galleryGrid">
+            <!-- Dynamic list -->
+        </div>
+        
+    </div>
+</section>
+
+<!-- Footer Placeholder -->
+<div id="footer-placeholder"></div>
+
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- JS Database and Components Loader -->
+<script src="assets/js/db.js"></script>
+<script src="assets/js/components.js"></script>
+<script src="assets/js/main.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (!window.DB) return;
+    
+    const db = window.DB;
+    const list = db.getGallery();
+    const grid = document.getElementById('galleryGrid');
+    if (!grid) return;
+    
+    if (list.length === 0) {
+        grid.innerHTML = '<div class="col-12 text-center text-muted py-5"><h5>No gallery items found.</h5></div>';
+        return;
+    }
+    
+    let gridHtml = '';
+    list.forEach(g => {
+        gridHtml += `
+            <div class="col-lg-4 col-md-6 gallery-item-wrapper" data-category="${g.category}">
+                <div class="gallery-item-card" data-img="${g.image_path}" data-title="${g.title}">
+                    <img src="${g.image_path}" onerror="this.src='https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=400'" alt="${g.title}">
+                    <div class="gallery-overlay">
+                        <span class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center fs-4 mb-2" style="width: 50px; height: 50px;"><i class="fa-solid fa-expand"></i></span>
+                        <h6 class="fw-bold mb-1 text-white">${g.title}</h6>
+                        <span class="badge bg-secondary text-uppercase fs-8">${g.category}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    grid.innerHTML = gridHtml;
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage News - Success Academy Admin</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Admin custom styling -->
+    <link href="../assets/css/admin-style.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="admin-wrapper">
+    <!-- Sidebar Placeholder -->
+    <div id="admin-sidebar-placeholder"></div>
+    
+    <div class="admin-content-area">
+        <!-- Header Placeholder -->
+        <div id="admin-header-placeholder"></div>
+        
+        <div class="admin-body">
+            
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center" id="news-header-box">
+                    <!-- Dynamic Header -->
+                </div>
+                
+                <div class="card-body">
+                    <!-- LIST SECTION -->
+                    <div id="news-list-view" class="table-responsive" style="display:none;">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Publish Date</th>
+                                    <th>Title</th>
+                                    <th>Category</th>
+                                    <th>Excerpt</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="news-tbody">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- FORM SECTION -->
+                    <div id="news-form-view" style="display:none;">
+                        <form id="newsForm">
+                            <input type="hidden" id="n_id" value="0">
+                            
+                            <div class="row g-3">
+                                <div class="col-md-8">
+                                    <label class="form-label font-weight-bold">Article Title *</label>
+                                    <input type="text" class="form-control" id="n_title" placeholder="e.g. NCERT Biology Important Diagrams for NEET" required>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <label class="form-label">Category *</label>
+                                    <select class="form-select" id="n_category" required>
+                                        <option value="articles">Educational Guide</option>
+                                        <option value="exam_updates">Exam Schedules</option>
+                                        <option value="scholarship">Scholarship Updates</option>
+                                        <option value="admission_notices">Admissions Notices</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <label class="form-label">Publication Date *</label>
+                                    <input type="date" class="form-control" id="n_date" required>
+                                </div>
+                                
+                                <div class="col-md-8">
+                                    <label class="form-label">Brief Excerpt *</label>
+                                    <input type="text" class="form-control" id="n_excerpt" placeholder="Write a short summary sentence for index cards" required>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <label class="form-label">Full HTML Content (Supports Rich Formatting)</label>
+                                    <textarea class="form-control" id="n_content" rows="12" placeholder="Write article HTML content here..." required></textarea>
+                                    <div class="form-text text-muted small">You can insert standard HTML tags like <code>&lt;p&gt;</code>, <code>&lt;h3&gt;</code>, <code>&lt;ul&gt;</code>, <code>&lt;li&gt;</code>, <code>&lt;strong&gt;</code> to style the article.</div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="form-check form-switch mt-2">
+                                        <input class="form-check-input" type="checkbox" id="n_status" checked>
+                                        <label class="form-check-label" for="n_status">Publish Article immediately (Visible on website blog)</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-secondary text-white px-4">Publish Article details</button>
+                                <a href="news.html" class="btn btn-light border ms-2">Cancel</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+        </div> <!-- Close admin-body -->
+        
+        <!-- Footer Placeholder -->
+        <div id="admin-footer-placeholder"></div>
+    </div> <!-- Close admin-content-area -->
+</div> <!-- Close admin-wrapper -->
+
+<!-- Scripts -->
+<script src="../assets/js/db.js"></script>
+<script src="admin-auth.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (!window.DB) return;
+    
+    const db = window.DB;
+    const params = new URLSearchParams(window.location.search);
+    const act = params.get('act') || 'list';
+    const id = parseInt(params.get('id') || 0);
+    
+    const headerBox = document.getElementById('news-header-box');
+    const listView = document.getElementById('news-list-view');
+    const formView = document.getElementById('news-form-view');
+    
+    if (act === 'list') {
+        headerBox.innerHTML = `
+            <h5 class="fw-bold mb-0 text-primary-dark"><i class="fa-solid fa-newspaper text-secondary me-2"></i> News &amp; Blog Article Management</h5>
+            <a href="news.html?act=add" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus me-1"></i> Write New Article</a>
+        `;
+        listView.style.display = 'block';
+        
+        const tbody = document.getElementById('news-tbody');
+        const list = db.getAllNewsAdmin();
+        
+        if (list.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">No news articles published yet.</td></tr>';
+        } else {
+            let rows = '';
+            list.slice().reverse().forEach(n => {
+                const pubDate = new Date(n.published_date).toLocaleDateString('en-IN', {
+                    day: '2-digit', month: 'short', year: 'numeric'
+                });
+                
+                rows += `
+                    <tr>
+                        <td><small class="text-dark fw-semibold">${pubDate}</small></td>
+                        <td>
+                            <div class="fw-bold text-truncate" style="max-width: 250px;" title="${n.title}">${n.title}</div>
+                            <small class="text-muted text-monospace">${n.slug}</small>
+                        </td>
+                        <td><span class="badge bg-light text-primary border small text-uppercase">${n.category}</span></td>
+                        <td><small class="text-muted text-truncate d-block" style="max-width: 280px;">${n.excerpt}</small></td>
+                        <td>
+                            <span class="badge ${n.status == 1 ? 'bg-success' : 'bg-secondary'}">
+                                ${n.status == 1 ? 'Active' : 'Draft'}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <a href="news.html?act=edit&id=${n.id}" class="btn btn-outline-primary btn-sm me-1"><i class="fa-solid fa-pen-to-square"></i></a>
+                            <button class="btn btn-outline-danger btn-sm" onclick="deleteArticle(${n.id})"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = rows;
+        }
+        
+    } else if (act === 'add' || act === 'edit') {
+        headerBox.innerHTML = `
+            <h5 class="fw-bold mb-0 text-primary-dark"><i class="fa-solid fa-newspaper text-secondary me-2"></i> ${act === 'add' ? 'Write New Article' : 'Edit Article Details'}</h5>
+            <a href="news.html" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-arrow-left me-1"></i> Back to List</a>
+        `;
+        formView.style.display = 'block';
+        
+        // Default date
+        document.getElementById('n_date').value = new Date().toISOString().split('T')[0];
+        
+        if (act === 'edit' && id > 0) {
+            const art = db.getNewsById(id);
+            if (art) {
+                document.getElementById('n_id').value = art.id;
+                document.getElementById('n_title').value = art.title;
+                document.getElementById('n_category').value = art.category;
+                document.getElementById('n_date').value = art.published_date;
+                document.getElementById('n_excerpt').value = art.excerpt;
+                document.getElementById('n_content').value = art.content;
+                document.getElementById('n_status').checked = art.status == 1;
+            }
+        }
+        
+        // Handle Submit
+        document.getElementById('newsForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const saved = db.saveNews({
+                id: parseInt(document.getElementById('n_id').value),
+                title: document.getElementById('n_title').value.trim(),
+                category: document.getElementById('n_category').value,
+                published_date: document.getElementById('n_date').value,
+                excerpt: document.getElementById('n_excerpt').value.trim(),
+                content: document.getElementById('n_content').value.trim(),
+                status: document.getElementById('n_status').checked
+            });
+            
+            if (saved) {
+                window.location.href = 'news.html';
+            }
+        });
+    }
+});
+
+function deleteArticle(id) {
+    if (confirm('Are you sure you want to delete this article forever?')) {
+        if (window.DB && window.DB.deleteNews(id)) {
+            window.location.reload();
+        }
+    }
+}
+</script>
+</body>
+</html>

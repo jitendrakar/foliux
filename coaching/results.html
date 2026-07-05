@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Top Achievers &amp; AIR Ranks - Success Academy</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom Style Sheet -->
+    <link href="assets/css/style.css?v=2" rel="stylesheet">
+</head>
+<body>
+
+<!-- Header Placeholder -->
+<div id="header-placeholder"></div>
+
+<!-- Banner Section -->
+<section class="bg-primary text-white py-5 text-center" style="background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;">
+    <div class="container">
+        <h1 class="fw-bold display-4">Success Academy Results</h1>
+        <p class="lead mb-0">Our wall of pride. Showcasing outstanding performance in competitive entrance exams.</p>
+    </div>
+</section>
+
+<!-- Results Section -->
+<section class="py-5 bg-white">
+    <div class="container">
+        <div class="text-center mb-5" style="max-width: 700px; margin: 0 auto;">
+            <h6 class="text-secondary text-uppercase fw-bold mb-2">Academic Triumphs</h6>
+            <h2 class="fw-bold">All India Ranks &amp; Score Metrics</h2>
+            <div class="mx-auto bg-secondary mt-2 mb-3" style="width: 60px; height: 3px;"></div>
+            <p class="text-muted">Consistent coaching and continuous test feedback yield top placements. Celebrate the excellence of our Jaipur center students.</p>
+        </div>
+        
+        <div class="row g-4" id="results-catalog-grid">
+            <!-- Dynamic list -->
+        </div>
+        
+    </div>
+</section>
+
+<!-- Additional Stat Summary Block -->
+<section class="py-5 bg-light border-top">
+    <div class="container text-center">
+        <h3 class="fw-bold text-primary-dark mb-4">Historical Milestones</h3>
+        <div class="row g-4 justify-content-center">
+            <div class="col-md-3 col-6">
+                <div class="bg-white p-4 rounded border shadow-sm h-100">
+                    <h2 class="fw-bold text-secondary mb-1">98.6%</h2>
+                    <p class="text-muted small mb-0">Highest Marks in Class 12 Boards (Science)</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="bg-white p-4 rounded border shadow-sm h-100">
+                    <h2 class="fw-bold text-secondary mb-1">450+</h2>
+                    <p class="text-muted small mb-0">NTSE Scholars Mentored</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-6">
+                <div class="bg-white p-4 rounded border shadow-sm h-100">
+                    <h2 class="fw-bold text-secondary mb-1">320+</h2>
+                    <p class="text-muted small mb-0">Govt Banking PO Selections</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer Placeholder -->
+<div id="footer-placeholder"></div>
+
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- JS Database and Components Loader -->
+<script src="assets/js/db.js"></script>
+<script src="assets/js/components.js"></script>
+<script src="assets/js/main.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (!window.DB) return;
+    
+    const db = window.DB;
+    const list = db.getResults();
+    const grid = document.getElementById('results-catalog-grid');
+    if (!grid) return;
+    
+    if (list.length === 0) {
+        grid.innerHTML = '<div class="col-12 text-center text-muted py-5"><h5>No rank achievements recorded yet.</h5></div>';
+        return;
+    }
+    
+    let gridHtml = '';
+    list.forEach(r => {
+        gridHtml += `
+            <div class="col-lg-4 col-md-6">
+                <div class="result-card h-100 border shadow-sm">
+                    <div class="result-img-box">
+                        <img src="${r.photo_path}" onerror="this.src='https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?q=80&w=400'" alt="${r.student_name}">
+                        <span class="result-rank-badge">AIR ${r.air_rank}</span>
+                    </div>
+                    
+                    <div class="result-body">
+                        <h4 class="fw-bold mb-1 text-primary-dark">${r.student_name}</h4>
+                        <p class="text-secondary fw-semibold mb-2">${r.exam_name} (${r.year})</p>
+                        <span class="badge bg-primary px-3 py-2 fs-6 mb-3">${r.score}</span>
+                        
+                        <div class="bg-light p-3 rounded text-start border mt-2">
+                            <h6 class="fw-bold mb-1 text-dark small"><i class="fa-solid fa-quote-left text-secondary me-1"></i> Success Story:</h6>
+                            <p class="text-muted small mb-0 font-italic">${r.success_story}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    grid.innerHTML = gridHtml;
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Courses - Success Academy Admin</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Admin custom styling -->
+    <link href="../assets/css/admin-style.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="admin-wrapper">
+    <!-- Sidebar Placeholder -->
+    <div id="admin-sidebar-placeholder"></div>
+    
+    <div class="admin-content-area">
+        <!-- Header Placeholder -->
+        <div id="admin-header-placeholder"></div>
+        
+        <div class="admin-body">
+            
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center" id="courses-header-box">
+                    <!-- Dynamic Title & Buttons -->
+                </div>
+                
+                <div class="card-body">
+                    <!-- LIST SECTION -->
+                    <div id="courses-list-view" class="table-responsive" style="display:none;">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Category</th>
+                                    <th>Duration</th>
+                                    <th>Fees</th>
+                                    <th>Timings</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="courses-tbody">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- FORM SECTION -->
+                    <div id="courses-form-view" style="display:none;">
+                        <form id="courseForm">
+                            <input type="hidden" id="c_id" value="0">
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label font-weight-bold">Course Title *</label>
+                                    <input type="text" class="form-control" id="c_title" placeholder="e.g. IIT-JEE 2-Year Program" required>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label class="form-label">Category *</label>
+                                    <select class="form-select" id="c_category" required>
+                                        <option value="JEE">IIT-JEE Prep</option>
+                                        <option value="NEET">NEET Medical</option>
+                                        <option value="UPSC">UPSC Civil Services</option>
+                                        <option value="Foundation">Class 6-10 Pre-Foundation</option>
+                                        <option value="School">Class 11-12 Board</option>
+                                        <option value="Olympiad">Olympiads</option>
+                                        <option value="Government">Other Competitive (SSC/NDA)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <label class="form-label">Duration *</label>
+                                    <input type="text" class="form-control" id="c_duration" placeholder="e.g. 2 Years, 6 Months" required>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <label class="form-label">Annual Fees (INR ₹) *</label>
+                                    <input type="number" step="0.01" class="form-control" id="c_fees" placeholder="e.g. 120000" required>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <label class="form-label">Batch Timings *</label>
+                                    <input type="text" class="form-control" id="c_timing" placeholder="e.g. 08:00 AM - 12:00 PM" required>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <label class="form-label">Features / Highlights (comma separated) *</label>
+                                    <input type="text" class="form-control" id="c_features" placeholder="e.g. Daily Practice Papers, Weekly Part-Tests, Personal Mentorship" required>
+                                    <div class="form-text text-muted">Separate each feature bullet point with a comma.</div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <label class="form-label">Detailed Course Description</label>
+                                    <textarea class="form-control" id="c_desc" rows="4" placeholder="Describe the syllabus coverage and target audience..."></textarea>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="form-check form-switch mt-2">
+                                        <input class="form-check-input" type="checkbox" id="c_status" checked>
+                                        <label class="form-check-label" for="c_status">Make Course Active (Visible on website)</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-secondary text-white px-4">Save Course details</button>
+                                <a href="courses.html" class="btn btn-light border ms-2">Cancel</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+        </div> <!-- Close admin-body -->
+        
+        <!-- Footer Placeholder -->
+        <div id="admin-footer-placeholder"></div>
+    </div> <!-- Close admin-content-area -->
+</div> <!-- Close admin-wrapper -->
+
+<!-- Scripts -->
+<script src="../assets/js/db.js"></script>
+<script src="admin-auth.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- CRUD script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (!window.DB) return;
+    
+    const db = window.DB;
+    const params = new URLSearchParams(window.location.search);
+    const act = params.get('act') || 'list';
+    const id = parseInt(params.get('id') || 0);
+    
+    const headerBox = document.getElementById('courses-header-box');
+    const listView = document.getElementById('courses-list-view');
+    const formView = document.getElementById('courses-form-view');
+    
+    if (act === 'list') {
+        // Render Header
+        headerBox.innerHTML = `
+            <h5 class="fw-bold mb-0 text-primary-dark"><i class="fa-solid fa-book text-secondary me-2"></i> Course Database Management</h5>
+            <a href="courses.html?act=add" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus me-1"></i> Add New Course</a>
+        `;
+        listView.style.display = 'block';
+        
+        // Render Table List
+        const tbody = document.getElementById('courses-tbody');
+        const list = db.getAllCoursesAdmin();
+        
+        if (list.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">No courses configured.</td></tr>';
+        } else {
+            let rows = '';
+            list.forEach(c => {
+                rows += `
+                    <tr>
+                        <td><strong>${c.title}</strong></td>
+                        <td><span class="badge bg-light text-dark border">${c.category}</span></td>
+                        <td>${c.duration}</td>
+                        <td>₹${parseFloat(c.fees).toLocaleString('en-IN')}</td>
+                        <td><small>${c.batch_timing}</small></td>
+                        <td>
+                            <span class="badge ${c.status == 1 ? 'bg-success' : 'bg-secondary'}">
+                                ${c.status == 1 ? 'Active' : 'Draft'}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <a href="courses.html?act=edit&id=${c.id}" class="btn btn-outline-primary btn-sm me-1"><i class="fa-solid fa-pen-to-square"></i></a>
+                            <button class="btn btn-outline-danger btn-sm" onclick="deleteCourse(${c.id})"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = rows;
+        }
+        
+    } else if (act === 'add' || act === 'edit') {
+        // Render Header
+        headerBox.innerHTML = `
+            <h5 class="fw-bold mb-0 text-primary-dark"><i class="fa-solid fa-book text-secondary me-2"></i> ${act === 'add' ? 'Add New Course' : 'Edit Course Details'}</h5>
+            <a href="courses.html" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-arrow-left me-1"></i> Back to List</a>
+        `;
+        formView.style.display = 'block';
+        
+        if (act === 'edit' && id > 0) {
+            const course = db.getCourseById(id);
+            if (course) {
+                document.getElementById('c_id').value = course.id;
+                document.getElementById('c_title').value = course.title;
+                document.getElementById('c_category').value = course.category;
+                document.getElementById('c_duration').value = course.duration;
+                document.getElementById('c_fees').value = course.fees;
+                document.getElementById('c_timing').value = course.batch_timing;
+                document.getElementById('c_features').value = course.features;
+                document.getElementById('c_desc').value = course.description;
+                document.getElementById('c_status').checked = course.status == 1;
+            }
+        }
+        
+        // Handle Submit
+        document.getElementById('courseForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const saved = db.saveCourse({
+                id: parseInt(document.getElementById('c_id').value),
+                title: document.getElementById('c_title').value.trim(),
+                category: document.getElementById('c_category').value,
+                duration: document.getElementById('c_duration').value.trim(),
+                fees: parseFloat(document.getElementById('c_fees').value),
+                batch_timing: document.getElementById('c_timing').value.trim(),
+                features: document.getElementById('c_features').value.trim(),
+                description: document.getElementById('c_desc').value.trim(),
+                status: document.getElementById('c_status').checked
+            });
+            
+            if (saved) {
+                window.location.href = 'courses.html';
+            }
+        });
+    }
+});
+
+// Delete helper trigger
+function deleteCourse(id) {
+    if (confirm('Are you sure you want to delete this course?')) {
+        if (window.DB && window.DB.deleteCourse(id)) {
+            window.location.reload();
+        }
+    }
+}
+</script>
+</body>
+</html>

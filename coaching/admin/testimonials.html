@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Testimonials - Success Academy Admin</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Admin custom styling -->
+    <link href="../assets/css/admin-style.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="admin-wrapper">
+    <!-- Sidebar Placeholder -->
+    <div id="admin-sidebar-placeholder"></div>
+    
+    <div class="admin-content-area">
+        <!-- Header Placeholder -->
+        <div id="admin-header-placeholder"></div>
+        
+        <div class="admin-body">
+            
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center" id="testimonials-header-box">
+                    <!-- Dynamic Header -->
+                </div>
+                
+                <div class="card-body">
+                    <!-- LIST SECTION -->
+                    <div id="testimonials-list-view" class="table-responsive" style="display:none;">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Course</th>
+                                    <th>Review Quote</th>
+                                    <th>Rating</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="testimonials-tbody">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- FORM SECTION -->
+                    <div id="testimonials-form-view" style="display:none;">
+                        <form id="testimonialsForm">
+                            <input type="hidden" id="t_id" value="0">
+                            
+                            <div class="row g-3" style="max-width: 600px;">
+                                <div class="col-md-6">
+                                    <label class="form-label font-weight-bold">Student Name *</label>
+                                    <input type="text" class="form-control" id="t_name" placeholder="e.g. Divya Nair" required>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label class="form-label">Course Taken *</label>
+                                    <input type="text" class="form-control" id="t_course" placeholder="e.g. NEET Target Batch" required>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label class="form-label">Review Rating *</label>
+                                    <select class="form-select" id="t_rating" required>
+                                        <option value="5">5 Stars (Excellent)</option>
+                                        <option value="4">4 Stars (Very Good)</option>
+                                        <option value="3">3 Stars (Average)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <label class="form-label font-weight-bold">Review Quote *</label>
+                                    <textarea class="form-control" id="t_review" rows="4" placeholder="Write student's direct feedback here..." required></textarea>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="form-check form-switch mt-2">
+                                        <input class="form-check-input" type="checkbox" id="t_status" checked>
+                                        <label class="form-check-label" for="t_status">Publish testimonial immediately (Visible on homepage review slider)</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-secondary text-white px-4">Save Testimonial details</button>
+                                <a href="testimonials.html" class="btn btn-light border ms-2">Cancel</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+        </div> <!-- Close admin-body -->
+        
+        <!-- Footer Placeholder -->
+        <div id="admin-footer-placeholder"></div>
+    </div> <!-- Close admin-content-area -->
+</div> <!-- Close admin-wrapper -->
+
+<!-- Scripts -->
+<script src="../assets/js/db.js"></script>
+<script src="admin-auth.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (!window.DB) return;
+    
+    const db = window.DB;
+    const params = new URLSearchParams(window.location.search);
+    const act = params.get('act') || 'list';
+    const id = parseInt(params.get('id') || 0);
+    
+    const headerBox = document.getElementById('testimonials-header-box');
+    const listView = document.getElementById('testimonials-list-view');
+    const formView = document.getElementById('testimonials-form-view');
+    
+    if (act === 'list') {
+        headerBox.innerHTML = `
+            <h5 class="fw-bold mb-0 text-primary-dark"><i class="fa-solid fa-comment-dots text-secondary me-2"></i> Student Reviews &amp; Testimonials</h5>
+            <a href="testimonials.html?act=add" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus me-1"></i> Add Review</a>
+        `;
+        listView.style.display = 'block';
+        
+        const tbody = document.getElementById('testimonials-tbody');
+        const list = db.getAllTestimonialsAdmin();
+        
+        if (list.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">No testimonials registered.</td></tr>';
+        } else {
+            let rows = '';
+            list.forEach(t => {
+                let ratingStars = '';
+                for (let i = 0; i < t.rating; i++) {
+                    ratingStars += '<i class="fa-solid fa-star fs-9 text-warning"></i>';
+                }
+                
+                rows += `
+                    <tr>
+                        <td><strong>${t.student_name}</strong></td>
+                        <td><small class="text-muted">${t.course_name}</small></td>
+                        <td><small class="text-dark d-block text-truncate" style="max-width: 300px;">${t.review}</small></td>
+                        <td>${ratingStars}</td>
+                        <td>
+                            <span class="badge ${t.status == 1 ? 'bg-success' : 'bg-secondary'}">
+                                ${t.status == 1 ? 'Visible' : 'Hidden'}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <a href="testimonials.html?act=edit&id=${t.id}" class="btn btn-outline-primary btn-sm me-1"><i class="fa-solid fa-pen-to-square"></i></a>
+                            <button class="btn btn-outline-danger btn-sm" onclick="deleteTestimonial(${t.id})"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = rows;
+        }
+        
+    } else if (act === 'add' || act === 'edit') {
+        headerBox.innerHTML = `
+            <h5 class="fw-bold mb-0 text-primary-dark"><i class="fa-solid fa-comment-dots text-secondary me-2"></i> ${act === 'add' ? 'Add Review' : 'Edit Testimonial Details'}</h5>
+            <a href="testimonials.html" class="btn btn-outline-primary btn-sm"><i class="fa-solid fa-arrow-left me-1"></i> Back to List</a>
+        `;
+        formView.style.display = 'block';
+        
+        if (act === 'edit' && id > 0) {
+            const test = db.getTestimonialById(id);
+            if (test) {
+                document.getElementById('t_id').value = test.id;
+                document.getElementById('t_name').value = test.student_name;
+                document.getElementById('t_course').value = test.course_name;
+                document.getElementById('t_rating').value = test.rating;
+                document.getElementById('t_review').value = test.review;
+                document.getElementById('t_status').checked = test.status == 1;
+            }
+        }
+        
+        // Handle Submit
+        document.getElementById('testimonialsForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const saved = db.saveTestimonial({
+                id: parseInt(document.getElementById('t_id').value),
+                student_name: document.getElementById('t_name').value.trim(),
+                course_name: document.getElementById('t_course').value.trim(),
+                rating: parseInt(document.getElementById('t_rating').value),
+                review: document.getElementById('t_review').value.trim(),
+                status: document.getElementById('t_status').checked
+            });
+            
+            if (saved) {
+                window.location.href = 'testimonials.html';
+            }
+        });
+    }
+});
+
+function deleteTestimonial(id) {
+    if (confirm('Are you sure you want to delete this review quote?')) {
+        if (window.DB && window.DB.deleteTestimonial(id)) {
+            window.location.reload();
+        }
+    }
+}
+</script>
+</body>
+</html>
