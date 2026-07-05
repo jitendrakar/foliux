@@ -121,6 +121,9 @@ const translations = {
     "upi-modal-title": "UPI Safe Checkout",
     "upi-payee-badge": "Amount to Pay",
     "upi-instructions": "Scan this QR code using any UPI App (GPay, PhonePe, Paytm, BHIM) to make instant secure payment.",
+    "upi-instructions-static": "Scan this official shop QR code using any UPI App and manually enter the exact amount.",
+    "qr-toggle-dynamic": "Auto-Fill QR (Recommended)",
+    "qr-toggle-static": "Official GPay QR",
     "upi-mobile-pay-text": " Pay directly via UPI App",
     "upi-mobile-pay-hint": "Click above if ordering on your mobile phone.",
     "upi-confirm-header": "Confirm Your Payment",
@@ -265,6 +268,9 @@ const translations = {
     "upi-modal-title": "यूपीआई सुरक्षित चेकआउट",
     "upi-payee-badge": "भुगतान की जाने वाली राशि",
     "upi-instructions": "तत्काल सुरक्षित भुगतान करने के लिए किसी भी यूपीआई ऐप (GPay, PhonePe, Paytm, BHIM) का उपयोग करके इस क्यूआर कोड को स्कैन करें।",
+    "upi-instructions-static": "किसी भी यूपीआई ऐप का उपयोग करके इस आधिकारिक दुकान क्यूआर कोड को स्कैन करें और मैन्युअल रूप से सटीक राशि दर्ज करें।",
+    "qr-toggle-dynamic": "ऑटो-फिल QR (अनुशंसित)",
+    "qr-toggle-static": "आधिकारिक GPay QR",
     "upi-mobile-pay-text": " यूपीआई ऐप से सीधे भुगतान करें",
     "upi-mobile-pay-hint": "यदि आप अपने मोबाइल फोन से ऑर्डर कर रहे हैं तो ऊपर क्लिक करें।",
     "upi-confirm-header": "अपने भुगतान की पुष्टि करें",
@@ -318,6 +324,8 @@ const upiModal = document.getElementById('upiModal');
 const closeUpiBtn = document.getElementById('closeUpiBtn');
 const upiModalAmount = document.getElementById('upiModalAmount');
 const upiQrCodeImg = document.getElementById('upiQrCodeImg');
+const upiStaticQrImg = document.getElementById('upiStaticQrImg');
+const qrCodeWrapper = document.getElementById('qrCodeWrapper');
 const qrLoader = document.getElementById('qrLoader');
 const upiMobileLink = document.getElementById('upiMobileLink');
 const upiUtr = document.getElementById('upiUtr');
@@ -325,6 +333,9 @@ const mockUtrBtn = document.getElementById('mockUtrBtn');
 const verifyPaymentBtn = document.getElementById('verifyPaymentBtn');
 const verifyBtnText = document.getElementById('verifyBtnText');
 const verifyBtnSpinner = document.getElementById('verifyBtnSpinner');
+const qrToggleDynamic = document.getElementById('qrToggleDynamic');
+const qrToggleStatic = document.getElementById('qrToggleStatic');
+const upiInstructions = document.getElementById('upiInstructions');
 
 // Success Screen DOM
 const successScreen = document.getElementById('successScreen');
@@ -754,6 +765,17 @@ function openUpiPaymentModal(orderData) {
   activeOrderId = orderData.orderId;
   upiModalAmount.textContent = `₹${orderData.totalAmount.toFixed(2)}`;
   
+  // Reset QR toggle view states
+  if (qrToggleDynamic) qrToggleDynamic.classList.add('active');
+  if (qrToggleStatic) qrToggleStatic.classList.remove('active');
+  if (upiQrCodeImg) upiQrCodeImg.classList.remove('hidden');
+  if (upiStaticQrImg) upiStaticQrImg.classList.add('hidden');
+  if (qrCodeWrapper) qrCodeWrapper.classList.remove('static-view');
+  if (upiInstructions) {
+    upiInstructions.setAttribute('data-translate', 'upi-instructions');
+    upiInstructions.textContent = translations[currentLang]['upi-instructions'];
+  }
+  
   // Set QR code link via free qrserver API
   upiQrCodeImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&margin=10&data=${encodeURIComponent(orderData.upiPaymentLink)}`;
   qrLoader.classList.remove('hidden');
@@ -1120,6 +1142,35 @@ function setupEventListeners() {
   submitCheckoutBtn.addEventListener('click', () => {
     checkoutForm.requestSubmit();
   });
+
+  // QR Code toggle handlers
+  if (qrToggleDynamic && qrToggleStatic) {
+    qrToggleDynamic.addEventListener('click', () => {
+      qrToggleDynamic.classList.add('active');
+      qrToggleStatic.classList.remove('active');
+      upiQrCodeImg.classList.remove('hidden');
+      upiStaticQrImg.classList.add('hidden');
+      qrCodeWrapper.classList.remove('static-view');
+      qrLoader.classList.add('hidden');
+
+      // Update instructions
+      upiInstructions.setAttribute('data-translate', 'upi-instructions');
+      upiInstructions.textContent = translations[currentLang]['upi-instructions'];
+    });
+
+    qrToggleStatic.addEventListener('click', () => {
+      qrToggleStatic.classList.add('active');
+      qrToggleDynamic.classList.remove('active');
+      upiQrCodeImg.classList.add('hidden');
+      upiStaticQrImg.classList.remove('hidden');
+      qrCodeWrapper.classList.add('static-view');
+      qrLoader.classList.add('hidden');
+
+      // Update instructions
+      upiInstructions.setAttribute('data-translate', 'upi-instructions-static');
+      upiInstructions.textContent = translations[currentLang]['upi-instructions-static'];
+    });
+  }
 
   // Success overlay buttons
   successHomeBtn.addEventListener('click', () => {

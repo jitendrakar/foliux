@@ -449,11 +449,18 @@
           <h2 id="upiModalAmount">₹0.00</h2>
         </div>
 
-        <p class="payment-instructions" data-translate="upi-instructions">Scan this QR code using any UPI App (GPay, PhonePe, Paytm, BHIM) to make instant secure payment.</p>
+        <!-- QR Code Type Selector Toggle -->
+        <div class="qr-toggle-container">
+          <button type="button" class="qr-toggle-btn active" id="qrToggleDynamic" data-translate="qr-toggle-dynamic">Auto-Fill QR (Recommended)</button>
+          <button type="button" class="qr-toggle-btn" id="qrToggleStatic" data-translate="qr-toggle-static">Official GPay QR</button>
+        </div>
+
+        <p class="payment-instructions" id="upiInstructions" data-translate="upi-instructions">Scan this QR code using any UPI App (GPay, PhonePe, Paytm, BHIM) to make instant secure payment.</p>
 
         <!-- QR Code Container -->
-        <div class="qr-code-wrapper">
+        <div class="qr-code-wrapper" id="qrCodeWrapper">
           <img src="" alt="UPI QR Code" id="upiQrCodeImg" class="qr-code-img">
+          <img src="assets/qr.jpeg" alt="Official Shop QR Code" id="upiStaticQrImg" class="qr-code-img hidden">
           <div class="qr-loader" id="qrLoader">
             <div class="spinner"></div>
           </div>
