@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bharat Chicken Point | Fresh Meat & Delicious Kababs</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+  <!-- CSS Link -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ================= HEADER / NAV ================= -->
+  <header class="app-header">
+    <div class="container header-container">
+      <div class="logo-wrapper" onclick="window.location.hash = ''">
+        <div class="logo-icon">🍗</div>
+        <div class="logo-text">
+          <h1>Bharat Chicken Point</h1>
+          <span data-translate="nav-sub">Chicken & Mutton Shop</span>
+        </div>
+      </div>
+
+      <nav class="main-nav">
+        <a href="#menu" class="nav-link active" id="nav-menu" data-translate="nav-menu">Menu</a>
+        <a href="#about" class="nav-link" id="nav-about" data-translate="nav-about">Our Shop</a>
+        <a href="#contact" class="nav-link" id="nav-contact" data-translate="nav-contact">Contact</a>
+      </nav>
+
+      <div class="header-actions">
+        <!-- Language Switcher Pill -->
+        <button class="lang-toggle" id="langToggleBtn" title="Switch Language">
+          🌐 <span id="langToggleText">English</span>
+        </button>
+        
+        <a href="tel:9899946076" class="phone-link">
+          <svg class="icon" viewBox="0 0 24 24"><path fill="currentColor" d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+          9899946076
+        </a>
+        <button class="cart-trigger" id="cartBtn">
+          <svg class="icon" viewBox="0 0 24 24"><path fill="currentColor" d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+          <span class="badge" id="cartCount">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= CUSTOMER PORTAL ================= -->
+  <main class="customer-view" id="customerView">
+
+    <!-- Hero Banner -->
+    <section class="hero-section">
+      <div class="hero-overlay"></div>
+      <div class="container hero-container">
+        <div class="hero-content">
+          <div class="tagline" data-translate="hero-tagline">🔥 Authentic Halal Meat Since 1998</div>
+          <h2 data-translate="hero-title">Taste the Royalty of Spiced Kababs & Fresh Cut Meats</h2>
+          <p data-translate="hero-desc">Order online for free delivery in Sriniwaspuri. Choose from our premium fresh meats or ready-to-eat spiced kababs made with handpicked ingredients.</p>
+          <div class="hero-buttons">
+            <a href="#menu" class="btn btn-primary btn-large" data-translate="hero-order-btn">Order Now</a>
+            <a href="#about" class="btn btn-secondary btn-large" data-translate="hero-shop-btn">View Shop</a>
+          </div>
+          <div class="delivery-badge-row">
+            <div class="badge-item" data-translate="hero-badge-open">🟢 Shop Open (9 AM - 10 PM)</div>
+            <div class="badge-item" data-translate="hero-badge-delivery">🛵 Free Home Delivery</div>
+            <div class="badge-item" data-translate="hero-badge-upi">💳 UPI Scan & Pay Enabled</div>
+          </div>
+        </div>
+        <div class="hero-image-gallery">
+          <div class="hero-img-card" style="background-image: url('assets/1.jpg')">
+            <span class="img-caption" data-translate="caption-front">Shop Front</span>
+          </div>
+          <div class="hero-img-card" style="background-image: url('assets/5.jpg')">
+            <span class="img-caption" data-translate="caption-kitchen">Fresh Kitchen</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Menu Section -->
+    <section class="menu-section-wrapper" id="menu">
+      <div class="container">
+        <div class="section-title text-center">
+          <span class="subtitle" data-translate="menu-subtitle">Fresh & Prepared</span>
+          <h2 data-translate="menu-title">Explore Our Menu</h2>
+          <p class="section-description" data-translate="menu-desc">We serve fresh cut chicken and mutton along with marinated ready-to-fry kababs and piping hot specials.</p>
+        </div>
+
+        <!-- Category Tabs -->
+        <div class="menu-tabs">
+          <button class="tab-btn active" data-category="all" data-translate="tab-all">All Items</button>
+          <button class="tab-btn" data-category="raw" data-translate="tab-raw">🍗 Raw Chicken & Mutton</button>
+          <button class="tab-btn" data-category="ready" data-translate="tab-ready">🍢 Ready to Eat Kababs</button>
+          <button class="tab-btn" data-category="specials" data-translate="tab-specials">🌶️ Prepared Specials</button>
+        </div>
+
+        <!-- Menu Grid -->
+        <div class="menu-grid" id="menuGrid">
+          <!-- Dynamically filled by JS -->
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <p data-translate="menu-loading">Loading fresh menu items...</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- About Section / Gallery -->
+    <section class="about-section" id="about">
+      <div class="container">
+        <div class="about-grid">
+          <div class="about-gallery">
+            <div class="gallery-main" style="background-image: url('assets/2.jpg')"></div>
+            <div class="gallery-thumbs">
+              <div class="thumb" style="background-image: url('assets/3.jpg')"></div>
+              <div class="thumb" style="background-image: url('assets/4.jpg')"></div>
+              <div class="thumb" style="background-image: url('assets/5.jpg')"></div>
+            </div>
+          </div>
+          <div class="about-info">
+            <span class="subtitle" data-translate="about-subtitle">Hygiene & Trust</span>
+            <h2 data-translate="about-title">Welcome to Bharat Chicken & Mutton Shop</h2>
+            <p data-translate="about-desc1">Owned and managed by <strong>Sarfaraj (Guddu)</strong>, Bharat Chicken Point has been serving New Delhi with the finest quality Halal meats and culinary creations for over two decades.</p>
+            <p data-translate="about-desc2">Our kitchen and meat storage display cases are kept in sterile, temperature-controlled environments to ensure the highest standards of hygiene and food safety. We pride ourselves on transparent pricing (directly displayed in our store) and excellent customer service.</p>
+            
+            <div class="features-list">
+              <div class="feature-item">
+                <span class="feature-icon">🛡️</span>
+                <div>
+                  <h4 data-translate="feat1-title">100% Halal Certified</h4>
+                  <p data-translate="feat1-desc">All our chicken and mutton are processed and cut strictly according to Halal guidelines.</p>
+                </div>
+              </div>
+              <div class="feature-item">
+                <span class="feature-icon">❄️</span>
+                <div>
+                  <h4 data-translate="feat2-title">Sterile Cold Display Cases</h4>
+                  <p data-translate="feat2-desc">Our raw meats are stored in dust-free, chilled glass display shelves to prevent contamination.</p>
+                </div>
+              </div>
+              <div class="feature-item">
+                <span class="feature-icon">🛵</span>
+                <div>
+                  <h4 data-translate="feat3-title">Superfast Delivery</h4>
+                  <p data-translate="feat3-desc">Get quick delivery straight to your doorstep in Sriniwaspuri and nearby areas.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact & Footer -->
+    <section class="contact-section" id="contact">
+      <div class="container">
+        <div class="contact-card">
+          <div class="contact-details">
+            <h3 data-translate="contact-title">Visit or Contact Us</h3>
+            <p data-translate="contact-desc">Have bulk requirements for a wedding, party, or restaurant? Reach out to us directly!</p>
+            
+            <div class="contact-links">
+              <div class="contact-line">
+                <span class="icon-wrap">📍</span>
+                <p>S-10, Private Colony, Sriniwaspuri, New Delhi - 110065</p>
+              </div>
+              <div class="contact-line">
+                <span class="icon-wrap">📞</span>
+                <div>
+                  <p><a href="tel:9899946076">9899946076</a> (Sarfaraj Guddu)</p>
+                  <p><a href="tel:9560569646">9560569646</a></p>
+                  <p><a href="tel:9958540344">9958540344</a></p>
+                </div>
+              </div>
+              <div class="contact-line">
+                <span class="icon-wrap">⏰</span>
+                <p data-translate="contact-timing">Open Daily: 9:00 AM to 10:00 PM</p>
+              </div>
+            </div>
+          </div>
+          <div class="contact-map-container">
+            <iframe 
+              src="https://maps.google.com/maps?q=S-10,%20Private%20Colony,%20Sriniwaspuri,%20New%20Delhi%20-%20110065&t=&z=17&ie=UTF8&iwloc=&output=embed" 
+              width="100%" 
+              height="100%" 
+              style="border:0;" 
+              allowfullscreen="" 
+              loading="lazy" 
+              referrerpolicy="no-referrer-when-downgrade">
+            </iframe>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="container footer-container">
+        <p data-translate="footer-copyright">&copy; 2026 Bharat Chicken Point. All rights reserved. Managed by Sarfaraj (Guddu).</p>
+        <a href="#admin" class="footer-admin-link" data-translate="nav-admin">Vendor Portal</a>
+      </div>
+    </footer>
+  </main>
+
+
+  <!-- ================= VENDOR / ADMIN PORTAL ================= -->
+  <main class="admin-view hidden" id="adminView">
+    
+    <!-- Admin Login Screen -->
+    <div class="admin-login-container" id="adminLoginView">
+      <div class="login-card">
+        <div class="lock-icon">🔒</div>
+        <h3 data-translate="admin-login-title">Vendor Portal Login</h3>
+        <p data-translate="admin-login-desc">Enter your administrative username and password to manage orders.</p>
+        <form id="adminLoginForm" class="text-left">
+          <div class="form-group">
+            <label for="admin-user" data-translate="label-username">Username</label>
+            <input type="text" id="admin-user" required placeholder="Enter username">
+          </div>
+          <div class="form-group">
+            <label for="admin-pass" data-translate="label-password">Password</label>
+            <input type="password" id="admin-pass" required placeholder="Enter password">
+          </div>
+          <div class="login-error hidden" id="loginErrorMsg" data-translate="error-invalid-credentials">
+            ⚠️ Invalid admin credentials. Please try again.
+          </div>
+          <button type="submit" class="btn btn-primary btn-block" data-translate="btn-login">Login</button>
+        </form>
+        <button class="btn btn-secondary btn-block" style="margin-top: 10px;" onclick="window.location.hash = ''" data-translate="btn-return-store">Return to Storefront</button>
+      </div>
+    </div>
+
+    <!-- Admin Dashboard Content -->
+    <div class="container admin-container hidden" id="adminDashboardContent">
+      
+      <!-- Admin Header -->
+      <div class="admin-header">
+        <div class="admin-title">
+          <h2 data-translate="admin-dash-title">Vendor Management Dashboard</h2>
+          <p data-translate="admin-dash-desc">Manage incoming orders, update status, view SMTP logs, and configure email servers.</p>
+        </div>
+        <div class="admin-actions" style="display: flex; gap: 10px;">
+          <button class="btn btn-secondary" onclick="window.location.hash = ''" data-translate="btn-return-store">Return to Storefront</button>
+          <button class="btn btn-primary" id="adminLogoutBtn" style="background:#222;" data-translate="btn-logout">Logout</button>
+        </div>
+      </div>
+
+      <!-- Admin Tabs -->
+      <div class="admin-tabs">
+        <button class="admin-tab-btn active" data-tab="orders-tab" data-translate="tab-orders">📦 Active Orders</button>
+        <button class="admin-tab-btn" data-tab="emails-tab" data-translate="tab-emails">📧 Simulated Email Logs</button>
+        <button class="admin-tab-btn" data-tab="settings-tab" data-translate="tab-settings">⚙️ SMTP Configuration</button>
+      </div>
+
+      <!-- Tab 1: Orders Panel -->
+      <div class="admin-tab-content active" id="orders-tab">
+        <div class="dashboard-stats">
+          <div class="stat-card">
+            <h4 data-translate="stat-lbl-total">Total Orders</h4>
+            <p id="stat-total">0</p>
+          </div>
+          <div class="stat-card pending">
+            <h4 data-translate="stat-lbl-pending">Pending Payment</h4>
+            <p id="stat-pending">0</p>
+          </div>
+          <div class="stat-card paid">
+            <h4 data-translate="stat-lbl-kitchen">Paid / In Kitchen</h4>
+            <p id="stat-paid">0</p>
+          </div>
+          <div class="stat-card delivered">
+            <h4 data-translate="stat-lbl-delivered">Delivered</h4>
+            <p id="stat-delivered">0</p>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <div class="table-header">
+            <h3 data-translate="tbl-title-recent">Recent Orders</h3>
+            <button class="btn btn-secondary btn-small" id="refreshOrdersBtn" data-translate="btn-refresh">🔄 Refresh</button>
+          </div>
+          <div class="table-scroll">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th data-translate="th-orderid">Order ID</th>
+                  <th data-translate="th-custinfo">Customer Info</th>
+                  <th data-translate="th-address">Delivery Address</th>
+                  <th data-translate="th-items">Items (Qty)</th>
+                  <th data-translate="th-total">Total Amount</th>
+                  <th data-translate="th-payment">Payment Details</th>
+                  <th data-translate="th-status">Status</th>
+                  <th data-translate="th-actions">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="adminOrdersTableBody">
+                <!-- Dynamically filled by JS -->
+                <tr>
+                  <td colspan="8" class="text-center">No orders received yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Simulated Email Logs -->
+      <div class="admin-tab-content" id="emails-tab">
+        <div class="email-logs-layout">
+          <div class="email-inbox-list" id="emailInboxList">
+            <!-- Dynamically populated -->
+            <p class="text-center pad-20">No emails logged.</p>
+          </div>
+          <div class="email-reading-pane" id="emailReadingPane">
+            <div class="empty-pane-msg">
+              <svg viewBox="0 0 24 24" class="empty-email-icon"><path fill="currentColor" d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+              <h3 data-translate="email-pane-empty-title">Select an email to view</h3>
+              <p data-translate="email-pane-empty-desc">Click on any message in the inbox to view the simulated HTML output sent to the customer or vendor.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: SMTP Settings -->
+      <div class="admin-tab-content" id="settings-tab">
+        <div class="settings-card">
+          <h3 data-translate="smtp-title">Email Server Settings</h3>
+          <p data-translate="smtp-desc">By default, email notifications are simulated and logged to the "Simulated Email Logs" database because no mail server credentials are set. Toggle SMTP below to use real email routing via a Gmail account.</p>
+          
+          <form id="smtpSettingsForm" class="settings-form">
+            <div class="form-row toggle-row">
+              <label for="smtp-enabled"><strong data-translate="smtp-toggle-lbl">Enable Real Email Delivery (SMTP)</strong></label>
+              <label class="switch">
+                <input type="checkbox" id="smtp-enabled">
+                <span class="slider round"></span>
+              </label>
+            </div>
+            
+            <hr class="form-divider">
+            
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="smtp-host">SMTP Host</label>
+                <input type="text" id="smtp-host" placeholder="smtp.gmail.com" value="smtp.gmail.com">
+              </div>
+              <div class="form-group">
+                <label for="smtp-port">SMTP Port</label>
+                <input type="number" id="smtp-port" placeholder="587" value="587">
+              </div>
+              <div class="form-group">
+                <label for="smtp-user">SMTP Username / Email</label>
+                <input type="email" id="smtp-user" placeholder="your_gmail@gmail.com">
+              </div>
+              <div class="form-group">
+                <label for="smtp-pass">SMTP App Password</label>
+                <input type="password" id="smtp-pass" placeholder="••••••••••••••••">
+                <span class="field-hint" data-translate="smtp-pass-hint">For Gmail, generate a 16-character App Password. Never use your main account password.</span>
+              </div>
+              <div class="form-group full-width">
+                <label for="smtp-vendor" data-translate="smtp-vendor-lbl">Vendor Notification Email (Recipient)</label>
+                <input type="email" id="smtp-vendor" placeholder="sarfarajguddu.bcp@gmail.com" value="sarfarajguddu.bcp@gmail.com">
+                <span class="field-hint" data-translate="smtp-vendor-hint">This email will receive notifications containing complete customer orders and payment receipts.</span>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" id="saveSmtpSettingsBtn" data-translate="smtp-save-btn">Save Configuration</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+
+  <!-- ================= SHOPPING CART DRAWER ================= -->
+  <div class="cart-drawer" id="cartDrawer">
+    <div class="cart-header">
+      <h3 data-translate="cart-title">Your Basket</h3>
+      <button class="close-drawer" id="closeCartBtn">&times;</button>
+    </div>
+    
+    <div class="cart-body">
+      <!-- Items Container -->
+      <div class="cart-items" id="cartItemsContainer">
+        <!-- Filled by JS -->
+        <div class="empty-cart-state">
+          <span>🛒</span>
+          <p data-translate="cart-empty-msg">Your basket is currently empty.</p>
+          <a href="#menu" class="btn btn-primary" id="startShoppingBtn" data-translate="cart-start-shopping">Start Shopping</a>
+        </div>
+      </div>
+      
+      <!-- Checkout Form (only shows if items in cart) -->
+      <form class="checkout-form hidden" id="checkoutForm">
+        <h3 data-translate="cart-form-header">Delivery Details</h3>
+        <div class="form-group">
+          <label for="cust-name" data-translate="label-name">Full Name *</label>
+          <input type="text" id="cust-name" required placeholder="Enter your name">
+        </div>
+        <div class="form-group">
+          <label for="cust-phone" data-translate="label-phone">Mobile Phone *</label>
+          <input type="tel" id="cust-phone" required placeholder="Enter 10-digit mobile number" pattern="[0-9]{10}">
+        </div>
+        <div class="form-group">
+          <label for="cust-email" data-translate="label-email">Email Address (Optional)</label>
+          <input type="email" id="cust-email" placeholder="For receiving receipt">
+        </div>
+        <div class="form-group">
+          <label for="cust-address" data-translate="label-address">Delivery Address *</label>
+          <textarea id="cust-address" required rows="3" placeholder="Enter complete house address, street, and landmarks in Sriniwaspuri"></textarea>
+        </div>
+      </form>
+    </div>
+    
+    <div class="cart-footer hidden" id="cartFooter">
+      <div class="bill-row">
+        <span data-translate="summary-subtotal">Items Subtotal</span>
+        <strong id="billSubtotal">₹0</strong>
+      </div>
+      <div class="bill-row">
+        <span data-translate="summary-delivery">Delivery Charges</span>
+        <strong class="text-success" data-translate="free">FREE</strong>
+      </div>
+      <div class="bill-row grand-total">
+        <span data-translate="summary-total">Total Amount</span>
+        <strong id="billTotal">₹0</strong>
+      </div>
+      <button class="btn btn-primary btn-block btn-checkout" id="submitCheckoutBtn" data-translate="btn-checkout">Proceed to Pay (UPI)</button>
+    </div>
+  </div>
+
+  <div class="cart-backdrop" id="cartBackdrop"></div>
+
+
+  <!-- ================= UPI PAYMENT MODAL ================= -->
+  <div class="modal" id="upiModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 data-translate="upi-modal-title">UPI Safe Checkout</h3>
+        <button class="close-modal" id="closeUpiBtn">&times;</button>
+      </div>
+      <div class="modal-body text-center">
+        <div class="amount-badge">
+          <span data-translate="upi-payee-badge">Amount to Pay</span>
+          <h2 id="upiModalAmount">₹0.00</h2>
+        </div>
+
+        <p class="payment-instructions" data-translate="upi-instructions">Scan this QR code using any UPI App (GPay, PhonePe, Paytm, BHIM) to make instant secure payment.</p>
+
+        <!-- QR Code Container -->
+        <div class="qr-code-wrapper">
+          <img src="" alt="UPI QR Code" id="upiQrCodeImg" class="qr-code-img">
+          <div class="qr-loader" id="qrLoader">
+            <div class="spinner"></div>
+          </div>
+        </div>
+
+        <!-- Mobile Deep Link Option -->
+        <div class="mobile-pay-action">
+          <a href="#" class="btn btn-success btn-block" id="upiMobileLink">
+            <svg class="icon" viewBox="0 0 24 24" style="margin-right: 8px;"><path fill="currentColor" d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg>
+            <span data-translate="upi-mobile-pay-text">Pay directly via UPI App</span>
+          </a>
+          <span class="field-hint" data-translate="upi-mobile-pay-hint">Click above if ordering on your mobile phone.</span>
+        </div>
+
+        <hr class="modal-divider">
+
+        <!-- Verification Form -->
+        <div class="payment-verification-form">
+          <h4 data-translate="upi-confirm-header">Confirm Your Payment</h4>
+          <p data-translate="upi-utr-info">After completing the transaction, paste the 12-digit transaction UTR / Reference ID from your UPI app below to verify.</p>
+          
+          <div class="form-group">
+            <div class="input-action-group">
+              <input type="text" id="upiUtr" placeholder="Enter 12-digit UPI UTR Number" maxlength="12" pattern="[0-9]{12}">
+              <button class="btn btn-secondary" type="button" id="mockUtrBtn" data-translate="mock-utr-btn">Mock UTR</button>
+            </div>
+            <span class="field-hint text-left" data-translate="mock-utr-hint">Example: 304212589064. Click "Mock UTR" for instant sandbox testing.</span>
+          </div>
+
+          <button class="btn btn-primary btn-block" id="verifyPaymentBtn">
+            <span id="verifyBtnText" data-translate="upi-verify-btn">Verify & Complete Order</span>
+            <div class="spinner hidden" id="verifyBtnSpinner"></div>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ================= SUCCESS CONFIRMATION PANEL ================= -->
+  <div class="success-screen-overlay hidden" id="successScreen">
+    <div class="success-card">
+      <div class="success-checkmark-wrapper">
+        <div class="checkmark-circle">
+          <div class="checkmark-stem"></div>
+          <div class="checkmark-kick"></div>
+        </div>
+      </div>
+      
+      <h2 data-translate="success-header">Payment Successful!</h2>
+      <p class="order-alert-msg" data-translate="success-kitchen-note">Your order has been placed and is being prepared in the kitchen.</p>
+      
+      <div class="receipt-box">
+        <div class="receipt-header">
+          <h3 data-translate="success-receipt-title">Order Details</h3>
+          <span class="receipt-id" id="successOrderId">BCP-XXXXXX</span>
+        </div>
+        <div class="receipt-body">
+          <div class="receipt-row">
+            <span data-translate="receipt-label-name">Customer Name:</span>
+            <strong id="successCustName">John Doe</strong>
+          </div>
+          <div class="receipt-row">
+            <span data-translate="receipt-label-phone">Contact Phone:</span>
+            <strong id="successCustPhone">9898989898</strong>
+          </div>
+          <div class="receipt-row">
+            <span data-translate="receipt-label-address">Delivery Address:</span>
+            <strong id="successCustAddress" class="address-text">123 Street</strong>
+          </div>
+          <hr>
+          <div class="receipt-row">
+            <span data-translate="receipt-label-method">Payment Method:</span>
+            <strong data-translate="upi-payment-method">UPI Scan & Pay</strong>
+          </div>
+          <div class="receipt-row">
+            <span data-translate="receipt-label-utr">Transaction UTR:</span>
+            <strong id="successUtr">UTR-123456789</strong>
+          </div>
+          <hr>
+          <div class="receipt-row total-row">
+            <span data-translate="receipt-label-amount">Amount Paid:</span>
+            <strong id="successAmount">₹0</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="success-notice">
+        <p data-translate="receipt-notice-note">📨 A confirmation receipt has been logged to your email. The vendor has received this order and is preparing it for delivery.</p>
+      </div>
+
+      <div class="success-actions">
+        <button class="btn btn-primary" id="successHomeBtn" data-translate="btn-continue-shopping">Continue Shopping</button>
+        <button class="btn btn-secondary" id="successAdminBtn" data-translate="btn-view-dashboard">View in Vendor Dashboard</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Overlay for Global Actions -->
+  <div class="global-loader hidden" id="globalLoader">
+    <div class="spinner-large"></div>
+    <p id="globalLoaderText">Processing request...</p>
+  </div>
+
+  <!-- JS Scripts -->
+  <script src="script.js"></script>
+</body>
+</html>
