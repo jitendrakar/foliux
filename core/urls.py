@@ -156,5 +156,18 @@ urlpatterns = [
     path('dr/<path:path>', views.serve_dr, name='serve_dr_files'),
     path('ca/', views.serve_ca, {'path': ''}, name='serve_ca_root'),
     path('ca/<path:path>', views.serve_ca, name='serve_ca_files'),
+    
+    # BCP Routing
+    path('bcp/', views.serve_bcp, {'path': ''}, name='serve_bcp_root'),
+    path('bcp/<path:path>', views.serve_bcp, name='serve_bcp_files'),
+    
+    # BCP APIs (Matching bcp/public/script.js relative fetch requests)
+    path('api/menu', views.bcp_api_menu, name='bcp_api_menu'),
+    path('api/orders', views.bcp_api_orders, name='bcp_api_orders'),
+    path('api/orders/<str:order_id>/verify-payment', views.bcp_api_verify_payment, name='bcp_api_verify_payment'),
+    path('api/admin/orders', views.bcp_api_admin_orders, name='bcp_api_admin_orders'),
+    path('api/admin/orders/<str:order_id>/status', views.bcp_api_admin_order_status, name='bcp_api_admin_order_status'),
+    path('api/admin/emails', views.bcp_api_admin_emails, name='bcp_api_admin_emails'),
+    path('api/admin/config/smtp', views.bcp_api_admin_config_smtp, name='bcp_api_admin_config_smtp'),
 ]
 

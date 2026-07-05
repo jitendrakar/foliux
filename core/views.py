@@ -7033,6 +7033,770 @@ def serve_ca(request, path=''):
         raise Http404("File not found")
 
 
+# ==========================================
+# BHARAT CHICKEN POINT (BCP) MODULE
+# ==========================================
+
+BCP_MENU = [
+    {
+        'id': 'fresh_chicken',
+        'name': 'Fresh Chicken (Whole Cut)',
+        'nameHi': 'ताजा चिकन (साबुत कट)',
+        'category': 'raw',
+        'price': 220,
+        'unit': 'Per Kg',
+        'description': 'Clean, fresh whole chicken cut to your preference (curry cut, biryani cut, etc.).',
+        'descriptionHi': 'आपकी पसंद के अनुसार काटा गया ताजा चिकन (करी कट, बिरयानी कट, आदि)।',
+        'image': 'assets/fresh_chicken.jpg'
+    },
+    {
+        'id': 'breast_boneless',
+        'name': 'Breast Boneless Chicken',
+        'nameHi': 'ब्रेस्ट बोनलेस चिकन',
+        'category': 'raw',
+        'price': 260,
+        'unit': 'Per Kg',
+        'description': 'Fresh, skinless, boneless chicken breast meat. Extremely lean and tender.',
+        'descriptionHi': 'ताजा, बिना त्वचा और बिना हड्डी वाला चिकन ब्रेस्ट मीट। बहुत ही हल्का और कोमल।',
+        'image': 'assets/breast_boneless.jpg'
+    },
+    {
+        'id': 'thai_boneless',
+        'name': 'Thai Boneless Chicken',
+        'nameHi': 'थाई बोनलेस चिकन',
+        'category': 'raw',
+        'price': 320,
+        'unit': 'Per Kg',
+        'description': 'Juicy, boneless chicken thigh pieces, perfect for grilling, frying, or tikka.',
+        'descriptionHi': 'चिकन जांघ के रसीले टुकड़े, तंदूरी, फ्राइंग या तिक्का बनाने के लिए एकदम सही।',
+        'image': 'assets/thai_boneless.jpg'
+    },
+    {
+        'id': 'chicken_tangri',
+        'name': 'Chicken Tangri (Drumsticks)',
+        'nameHi': 'चिकन टांगड़ी (लेग पीस)',
+        'category': 'raw',
+        'price': 260,
+        'unit': 'Per Kg',
+        'description': 'Cleaned chicken drumsticks, ready for marination and tandoori cooking.',
+        'descriptionHi': 'साफ की हुई चिकन टांगड़ी (ड्रमस्टिक्स), मैरीनेशन और तंदूरी कुकिंग के लिए तैयार।',
+        'image': 'assets/chicken_tangri.jpg'
+    },
+    {
+        'id': 'chicken_wings',
+        'name': 'Chicken Wings',
+        'nameHi': 'चिकन विंग्स (पंख)',
+        'category': 'raw',
+        'price': 260,
+        'unit': 'Per Kg',
+        'description': 'Clean chicken wings, ideal for spicy wings fry or barbecue.',
+        'descriptionHi': 'साफ चिकन विंग्स, मसालेदार विंग्स फ्राई या बारबेक्यू के लिए एकदम सही।',
+        'image': 'assets/chicken_wings.jpg'
+    },
+    {
+        'id': 'chicken_keema',
+        'name': 'Chicken Keema (Minced)',
+        'nameHi': 'चिकन कीमा',
+        'category': 'raw',
+        'price': 260,
+        'unit': 'Per Kg',
+        'description': 'Premium quality minced chicken, freshly prepared, low-fat.',
+        'descriptionHi': 'प्रीमियम गुणवत्ता वाला कीमा चिकन, ताजा तैयार किया हुआ और कम वसा वाला।',
+        'image': 'assets/chicken_keema.jpg'
+    },
+    {
+        'id': 'chicken_full_leg',
+        'name': 'Chicken Full Leg Quarter',
+        'nameHi': 'चिकन फुल लेग क्वार्टर',
+        'category': 'raw',
+        'price': 280,
+        'unit': 'Per Kg',
+        'description': 'Full leg quarters containing both the thigh and the drumstick.',
+        'descriptionHi': 'साबुत चिकन लेग पीस जिसमें जांघ और टांग दोनों भाग शामिल हैं।',
+        'image': 'assets/chicken_full_leg.jpg'
+    },
+    {
+        'id': 'fresh_mutton',
+        'name': 'Fresh Mutton (Goat Meat)',
+        'nameHi': 'ताजा मटन (बकरे का मीट)',
+        'category': 'raw',
+        'price': 700,
+        'unit': 'Per Kg',
+        'description': 'Premium, tender fresh goat meat. Sourced daily and hygienically cut.',
+        'descriptionHi': 'प्रीमियम और कोमल बकरे का मीट, रोजाना ताजा और स्वच्छता से कटा हुआ।',
+        'image': 'assets/fresh_mutton.jpg'
+    },
+    {
+        'id': 'mutton_kabab',
+        'name': 'Mutton Seekh Kabab',
+        'nameHi': 'मटन सीख कबाब',
+        'category': 'ready',
+        'price': 350,
+        'unit': 'Per Pkt',
+        'description': 'Authentic spiced minced mutton skewers, ready to grill, pan-fry, or eat.',
+        'descriptionHi': 'स्वादिष्ट मसालेदार पिसा हुआ मटन कबाब सीक, तलने या ग्रिल करने के लिए तैयार।',
+        'image': 'assets/mutton_kabab.jpg'
+    },
+    {
+        'id': 'chicken_salami',
+        'name': 'Chicken Salami',
+        'nameHi': 'चिकन सलामी',
+        'category': 'ready',
+        'price': 180,
+        'unit': 'Per Pkt',
+        'description': 'Deliciously sliced chicken cold-cut salami, mildly seasoned.',
+        'descriptionHi': 'स्वादिष्ट कटी हुई चिकन सलामी, हल्के मसालों के साथ सीजन की हुई।',
+        'image': 'assets/chicken_salami.jpg'
+    },
+    {
+        'id': 'spicy_salami',
+        'name': 'Spicy Chicken Salami',
+        'nameHi': 'तीखी चिकन सलामी',
+        'category': 'ready',
+        'price': 180,
+        'unit': 'Per Pkt',
+        'description': 'Sliced chicken salami loaded with red chili flakes and spices.',
+        'descriptionHi': 'लाल मिर्च के फ्लेक्स और तीखे मसालों से भरपूर चिकन सलामी स्लाइस।',
+        'image': 'assets/spicy_salami.jpg'
+    },
+    {
+        'id': 'chicken_nuggets',
+        'name': 'Chicken Nuggets',
+        'nameHi': 'चिकन नगेट्स',
+        'category': 'ready',
+        'price': 250,
+        'unit': 'Per Pkt',
+        'description': 'Golden, crispy, breaded chicken nuggets. Store and fry as needed.',
+        'descriptionHi': 'सुनहरे, कुरकुरे और ब्रेड क्रम्ब्स वाले चिकन नगेट्स। घर पर तलने के लिए तैयार।',
+        'image': 'assets/chicken_nuggets.jpg'
+    },
+    {
+        'id': 'angara_kabab',
+        'name': 'Angara Chicken Kabab',
+        'nameHi': 'अंगारा चिकन कबाब',
+        'category': 'ready',
+        'price': 250,
+        'unit': 'Per Pkt',
+        'description': 'Spicy chicken seekh kababs marinated in fiery red Angara spices.',
+        'descriptionHi': 'तीखे लाल अंगारा मसालों में मैरीनेट किया हुआ चिकन सीख कबाब।',
+        'image': 'assets/angara_kabab.jpg'
+    },
+    {
+        'id': 'mughlai_kabab',
+        'name': 'Mughlai Chicken Kabab',
+        'nameHi': 'मुगलई चिकन कबाब',
+        'category': 'ready',
+        'price': 250,
+        'unit': 'Per Pkt',
+        'description': 'Creamy, rich, and mildly flavored chicken seekh kababs in royal Mughlai marinade.',
+        'descriptionHi': 'शाही मलाईदार और बेहद कोमल मुगलई मैरीनेशन से तैयार चिकन सीख कबाब।',
+        'image': 'assets/mughlai_kabab.jpg'
+    },
+    {
+        'id': 'peri_peri_kabab',
+        'name': 'Peri-Peri Chicken Kabab',
+        'nameHi': 'पेरी-पेरी चिकन कबाब',
+        'category': 'ready',
+        'price': 250,
+        'unit': 'Per Pkt',
+        'description': 'Zesty and tangy chicken kababs marinated in citrusy African Peri-Peri sauce.',
+        'descriptionHi': 'चटपटे और तीखे अफ्रीकी पेरी-पेरी सॉस से मैरीनेट किया हुआ चिकन कबाब।',
+        'image': 'assets/peri_peri_kabab.jpg'
+    },
+    {
+        'id': 'malai_kabab',
+        'name': 'Malai Chicken Kabab',
+        'nameHi': 'मलाई चिकन कबाब',
+        'category': 'ready',
+        'price': 250,
+        'unit': 'Per Pkt',
+        'description': 'Extremely soft, melt-in-the-mouth chicken kababs with rich cream and cheese.',
+        'descriptionHi': 'अत्यंत कोमल, मुंह में घुलने वाले मलाईदार और चीजी चिकन कबाब।',
+        'image': 'assets/malai_kabab.jpg'
+    },
+    {
+        'id': 'achari_kabab',
+        'name': 'Achari Chicken Kabab',
+        'nameHi': 'अचारी चिकन कबाब',
+        'category': 'ready',
+        'price': 250,
+        'unit': 'Per Pkt',
+        'description': 'Tender chicken kababs with the tangy, savory flavors of traditional Indian pickle.',
+        'descriptionHi': 'चिकन कबाब जिसमें भारतीय मसालों और खट्टे अचार का चटपटा स्वाद है।',
+        'image': 'assets/achari_kabab.jpg'
+    },
+    {
+        'id': 'cheesy_onion_kabab',
+        'name': 'Cheesy Onion Chicken Kabab',
+        'nameHi': 'चीजी अनियन चिकन कबाब',
+        'category': 'ready',
+        'price': 250,
+        'unit': 'Per Pkt',
+        'description': 'Succulent chicken kababs stuffed with mozzarella cheese and sweet onions.',
+        'descriptionHi': 'मोज़ेरेला चीज़ और मीठे प्याज के टुकड़ों से भरा रसीला चिकन कबाब।',
+        'image': 'assets/cheesy_onion_kabab.jpg'
+    },
+    {
+        'id': 'karachi_chicken',
+        'name': 'Karachi Chicken Fry',
+        'nameHi': 'कराची चिकन फ्राई',
+        'category': 'specials',
+        'price': 100,
+        'unit': '250 Grams',
+        'description': 'Karachi-style stir fried chicken, cooked with freshly ground whole spices.',
+        'descriptionHi': 'कराची स्टाइल स्वादिष्ट चिकन फ्राई, ताज़ा पीसे खड़े मसालों के साथ भुना हुआ।',
+        'image': 'assets/karachi_chicken.jpg'
+    },
+    {
+        'id': 'chicken_lollypop',
+        'name': 'Chicken Lollypop Fry',
+        'nameHi': 'चिकन लॉलीपॉप फ्राई',
+        'category': 'specials',
+        'price': 80,
+        'unit': '250 Grams',
+        'description': 'Indo-Chinese style crispy fried chicken drumettes coated in seasoned batter.',
+        'descriptionHi': 'मसालेदार घोल में लपेटकर गहरा तला हुआ क्रिस्पी इंडो-चाइनीज चिकन विंग्स।',
+        'image': 'assets/chicken_lollypop.jpg'
+    },
+    {
+        'id': 'chicken_fry',
+        'name': 'Bharat Special Chicken Fry',
+        'nameHi': 'भारत स्पेशल चिकन फ्राई',
+        'category': 'specials',
+        'price': 200,
+        'unit': 'Full Plate',
+        'description': 'Our signature crispy, deep-fried chicken marinated in secret traditional spices.',
+        'descriptionHi': 'हमारा विशेष क्रिस्पी फ्राइड चिकन, पारंपरिक और अनोखे मसालों से मैरीनेटेड।',
+        'image': 'assets/chicken_fry.jpg'
+    }
+]
+
+def bcp_read_db(file_name):
+    import os
+    import json
+    from django.conf import settings
+    file_path = os.path.join(settings.BASE_DIR, 'bcp', file_name)
+    if not os.path.exists(file_path):
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump([], f, indent=2)
+        return []
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"Error reading {file_name}: {e}")
+        return []
+
+def bcp_write_db(file_name, data):
+    import os
+    import json
+    from django.conf import settings
+    file_path = os.path.join(settings.BASE_DIR, 'bcp', file_name)
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+    try:
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        return True
+    except Exception as e:
+        print(f"Error writing {file_name}: {e}")
+        return False
+
+def bcp_read_env():
+    import os
+    from django.conf import settings
+    env_path = os.path.join(settings.BASE_DIR, 'bcp', '.env')
+    config = {
+        'IS_SMTP_ENABLED': 'false',
+        'SMTP_HOST': 'smtp.gmail.com',
+        'SMTP_PORT': '587',
+        'SMTP_USER': '',
+        'SMTP_PASS': '',
+        'VENDOR_EMAIL': 'sarfarajguddu.bcp@gmail.com',
+        'UPI_ID': '9899946076@okbizaxis',
+        'MERCHANT_NAME': 'Bharat Chicken Point'
+    }
+    if not os.path.exists(env_path):
+        return config
+    try:
+        with open(env_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith('#') or '=' not in line:
+                    continue
+                parts = line.split('=', 1)
+                k = parts[0].strip()
+                v = parts[1].strip()
+                config[k] = v
+    except Exception as e:
+        print(f"Error reading BCP .env: {e}")
+    return config
+
+def bcp_write_env(config_dict):
+    import os
+    from django.conf import settings
+    env_path = os.path.join(settings.BASE_DIR, 'bcp', '.env')
+    lines = []
+    written_keys = set()
+    if os.path.exists(env_path):
+        with open(env_path, 'r', encoding='utf-8') as f:
+            for line in f:
+                stripped = line.strip()
+                if stripped and not stripped.startswith('#') and '=' in stripped:
+                    parts = stripped.split('=', 1)
+                    k = parts[0].strip()
+                    if k in config_dict:
+                        lines.append(f"{k}={config_dict[k]}\n")
+                        written_keys.add(k)
+                        continue
+                lines.append(line)
+    for k, v in config_dict.items():
+        if k not in written_keys:
+            lines.append(f"{k}={v}\n")
+    try:
+        with open(env_path, 'w', encoding='utf-8') as f:
+            f.writelines(lines)
+        return True
+    except Exception as e:
+        print(f"Error writing BCP .env: {e}")
+        return False
+
+def bcp_get_customer_email_template(order):
+    items_list = ""
+    for item in order['items']:
+        items_list += f"""
+        <tr>
+          <td style="padding: 8px; border-bottom: 1px solid #ddd;">{item['name']}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">{item['quantity']}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">₹{item['price']}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">₹{item['price'] * item['quantity']}</td>
+        </tr>
+        """
+    return f"""
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
+      <div style="background-color: #c8102e; padding: 15px; text-align: center; border-radius: 6px 6px 0 0;">
+        <h2 style="color: white; margin: 0;">Bharat Chicken & Mutton Shop</h2>
+      </div>
+      <div style="padding: 20px;">
+        <h3 style="color: #333;">Order Confirmed!</h3>
+        <p>Dear <strong>{order['customerName']}</strong>,</p>
+        <p>Thank you for placing your order with us. We have received your payment and our kitchen is preparing your items.</p>
+        
+        <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+          <thead>
+            <tr style="background-color: #f8f8f8;">
+              <th style="padding: 8px; text-align: left; border-bottom: 2px solid #ddd;">Item</th>
+              <th style="padding: 8px; text-align: center; border-bottom: 2px solid #ddd;">Qty</th>
+              <th style="padding: 8px; text-align: right; border-bottom: 2px solid #ddd;">Price</th>
+              <th style="padding: 8px; text-align: right; border-bottom: 2px solid #ddd;">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items_list}
+            <tr>
+              <td colspan="3" style="padding: 8px; text-align: right; font-weight: bold;">Grand Total:</td>
+              <td style="padding: 8px; text-align: right; font-weight: bold; color: #c8102e;">₹{order['totalAmount']}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="background-color: #fff9e6; border-left: 4px solid #ffc72c; padding: 12px; margin: 20px 0;">
+          <h4 style="margin: 0 0 5px 0; color: #7a5f00;">Delivery Details:</h4>
+          <p style="margin: 0; font-size: 14px;"><strong>Address:</strong> {order['deliveryAddress']}</p>
+          <p style="margin: 5px 0 0 0; font-size: 14px;"><strong>Phone:</strong> {order['customerPhone']}</p>
+        </div>
+
+        <p style="font-size: 14px; color: #666;">If you have any questions, feel free to call us at <strong>9899946076</strong> or <strong>9560569646</strong>.</p>
+        <p style="margin-top: 30px; font-size: 12px; text-align: center; color: #999;">S-10, Private Colony, Sriniwaspuri, New Delhi - 110065</p>
+      </div>
+    </div>
+    """
+
+def bcp_get_vendor_email_template(order):
+    items_list = ""
+    for item in order['items']:
+        items_list += f"""
+        <tr>
+          <td style="padding: 8px; border-bottom: 1px solid #ddd;">{item['name']}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: center;">{item['quantity']}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">₹{item['price']}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align: right;">₹{item['price'] * item['quantity']}</td>
+        </tr>
+        """
+    import datetime
+    paid_at_dt = order['paymentDetails']['paidAt'] if order.get('paymentDetails') else order['createdAt']
+    try:
+        dt = datetime.datetime.fromisoformat(paid_at_dt.replace('Z', '+00:00'))
+        from datetime import timezone, timedelta
+        dt_ist = dt.astimezone(timezone(timedelta(hours=5, minutes=30)))
+        time_str = dt_ist.strftime('%d/%m/%Y, %I:%M:%S %p')
+    except Exception:
+        time_str = paid_at_dt
+
+    return f"""
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px; border-top: 5px solid #ffc72c;">
+      <div style="background-color: #1a1a1a; padding: 15px; text-align: center; border-radius: 6px 6px 0 0;">
+        <h2 style="color: #ffc72c; margin: 0;">NEW ORDER RECEIVED!</h2>
+        <span style="color: #fff; font-size: 12px;">Order ID: {order['id']}</span>
+      </div>
+      <div style="padding: 20px;">
+        <h3 style="color: #c8102e; border-bottom: 1px solid #eee; padding-bottom: 8px;">Order Details</h3>
+        <p><strong>Customer:</strong> {order['customerName']}</p>
+        <p><strong>Phone:</strong> <a href="tel:{order['customerPhone']}">{order['customerPhone']}</a></p>
+        <p><strong>Email:</strong> {order['customerEmail']}</p>
+        <p><strong>Address:</strong> {order['deliveryAddress']}</p>
+        <p><strong>Time:</strong> {time_str}</p>
+
+        <h3 style="color: #c8102e; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-top: 20px;">Items Ordered</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="background-color: #f8f8f8;">
+              <th style="padding: 8px; text-align: left;">Item</th>
+              <th style="padding: 8px; text-align: center;">Qty</th>
+              <th style="padding: 8px; text-align: right;">Price</th>
+              <th style="padding: 8px; text-align: right;">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items_list}
+            <tr style="font-weight: bold;">
+              <td colspan="3" style="padding: 8px; text-align: right;">Total Amount Paid:</td>
+              <td style="padding: 8px; text-align: right; color: #c8102e;">₹{order['totalAmount']}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="background-color: #e8f5e9; border-left: 4px solid #4caf50; padding: 12px; margin-top: 20px; border-radius: 4px;">
+          <h4 style="margin: 0 0 5px 0; color: #2e7d32;">Payment Details (UPI):</h4>
+          <p style="margin: 0; font-size: 14px;"><strong>Status:</strong> Success (PAID)</p>
+          <p style="margin: 3px 0 0 0; font-size: 14px;"><strong>Payment Method:</strong> {order.get('paymentDetails', {}).get('method', 'UPI') if order.get('paymentDetails') else 'UPI'}</p>
+          <p style="margin: 3px 0 0 0; font-size: 14px;"><strong>Transaction UTR/Reference:</strong> {order.get('paymentDetails', {}).get('utr', 'N/A') if order.get('paymentDetails') else 'N/A'}</p>
+        </div>
+
+        <div style="margin-top: 30px; text-align: center;">
+          <a href="http://localhost:3000/#admin" style="background-color: #c8102e; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold;">Open Vendor Dashboard</a>
+        </div>
+      </div>
+    </div>
+    """
+
+def bcp_send_notification_email(to, subject, html_body, email_type):
+    import random
+    config = bcp_read_env()
+    is_smtp_enabled = config.get('IS_SMTP_ENABLED', 'false') == 'true'
+    
+    if is_smtp_enabled:
+        try:
+            import smtplib
+            from email.mime.multipart import MIMEMultipart
+            from email.mime.text import MIMEText
+            
+            host = config.get('SMTP_HOST', 'smtp.gmail.com')
+            port = int(config.get('SMTP_PORT', '587'))
+            user = config.get('SMTP_USER', '')
+            passwd = config.get('SMTP_PASS', '')
+            
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = subject
+            msg['From'] = f'"Bharat Chicken Point" <{user}>'
+            msg['To'] = to
+            
+            part2 = MIMEText(html_body, 'html')
+            msg.attach(part2)
+            
+            server = smtplib.SMTP(host, port)
+            if port == 587:
+                server.starttls()
+            if user and passwd:
+                server.login(user, passwd)
+            server.sendmail(user, to, msg.as_string())
+            server.quit()
+            print(f"Real email sent successfully to {to} ({email_type})")
+            
+            logs = bcp_read_db('email_logs.json')
+            import datetime
+            logs.insert(0, {
+                'id': 'L-' + str(random.randint(100000, 999999)),
+                'to': to,
+                'subject': subject,
+                'body': html_body,
+                'timestamp': datetime.datetime.utcnow().isoformat() + 'Z',
+                'mode': 'Real SMTP'
+            })
+            bcp_write_db('email_logs.json', logs)
+            return True
+        except Exception as e:
+            print(f"Failed to send real email to {to}: {e}")
+            
+    logs = bcp_read_db('email_logs.json')
+    import datetime
+    logs.insert(0, {
+        'id': 'L-' + str(random.randint(100000, 999999)),
+        'to': to,
+        'subject': subject,
+        'body': html_body,
+        'timestamp': datetime.datetime.utcnow().isoformat() + 'Z',
+        'mode': 'Simulated Log'
+    })
+    bcp_write_db('email_logs.json', logs)
+    print(f"[SIMULATED EMAIL LOGGED] To: {to} | Subject: {subject}")
+    return True
+
+def serve_bcp(request, path=''):
+    """
+    Serves static files from the 'bcp/public' directory.
+    If the path is empty or a directory, it defaults to 'index.html'.
+    Prevents directory traversal attacks by validating the path.
+    """
+    import os
+    from django.http import FileResponse, Http404, HttpResponseRedirect
+    from django.conf import settings
+    
+    if request.path == '/bcp':
+        return HttpResponseRedirect('/bcp/')
+        
+    bcp_dir = os.path.join(settings.BASE_DIR, 'bcp', 'public')
+    
+    if not path or path.endswith('/'):
+        path = os.path.join(path, 'index.html')
+        
+    full_path = os.path.join(bcp_dir, path)
+    
+    normalized_path = os.path.abspath(full_path)
+    if not normalized_path.startswith(os.path.abspath(bcp_dir)):
+        raise Http404("File not found")
+        
+    if os.path.exists(normalized_path) and os.path.isfile(normalized_path):
+        return FileResponse(open(normalized_path, 'rb'))
+    else:
+        raise Http404("File not found")
+
+def bcp_api_menu(request):
+    """Returns BCP Menu items"""
+    return JsonResponse(BCP_MENU, safe=False)
+
+@csrf_exempt
+def bcp_api_orders(request):
+    """Creates a BCP order context and UPI payment parameters"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST method required'}, status=405)
+    
+    import json
+    import random
+    import urllib.parse
+    import datetime
+    
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        return JsonResponse({'error': 'Invalid JSON body'}, status=400)
+        
+    customer_name = data.get('customerName')
+    customer_phone = data.get('customerPhone')
+    customer_email = data.get('customerEmail')
+    delivery_address = data.get('deliveryAddress')
+    items = data.get('items', [])
+    
+    if not customer_name or not customer_phone or not delivery_address or not items:
+        return JsonResponse({'error': 'Missing required checkout information.'}, status=400)
+        
+    calculated_items = []
+    total_amount = 0
+    
+    for client_item in items:
+        item_id = client_item.get('id')
+        qty = client_item.get('quantity', 0)
+        menu_item = next((m for m in BCP_MENU if m['id'] == item_id), None)
+        if not menu_item:
+            return JsonResponse({'error': f'Invalid menu item ID: {item_id}'}, status=400)
+        
+        item_total = menu_item['price'] * qty
+        total_amount += item_total
+        calculated_items.append({
+            'id': menu_item['id'],
+            'name': menu_item['name'],
+            'price': menu_item['price'],
+            'unit': menu_item['unit'],
+            'quantity': qty
+        })
+        
+    order_id = 'BCP-' + str(random.randint(100000, 999999))
+    config = bcp_read_env()
+    upi_id = config.get('UPI_ID', '9899946076@okbizaxis')
+    merchant_name = config.get('MERCHANT_NAME', 'Bharat Chicken Point')
+    
+    encoded_name = urllib.parse.quote(merchant_name)
+    encoded_note = urllib.parse.quote(f'Order {order_id}')
+    upi_string = f"upi://pay?pa={upi_id}&pn={encoded_name}&am={total_amount:.2f}&cu=INR&tn={encoded_note}"
+    
+    new_order = {
+        'id': order_id,
+        'customerName': customer_name,
+        'customerPhone': customer_phone,
+        'customerEmail': customer_email or 'no-email@bcp.local',
+        'deliveryAddress': delivery_address,
+        'items': calculated_items,
+        'totalAmount': total_amount,
+        'status': 'Pending Payment',
+        'createdAt': datetime.datetime.utcnow().isoformat() + 'Z',
+        'upiPaymentLink': upi_string,
+        'paymentDetails': None
+    }
+    
+    orders = bcp_read_db('orders.json')
+    orders.append(new_order)
+    bcp_write_db('orders.json', orders)
+    
+    return JsonResponse({
+        'success': True,
+        'orderId': order_id,
+        'totalAmount': total_amount,
+        'upiPaymentLink': upi_string,
+        'upiId': upi_id,
+        'merchantName': merchant_name
+    })
+
+@csrf_exempt
+def bcp_api_verify_payment(request, order_id):
+    """Verifies simulated payment from frontend and triggers receipts logs/emails"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST method required'}, status=405)
+        
+    import json
+    import random
+    import datetime
+    
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        data = {}
+        
+    utr = data.get('utr')
+    payment_method = data.get('paymentMethod', 'UPI')
+    
+    orders = bcp_read_db('orders.json')
+    order_index = next((i for i, o in enumerate(orders) if o['id'] == order_id), -1)
+    
+    if order_index == -1:
+        return JsonResponse({'error': 'Order not found.'}, status=404)
+        
+    order = orders[order_index]
+    order['status'] = 'Paid'
+    order['paymentDetails'] = {
+        'method': payment_method,
+        'utr': utr or ('UTR-' + str(random.randint(100000000000, 999999999999))),
+        'paidAt': datetime.datetime.utcnow().isoformat() + 'Z'
+    }
+    
+    orders[order_index] = order
+    bcp_write_db('orders.json', orders)
+    
+    customer_html = bcp_get_customer_email_template(order)
+    vendor_html = bcp_get_vendor_email_template(order)
+    
+    if order['customerEmail'] and order['customerEmail'] != 'no-email@bcp.local':
+        bcp_send_notification_email(
+            to=order['customerEmail'],
+            subject=f"Order Confirmed! Your Receipt from Bharat Chicken Point [{order['id']}]",
+            html_body=customer_html,
+            email_type='Customer Confirmation'
+        )
+        
+    config = bcp_read_env()
+    vendor_email = config.get('VENDOR_EMAIL', 'sarfarajguddu.bcp@gmail.com')
+    bcp_send_notification_email(
+        to=vendor_email,
+        subject=f"⚠️ NEW ORDER ALREADY PAID: {order['id']} | ₹{order['totalAmount']}",
+        html_body=vendor_html,
+        email_type='Vendor Notification'
+    )
+    
+    return JsonResponse({
+        'success': True,
+        'message': 'Payment verified and order confirmed.',
+        'order': order
+    })
+
+def bcp_api_admin_orders(request):
+    """Returns sorted lists of all orders for Vendor dashboard"""
+    orders = bcp_read_db('orders.json')
+    try:
+        orders.sort(key=lambda x: x.get('createdAt', ''), reverse=True)
+    except Exception:
+        pass
+    return JsonResponse(orders, safe=False)
+
+@csrf_exempt
+def bcp_api_admin_order_status(request, order_id):
+    """Updates BCP order cooking and delivery status from Vendor dashboard"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST method required'}, status=405)
+        
+    import json
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        
+    status = data.get('status')
+    valid_statuses = ['Pending Payment', 'Paid', 'Cooking', 'Out for Delivery', 'Delivered', 'Cancelled']
+    if status not in valid_statuses:
+        return JsonResponse({'error': 'Invalid order status.'}, status=400)
+        
+    orders = bcp_read_db('orders.json')
+    order_index = next((i for i, o in enumerate(orders) if o['id'] == order_id), -1)
+    
+    if order_index == -1:
+        return JsonResponse({'error': 'Order not found.'}, status=404)
+        
+    orders[order_index]['status'] = status
+    bcp_write_db('orders.json', orders)
+    
+    return JsonResponse({
+        'success': True,
+        'message': f'Order status updated to {status}.',
+        'order': orders[order_index]
+    })
+
+def bcp_api_admin_emails(request):
+    """Returns saved simulated email logs for Admin review"""
+    logs = bcp_read_db('email_logs.json')
+    return JsonResponse(logs, safe=False)
+
+@csrf_exempt
+def bcp_api_admin_config_smtp(request):
+    """Saves SMTP credentials directly to BCP .env configuration"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST method required'}, status=405)
+        
+    import json
+    try:
+        data = json.loads(request.body)
+    except Exception:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        
+    host = data.get('host')
+    port = data.get('port')
+    user = data.get('user')
+    passwd = data.get('pass')
+    is_enabled = data.get('isEnabled')
+    vendor_email = data.get('vendorEmail')
+    
+    config = bcp_read_env()
+    config['IS_SMTP_ENABLED'] = 'true' if is_enabled else 'false'
+    if host: config['SMTP_HOST'] = str(host)
+    if port: config['SMTP_PORT'] = str(port)
+    if user: config['SMTP_USER'] = str(user)
+    if passwd: config['SMTP_PASS'] = str(passwd)
+    if vendor_email: config['VENDOR_EMAIL'] = str(vendor_email)
+    
+    success = bcp_write_env(config)
+    if success:
+        return JsonResponse({'success': True, 'message': 'SMTP settings updated successfully.'})
+    else:
+        return JsonResponse({'error': 'Failed to save SMTP configuration.'}, status=500)
+
+
 
 
 
