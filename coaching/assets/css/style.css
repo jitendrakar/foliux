@@ -186,8 +186,7 @@ a:hover {
     background-size: cover;
     background-position: center;
     position: relative;
-    display: flex;
-    align-items: center;
+    padding: 120px 0 100px;
     color: var(--white);
 }
 .hero-slide::before {
