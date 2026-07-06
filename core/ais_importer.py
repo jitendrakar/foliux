@@ -452,12 +452,14 @@ def parse_and_import_ais(user, decrypted_text, financial_year, duplicate_action=
                                     counts['equity'] += 1
                             else:
                                 amt = parse_decimal(get_field_by_label(l1_row, l1_labels, ['amount', 'value']))
+                                date_val = parse_date(get_field_by_label(l1_row, l1_labels, ['date', 'transactionDate']))
+                                desc = f"Reporting Entity: {source_name} | {title}" if source_name else title
                                 if duplicate_action == 'merge':
-                                    if IncomeTaxSft.objects.filter(user=user, financial_year=financial_year, reporting_entity=source_name, description=title, amount=amt).exists():
+                                    if IncomeTaxSft.objects.filter(user=user, financial_year=financial_year, transaction_type=code, description=desc, amount=amt, date=date_val).exists():
                                         continue
                                 IncomeTaxSft.objects.create(
                                     user=user, financial_year=financial_year, source=source, imported_on=imported_on, json_reference=l1_row,
-                                    reporting_entity=source_name, description=title, amount=amt
+                                    transaction_type=code, description=desc, amount=amt, date=date_val
                                 )
                                 counts['sft'] += 1
                                 
