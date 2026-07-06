@@ -1034,7 +1034,7 @@ function render(data) {
   renderDividend(data.dividend || []);
   renderEquity(data.equity || [], data.mutual_fund || []);
   renderCgSummary(data.equity || [], data.mutual_fund || []);
-  renderCrypto(data.sft || []);
+  renderCrypto(data.sft || [], data.tds || []);
   renderSFT(data.sft || []);
   renderTaxPaid(data.tax_payment || []);
   renderRefund(data.refund || []);
@@ -1088,13 +1088,32 @@ function updateStatCards(data) {
   });
   document.getElementById('sc-equity').textContent = fmt(totalProfit);
   // Nav badges
+  // Nav badges
+  const nonCryptoTdsCount = (data.tds || []).filter(r => {
+    const sec = (r.section || '').toUpperCase();
+    const desc = (r.information_description || '').toLowerCase();
+    const ded = (r.deductor_name || '').toLowerCase();
+    return !(sec.includes('194S') || sec.includes('VDA') ||
+             desc.includes('crypto') || desc.includes('vda') || desc.includes('virtual digital') ||
+             ded.includes('bitcipher') || ded.includes('wazirx') || ded.includes('coindcx') || ded.includes('binance'));
+  }).length;
+  
+  const nonCryptoSftCount = (data.sft || []).filter(r => {
+    const type = (r.transaction_type || '').toUpperCase();
+    const desc = (r.description || '').toLowerCase();
+    return !(type.includes('SFT-018') || type.includes('SFT-021') || type.includes('018') || type.includes('21') || 
+             desc.includes('crypto') || desc.includes('vda') || desc.includes('virtual digital') || 
+             desc.includes('bitcoin') || desc.includes('ethereum') || desc.includes('solana') ||
+             desc.includes('usdt') || desc.includes('wazirx') || desc.includes('coindcx') || desc.includes('binance'));
+  }).length;
+
   setBadge('nb-salary',   (data.salary||[]).length);
-  setBadge('nb-tds',      (data.tds||[]).length);
+  setBadge('nb-tds',      nonCryptoTdsCount);
   setBadge('nb-interest', (data.interest||[]).length);
   setBadge('nb-dividend', (data.dividend||[]).length);
   setBadge('nb-equity',   (data.equity||[]).length);
   setBadge('nb-mf',       (data.mutual_fund||[]).length);
-  setBadge('nb-sft',      (data.sft||[]).length);
+  setBadge('nb-sft',      nonCryptoSftCount);
   setBadge('nb-taxpaid',  (data.tax_payment||[]).length);
   setBadge('nb-refund',   (data.refund||[]).length);
   setBadge('nb-demand',   (data.demand||[]).length);
@@ -1128,6 +1147,16 @@ function renderSalary(rows) {
 }
 
 function renderTds(rows) {
+  const nonCryptoRows = (rows || []).filter(r => {
+    const sec = (r.section || '').toUpperCase();
+    const desc = (r.information_description || '').toLowerCase();
+    const ded = (r.deductor_name || '').toLowerCase();
+    const isCrypto = sec.includes('194S') || sec.includes('VDA') ||
+                     desc.includes('crypto') || desc.includes('vda') || desc.includes('virtual digital') ||
+                     ded.includes('bitcipher') || ded.includes('wazirx') || ded.includes('coindcx') || ded.includes('binance');
+    return !isCrypto;
+  });
+
   const tdsRow = r => `<tr>
     <td class="val-white">${r.deductor_name||'—'}</td>
     <td class="mono">${r.tan||'—'}</td>
@@ -1137,10 +1166,11 @@ function renderTds(rows) {
     <td class="text-right val-red">${fmt(r.tax_deducted)}</td>
     <td class="text-right val-emerald">${fmt(r.tax_collected)}</td>
   </tr>`;
+  
   // Full table
-  document.getElementById('tdsTableBody').innerHTML = rows.length ? rows.map(tdsRow).join('') : empty(7,'No TDS records imported.');
+  document.getElementById('tdsTableBody').innerHTML = nonCryptoRows.length ? nonCryptoRows.map(tdsRow).join('') : empty(7,'No TDS records imported.');
   // Overview (top 8)
-  const top = rows.slice(0,8);
+  const top = nonCryptoRows.slice(0,8);
   document.getElementById('ov-tdsBody').innerHTML = top.length ? top.map(r => `<tr>
     <td class="val-white">${r.deductor_name||'—'}</td>
     <td class="mono">${r.tan||'—'}</td>
@@ -1671,8 +1701,17 @@ function renderEquity(equityRows, mfRows) {
   renderTreeTable();
 }
 
-function renderCrypto(sftRows) {
-  const cryptoRows = (sftRows || []).filter(r => {
+function renderCrypto(sftRows, tdsRows) {
+  const cryptoTds = (tdsRows || []).filter(r => {
+    const sec = (r.section || '').toUpperCase();
+    const desc = (r.information_description || '').toLowerCase();
+    const ded = (r.deductor_name || '').toLowerCase();
+    return sec.includes('194S') || sec.includes('VDA') ||
+           desc.includes('crypto') || desc.includes('vda') || desc.includes('virtual digital') ||
+           ded.includes('bitcipher') || ded.includes('wazirx') || ded.includes('coindcx') || ded.includes('binance');
+  });
+
+  const cryptoSft = (sftRows || []).filter(r => {
     const type = (r.transaction_type || '').toUpperCase();
     const desc = (r.description || '').toLowerCase();
     return type.includes('SFT-018') || type.includes('SFT-021') || type.includes('018') || type.includes('21') || 
@@ -1681,19 +1720,39 @@ function renderCrypto(sftRows) {
            desc.includes('usdt') || desc.includes('wazirx') || desc.includes('coindcx') || desc.includes('binance');
   });
 
-  setBadge('nb-crypto', cryptoRows.length);
+  setBadge('nb-crypto', cryptoTds.length + cryptoSft.length);
 
   const tbody = document.getElementById('cryptoTableBody');
   if (!tbody) return;
 
-  tbody.innerHTML = cryptoRows.length
-    ? cryptoRows.map(r => `<tr>
-        <td><span class="ais-pill ais-pill-amber">${r.transaction_type||'—'}</span></td>
-        <td class="val-muted">${r.description||'—'}</td>
+  const allRows = [];
+  
+  cryptoTds.forEach(r => {
+    allRows.push({
+      type: `TDS-${r.section}`,
+      desc: `${r.deductor_name} - ${r.information_description} (TDS: ${fmt(r.tax_deducted)})`,
+      amount: r.amount_paid,
+      period: r.quarter || '—'
+    });
+  });
+
+  cryptoSft.forEach(r => {
+    allRows.push({
+      type: r.transaction_type || 'SFT-018',
+      desc: r.description || 'Virtual Digital Asset Transaction',
+      amount: r.amount,
+      period: fmtDate(r.date)
+    });
+  });
+
+  tbody.innerHTML = allRows.length
+    ? allRows.map(r => `<tr>
+        <td><span class="ais-pill ais-pill-amber">${r.type}</span></td>
+        <td class="val-muted">${r.desc}</td>
         <td class="text-right val-white">${fmt(r.amount)}</td>
-        <td class="val-muted">${fmtDate(r.date)}</td>
+        <td class="val-muted">${r.period}</td>
       </tr>`).join('')
-    : empty(4, 'No Crypto / VDA entries found in SFT records.');
+    : empty(4, 'No Crypto / VDA entries found in your AIS JSON.');
 }
 
 function renderSFT(rows) {
