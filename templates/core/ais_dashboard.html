@@ -805,7 +805,7 @@
         <p class="text-muted small mb-3" style="color: var(--ais-muted) !important;">This section lists transactions involving Virtual Digital Assets (VDA) like Cryptocurrencies and NFTs extracted from SFT records.</p>
         <div class="ais-table-wrap">
           <table class="ais-table" id="cryptoTbl">
-            <thead><tr><th>Transaction Type</th><th>Description / Exchange</th><th class="text-right">Amount</th><th>Date</th></tr></thead>
+            <thead><tr><th>Transaction Type</th><th>Description / Exchange</th><th class="text-right">Sale Value</th><th class="text-right">Acq. Cost</th><th class="text-right">Profit</th><th>Date / Period</th></tr></thead>
             <tbody id="cryptoTableBody"></tbody>
           </table>
         </div>
@@ -1728,31 +1728,79 @@ function renderCrypto(sftRows, tdsRows) {
   const allRows = [];
   
   cryptoTds.forEach(r => {
+    const amt = parseFloat(r.amount_paid) || 0;
+    // TDS-194S is always a sale transaction
     allRows.push({
       type: `TDS-${r.section}`,
       desc: `${r.deductor_name} - ${r.information_description} (TDS: ${fmt(r.tax_deducted)})`,
-      amount: r.amount_paid,
+      saleValue: amt,
+      acqCost: 0,
+      profit: amt, // default profit is sale value since acq cost is not in TDS statement
       period: r.quarter || '—'
     });
   });
 
   cryptoSft.forEach(r => {
+    const amt = parseFloat(r.amount) || 0;
+    const desc = (r.description || '').toLowerCase();
+    const isSale = desc.includes('sale') || desc.includes('sell') || desc.includes('redemption') || desc.includes('transfer') || desc.includes('sales');
+    const isBuy = desc.includes('purchase') || desc.includes('buy');
+    
+    let saleValue = 0;
+    let acqCost = 0;
+    
+    if (isSale) {
+      saleValue = amt;
+    } else if (isBuy) {
+      acqCost = amt;
+    } else {
+      // Default fallback if unspecified: treat as sale
+      saleValue = amt;
+    }
+    
     allRows.push({
       type: r.transaction_type || 'SFT-018',
       desc: r.description || 'Virtual Digital Asset Transaction',
-      amount: r.amount,
+      saleValue: saleValue,
+      acqCost: acqCost,
+      profit: saleValue - acqCost,
       period: fmtDate(r.date)
     });
   });
 
-  tbody.innerHTML = allRows.length
-    ? allRows.map(r => `<tr>
-        <td><span class="ais-pill ais-pill-amber">${r.type}</span></td>
-        <td class="val-muted">${r.desc}</td>
-        <td class="text-right val-white">${fmt(r.amount)}</td>
-        <td class="val-muted">${r.period}</td>
-      </tr>`).join('')
-    : empty(4, 'No Crypto / VDA entries found in your AIS JSON.');
+  let totalSale = 0;
+  let totalAcq = 0;
+  let totalProfit = 0;
+  
+  allRows.forEach(row => {
+    totalSale += row.saleValue;
+    totalAcq += row.acqCost;
+    totalProfit += row.profit;
+  });
+
+  let rowsHtml = allRows.map(r => `<tr>
+    <td><span class="ais-pill ais-pill-amber">${r.type}</span></td>
+    <td class="val-muted">${r.desc}</td>
+    <td class="text-right val-white mono">${fmt(r.saleValue)}</td>
+    <td class="text-right val-white mono">${fmt(r.acqCost)}</td>
+    <td class="text-right mono ${r.profit < 0 ? 'val-red' : (r.profit > 0 ? 'val-green' : '')}">${fmt(r.profit)}</td>
+    <td class="val-muted">${r.period}</td>
+  </tr>`).join('');
+
+  if (allRows.length) {
+    rowsHtml += `<tr class="row-grand-total">
+      <td style="text-align: left;">Total</td>
+      <td></td>
+      <td class="text-right mono">${fmt(totalSale)}</td>
+      <td class="text-right mono">${fmt(totalAcq)}</td>
+      <td class="text-right mono ${totalProfit < 0 ? 'val-red' : (totalProfit > 0 ? 'val-green' : '')}">${fmt(totalProfit)}</td>
+      <td></td>
+    </tr>`;
+  } else {
+    rowsHtml = empty(6, 'No Crypto / VDA entries found in your AIS JSON.');
+  }
+
+  tbody.innerHTML = rowsHtml;
 }
 
 function renderSFT(rows) {
