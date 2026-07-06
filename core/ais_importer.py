@@ -312,14 +312,14 @@ def parse_and_import_ais(user, decrypted_text, financial_year, duplicate_action=
             
             for el in elements:
                 title = el.get('title', '')
-                l2 = el.get('l2', {})
-                l1 = el.get('l1', {})
+                l2 = el.get('l2') or {}
+                l1 = el.get('l1') or {}
                 
-                l2_labels = l2.get('columnLabel', [])
-                l2_rows = l2.get('columnData', [])
+                l2_labels = l2.get('columnLabel') or []
+                l2_rows = l2.get('columnData') or []
                 
-                l1_labels = l1.get('columnLabel', [])
-                l1_rows = l1.get('columnData', [])
+                l1_labels = l1.get('columnLabel') or []
+                l1_rows = l1.get('columnData') or []
                 
                 # --- SECTION: tdsTcs ---
                 if sec_key == 'tdsTcs':
