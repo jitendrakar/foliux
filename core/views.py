@@ -5225,13 +5225,24 @@ def verify_reset_otp(request):
 
 def reset_account_data(user):
     """Helper to delete all user-related data and reset profile to defaults."""
+    from .models import (
+        UserTaxProfile, SavedCalculation, CashFlowEntry,
+        IncomeTaxProfile, IncomeTaxTds, IncomeTaxSalary, IncomeTaxInterest,
+        IncomeTaxDividend, IncomeTaxEquity, IncomeTaxMutualFund, IncomeTaxSft,
+        IncomeTaxTaxPaid, IncomeTaxRefund, IncomeTaxDemand, IncomeTaxOther
+    )
+
     # List of models to clear (ForeignKey to user)
     models_to_clear = [
         Portfolio, PnLStatement, Transaction, Watchlist, Dividend,
         InvestmentGoal, SignalNotificationState, FinancialYearData,
         MFPortfolio, MFTransaction, CoinPortfolio, CoinTransaction,
         NPSPortfolio, NPSTransaction, FixedAsset, OtherAsset,
-        Loan, MFSIP, PortfolioValueHistory, HiddenSignal
+        Loan, MFSIP, PortfolioValueHistory, HiddenSignal,
+        UserTaxProfile, SavedCalculation, CashFlowEntry,
+        IncomeTaxProfile, IncomeTaxTds, IncomeTaxSalary, IncomeTaxInterest,
+        IncomeTaxDividend, IncomeTaxEquity, IncomeTaxMutualFund, IncomeTaxSft,
+        IncomeTaxTaxPaid, IncomeTaxRefund, IncomeTaxDemand, IncomeTaxOther
     ]
     
     # Also FamilyLink (both sides)

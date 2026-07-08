@@ -411,6 +411,69 @@ class FinancialYearValidationTestCase(TestCase):
             profile.save()
 
 
+class AccountResetTestCase(TestCase):
+    def test_reset_account_data_clears_ais_and_tax(self):
+        from core.models import IncomeTaxProfile, IncomeTaxTds, UserTaxProfile, SavedCalculation, CashFlowEntry
+        from core.views import reset_account_data
+        from datetime import date
+        
+        user = User.objects.create_user(username='resetuser', password='password')
+        
+        # Create some AIS profile & TDS data
+        IncomeTaxProfile.objects.create(
+            user=user,
+            financial_year="FY 2025-26",
+            pan="ABCDE1234F",
+            name="John Doe",
+            dob="1990-01-01"
+        )
+        IncomeTaxTds.objects.create(
+            user=user,
+            financial_year="FY 2025-26",
+            deductor_name="Mock Deductor",
+            amount_paid=10000,
+            tax_deducted=1000
+        )
+        UserTaxProfile.objects.create(
+            user=user,
+            financial_year="FY 2025-26",
+            salary=500000
+        )
+        SavedCalculation.objects.create(
+            user=user,
+            calc_type="sip",
+            calc_name="SIP Calculator",
+            name="My SIP",
+            input_values={},
+            calculated_results={}
+        )
+        CashFlowEntry.objects.create(
+            user=user,
+            entry_type="INCOME",
+            category="SALARY",
+            amount=50000,
+            date=date(2026, 4, 15)
+        )
+        
+        # Verify they exist
+        self.assertEqual(IncomeTaxProfile.objects.filter(user=user).count(), 1)
+        self.assertEqual(IncomeTaxTds.objects.filter(user=user).count(), 1)
+        self.assertEqual(UserTaxProfile.objects.filter(user=user).count(), 1)
+        self.assertEqual(SavedCalculation.objects.filter(user=user).count(), 1)
+        self.assertEqual(CashFlowEntry.objects.filter(user=user).count(), 1)
+        
+        # Perform reset
+        reset_account_data(user)
+        
+        # Verify all are cleared
+        self.assertEqual(IncomeTaxProfile.objects.filter(user=user).count(), 0)
+        self.assertEqual(IncomeTaxTds.objects.filter(user=user).count(), 0)
+        self.assertEqual(UserTaxProfile.objects.filter(user=user).count(), 0)
+        self.assertEqual(SavedCalculation.objects.filter(user=user).count(), 0)
+        self.assertEqual(CashFlowEntry.objects.filter(user=user).count(), 0)
+
+
+
 
 
 
