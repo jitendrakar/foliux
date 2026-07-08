@@ -556,7 +556,7 @@
           </div>
           <div class="ais-stat-card cyan">
             <div class="ais-stat-icon cyan"><i class="fas fa-percentage"></i></div>
-            <div class="ais-stat-label">Total TDS Deducted</div>
+            <div class="ais-stat-label">Total TDS/TCS Deducted</div>
             <div class="ais-stat-value" id="sc-tds">₹—</div>
             <div class="ais-stat-sub" id="sc-tds-sub">— entries</div>
           </div>
@@ -601,7 +601,7 @@
         <!-- TDS Quick Table -->
         <div class="ais-section-header">
           <h3 class="ais-section-title" style="font-size:0.9rem;">
-            <span class="dot" style="background:var(--ais-cyan);box-shadow:0 0 6px var(--ais-cyan);"></span> Top TDS Deductors
+            <span class="dot" style="background:var(--ais-cyan);box-shadow:0 0 6px var(--ais-cyan);"></span> Top TDS / TCS Deductors
           </h3>
         </div>
         <div class="ais-table-wrap">
@@ -613,8 +613,9 @@
               <th>Quarter</th>
               <th class="text-right">Amount Paid</th>
               <th class="text-right">TDS</th>
+              <th class="text-right">TCS</th>
             </tr></thead>
-            <tbody id="ov-tdsBody"><tr><td colspan="6" class="ais-empty"><span class="ais-empty-text">Loading…</span></td></tr></tbody>
+            <tbody id="ov-tdsBody"><tr><td colspan="7" class="ais-empty"><span class="ais-empty-text">Loading…</span></td></tr></tbody>
           </table>
         </div>
       </div>
@@ -1068,8 +1069,8 @@ function updateStatCards(data) {
   
   document.getElementById('sc-salary').textContent = fmt(totalSalary);
   document.getElementById('sc-salary-sub').textContent = `${(data.salary||[]).length} category rows`;
-  // TDS
-  const totalTds = (data.tds || []).reduce((s, r) => s + parseFloat(r.tax_deducted || 0), 0);
+  // TDS / TCS
+  const totalTds = (data.tds || []).reduce((s, r) => s + parseFloat(r.tax_ded_or_coll || r.tax_deducted || 0) + parseFloat(r.tax_collected || 0), 0);
   document.getElementById('sc-tds').textContent = fmt(totalTds);
   document.getElementById('sc-tds-sub').textContent = `${(data.tds||[]).length} entries`;
   // Interest
@@ -1178,7 +1179,8 @@ function renderTds(rows) {
     <td><span class="ais-pill ais-pill-slate">${r.quarter||'—'}</span></td>
     <td class="text-right">${fmt(r.amount_paid)}</td>
     <td class="text-right val-red">${fmt(r.tax_deducted)}</td>
-  </tr>`).join('') : empty(6,'No TDS records.');
+    <td class="text-right val-emerald">${fmt(r.tax_collected)}</td>
+  </tr>`).join('') : empty(7,'No TDS/TCS records.');
 }
 
 function renderInterest(rows) {
