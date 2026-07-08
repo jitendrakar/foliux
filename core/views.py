@@ -5419,7 +5419,7 @@ def ais_data_api(request):
         return [model_to_dict(obj, exclude=exclude) for obj in qs]
         
     data = {
-        'profile': serialize_qs(IncomeTaxProfile.objects.filter(user=user, financial_year=fy)),
+        'profile': serialize_qs(IncomeTaxProfile.objects.filter(user=user, financial_year=fy).order_by('-id')),
         'tds': serialize_qs(IncomeTaxTds.objects.filter(user=user, financial_year=fy)),
         'salary': serialize_qs(IncomeTaxSalary.objects.filter(user=user, financial_year=fy)),
         'interest': serialize_qs(IncomeTaxInterest.objects.filter(user=user, financial_year=fy)),
@@ -6389,6 +6389,11 @@ def tax_calculator_api(request):
     
     user = request.user
     fy = request.GET.get('fy') or request.POST.get('fy') or '2026-2027'
+    from .models import normalize_and_validate_fy
+    try:
+        fy = normalize_and_validate_fy(fy)
+    except ValueError:
+        pass
     
     # Get or create UserTaxProfile for the user and financial year
     profile, created = UserTaxProfile.objects.get_or_create(user=user, financial_year=fy)
@@ -6567,6 +6572,11 @@ def download_tax_report(request):
     
     report_type = request.GET.get('report_type', 'summary')
     fy = request.GET.get('fy', '2026-2027')
+    from .models import normalize_and_validate_fy
+    try:
+        fy = normalize_and_validate_fy(fy)
+    except ValueError:
+        pass
     user = request.user
 
     from .tax_utils import get_tax_portfolio_data, calculate_taxes, fy_to_dates
