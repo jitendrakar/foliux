@@ -473,6 +473,24 @@ class AccountResetTestCase(TestCase):
         self.assertEqual(CashFlowEntry.objects.filter(user=user).count(), 0)
 
 
+class RamjaaTestCase(TestCase):
+    def test_ramjaa_index(self):
+        # Accessing the main index of ramjaa should return 200 OK
+        response = self.client.get('/ramjaa/')
+        self.assertEqual(response.status_code, 200)
+        
+    def test_ramjaa_static_file(self):
+        # Accessing a static file like style.css should return 200 OK
+        response = self.client.get('/ramjaa/style.css')
+        self.assertEqual(response.status_code, 200)
+
+    def test_ramjaa_nonexistent_file(self):
+        # Accessing a nonexistent file should return 404
+        response = self.client.get('/ramjaa/nonexistent.xyz')
+        self.assertEqual(response.status_code, 404)
+
+
+
 
 
 

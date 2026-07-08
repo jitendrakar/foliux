@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAMJAA - Radha Mohan Jew Alumni Association</title>
+    <meta name="description" content="Radha Mohan Jew Alumni Association (RAMJAA) - Connecting former students of Radha Mohan Jew High School, Sindhia.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="container nav-container">
+            <a href="#/home" class="logo-section" id="nav-logo">
+                <img src="1.jpeg" alt="RAMJAA Logo" id="header-logo">
+                <div class="logo-text">
+                    <h1 data-en="RAMJAA" data-or="ରାମଜା">RAMJAA</h1>
+                    <span data-en="Radha Mohan Jew Alumni Association" data-or="ରାଧା ମୋହନ ଜ୍ୟୁ ପୂର୍ବତନ ଛାତ୍ରଛାତ୍ରୀ ସଂଗଠନ">Radha Mohan Jew Alumni Association</span>
+                </div>
+            </a>
+
+            <!-- Mobile Nav Toggle -->
+            <button class="nav-toggle" id="nav-toggle" aria-label="Toggle Menu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+
+            <!-- Navigation Menu -->
+            <nav id="nav-menu">
+                <ul>
+                    <li><a href="#/home" class="nav-link active" id="link-home" data-en="Home" data-or="ମୁଖ୍ୟ ପୃଷ୍ଠା">Home</a></li>
+                    <li><a href="#/about" class="nav-link" id="link-about" data-en="About Us" data-or="ଆମ ବିଷୟରେ">About Us</a></li>
+                    <li><a href="#/notices" class="nav-link" id="link-notices" data-en="Notices" data-or="ବିଜ୍ଞପ୍ତି">Notices</a></li>
+                    <li><a href="#/gallery" class="nav-link" id="link-gallery" data-en="Gallery" data-or="ଗ୍ୟାଲେରୀ">Gallery</a></li>
+                    <li><a href="#/register" class="nav-link" id="link-register" data-en="Register" data-or="ପଞ୍ଜୀକରଣ">Register</a></li>
+                    <li><a href="#/admin" class="nav-link" id="link-admin" data-en="Admin Panel" data-or="ପ୍ରଶାସନ">Admin Panel</a></li>
+                </ul>
+            </nav>
+
+            <!-- Language and CTA Actions -->
+            <div class="nav-actions">
+                <div class="lang-switch">
+                    <button class="lang-btn active" id="lang-en-btn">EN</button>
+                    <button class="lang-btn" id="lang-or-btn">ଓଡ଼ିଆ</button>
+                </div>
+                <a href="#/register" class="cta-btn" id="header-cta" data-en="Join Us" data-or="ଯୋଡ଼ି ହୁଅନ୍ତୁ">Join Us</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN PAGE CONTENT (SPA Views) -->
+    <main>
+
+        <!-- 1. HOME VIEW -->
+        <section id="home-view" class="page-view active">
+            <!-- Hero banner -->
+            <div class="hero">
+                <div class="container">
+                    <h2 id="hero-title" data-en="Welcome to RAMJAA" data-or="ରାମଜାକୁ ସ୍ଵାଗତ">Welcome to RAMJAA</h2>
+                    <p id="hero-subtitle" data-en="Radha Mohan Jew High School, Sindhia Alumni Association. Linking our past, supporting our present, and inspiring our future." data-or="ରାଧା ମୋହନ ଜ୍ୟୁ ହାଇ ସ୍କୁଲ, ସିନ୍ଧିଆର ପୂର୍ବତନ ଛାତ୍ରଛାତ୍ରୀ ସଂଗଠନ। ଆମର ଅତୀତକୁ ଯୋଡ଼ିବା, ବର୍ତ୍ତମାନକୁ ସହଯୋଗ କରିବା ଏବଂ ଭବିଷ୍ୟତକୁ ପ୍ରେରଣା ଦେବା।">
+                        Radha Mohan Jew High School, Sindhia Alumni Association. Linking our past, supporting our present, and inspiring our future.
+                    </p>
+                    <div class="hero-buttons">
+                        <a href="#/register" class="cta-btn" data-en="Become a Member" data-or="ସଦସ୍ୟ ହୁଅନ୍ତୁ">Become a Member</a>
+                        <a href="#/about" class="btn-secondary-outline" data-en="Learn More" data-or="ଅଧିକ ଜାଣନ୍ତୁ">Learn More</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Counters -->
+            <div class="container stats-section">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-number">1966</span>
+                        <span class="stat-label" data-en="Established Year" data-or="ପ୍ରତିଷ୍ଠା ବର୍ଷ">Established Year</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number" id="stat-alumni-count">1,250+</span>
+                        <span class="stat-label" data-en="Registered Alumni" data-or="ପୂର୍ବତନ ଛାତ୍ରଛାତ୍ରୀ">Registered Alumni</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">15+</span>
+                        <span class="stat-label" data-en="Initiatives & Projects" data-or="ପ୍ରକଳ୍ପ ଓ କାର୍ଯ୍ୟକ୍ରମ">Initiatives & Projects</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">60</span>
+                        <span class="stat-label" data-en="Years of Excellence" data-or="ଗୌରବମୟ ବର୍ଷ">Years of Excellence</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Home Content Layout -->
+            <div class="container py-5">
+                <div class="home-grid">
+                    <!-- Left: Welcome & Slider Gallery -->
+                    <div>
+                        <h3 class="section-title" data-en="Connecting Generations" data-or="ପିଢ଼ିକୁ ଯୋଡ଼ିବା">Connecting Generations</h3>
+                        <p style="margin-bottom: 24px; color: var(--text-muted); font-size: 1.05rem;" data-en="RAMJAA acts as a bridge between the school's heritage and its future. We bring together graduates from across generations to support community development, scholarship funds, infrastructural improvements, and environmental conservation at Radha Mohan Jew High School." data-or="ରାମଜା ବିଦ୍ୟାଳୟର ସମୃଦ୍ଧ ଐତିହ୍ୟ ଏବଂ ଏହାର ଉଜ୍ଜ୍ୱଳ ଭବିଷ୍ୟତ ମଧ୍ୟରେ ଏକ ସେତୁ ଭାବରେ କାର୍ଯ୍ୟ କରେ। ଆମେ ବିଦ୍ୟାଳୟର ଉନ୍ନତି, ମେଧାବୀ ଛାତ୍ରଛାତ୍ରୀଙ୍କୁ ସହଯୋଗ, ଭିତ୍ତିଭୂମିର ବିକାଶ ଏବଂ ସମାଜସେବା କାର୍ଯ୍ୟରେ ସହଯୋଗ କରିବା ପାଇଁ ବିଭିନ୍ନ ପିଢ଼ିର ପୂର୍ବତନ ଛାତ୍ରଛାତ୍ରୀଙ୍କୁ ଏକାଠି କରୁ।">
+                            RAMJAA acts as a bridge between the school's heritage and its future. We bring together graduates from across generations to support community development, scholarship funds, infrastructural improvements, and environmental conservation at Radha Mohan Jew High School.
+                        </p>
+                        
+                        <!-- Slider Showcase -->
+                        <div class="gallery-showcase" id="gallery-slider">
+                            <!-- Slides will be dynamically injected by app.js -->
+                            <div class="showcase-slide active" style="background-image: url('2.jpeg');">
+                                <div class="slide-caption">
+                                    <h3 data-en="Radha Mohan Jew High School, Sindhia" data-or="ରାଧା ମୋହନ ଜ୍ୟୁ ହାଇ ସ୍କୁଲ, ସିନ୍ଧିଆ">Radha Mohan Jew High School, Sindhia</h3>
+                                    <p data-en="Our alma mater building - established in 1966" data-or="ଆମର ପ୍ରିୟ ବିଦ୍ୟାଳୟ ଗୃହ - ୧୯୬୬ ମସିହାରେ ସ୍ଥାପିତ">Our alma mater building - established in 1966</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Notice Panel (Mini-feed) -->
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h3 class="section-title" style="margin-bottom: 0;" data-en="Latest Notices" data-or="ନୂତନ ବିଜ୍ଞପ୍ତି">Latest Notices</h3>
+                            <a href="#/notices" style="color: var(--primary-light); font-weight: 700; text-decoration: none;" data-en="View All" data-or="ସବୁ ଦେଖନ୍ତୁ">View All</a>
+                        </div>
+                        <div class="mini-feed" id="mini-notice-feed">
+                            <!-- notices will be dynamically loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. ABOUT US VIEW -->
+        <section id="about-view" class="page-view">
+            <!-- About Hero -->
+            <div class="about-hero">
+                <div class="container">
+                    <h2 data-en="About RAMJAA" data-or="ରାମଜା ବିଷୟରେ">About RAMJAA</h2>
+                    <p data-en="About us, our vision, mission, activities and diamond jubilee celebration" data-or="ଆମ ବିଷୟରେ, ଆମର ଦୃଷ୍ଟିକୋଣ, ଲକ୍ଷ୍ୟ, କାର୍ଯ୍ୟକଳାପ ଏବଂ ଡାଇମଣ୍ଡ ଜୁବିଲି">
+                        About us, our vision, mission, activities and diamond jubilee celebration
+                    </p>
+                </div>
+            </div>
+
+            <div class="container py-5">
+                <div class="about-grid">
+                    <!-- About Text Content -->
+                    <div class="about-text" id="about-content-body">
+                        <!-- Bilingual Content Injected Dynamically. 
+                             Default Odia content matches user request exactly. 
+                             Default English translated beautifully. -->
+                    </div>
+
+                    <!-- Sidebar Image/Badge -->
+                    <div class="about-image-card">
+                        <img src="1.jpeg" alt="School Photo 1">
+                        <div style="padding: 20px; background: var(--primary); color: white; text-align: center;">
+                            <h4 style="color: var(--accent); margin-bottom: 4px;" data-en="Radha Mohan Jew High School" data-or="ରାଧା ମୋହନ ଜ୍ୟୁ ହାଇ ସ୍କୁଲ">Radha Mohan Jew High School</h4>
+                            <p style="font-size: 0.85rem;" data-en="Balasore, Odisha - Estd: 1966" data-or="ବାଲେଶ୍ୱର, ଓଡ଼ିଶା - ସ୍ଥାପିତ: ୧୯୬୬">Balasore, Odisha - Estd: 1966</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vision & Mission -->
+                <div class="vision-mission-cards">
+                    <div class="vision-card">
+                        <h3>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--secondary-dark);"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>
+                            <span data-en="Our Vision" data-or="ଆମର ଦୃଷ୍ଟିକୋଣ (Vision)">Our Vision</span>
+                        </h3>
+                        <p id="vision-text-body">
+                            <!-- Injected by app.js -->
+                        </p>
+                    </div>
+
+                    <div class="mission-card">
+                        <h3>
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--secondary-dark);"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                            <span data-en="Our Mission" data-or="ଆମର ଲକ୍ଷ୍ୟ (Mission)">Our Mission</span>
+                        </h3>
+                        <ul id="mission-list-body">
+                            <!-- Injected by app.js -->
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Activities -->
+                <div class="my-4 py-5">
+                    <h3 class="section-title center" style="display: block; text-align: center;" data-en="Our Activities" data-or="ଆମର କାର୍ଯ୍ୟକଳାପ">Our Activities</h3>
+                    <div class="activity-grid" id="activities-body">
+                        <!-- Injected by app.js -->
+                    </div>
+                </div>
+
+                <!-- Core Values -->
+                <div>
+                    <h3 class="section-title center" style="display: block; text-align: center;" data-en="Our Values" data-or="ଆମର ମୂଲ୍ୟବୋଧ">Our Values</h3>
+                    <div class="values-grid" id="values-body">
+                        <!-- Injected by app.js -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. NOTICES VIEW -->
+        <section id="notices-view" class="page-view">
+            <div class="container py-5">
+                <h2 class="section-title" data-en="Notice Board" data-or="ବିଜ୍ଞପ୍ତି ବୋର୍ଡ଼">Notice Board</h2>
+                
+                <!-- Controls -->
+                <div class="board-controls">
+                    <input type="text" class="search-input" id="notice-search" placeholder="Search notices..." data-en-placeholder="Search notices..." data-or-placeholder="ବିଜ୍ଞପ୍ତି ଖୋଜନ୍ତୁ...">
+                    
+                    <div class="filter-tags" id="notice-filter-tags">
+                        <button class="tag-btn active" data-category="all" data-en="All" data-or="ସମସ୍ତ">All</button>
+                        <button class="tag-btn" data-category="General" data-en="General" data-or="ସାଧାରଣ">General</button>
+                        <button class="tag-btn" data-category="Events" data-en="Events" data-or="କାର୍ଯ୍ୟକ୍ରମ">Events</button>
+                        <button class="tag-btn" data-category="Academic" data-en="Academic" data-or="ଶିକ୍ଷାଗତ">Academic</button>
+                    </div>
+                </div>
+
+                <!-- Notice List -->
+                <div class="notice-list-container" id="notice-list">
+                    <!-- notices loaded dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. GALLERY VIEW -->
+        <section id="gallery-view" class="page-view">
+            <div class="container py-5">
+                <h2 class="section-title" data-en="Photo Gallery" data-or="ଫଟୋ ଗ୍ୟାଲେରୀ">Photo Gallery</h2>
+                
+                <!-- Controls -->
+                <div class="board-controls">
+                    <p style="color: var(--text-muted); font-weight: 500;" data-en="Memories and events of Radha Mohan Jew High School" data-or="ରାଧା ମୋହନ ଜ୍ୟୁ ହାଇ ସ୍କୁଲର ସ୍ମୃତି ଏବଂ କାର୍ଯ୍ୟକ୍ରମ">Memories and events of Radha Mohan Jew High School</p>
+                    
+                    <div class="filter-tags" id="gallery-filter-tags">
+                        <button class="tag-btn active" data-category="all" data-en="All Photos" data-or="ସମସ୍ତ ଫଟୋ">All Photos</button>
+                        <button class="tag-btn" data-category="Campus" data-en="Campus" data-or="କ୍ୟାମ୍ପସ">Campus</button>
+                        <button class="tag-btn" data-category="Events" data-en="Events" data-or="କାର୍ଯ୍ୟକ୍ରମ">Events</button>
+                        <button class="tag-btn" data-category="Alumni" data-en="Alumni Meets" data-or="ସମ୍ମିଳନୀ">Alumni Meets</button>
+                    </div>
+                </div>
+
+                <!-- Gallery Grid -->
+                <div class="gallery-grid" id="gallery-grid">
+                    <!-- Images loaded dynamically -->
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. REGISTER (ALUMNI SUBSCRIPTION) VIEW -->
+        <section id="register-view" class="page-view">
+            <div class="container py-5">
+                
+                <!-- Registration Form Screen -->
+                <div class="form-card" id="registration-form-card">
+                    <div class="form-title-desc">
+                        <h2 data-en="Alumni Registration & Subscription" data-or="ପୂର୍ବତନ ଛାତ୍ରଛାତ୍ରୀ ପଞ୍ଜୀକରଣ">Alumni Registration & Subscription</h2>
+                        <p data-en="Join RAMJAA today. Stay connected with batchmates, participate in events, and contribute to our alma mater." data-or="ଆଜି ହିଁ ରାମଜାର ସଦସ୍ୟ ହୁଅନ୍ତୁ। ସହପାଠୀମାନଙ୍କ ସହ ସମ୍ପର୍କରେ ରୁହନ୍ତୁ, କାର୍ଯ୍ୟକ୍ରମରେ ଯୋଗ ଦିଅନ୍ତୁ ଏବଂ ବିଦ୍ୟାଳୟର ଉନ୍ନତିରେ ସହଯୋଗ କରନ୍ତୁ।">
+                            Join RAMJAA today. Stay connected with batchmates, participate in events, and contribute to our alma mater.
+                        </p>
+                    </div>
+
+                    <form id="alumni-register-form">
+                        <div class="form-grid">
+                            <!-- Name -->
+                            <div class="form-group">
+                                <label class="form-label" for="reg-name" data-en="Full Name *" data-or="ସମ୍ପୂର୍ଣ୍ଣ ନାମ *">Full Name *</label>
+                                <input type="text" id="reg-name" class="form-control" required placeholder="e.g. Jitendra Mohanty">
+                            </div>
+
+                            <!-- Batch Year -->
+                            <div class="form-group">
+                                <label class="form-label" for="reg-batch" data-en="Passing Batch (Year) *" data-or="ଉତ୍ତୀର୍ଣ୍ଣ ବର୍ଷ (ବ୍ୟାଚ୍) *">Passing Batch (Year) *</label>
+                                <input type="number" id="reg-batch" class="form-control" required min="1966" max="2026" placeholder="e.g. 1995">
+                            </div>
+
+                            <!-- Mobile -->
+                            <div class="form-group">
+                                <label class="form-label" for="reg-mobile" data-en="Mobile Number *" data-or="ମୋବାଇଲ୍ ନମ୍ବର *">Mobile Number *</label>
+                                <input type="tel" id="reg-mobile" class="form-control" required placeholder="e.g. +91 9876543210">
+                            </div>
+
+                            <!-- Email -->
+                            <div class="form-group">
+                                <label class="form-label" for="reg-email" data-en="Email Address *" data-or="ଇମେଲ୍ ଠିକଣା *">Email Address *</label>
+                                <input type="email" id="reg-email" class="form-control" required placeholder="e.g. jitendra@example.com">
+                            </div>
+
+                            <!-- Occupation -->
+                            <div class="form-group">
+                                <label class="form-label" for="reg-profession" data-en="Profession / Occupation" data-or="ପେଷା / ବୃତ୍ତି">Profession / Occupation</label>
+                                <input type="text" id="reg-profession" class="form-control" placeholder="e.g. Software Engineer, Teacher">
+                            </div>
+
+                            <!-- Location -->
+                            <div class="form-group">
+                                <label class="form-label" for="reg-location" data-en="Current City / Location *" data-or="ବର୍ତ୍ତମାନର ସହର / ଠିକଣା *">Current City / Location *</label>
+                                <input type="text" id="reg-location" class="form-control" required placeholder="e.g. Balasore, Bhubaneswar">
+                            </div>
+
+                            <!-- Photo Upload -->
+                            <div class="form-group full-width">
+                                <label class="form-label" data-en="Profile Photograph (Optional)" data-or="ପ୍ରୋଫାଇଲ୍ ଫଟୋଗ୍ରାଫ୍ (ବୈକଳ୍ପିକ)">Profile Photograph (Optional)</label>
+                                <div class="file-upload-wrapper">
+                                    <span data-en="Drag & Drop or Click to Upload Profile Photo" data-or="ଫଟୋ ଅପଲୋଡ଼ କରିବାକୁ ଏଠାରେ କ୍ଲିକ୍ କରନ୍ତୁ">Drag & Drop or Click to Upload Profile Photo</span>
+                                    <input type="file" id="reg-photo" accept="image/*">
+                                    <img id="reg-photo-preview" class="file-preview" alt="Preview">
+                                </div>
+                            </div>
+
+                            <!-- Memories Message -->
+                            <div class="form-group full-width">
+                                <label class="form-label" for="reg-message" data-en="Share School Memories / Message" data-or="ବିଦ୍ୟାଳୟର ସ୍ମୃତି / ବାର୍ତ୍ତା ଶେୟାର କରନ୍ତୁ">Share School Memories / Message</label>
+                                <textarea id="reg-message" class="form-control" rows="3" placeholder="Write something about your school days..."></textarea>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="form-submit-btn" id="reg-submit-btn" data-en="Submit Registration" data-or="ପଞ୍ଜୀକରଣ ଦାଖଲ କରନ୍ତୁ">Submit Registration</button>
+                    </form>
+                </div>
+
+                <!-- Registration Success Screen -->
+                <div class="success-screen form-card" id="registration-success-card">
+                    <span class="success-icon">✓</span>
+                    <h2 data-en="Registration Successful!" data-or="ପଞ୍ଜୀକରଣ ସଫଳ ହେଲା!">Registration Successful!</h2>
+                    <p style="margin: 15px 0 30px 0; color: var(--text-muted);" data-en="Thank you for registering with Radha Mohan Jew Alumni Association (RAMJAA). Your details have been recorded." data-or="ରାଧା ମୋହନ ଜ୍ୟୁ ପୂର୍ବତନ ଛାତ୍ରଛାତ୍ରୀ ସଂଗଠନ (ରାମଜା) ରେ ପଞ୍ଜୀକୃତ ହୋଇଥିବାରୁ ଆପଣଙ୍କୁ ଧନ୍ୟବାଦ। ଆପଣଙ୍କ ବିବରଣୀ ସଂରକ୍ଷିତ ହୋଇଛି।">
+                        Thank you for registering with Radha Mohan Jew Alumni Association (RAMJAA). Your details have been recorded.
+                    </p>
+                    
+                    <!-- Premium Badge ID Card Mockup -->
+                    <div style="background: linear-gradient(135deg, var(--primary), var(--primary-light)); border: 3px solid var(--secondary); border-radius: var(--radius-md); max-width: 380px; margin: 0 auto 30px auto; padding: 24px; text-align: left; color: white; box-shadow: var(--shadow-lg); position: relative; overflow: hidden;">
+                        <!-- Gold Ribbon Background -->
+                        <div style="position: absolute; top: 0; right: 0; width: 80px; height: 80px; background: var(--secondary); transform: rotate(45deg) translate(30px, -40px);"></div>
+                        
+                        <div style="display: flex; gap: 15px; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.2); padding-bottom: 15px; margin-bottom: 15px;">
+                            <img src="1.jpeg" alt="Badge Logo" style="width: 45px; height: 45px; border-radius: 50%; border: 1.5px solid var(--secondary); object-fit: cover; background: white;">
+                            <div>
+                                <h4 style="font-size: 1.1rem; color: var(--secondary); font-weight: 800;">RAMJAA</h4>
+                                <span style="font-size: 0.65rem; color: rgba(255, 255, 255, 0.7); display: block;" data-en="ALUMNI ASSOCIATION MEMBER" data-or="ସଦସ୍ୟ ପରିଚୟ ପତ୍ର">ALUMNI MEMBER</span>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 15px;">
+                            <img id="badge-photo" src="1.jpeg" alt="Member Photo" style="width: 80px; height: 90px; border-radius: var(--radius-sm); object-fit: cover; border: 2px solid var(--secondary); background: white;">
+                            <div style="font-size: 0.85rem; display: flex; flex-direction: column; justify-content: center; gap: 4px;">
+                                <div><strong style="color: var(--secondary); font-size: 0.75rem;" data-en="NAME:" data-or="ନାମ:">NAME:</strong> <span id="badge-name">Jitendra Mohanty</span></div>
+                                <div><strong style="color: var(--secondary); font-size: 0.75rem;" data-en="BATCH:" data-or="ବ୍ୟାଚ୍:">BATCH:</strong> <span id="badge-batch">1995</span></div>
+                                <div><strong style="color: var(--secondary); font-size: 0.75rem;" data-en="LOCATION:" data-or="ଠିକଣା:">LOCATION:</strong> <span id="badge-location">Balasore</span></div>
+                                <div><strong style="color: var(--secondary); font-size: 0.75rem;" data-en="MEMBER ID:" data-or="ଆଇଡି:">MEMBER ID:</strong> <span id="badge-id">RM-950821</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn-secondary-outline" id="badge-print-btn" onclick="window.print();" data-en="Print Badge" data-or="ପରିଚୟ ପତ୍ର ପ୍ରିଣ୍ଟ କରନ୍ତୁ">Print Badge</button>
+                    <button class="cta-btn" id="reg-another-btn" style="margin-left: 10px;" data-en="Register Another" data-or="ଅନ୍ୟ ଏକ ପଞ୍ଜୀକରଣ">Register Another</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. ADMIN PANEL VIEW -->
+        <section id="admin-view" class="page-view">
+            <div class="container py-5">
+                
+                <!-- Admin Login -->
+                <div class="form-card admin-login-container" id="admin-login-card">
+                    <div class="form-title-desc">
+                        <h2 data-en="Admin Portal Login" data-or="ପ୍ରଶାସକ ପୋର୍ଟାଲ୍ ଲଗ୍-ଇନ୍">Admin Portal Login</h2>
+                        <p data-en="Enter your administrator credentials to access the management panel." data-or="ପରିଚାଳନା ପୋର୍ଟାଲ୍ ଆକ୍ସେସ୍ କରିବାକୁ ପାସୱାର୍ଡ ଦିଅନ୍ତୁ।">
+                            Enter your administrator credentials to access the management panel.
+                        </p>
+                    </div>
+
+                    <form id="admin-login-form">
+                        <div class="form-group">
+                            <label class="form-label" for="admin-pass" data-en="Admin Access Password *" data-or="ଆଡମିନ ପାସୱାର୍ଡ *">Admin Access Password *</label>
+                            <input type="password" id="admin-pass" class="form-control" required placeholder="Default: admin_ramjaa">
+                        </div>
+                        <button type="submit" class="form-submit-btn" id="admin-login-btn" data-en="Secure Login" data-or="ଲଗ୍-ଇନ୍ କରନ୍ତୁ">Secure Login</button>
+                    </form>
+                </div>
+
+                <!-- Admin Dashboard (Hidden by default) -->
+                <div id="admin-dashboard" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h2 data-en="RAMJAA Administration" data-or="ରାମଜା ପ୍ରଶାସନ">RAMJAA Administration</h2>
+                        <button class="btn-secondary-outline" id="admin-logout-btn" style="padding: 6px 16px; font-size: 0.8rem;" data-en="Logout" data-or="ଲଗ୍-ଆଉଟ୍">Logout</button>
+                    </div>
+
+                    <div class="admin-layout">
+                        <!-- Sidebar tabs -->
+                        <div class="admin-sidebar">
+                            <ul class="admin-sidebar-menu">
+                                <li><button class="admin-menu-btn active" data-tab="admin-notices-tab" data-en="Manage Notices" data-or="ବିଜ୍ଞପ୍ତି ପରିଚାଳନା">Manage Notices</button></li>
+                                <li><button class="admin-menu-btn" data-tab="admin-gallery-tab" data-en="Manage Gallery" data-or="ଗ୍ୟାଲେରୀ ପରିଚାଳନା">Manage Gallery</button></li>
+                                <li><button class="admin-menu-btn" data-tab="admin-roster-tab" data-en="Alumni Roster" data-or="ଛାତ୍ରଛାତ୍ରୀ ତାଲିକା">Alumni Roster</button></li>
+                            </ul>
+                        </div>
+
+                        <!-- Content box -->
+                        <div class="admin-content-box">
+                            
+                            <!-- TAB 1: MANAGE NOTICES -->
+                            <div class="admin-tab-view active" id="admin-notices-tab">
+                                <div class="admin-header-row">
+                                    <h3 data-en="Upload New Notice" data-or="ନୂତନ ବିଜ୍ଞପ୍ତି ଅପଲୋଡ଼">Upload New Notice</h3>
+                                </div>
+                                <form id="admin-add-notice-form">
+                                    <div class="form-grid" style="grid-template-columns: 2fr 1fr;">
+                                        <div class="form-group">
+                                            <label class="form-label" for="an-title" data-en="Notice Title *" data-or="ବିଜ୍ଞପ୍ତି ଶିରୋନାମା *">Notice Title *</label>
+                                            <input type="text" id="an-title" class="form-control" required placeholder="e.g. Diamond Jubilee Meeting Date">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label" for="an-category" data-en="Category" data-or="ଶ୍ରେଣୀ">Category</label>
+                                            <select id="an-category" class="form-control">
+                                                <option value="General" data-en="General" data-or="ସାଧାରଣ">General</option>
+                                                <option value="Events" data-en="Events" data-or="କାର୍ଯ୍ୟକ୍ରମ">Events</option>
+                                                <option value="Academic" data-en="Academic" data-or="ଶିକ୍ଷାଗତ">Academic</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group full-width">
+                                            <label class="form-label" for="an-desc" data-en="Detailed Description *" data-or="ବିସ୍ତୃତ ବିବରଣୀ *">Detailed Description *</label>
+                                            <textarea id="an-desc" class="form-control" rows="4" required placeholder="Write the details of the notice here..."></textarea>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="cta-btn" style="border-radius: var(--radius-sm); margin-top: 10px;" data-en="Publish Notice" data-or="ପ୍ରକାଶ କରନ୍ତୁ">Publish Notice</button>
+                                </form>
+
+                                <div class="admin-header-row" style="margin-top: 40px;">
+                                    <h3 data-en="Active Notices" data-or="ପ୍ରକାଶିତ ବିଜ୍ଞପ୍ତି ସମୂହ">Active Notices</h3>
+                                </div>
+                                <div class="admin-table-wrapper">
+                                    <table class="admin-table">
+                                        <thead>
+                                            <tr>
+                                                <th data-en="Date" data-or="ତାରିଖ">Date</th>
+                                                <th data-en="Title" data-or="ଶିରୋନାମା">Title</th>
+                                                <th data-en="Category" data-or="ଶ୍ରେଣୀ">Category</th>
+                                                <th data-en="Action" data-or="କାର୍ଯ୍ୟକଳାପ">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="admin-notices-table-body">
+                                            <!-- loaded dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- TAB 2: MANAGE GALLERY -->
+                            <div class="admin-tab-view" id="admin-gallery-tab">
+                                <div class="admin-header-row">
+                                    <h3 data-en="Upload Photo" data-or="ଫଟୋ ଅପଲୋଡ଼ କରନ୍ତୁ">Upload Photo</h3>
+                                </div>
+                                <form id="admin-add-gallery-form">
+                                    <div class="form-grid">
+                                        <div class="form-group">
+                                            <label class="form-label" for="ag-title" data-en="Photo Caption *" data-or="ଫଟୋ ଶିରୋନାମା *">Photo Caption *</label>
+                                            <input type="text" id="ag-title" class="form-control" required placeholder="e.g. Science Exhibition 2026">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label" for="ag-category" data-en="Album Category" data-or="ଆଲବମ୍ ବିଭାଗ">Album Category</label>
+                                            <select id="ag-category" class="form-control">
+                                                <option value="Campus" data-en="Campus" data-or="କ୍ୟାମ୍ପସ">Campus</option>
+                                                <option value="Events" data-en="Events" data-or="କାର୍ଯ୍ୟକ୍ରମ">Events</option>
+                                                <option value="Alumni" data-en="Alumni Meets" data-or="ସମ୍ମିଳନୀ">Alumni Meets</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group full-width">
+                                            <label class="form-label" data-en="Select Photo *" data-or="ଫଟୋ ଚୟନ କରନ୍ତୁ *">Select Photo *</label>
+                                            <div class="file-upload-wrapper">
+                                                <span data-en="Drag & Drop or Click to Upload Image File" data-or="ଫଟୋ ଫାଇଲ ଚୟନ କରିବାକୁ ଏଠାରେ କ୍ଲିକ୍ କରନ୍ତୁ">Drag & Drop or Click to Upload Image File</span>
+                                                <input type="file" id="ag-photo" accept="image/*" required>
+                                                <img id="ag-photo-preview" class="file-preview" alt="Preview">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="cta-btn" style="border-radius: var(--radius-sm); margin-top: 10px;" data-en="Add to Gallery" data-or="ଗ୍ୟାଲେରୀରେ ଯୋଡ଼ନ୍ତୁ">Add to Gallery</button>
+                                </form>
+
+                                <div class="admin-header-row" style="margin-top: 40px;">
+                                    <h3 data-en="Manage Existing Gallery" data-or="ପୂର୍ବରୁ ଥିବା ଫଟୋଗୁଡ଼ିକ">Manage Existing Gallery</h3>
+                                </div>
+                                <div class="admin-table-wrapper">
+                                    <table class="admin-table">
+                                        <thead>
+                                            <tr>
+                                                <th data-en="Preview" data-or="ଫଟୋ">Preview</th>
+                                                <th data-en="Caption" data-or="ଶିରୋନାମା">Caption</th>
+                                                <th data-en="Category" data-or="ବିଭାଗ">Category</th>
+                                                <th data-en="Action" data-or="କାର୍ଯ୍ୟକଳାପ">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="admin-gallery-table-body">
+                                            <!-- loaded dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- TAB 3: ALUMNI ROSTER -->
+                            <div class="admin-tab-view" id="admin-roster-tab">
+                                <div class="admin-header-row">
+                                    <h3 data-en="Registered Alumni List" data-or="ପଞ୍ଜୀକୃତ ଛାତ୍ରଛାତ୍ରୀ ତାଲିକା">Registered Alumni List</h3>
+                                    <div style="display: flex; gap: 8px;">
+                                        <button class="btn-secondary-outline" id="export-csv-btn" style="padding: 6px 12px; font-size: 0.8rem;" data-en="Export CSV" data-or="CSV ଏକ୍ସପୋର୍ଟ">Export CSV</button>
+                                        <button class="btn-secondary-outline" id="export-json-btn" style="padding: 6px 12px; font-size: 0.8rem;" data-en="Export JSON" data-or="JSON ଏକ୍ସପୋର୍ଟ">Export JSON</button>
+                                    </div>
+                                </div>
+
+                                <!-- Roster search and filters -->
+                                <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center;">
+                                    <input type="text" class="search-input" id="admin-roster-search" placeholder="Search roster..." data-en-placeholder="Search roster..." data-or-placeholder="ତାଲିକା ଖୋଜନ୍ତୁ...">
+                                    <select id="admin-roster-filter-batch" class="form-control" style="width: auto; padding: 8px 16px;">
+                                        <option value="" data-en="All Batches" data-or="ସମସ୍ତ ବ୍ୟାଚ୍">All Batches</option>
+                                        <!-- Will populate dynamically -->
+                                    </select>
+                                </div>
+
+                                <div class="admin-table-wrapper">
+                                    <table class="admin-table">
+                                        <thead>
+                                            <tr>
+                                                <th data-en="Photo" data-or="ଫଟୋ">Photo</th>
+                                                <th data-en="Name" data-or="ନାମ">Name</th>
+                                                <th data-en="Batch" data-or="ବ୍ୟାଚ୍">Batch</th>
+                                                <th data-en="Contact" data-or="ଯୋଗାଯୋଗ">Contact</th>
+                                                <th data-en="Occupation" data-or="ପେଷା">Occupation</th>
+                                                <th data-en="Location" data-or="ଠିକଣା">Location</th>
+                                                <th data-en="Action" data-or="କାର୍ଯ୍ୟ">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="admin-roster-table-body">
+                                            <!-- loaded dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Photo Lightbox Modal -->
+    <div class="lightbox" id="lightbox-modal">
+        <button class="lightbox-close" id="lightbox-close">&times;</button>
+        <img class="lightbox-content" id="lightbox-img" src="" alt="Lightbox image">
+        <div class="lightbox-caption">
+            <h3 id="lightbox-caption-title"></h3>
+            <p id="lightbox-caption-meta"></p>
+        </div>
+    </div>
+
+    <!-- Notice Viewer Modal -->
+    <div class="lightbox" id="notice-modal" style="background: rgba(11, 37, 69, 0.8);">
+        <div class="form-card" style="position: relative; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+            <button class="lightbox-close" id="notice-modal-close" style="color: var(--primary); top: 12px; right: 16px; font-size: 2rem;">&times;</button>
+            <span class="notice-category" id="modal-notice-category">General</span>
+            <span class="notice-date" id="modal-notice-date">July 8, 2026</span>
+            <h2 id="modal-notice-title" style="color: var(--primary); font-size: 1.6rem; margin: 10px 0 20px 0;">Notice Title</h2>
+            <div id="modal-notice-content" style="color: var(--text-dark); line-height: 1.7; font-size: 1.05rem; white-space: pre-line;">
+                Detailed notice contents will go here...
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Alert Notification -->
+    <div class="custom-alert" id="custom-alert">Notification Message</div>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container footer-grid">
+            <div class="footer-col">
+                <h4 data-en="RAMJAA" data-or="ରାମଜା">RAMJAA</h4>
+                <p data-en="Radha Mohan Jew Alumni Association (RAMJAA) is dedicated to preserving the school's glory, supporting students, and building a stronger community." data-or="ରାଧା ମୋହନ ଜ୍ୟୁ ପୂର୍ବତନ ଛାତ୍ରଛାତ୍ରୀ ସଂଗଠନ (ରାମଜା) ବିଦ୍ୟାଳୟର ଗୌରବ ରକ୍ଷା, ବର୍ତ୍ତମାନର ଛାତ୍ରଛାତ୍ରୀଙ୍କୁ ସହଯୋଗ ଏବଂ ଏକ ସୁଦୃଢ଼ ସମାଜ ଗଠନ ପାଇଁ ଉତ୍ସର୍ଗୀକୃତ।">
+                    Radha Mohan Jew Alumni Association (RAMJAA) is dedicated to preserving the school's glory, supporting students, and building a stronger community.
+                </p>
+            </div>
+            
+            <div class="footer-col">
+                <h4 data-en="Quick Links" data-or="ଖୋଜିବା ପାଇଁ ଲିଙ୍କ">Quick Links</h4>
+                <ul>
+                    <li><a href="#/home" data-en="Home" data-or="ମୁଖ୍ୟ ପୃଷ୍ଠା">Home</a></li>
+                    <li><a href="#/about" data-en="About Us" data-or="ଆମ ବିଷୟରେ">About Us</a></li>
+                    <li><a href="#/notices" data-en="Notices" data-or="ବିଜ୍ଞପ୍ତି">Notices</a></li>
+                    <li><a href="#/gallery" data-en="Photo Gallery" data-or="ଫଟୋ ଗ୍ୟାଲେରୀ">Photo Gallery</a></li>
+                    <li><a href="#/register" data-en="Become a Member" data-or="ସଦସ୍ୟ ହୁଅନ୍ତୁ">Become a Member</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4 data-en="Contact Us" data-or="ଯୋଗାଯୋଗ କରନ୍ତୁ">Contact Us</h4>
+                <p>
+                    <strong data-en="Address:" data-or="ଠିକଣା:">Address:</strong><br>
+                    Radha Mohan Jew High School,<br>
+                    Sindhia, Balasore, Odisha - 756001
+                </p>
+                <p>
+                    <strong data-en="Email:" data-or="ଇମେଲ୍:">Email:</strong> info@ramjaa.org<br>
+                    <strong data-en="Phone:" data-or="ଫୋନ୍:">Phone:</strong> +91 6782-223456
+                </p>
+            </div>
+        </div>
+
+        <div class="container footer-bottom">
+            <div>
+                &copy; <span id="footer-year">2026</span> RAMJAA. <span data-en="All Rights Reserved." data-or="ସର୍ବସତ୍ତ୍ୱ ସଂରକ୍ଷିତ।">All Rights Reserved.</span>
+            </div>
+            <div>
+                <span data-en="Developed for RAMJAA" data-or="ରାମଜା ପାଇଁ ପ୍ରସ୍ତୁତ">Developed for RAMJAA</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>

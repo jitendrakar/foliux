@@ -7073,6 +7073,36 @@ def serve_ca(request, path=''):
         raise Http404("File not found")
 
 
+def serve_ramjaa(request, path=''):
+    """
+    Serves static files from the 'RAMJAA' directory.
+    If the path is empty or a directory, it defaults to 'index.html'.
+    Prevents directory traversal attacks by validating the path.
+    """
+    import os
+    from django.http import FileResponse, Http404, HttpResponseRedirect
+    from django.conf import settings
+    
+    if request.path == '/ramjaa':
+        return HttpResponseRedirect('/ramjaa/')
+        
+    ramjaa_dir = os.path.join(settings.BASE_DIR, 'RAMJAA')
+    
+    if not path or path.endswith('/'):
+        path = os.path.join(path, 'index.html')
+        
+    full_path = os.path.join(ramjaa_dir, path)
+    
+    normalized_path = os.path.abspath(full_path)
+    if not normalized_path.startswith(os.path.abspath(ramjaa_dir)):
+        raise Http404("File not found")
+        
+    if os.path.exists(normalized_path) and os.path.isfile(normalized_path):
+        return FileResponse(open(normalized_path, 'rb'))
+    else:
+        raise Http404("File not found")
+
+
 # ==========================================
 # BHARAT CHICKEN POINT (BCP) MODULE
 # ==========================================

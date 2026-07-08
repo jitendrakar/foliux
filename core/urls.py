@@ -165,6 +165,10 @@ urlpatterns = [
     path('coaching/', views.serve_coaching, {'path': ''}, name='serve_coaching_root'),
     path('coaching/<path:path>', views.serve_coaching, name='serve_coaching_files'),
     
+    # Ramjaa Demo Routing
+    path('ramjaa/', views.serve_ramjaa, {'path': ''}, name='serve_ramjaa_root'),
+    path('ramjaa/<path:path>', views.serve_ramjaa, name='serve_ramjaa_files'),
+    
     # BCP APIs (Matching bcp/public/script.js relative fetch requests)
     path('api/menu', views.bcp_api_menu, name='bcp_api_menu'),
     path('api/orders', views.bcp_api_orders, name='bcp_api_orders'),
