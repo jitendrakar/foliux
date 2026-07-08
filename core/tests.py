@@ -334,4 +334,40 @@ class DrDemoTestCase(TestCase):
         self.assertEqual(response.status_code, 404)
 
 
+class IPOTestCase(TestCase):
+    def test_ipo_cmp_property(self):
+        from core.models import IPO, Instrument
+        from datetime import date
+        # Create an Instrument
+        inst = Instrument.objects.create(
+            name="Test Stock",
+            symbol="TSTOCK",
+            last_price=Decimal("123.45"),
+            price_change=Decimal("2.30")
+        )
+        # Create an IPO with the symbol
+        ipo = IPO.objects.create(
+            name="Test IPO",
+            symbol="TSTOCK",
+            start_date=date(2026, 4, 1),
+            end_date=date(2026, 4, 5),
+            company_work="Does test operations",
+            notes="Analysis notes"
+        )
+        self.assertEqual(ipo.cmp, Decimal("123.45"))
+        self.assertEqual(ipo.price_change, Decimal("2.30"))
+        
+        # Test default/none properties when symbol doesn't exist
+        ipo_no_sym = IPO.objects.create(
+            name="Test IPO 2",
+            start_date=date(2026, 4, 1),
+            end_date=date(2026, 4, 5),
+            company_work="Does other operations",
+            notes="Analysis notes"
+        )
+        self.assertIsNone(ipo_no_sym.cmp)
+        self.assertIsNone(ipo_no_sym.price_change)
+
+
+
 

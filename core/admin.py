@@ -278,9 +278,9 @@ class NPSTransactionAdmin(admin.ModelAdmin):
 
 @admin.register(IPO)
 class IPOAdmin(admin.ModelAdmin):
-    list_display = ('name', 'start_date', 'end_date', 'advise', 'get_status')
+    list_display = ('name', 'symbol', 'start_date', 'end_date', 'advise', 'get_status')
     list_filter = ('advise', 'start_date', 'end_date')
-    search_fields = ('name', 'company_work')
+    search_fields = ('name', 'symbol', 'company_work')
     ordering = ('-start_date',)
 
     def get_status(self, obj):

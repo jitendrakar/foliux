@@ -1056,6 +1056,7 @@ class IPO(models.Model):
     ]
     
     name = models.CharField(max_length=200)
+    symbol = models.CharField(max_length=50, blank=True, null=True, help_text="NSE/BSE Symbol if listed")
     start_date = models.DateField()
     end_date = models.DateField()
     company_work = models.TextField(help_text="What company does – short text")
@@ -1066,6 +1067,32 @@ class IPO(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def cmp(self):
+        if not self.symbol:
+            return None
+        try:
+            from core.models import Instrument
+            inst = Instrument.objects.filter(symbol=self.symbol.strip().upper()).first()
+            if inst and inst.last_price > 0:
+                return inst.last_price
+        except Exception:
+            pass
+        return None
+
+    @property
+    def price_change(self):
+        if not self.symbol:
+            return None
+        try:
+            from core.models import Instrument
+            inst = Instrument.objects.filter(symbol=self.symbol.strip().upper()).first()
+            if inst:
+                return inst.price_change
+        except Exception:
+            pass
+        return None
 
     @property
     def status(self):
