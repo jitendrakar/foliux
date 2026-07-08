@@ -182,7 +182,7 @@ class AISTests(TestCase):
             decrypt_ais_json(corrupted, self.password)
 
     def test_parsing_and_import(self):
-        fy = "2025-26"
+        fy = "FY 2025-26"
         counts, err = parse_and_import_ais(self.user, self.json_str, fy, duplicate_action=None)
         
         self.assertNil = err is None
@@ -207,14 +207,13 @@ class AISTests(TestCase):
         self.assertIn("Flat 101", profile.address)
 
         # Check UserTaxProfile Auto-updates
-        # '2025-26' should map to '2025-2026' in UserTaxProfile
-        tax_profile = UserTaxProfile.objects.get(user=self.user, financial_year="2025-2026")
+        tax_profile = UserTaxProfile.objects.get(user=self.user, financial_year="FY 2025-26")
         self.assertEqual(tax_profile.salary, Decimal('1200000.00')) # MUMR12345A salary
         # Interest: 12500 + 45000 = 57500. Dividend: 5000. Total = 62500.00
         self.assertEqual(tax_profile.other_taxable_income, Decimal('62500.00'))
 
     def test_duplicate_handling_detected(self):
-        fy = "2025-26"
+        fy = "FY 2025-26"
         # First import
         parse_and_import_ais(self.user, self.json_str, fy)
         
@@ -224,7 +223,7 @@ class AISTests(TestCase):
         self.assertEqual(result['financial_year'], fy)
 
     def test_duplicate_handling_replace(self):
-        fy = "2025-26"
+        fy = "FY 2025-26"
         parse_and_import_ais(self.user, self.json_str, fy)
         
         # Run replace import
@@ -235,7 +234,7 @@ class AISTests(TestCase):
         self.assertEqual(IncomeTaxTds.objects.filter(user=self.user, financial_year=fy).count(), 2)
 
     def test_duplicate_handling_merge(self):
-        fy = "2025-26"
+        fy = "FY 2025-26"
         parse_and_import_ais(self.user, self.json_str, fy)
         
         # Run merge import with same JSON -> should deduplicate and result in 0 new records
@@ -251,15 +250,15 @@ class AISTests(TestCase):
 
     def test_ais_dashboard_view_logged_in(self):
         self.client.login(username='testtaxpayer', password='password123')
-        parse_and_import_ais(self.user, self.json_str, "2025-26")
+        parse_and_import_ais(self.user, self.json_str, "FY 2025-26")
         
         response = self.client.get('/calc/ais/dashboard/')
         self.assertEqual(response.status_code, 200)
-        self.assertIn("2025-26", response.context['available_fys'])
+        self.assertIn("FY 2025-26", response.context['available_fys'])
 
     def test_ais_data_api_success(self):
         self.client.login(username='testtaxpayer', password='password123')
-        fy = "2025-26"
+        fy = "FY 2025-26"
         parse_and_import_ais(self.user, self.json_str, fy)
         
         response = self.client.get(f'/calc/ais/data/?fy={fy}')
@@ -343,7 +342,7 @@ class AISTests(TestCase):
             }
         }
         
-        fy = "2025-26"
+        fy = "FY 2025-26"
         json_str = json.dumps(mock_data_with_inactive)
         counts, err = parse_and_import_ais(self.user, json_str, fy, duplicate_action=None)
         

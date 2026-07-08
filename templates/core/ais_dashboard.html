@@ -449,7 +449,7 @@
       {% if available_fys %}
       <select id="aisFYSelector" class="ais-fy-select" onchange="loadAisData()">
         {% for fy in available_fys %}
-          <option value="{{ fy }}" {% if fy == selected_fy %}selected{% endif %}>FY {{ fy }}</option>
+          <option value="{{ fy }}" {% if fy == selected_fy %}selected{% endif %}>{% if fy|slice:":3" == "FY " %}{{ fy }}{% else %}FY {{ fy }}{% endif %}</option>
         {% endfor %}
       </select>
       {% endif %}
@@ -1891,6 +1891,27 @@ window.submitAisImport = function(event, type) {
   const file = fileInput.files[0];
   if (!file.name.toLowerCase().endsWith('.json') && !file.name.toLowerCase().endsWith('.zip')) {
     alert('Accept only .json or .zip files.');
+    return;
+  }
+  
+  // Enforce frontend Financial Year format validation from filename
+  const filename = file.name;
+  const fyMatch = filename.match(/(\d{4}-\d{2,4})/);
+  let isFyValid = false;
+  if (fyMatch) {
+    const fyVal = fyMatch[1];
+    const stdMatch = fyVal.match(/^(\d{4})-(\d{2})$/);
+    if (stdMatch) {
+      const startYr = parseInt(stdMatch[1], 10);
+      const endYr = parseInt(stdMatch[2], 10);
+      if (endYr === (startYr + 1) % 100) {
+        isFyValid = true;
+      }
+    }
+  }
+  
+  if (!isFyValid) {
+    showImportError('Invalid Financial Year format detected. Expected format: FY YYYY-YY (e.g., FY 2025-26). The affected record(s) have not been uploaded.', type);
     return;
   }
   

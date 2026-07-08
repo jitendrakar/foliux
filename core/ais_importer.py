@@ -198,6 +198,11 @@ def parse_and_import_ais(user, decrypted_text, financial_year, duplicate_action=
     Parses the decrypted AIS JSON and imports it.
     Returns: (summary_dict, error_message)
     """
+    from .models import normalize_and_validate_fy
+    try:
+        financial_year = normalize_and_validate_fy(financial_year)
+    except ValueError as e:
+        return None, str(e)
     try:
         data = json.loads(decrypted_text)
     except Exception:
@@ -867,12 +872,9 @@ def update_user_tax_profile(user, financial_year, counts):
     """
     Summarizes key aggregates from imported tables and updates/pre-fills the UserTaxProfile.
     """
-    from .models import UserTaxProfile
+    from .models import UserTaxProfile, normalize_and_validate_fy
     
-    fy_norm = financial_year
-    if len(financial_year) == 7: # e.g. 2025-26
-        parts = financial_year.split('-')
-        fy_norm = f"{parts[0]}-20{parts[1]}"
+    fy_norm = normalize_and_validate_fy(financial_year)
 
     # Calculate Aggregates
     salary_total = Decimal('0')

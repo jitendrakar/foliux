@@ -12,13 +12,18 @@ logger = logging.getLogger(__name__)
 
 def fy_to_dates(fy_str):
     """
-    Convert financial year string '2025-2026' to start and end dates.
+    Convert financial year string '2025-2026' or 'FY 2025-26' to start and end dates.
     Returns (start_date, end_date)
     """
     try:
-        parts = fy_str.split('-')
+        clean_fy = str(fy_str).replace('FY ', '').strip()
+        parts = clean_fy.split('-')
         start_year = int(parts[0].strip())
-        end_year = int(parts[1].strip())
+        end_year_part = parts[1].strip()
+        if len(end_year_part) == 2:
+            end_year = (start_year // 100) * 100 + int(end_year_part)
+        else:
+            end_year = int(end_year_part)
         return date(start_year, 4, 1), date(end_year, 3, 31)
     except Exception as e:
         logger.error(f"Error parsing FY string {fy_str}: {e}")

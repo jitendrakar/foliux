@@ -10,6 +10,59 @@ from encrypted_model_fields.fields import (
     EncryptedTextField,
 )
 
+import re
+from django.core.exceptions import ValidationError
+
+def normalize_and_validate_fy(fy_str):
+    if not fy_str:
+        raise ValueError("Invalid Financial Year format detected. Expected format: FY YYYY-YY (e.g., FY 2025-26).")
+    
+    fy_str = str(fy_str).strip()
+    
+    # 1. If it matches 'FY YYYY-YY' (e.g., 'FY 2025-26')
+    if re.match(r'^FY \d{4}-\d{2}$', fy_str):
+        parts = fy_str[3:].split('-')
+        start_yr = int(parts[0])
+        end_yr = int(parts[1])
+        if end_yr == (start_yr + 1) % 100:
+            return fy_str
+        raise ValueError("Invalid Financial Year: Ending year must be consecutive to the start year.")
+        
+    # 2. If it matches 'YYYY-YY' (e.g., '2025-26')
+    if re.match(r'^\d{4}-\d{2}$', fy_str):
+        parts = fy_str.split('-')
+        start_yr = int(parts[0])
+        end_yr = int(parts[1])
+        if end_yr == (start_yr + 1) % 100:
+            return f"FY {fy_str}"
+        raise ValueError("Invalid Financial Year: Ending year must be consecutive to the start year.")
+        
+    # 3. If it matches 'YYYY-YYYY' (e.g., '2025-2026')
+    if re.match(r'^\d{4}-\d{4}$', fy_str):
+        parts = fy_str.split('-')
+        start_yr = int(parts[0])
+        end_yr = int(parts[1])
+        if end_yr == start_yr + 1:
+            return f"FY {parts[0]}-{str(end_yr)[2:]}"
+        raise ValueError("Invalid Financial Year: Ending year must be consecutive to the start year.")
+
+    # 4. If it matches 'FY YYYY-YYYY' (e.g., 'FY 2025-2026')
+    if re.match(r'^FY \d{4}-\d{4}$', fy_str):
+        parts = fy_str[3:].split('-')
+        start_yr = int(parts[0])
+        end_yr = int(parts[1])
+        if end_yr == start_yr + 1:
+            return f"FY {parts[0]}-{str(end_yr)[2:]}"
+        raise ValueError("Invalid Financial Year: Ending year must be consecutive to the start year.")
+        
+    raise ValueError("Invalid Financial Year format detected. Expected format: FY YYYY-YY (e.g., FY 2025-26).")
+
+def validate_fy_format(value):
+    try:
+        normalize_and_validate_fy(value)
+    except ValueError as e:
+        raise ValidationError(str(e))
+
 class Instrument(models.Model):
     name = models.CharField(max_length=100)
     symbol = models.CharField(max_length=50, unique=True)
@@ -1300,7 +1353,7 @@ class IdempotencyKey(models.Model):
 
 class UserTaxProfile(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tax_profiles')
-    financial_year = models.CharField(max_length=9) # e.g. '2025-2026'
+    financial_year = models.CharField(max_length=15, validators=[validate_fy_format]) # e.g. 'FY 2025-26'
     salary = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0'))
     business_income = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0'))
     other_taxable_income = models.DecimalField(max_digits=15, decimal_places=2, default=Decimal('0'))
@@ -1320,6 +1373,14 @@ class UserTaxProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.financial_year}"
+
+    def save(self, *args, **kwargs):
+        if self.financial_year:
+            try:
+                self.financial_year = normalize_and_validate_fy(self.financial_year)
+            except ValueError as e:
+                raise ValidationError(str(e))
+        super().save(*args, **kwargs)
 
 
 class SavedCalculation(models.Model):
@@ -1342,7 +1403,7 @@ class SavedCalculation(models.Model):
 
 class IncomeTaxBaseModel(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    financial_year = models.CharField(max_length=9) # e.g. '2025-26'
+    financial_year = models.CharField(max_length=15, validators=[validate_fy_format]) # e.g. 'FY 2025-26'
     source = models.CharField(max_length=50, default='AIS JSON')
     imported_on = models.DateTimeField(auto_now_add=True)
     json_reference = models.JSONField(default=dict, blank=True, null=True)
@@ -1351,6 +1412,14 @@ class IncomeTaxBaseModel(models.Model):
 
     class Meta:
         abstract = True
+
+    def save(self, *args, **kwargs):
+        if self.financial_year:
+            try:
+                self.financial_year = normalize_and_validate_fy(self.financial_year)
+            except ValueError as e:
+                raise ValidationError(str(e))
+        super().save(*args, **kwargs)
 
 
 class IncomeTaxProfile(IncomeTaxBaseModel):

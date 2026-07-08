@@ -5316,6 +5316,12 @@ def import_ais_api(request):
         return JsonResponse({'status': 'error', 'message': 'Unsupported AIS Version: Could not determine Financial Year from filename. Expected format like XXXPK3598X_2025-26_AIS_01072026.json or .zip.'}, status=400)
 
     try:
+        from .models import normalize_and_validate_fy
+        fy = normalize_and_validate_fy(fy)
+    except ValueError as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+    try:
         content_bytes = ais_file.read()
     except Exception:
         return JsonResponse({'status': 'error', 'message': 'Corrupted File.'}, status=400)
@@ -5359,7 +5365,15 @@ def ais_dashboard(request):
     from .models import IncomeTaxProfile
     user = request.user
     available_fys = list(IncomeTaxProfile.objects.filter(user=user).values_list('financial_year', flat=True).distinct().order_by('-financial_year'))
-    selected_fy = request.GET.get('fy', available_fys[0] if available_fys else '')
+    raw_fy = request.GET.get('fy')
+    if raw_fy:
+        try:
+            from .models import normalize_and_validate_fy
+            selected_fy = normalize_and_validate_fy(raw_fy)
+        except ValueError:
+            selected_fy = available_fys[0] if available_fys else ''
+    else:
+        selected_fy = available_fys[0] if available_fys else ''
     return render(request, 'core/ais_dashboard.html', {
         'available_fys': available_fys,
         'selected_fy': selected_fy,
@@ -5379,6 +5393,11 @@ def ais_data_api(request):
     fy = request.GET.get('fy')
     if not fy:
         return JsonResponse({'status': 'error', 'message': 'Missing Financial Year parameter.'}, status=400)
+    try:
+        from .models import normalize_and_validate_fy
+        fy = normalize_and_validate_fy(fy)
+    except ValueError as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
         
     user = request.user
     

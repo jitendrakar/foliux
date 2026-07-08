@@ -369,5 +369,48 @@ class IPOTestCase(TestCase):
         self.assertIsNone(ipo_no_sym.price_change)
 
 
+class FinancialYearValidationTestCase(TestCase):
+    def test_normalize_and_validate_fy(self):
+        from core.models import normalize_and_validate_fy
+        
+        # Valid cases
+        self.assertEqual(normalize_and_validate_fy("FY 2025-26"), "FY 2025-26")
+        self.assertEqual(normalize_and_validate_fy("2025-26"), "FY 2025-26")
+        self.assertEqual(normalize_and_validate_fy("2025-2026"), "FY 2025-26")
+        self.assertEqual(normalize_and_validate_fy("FY 2025-2026"), "FY 2025-26")
+        
+        # Invalid cases
+        with self.assertRaises(ValueError):
+            normalize_and_validate_fy("FY 2025-2611")
+        with self.assertRaises(ValueError):
+            normalize_and_validate_fy("FY 2026-277")
+        with self.assertRaises(ValueError):
+            normalize_and_validate_fy("FY 2027-288")
+        with self.assertRaises(ValueError):
+            normalize_and_validate_fy("2025-27") # non-consecutive
+            
+    def test_model_save_normalization(self):
+        from core.models import IncomeTaxProfile
+        user = User.objects.create_user(username='fyuser', password='password')
+        
+        # Save profile with non-prefixed consecutive format
+        profile = IncomeTaxProfile.objects.create(
+            user=user,
+            financial_year="2025-26",
+            pan="ABCDE1234F",
+            name="John Doe",
+            dob="1990-01-01"
+        )
+        # Verify it normalized to 'FY 2025-26' on save
+        self.assertEqual(profile.financial_year, "FY 2025-26")
+        
+        # Try to save with invalid format and check ValidationError
+        from django.core.exceptions import ValidationError
+        with self.assertRaises(ValidationError):
+            profile.financial_year = "FY 2025-2611"
+            profile.save()
+
+
+
 
 
