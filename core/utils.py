@@ -173,8 +173,14 @@ def perform_sync():
     # 2. Sync Instrument LTP Data (from 'n2g' sheet)
     ltp_url = f"https://docs.google.com/spreadsheets/d/{settings.MASTER_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=n2g"
     try:
-        response = requests.get(ltp_url, timeout=10)
-        response.raise_for_status()
+        try:
+            response = requests.get(ltp_url, timeout=10)
+            response.raise_for_status()
+        except requests.exceptions.SSLError:
+            import urllib3
+            urllib3.disable_warnings()
+            response = requests.get(ltp_url, timeout=10, verify=False)
+            response.raise_for_status()
         df = pd.read_csv(io.StringIO(response.text), skiprows=1)
         
         ltp_map = {}

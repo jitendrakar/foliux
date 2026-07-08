@@ -1127,9 +1127,33 @@ class IPO(models.Model):
             return None
         try:
             from core.models import Instrument
-            inst = Instrument.objects.filter(symbol=self.symbol.strip().upper()).first()
+            symbol_upper = self.symbol.strip().upper()
+            # Try raw match first
+            inst = Instrument.objects.filter(symbol=symbol_upper).first()
             if inst and inst.last_price > 0:
                 return inst.last_price
+                
+            # Try cleaned match (strip NSE:, BSE:, etc.)
+            clean_sym = symbol_upper.replace('NSE:', '').replace('BSE:', '').replace('.NS', '').replace('.BO', '').strip()
+            inst = Instrument.objects.filter(symbol=clean_sym).first()
+            if inst and inst.last_price > 0:
+                return inst.last_price
+                
+            # Try yfinance fallback (using clean symbol)
+            import yfinance as yf
+            ticker = yf.Ticker(f"{clean_sym}.NS")
+            hist = ticker.history(period="1d")
+            if not hist.empty:
+                price = hist['Close'].iloc[-1]
+                if price and price > 0:
+                    return Decimal(str(round(price, 2)))
+                    
+            ticker_bo = yf.Ticker(f"{clean_sym}.BO")
+            hist_bo = ticker_bo.history(period="1d")
+            if not hist_bo.empty:
+                price_bo = hist_bo['Close'].iloc[-1]
+                if price_bo and price_bo > 0:
+                    return Decimal(str(round(price_bo, 2)))
         except Exception:
             pass
         return None
@@ -1140,9 +1164,33 @@ class IPO(models.Model):
             return None
         try:
             from core.models import Instrument
-            inst = Instrument.objects.filter(symbol=self.symbol.strip().upper()).first()
+            symbol_upper = self.symbol.strip().upper()
+            # Try raw match first
+            inst = Instrument.objects.filter(symbol=symbol_upper).first()
             if inst:
                 return inst.price_change
+                
+            # Try cleaned match
+            clean_sym = symbol_upper.replace('NSE:', '').replace('BSE:', '').replace('.NS', '').replace('.BO', '').strip()
+            inst = Instrument.objects.filter(symbol=clean_sym).first()
+            if inst:
+                return inst.price_change
+                
+            # Try yfinance fallback
+            import yfinance as yf
+            ticker = yf.Ticker(f"{clean_sym}.NS")
+            hist = ticker.history(period="2d")
+            if len(hist) >= 2:
+                price = hist['Close'].iloc[-1]
+                prev_close = hist['Close'].iloc[-2]
+                return Decimal(str(round(price - prev_close, 2)))
+                
+            ticker_bo = yf.Ticker(f"{clean_sym}.BO")
+            hist_bo = ticker_bo.history(period="2d")
+            if len(hist_bo) >= 2:
+                price_bo = hist_bo['Close'].iloc[-1]
+                prev_close_bo = hist_bo['Close'].iloc[-2]
+                return Decimal(str(round(price_bo - prev_close_bo, 2)))
         except Exception:
             pass
         return None
