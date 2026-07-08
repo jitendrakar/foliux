@@ -337,6 +337,9 @@ def parse_and_import_ais(user, decrypted_text, financial_year, duplicate_action=
                             deductor_name, tan_val = parse_source_name_and_id(source_str)
 
                     for l1_row in l1_rows:
+                        status = get_field_by_label(l1_row, l1_labels, ['status']) or ''
+                        if str(status).strip().lower() == 'inactive':
+                            continue
                         quarter = get_field_by_label(l1_row, l1_labels, ['quarter', 'qtr']) or ''
                         amount_paid = parse_decimal(get_field_by_label(l1_row, l1_labels, ['paid', 'credited', 'amtPaid']))
                         tax_deducted = parse_decimal(get_field_by_label(l1_row, l1_labels, ['deducted', 'amountDeducted']))
@@ -381,6 +384,10 @@ def parse_and_import_ais(user, decrypted_text, financial_year, duplicate_action=
                         for l1_row in l1_rows:
                             row_str = str(l1_row)
                             if source_id and source_id not in row_str:
+                                continue
+                                
+                            status = get_field_by_label(l1_row, l1_labels, ['status']) or ''
+                            if str(status).strip().lower() == 'inactive':
                                 continue
                                 
                             # 1. Dividends (SFT-015)
@@ -468,6 +475,9 @@ def parse_and_import_ais(user, decrypted_text, financial_year, duplicate_action=
                     el_labels = el.get('columnLabel', [])
                     el_rows = el.get('columnData', [])
                     for el_row in el_rows:
+                        status = get_field_by_label(el_row, el_labels, ['status']) or ''
+                        if str(status).strip().lower() == 'inactive':
+                            continue
                         tax_type = get_field_by_label(el_row, el_labels, ['minor head', 'major head', 'type']) or 'Tax Payment'
                         bsr_code = get_field_by_label(el_row, el_labels, ['bsr code']) or ''
                         challan_no = get_field_by_label(el_row, el_labels, ['challan serial number', 'challan serial', 'challan identification number']) or ''
@@ -492,6 +502,9 @@ def parse_and_import_ais(user, decrypted_text, financial_year, duplicate_action=
                     is_refund = 'refund' in title.lower() or any('refund' in str(lbl).lower() for lbl in el_labels)
                     
                     for el_row in el_rows:
+                        status = get_field_by_label(el_row, el_labels, ['status']) or ''
+                        if str(status).strip().lower() == 'inactive':
+                            continue
                         ay = get_field_by_label(el_row, el_labels, ['assessment year', 'ay']) or ''
                         if is_refund:
                             refund_amount = parse_decimal(get_field_by_label(el_row, el_labels, ['refund amount', 'amount']))
@@ -535,6 +548,10 @@ def parse_and_import_ais(user, decrypted_text, financial_year, duplicate_action=
                             if source_id and source_id not in row_str:
                                 continue
                                 
+                            status = get_field_by_label(l1_row, l1_labels, ['status']) or ''
+                            if str(status).strip().lower() == 'inactive':
+                                continue
+                                
                             if 'SAL' in code or 'salary' in title.lower():
                                 gross = parse_decimal(get_field_by_label(l1_row, l1_labels, ['grossSalary', 'gross']))
                                 perks = parse_decimal(get_field_by_label(l1_row, l1_labels, ['perquisites', 'valueOfPerquisites172']))
@@ -564,6 +581,9 @@ def parse_and_import_ais(user, decrypted_text, financial_year, duplicate_action=
 
         # 1. Process TDS Entries
         for entry in tds_entries:
+            status = find_key_case_insensitive(entry, 'status') or ''
+            if str(status).strip().lower() == 'inactive':
+                continue
             tan = find_key_case_insensitive(entry, 'tan') or find_key_case_insensitive(entry, 'deductorTan') or ''
             deductor_name = find_key_case_insensitive(entry, 'deductorName') or find_key_case_insensitive(entry, 'partyName') or ''
             section = find_key_case_insensitive(entry, 'section') or find_key_case_insensitive(entry, 'tdsSection') or ''
@@ -600,6 +620,9 @@ def parse_and_import_ais(user, decrypted_text, financial_year, duplicate_action=
 
         # 2. Process SFT Entries
         for entry in sft_entries:
+            status = find_key_case_insensitive(entry, 'status') or ''
+            if str(status).strip().lower() == 'inactive':
+                continue
             reporting_entity = find_key_case_insensitive(entry, 'reportingEntity') or find_key_case_insensitive(entry, 'partyName') or ''
             desc = find_key_case_insensitive(entry, 'description') or find_key_case_insensitive(entry, 'infoDesc') or ''
             amount = parse_decimal(find_key_case_insensitive(entry, 'amount') or find_key_case_insensitive(entry, 'transAmt'))
@@ -674,6 +697,9 @@ def parse_and_import_ais(user, decrypted_text, financial_year, duplicate_action=
 
         # 3. Process Tax Payments
         for entry in tax_payments:
+            status = find_key_case_insensitive(entry, 'status') or ''
+            if str(status).strip().lower() == 'inactive':
+                continue
             tax_type = find_key_case_insensitive(entry, 'taxType') or find_key_case_insensitive(entry, 'paymentType') or 'Taxes Paid'
             bsr_code = find_key_case_insensitive(entry, 'bsr') or find_key_case_insensitive(entry, 'bsrCode') or ''
             challan_no = find_key_case_insensitive(entry, 'challanNo') or find_key_case_insensitive(entry, 'challanNumber') or ''
@@ -693,6 +719,9 @@ def parse_and_import_ais(user, decrypted_text, financial_year, duplicate_action=
 
         # 4. Process Refunds
         for entry in refunds:
+            status = find_key_case_insensitive(entry, 'status') or ''
+            if str(status).strip().lower() == 'inactive':
+                continue
             ay = find_key_case_insensitive(entry, 'assessmentYear') or find_key_case_insensitive(entry, 'ay') or ''
             refund_amount = parse_decimal(find_key_case_insensitive(entry, 'refundAmount') or find_key_case_insensitive(entry, 'amount'))
             interest = parse_decimal(find_key_case_insensitive(entry, 'interest') or '0')
@@ -712,6 +741,9 @@ def parse_and_import_ais(user, decrypted_text, financial_year, duplicate_action=
 
         # 5. Process Demands
         for entry in demands:
+            status = find_key_case_insensitive(entry, 'status') or ''
+            if str(status).strip().lower() == 'inactive':
+                continue
             ay = find_key_case_insensitive(entry, 'assessmentYear') or find_key_case_insensitive(entry, 'ay') or ''
             demand_amount = parse_decimal(find_key_case_insensitive(entry, 'demandAmount') or find_key_case_insensitive(entry, 'amount') or find_key_case_insensitive(entry, 'outstandingDemand'))
             section_code = find_key_case_insensitive(entry, 'section') or find_key_case_insensitive(entry, 'sectionCode') or ''
@@ -728,6 +760,9 @@ def parse_and_import_ais(user, decrypted_text, financial_year, duplicate_action=
 
         # 6. Process Others
         for entry in others:
+            status = find_key_case_insensitive(entry, 'status') or ''
+            if str(status).strip().lower() == 'inactive':
+                continue
             category = find_key_case_insensitive(entry, 'category') or ''
             desc = find_key_case_insensitive(entry, 'description') or find_key_case_insensitive(entry, 'desc') or ''
             amount = parse_decimal(find_key_case_insensitive(entry, 'amount') or find_key_case_insensitive(entry, 'transAmt'))

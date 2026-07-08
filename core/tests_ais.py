@@ -274,3 +274,149 @@ class AISTests(TestCase):
         self.assertIn('salary', data)
         self.assertEqual(len(data['tds']), 2)
         self.assertEqual(len(data['salary']), 1)
+
+    def test_parsing_and_import_ignores_inactive(self):
+        # We construct a mock JSON that contains 'Inactive' rows
+        mock_data_with_inactive = {
+            "partA": {
+                "pan": "ATKPK3598G",
+                "aadhaar": "XXXX-XXXX-1234",
+                "taxpayerName": "TEST TAXPAYER NAME",
+                "dob": "04/08/1982",
+                "emailId": "test@foliux.com",
+                "mobileNo": "9876543210",
+                "address": {
+                    "line1": "Flat 101, building A"
+                }
+            },
+            "partB": {
+                "sections": [
+                    {
+                        "sectionKey": "tdsTcs",
+                        "elements": [
+                            {
+                                "title": "Income distributed by business trust",
+                                "l2": {
+                                    "columnLabel": ["Information CategoryCode"],
+                                    "columnData": [["TDS-194LBA"]]
+                                },
+                                "l1": {
+                                    "columnLabel": [
+                                        {"field": "quarter", "name": "Quarter"},
+                                        {"field": "amtPaid", "name": "Amount Paid"},
+                                        {"field": "amountDeducted", "name": "TDS Deducted"},
+                                        {"field": "status", "name": "Status"}
+                                    ],
+                                    "columnData": [
+                                        ["Q1(Apr-Jun)", "112.00", "0", "Inactive"],
+                                        ["Q1(Apr-Jun)", "112.00", "0", "Active"],
+                                        ["Q2(Jul-Sep)", "100.00", "5.00", "Active"],
+                                        ["Q2(Jul-Sep)", "100.00", "5.00", "Inactive"]
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "sectionKey": "sft",
+                        "elements": [
+                            {
+                                "title": "Dividend",
+                                "l2": {
+                                    "columnLabel": ["Information Code"],
+                                    "columnData": [["SFT-015"]]
+                                },
+                                "l1": {
+                                    "columnLabel": [
+                                        {"field": "amtPaid", "name": "Amount"},
+                                        {"field": "status", "name": "Status"}
+                                    ],
+                                    "columnData": [
+                                        ["500.00", "Inactive"],
+                                        ["300.00", "Active"]
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+        
+        fy = "2025-26"
+        json_str = json.dumps(mock_data_with_inactive)
+        counts, err = parse_and_import_ais(self.user, json_str, fy, duplicate_action=None)
+        
+        self.assertTrue(err is None)
+        # Should only import Active records:
+        # For tds: 2 active rows out of 4 total rows
+        # For dividend: 1 active row out of 2 total rows
+        self.assertEqual(counts['tds'], 2)
+        self.assertEqual(counts['dividend'], 1)
+        
+        # Verify from database
+        tds_records = IncomeTaxTds.objects.filter(user=self.user, financial_year=fy)
+        self.assertEqual(tds_records.count(), 2)
+        
+        div_records = IncomeTaxDividend.objects.filter(user=self.user, financial_year=fy)
+        self.assertEqual(div_records.count(), 1)
+        self.assertEqual(div_records.first().amount, Decimal('300.00'))
+
+        # Test legacy format with Inactive records
+        legacy_data_with_inactive = {
+            "partA": {
+                "pan": "ATKPK3598G",
+                "aadhaar": "XXXX-XXXX-1234",
+                "taxpayerName": "TEST TAXPAYER NAME",
+                "dob": "04/08/1982"
+            },
+            "tds": [
+                {
+                    "tan": "MUMR12345A",
+                    "deductorName": "MOCK EMPLOYER LTD",
+                    "section": "192",
+                    "amountPaid": "50000.00",
+                    "taxDeducted": "5000.00",
+                    "quarter": "Q1",
+                    "status": "Inactive"
+                },
+                {
+                    "tan": "MUMR12345A",
+                    "deductorName": "MOCK EMPLOYER LTD",
+                    "section": "192",
+                    "amountPaid": "60000.00",
+                    "taxDeducted": "6000.00",
+                    "quarter": "Q1",
+                    "status": "Active"
+                }
+            ],
+            "sft": [
+                {
+                    "sftType": "SFT-015",
+                    "description": "Dividend",
+                    "amount": "1000.00",
+                    "companyName": "RELIANCE INDUSTRIES LTD",
+                    "status": "Inactive"
+                },
+                {
+                    "sftType": "SFT-015",
+                    "description": "Dividend",
+                    "amount": "2000.00",
+                    "companyName": "RELIANCE INDUSTRIES LTD",
+                    "status": "Active"
+                }
+            ]
+        }
+        
+        # We need to clear the existing records
+        IncomeTaxProfile.objects.filter(user=self.user, financial_year=fy).delete()
+        IncomeTaxTds.objects.filter(user=self.user, financial_year=fy).delete()
+        IncomeTaxDividend.objects.filter(user=self.user, financial_year=fy).delete()
+        
+        legacy_json_str = json.dumps(legacy_data_with_inactive)
+        counts_legacy, err_legacy = parse_and_import_ais(self.user, legacy_json_str, fy, duplicate_action=None)
+        
+        self.assertTrue(err_legacy is None)
+        self.assertEqual(counts_legacy['tds'], 1)
+        self.assertEqual(counts_legacy['dividend'], 1)
+
