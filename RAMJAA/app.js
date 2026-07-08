@@ -129,7 +129,7 @@ const LOCALIZATION = {
 
 // Global Application State
 let appState = {
-    currentLanguage: localStorage.getItem('ramjaa_lang') || 'en',
+    currentLanguage: localStorage.getItem('ramjaa_lang') || 'or',
     notices: [],
     gallery: [],
     alumni: [],
