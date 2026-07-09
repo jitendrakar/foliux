@@ -3,6 +3,7 @@ from django.contrib.auth import views as auth_views
 from . import views
 from . import api_views
 from .forms import EmailOrMobileAuthenticationForm
+from RAMJAA import views as ramjaa_views
 
 urlpatterns = [
     path('search-instruments/', views.search_instruments, name='search_instruments'),
@@ -165,9 +166,19 @@ urlpatterns = [
     path('coaching/', views.serve_coaching, {'path': ''}, name='serve_coaching_root'),
     path('coaching/<path:path>', views.serve_coaching, name='serve_coaching_files'),
     
-    # Ramjaa Demo Routing
-    path('ramjaa/', views.serve_ramjaa, {'path': ''}, name='serve_ramjaa_root'),
-    path('ramjaa/<path:path>', views.serve_ramjaa, name='serve_ramjaa_files'),
+    # Ramjaa Demo Routing & APIs
+    path('ramjaa/', ramjaa_views.serve_ramjaa, {'path': ''}, name='serve_ramjaa_root'),
+    path('ramjaa/api/notices', ramjaa_views.ramjaa_notices_api, name='ramjaa_notices_api'),
+    path('ramjaa/api/notices/<str:item_id>', ramjaa_views.ramjaa_notices_api_delete, name='ramjaa_notices_api_delete'),
+    path('ramjaa/api/gallery', ramjaa_views.ramjaa_gallery_api, name='ramjaa_gallery_api'),
+    path('ramjaa/api/gallery/<str:item_id>', ramjaa_views.ramjaa_gallery_api_delete, name='ramjaa_gallery_api_delete'),
+    path('ramjaa/api/alumni/count', ramjaa_views.ramjaa_alumni_count, name='ramjaa_alumni_count'),
+    path('ramjaa/api/alumni', ramjaa_views.ramjaa_alumni_api, name='ramjaa_alumni_api'),
+    path('ramjaa/api/alumni/<str:item_id>', ramjaa_views.ramjaa_alumni_delete, name='ramjaa_alumni_delete'),
+    path('ramjaa/api/alumni/<str:item_id>/approve', ramjaa_views.ramjaa_alumni_approve, name='ramjaa_alumni_approve'),
+    path('ramjaa/api/alumni/<str:item_id>/pdf', ramjaa_views.ramjaa_alumni_pdf, name='ramjaa_alumni_pdf'),
+    path('ramjaa/api/admin/login', ramjaa_views.ramjaa_admin_login, name='ramjaa_admin_login'),
+    path('ramjaa/<path:path>', ramjaa_views.serve_ramjaa, name='serve_ramjaa_files'),
     
     # BCP APIs (Matching bcp/public/script.js relative fetch requests)
     path('api/menu', views.bcp_api_menu, name='bcp_api_menu'),

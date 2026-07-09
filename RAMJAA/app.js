@@ -142,123 +142,42 @@ let appState = {
 // SEED DEFAULT DATABASE (LOCAL STORAGE)
 // ==========================================
 function initDatabase() {
-    // 1. Seed Default Notices
-    const defaultNotices = [
-        {
-            id: 'n1',
-            date: '2026-07-08',
-            title_en: 'General Alumni Body Meeting - Diamond Jubilee planning',
-            title_or: 'ସାଧାରଣ ସଭା ଅନୁଷ୍ଠିତ ହେବା ବିଷୟରେ - ଡାଇମଣ୍ଡ ଜୁବିଲି ଯୋଜନା',
-            desc_en: 'An important general body meeting of all RAMJAA members will be held in the High School Auditorium on August 15, 2026, at 10:00 AM. We will discuss setup plans for the Diamond Jubilee and elect executive coordinators. Lunch will be provided.',
-            desc_or: 'ଆସନ୍ତା ଅଗଷ୍ଟ ୧୫, ୨୦୨୬ ପୂର୍ବାହ୍ନ ୧୦:୦୦ ଟାରେ ଉଚ୍ଚ ବିଦ୍ୟାଳୟର ସଭାଗୃହରେ ରାମଜାର ଏକ ସାଧାରଣ ସଭା ଆୟୋଜନ କରାଯାଇଛି। ଏହି ସଭାରେ ଡାଇମଣ୍ଡ ଜୁବିଲି ଉତ୍ସବର ପ୍ରସ୍ତୁତି ଓ ସଂଗଠନ ପରିଚାଳନା ବିଷୟରେ ଆଲୋଚନା ହେବ। ସମସ୍ତ ପୂର୍ବତନ ଛାତ୍ରଛାତ୍ରୀ ଯୋଗଦେବାକୁ ଅନୁରୋଧ।',
-            category: 'Events'
-        },
-        {
-            id: 'n2',
-            date: '2026-07-05',
-            title_en: 'Diamond Jubilee Fund Raiser for Smart Library',
-            title_or: 'ଡାଇମଣ୍ଡ ଜୁବିଲି ପାଣ୍ଠି ସଂଗ୍ରହ - ସ୍ମାର୍ଟ ଲାଇବ୍ରେରୀ ପ୍ରତିଷ୍ଠା',
-            desc_en: 'RAMJAA is raising funds to construct a high-tech smart library with computer workstations and digital reading aids for school children. We request our generous alumni to contribute. Contributions can be wired to RAMJAA Official Bank Account (Details in contact section).',
-            desc_or: 'ବିଦ୍ୟାଳୟରେ ଏକ ସ୍ମାର୍ଟ ଲାଇବ୍ରେରୀ ଓ କମ୍ପ୍ୟୁଟର ଲ୍ୟାବ୍ ନିର୍ମାଣ ପାଇଁ ରାମଜା ତରଫରୁ ପାଣ୍ଠି ସଂଗ୍ରହ ଅଭିଯାନ ଆରମ୍ଭ ହୋଇଛି। ଆପଣଙ୍କର ସହଯୋଗ ଆମ ବିଦ୍ୟାଳୟକୁ ଏକ ଆଦର୍ଶ ଶିକ୍ଷାନୁଷ୍ଠାନରେ ପରିଣତ କରିବାରେ ସାହାଯ୍ୟ କରିବ। ଅନୁଦାନ ରାଶି ଅଫିସିଆଲ୍ ବ୍ୟାଙ୍କ ଖାତାରେ ପଠାଇ ପାରିବେ।',
-            category: 'Urgent'
-        },
-        {
-            id: 'n3',
-            date: '2026-06-25',
-            title_en: 'Volunteer Mentors Required for Class X Career Seminar',
-            title_or: 'ଦଶମ ଶ୍ରେଣୀ ପାଇଁ କ୍ୟାରିୟର ସେମିନାର - ମାର୍ଗଦର୍ଶକ ଆବଶ୍ୟକ',
-            desc_en: 'We are organizing a one-day career mentoring program for students of class IX and X in August. Alumni members from medical, software engineering, defence, administration, and entrepreneurship tracks are requested to volunteer as guest speakers.',
-            desc_or: 'ଆସନ୍ତା ଅଗଷ୍ଟ ମାସରେ ବିଦ୍ୟାଳୟର ନବମ ଓ ଦଶମ ଶ୍ରେଣୀ ଛାତ୍ରଛାତ୍ରୀଙ୍କ ପାଇଁ ଏକ ଦିନିକିଆ କ୍ୟାରିୟର ପରାମର୍ଶ ଶିବିର ଆୟୋଜନ କରାଯିବ। ଚିକିତ୍ସା, ପ୍ରଯୁକ୍ତିବିଦ୍ୟା, ପ୍ରଶାସନ ଓ ବ୍ୟବସାୟ କ୍ଷେତ୍ରରେ କାର୍ଯ୍ୟରତ ପୂର୍ବତନ ଛାତ୍ରଛାତ୍ରୀ ଅତିଥି ବକ୍ତା ଭାବେ ଯୋଗଦେବାକୁ ଅନୁରୋଧ।',
-            category: 'Academic'
+    loadDataFromServer();
+}
+
+async function loadDataFromServer() {
+    try {
+        const noticesRes = await fetch('api/notices');
+        if (noticesRes.ok) {
+            appState.notices = await noticesRes.json();
         }
-    ];
-
-    // 2. Seed Default Gallery
-    const defaultGallery = [
-        {
-            id: 'g1',
-            path: '1.jpeg',
-            caption_en: 'Radha Mohan Jew High School Campus Building',
-            caption_or: 'ରାଧା ମୋହନ ଜ୍ୟୁ ହାଇ ସ୍କୁଲ ପ୍ରଶାସନିକ ଭବନ',
-            category: 'Campus',
-            date: '2026-07-01'
-        },
-        {
-            id: 'g2',
-            path: '2.jpeg',
-            caption_en: 'Alumni Reunion Meet & Tree Plantation Drive',
-            caption_or: 'ପୂର୍ବତନ ଛାତ୍ରଛାତ୍ରୀ ସମ୍ମିଳନୀ ଓ ବୃକ୍ଷରୋପଣ କାର୍ଯ୍ୟକ୍ରମ',
-            category: 'Alumni',
-            date: '2026-06-15'
-        },
-        {
-            id: 'g3',
-            path: '1.jpeg', // Fallback display
-            caption_en: 'Science Exhibition Organized by RAMJAA',
-            caption_or: 'ରାମଜା ଦ୍ଵାରା ଆୟୋଜିତ ବିଜ୍ଞାନ ମେଳା',
-            category: 'Events',
-            date: '2026-02-20'
-        },
-        {
-            id: 'g4',
-            path: '2.jpeg', // Fallback display
-            caption_en: 'Smart Classroom Infrastructure Setup',
-            caption_or: 'ନୂତନ ସ୍ମାର୍ଟ ଶ୍ରେଣୀଗୃହ ଭିତ୍ତିଭୂମି ଉନ୍ନୟନ',
-            category: 'Campus',
-            date: '2026-04-10'
+        const galleryRes = await fetch('api/gallery');
+        if (galleryRes.ok) {
+            appState.gallery = await galleryRes.json();
         }
-    ];
-
-    // 3. Seed Default Alumni Register
-    const defaultAlumni = [
-        {
-            id: 'RM-660101',
-            name: 'Prafulla Kumar Dash',
-            batch: '1966',
-            mobile: '+91 9437012345',
-            email: 'prafulla.dash@outlook.com',
-            profession: 'Retired Headmaster / Educator',
-            location: 'Balasore, Odisha',
-            message: 'Proud to be in the first batch of R.M.J. High School. Seeing the school grow makes me emotional.',
-            photo: '1.jpeg'
-        },
-        {
-            id: 'RM-950821',
-            name: 'Jitendra Mohanty',
-            batch: '1995',
-            mobile: '+91 9861098765',
-            email: 'jiten.mohanty@gmail.com',
-            profession: 'Software Consultant',
-            location: 'Bhubaneswar, Odisha',
-            message: 'Our school shaped who we are today. Glad to help support modern computer infrastructure.',
-            photo: '2.jpeg'
-        },
-        {
-            id: 'RM-080344',
-            name: 'Dr. Smrutirekha Sahoo',
-            batch: '2008',
-            mobile: '+91 7008123456',
-            email: 'smruti.sahoo@health.gov.in',
-            profession: 'Medical Officer',
-            location: 'Balasore, Odisha',
-            message: 'Arranging free health screening campaigns with the help of alumni association doctors.',
-            photo: '1.jpeg'
+        
+        // Update stats
+        const countStat = document.getElementById('stat-alumni-count');
+        if (countStat) {
+            const countRes = await fetch('api/alumni/count');
+            if (countRes.ok) {
+                const countData = await countRes.json();
+                countStat.textContent = `${countData.count}+`;
+            }
         }
-    ];
-
-    if (!localStorage.getItem('ramjaa_notices')) {
-        localStorage.setItem('ramjaa_notices', JSON.stringify(defaultNotices));
+        
+        // Refresh display
+        if (document.getElementById('home-view').classList.contains('active')) {
+            renderHomeNotices();
+            startGallerySlider();
+        } else if (document.getElementById('notices-view').classList.contains('active')) {
+            renderNoticesPage();
+        } else if (document.getElementById('gallery-view').classList.contains('active')) {
+            renderGalleryPage();
+        }
+    } catch (err) {
+        console.error('Error loading data from server:', err);
     }
-    if (!localStorage.getItem('ramjaa_gallery')) {
-        localStorage.setItem('ramjaa_gallery', JSON.stringify(defaultGallery));
-    }
-    if (!localStorage.getItem('ramjaa_alumni')) {
-        localStorage.setItem('ramjaa_alumni', JSON.stringify(defaultAlumni));
-    }
-
-    appState.notices = JSON.parse(localStorage.getItem('ramjaa_notices'));
-    appState.gallery = JSON.parse(localStorage.getItem('ramjaa_gallery'));
-    appState.alumni = JSON.parse(localStorage.getItem('ramjaa_alumni'));
 }
 
 // ==========================================
@@ -369,7 +288,8 @@ function setLanguage(lang) {
     }
 
     // Rerender admin if active and initialized
-    if (document.getElementById('admin-view').classList.contains('active') && typeof window.renderAdminDashboard === 'function') {
+    const adminView = document.getElementById('admin-view');
+    if (adminView && adminView.classList.contains('active') && typeof window.renderAdminDashboard === 'function') {
         window.renderAdminDashboard();
     }
 
@@ -707,57 +627,67 @@ function handleAlumniRegistration(e) {
     const message = document.getElementById('reg-message').value.trim();
     const photoInput = document.getElementById('reg-photo');
 
-    // Generate unique ID: RM-[last 2 digits of batch][random 4-digit number]
-    const batchSuffix = batch.substring(Math.max(0, batch.length - 2));
-    const randomNum = Math.floor(1000 + Math.random() * 9000);
-    const memberId = `RM-${batchSuffix}${randomNum}`;
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('batch', batch);
+    formData.append('mobile', mobile);
+    formData.append('email', email);
+    formData.append('profession', profession || '');
+    formData.append('location', location);
+    formData.append('message', message || '');
 
-    let photoDataUrl = '1.jpeg'; // default fallbacks
+    if (photoInput.files && photoInput.files[0]) {
+        formData.append('photo', photoInput.files[0]);
+    }
 
-    // Handle photo file if present
-    const proceedWithSave = (photoBase64) => {
-        const newAlumni = {
-            id: memberId,
-            name,
-            batch,
-            mobile,
-            email,
-            profession: profession || (appState.currentLanguage === 'or' ? 'ନିର୍ଦ୍ଦିଷ୍ଟ ନାହିଁ' : 'Not Specified'),
-            location,
-            message: message || '',
-            photo: photoBase64 || photoDataUrl
-        };
+    const submitBtn = document.getElementById('reg-submit-btn');
+    const originalBtnText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = appState.currentLanguage === 'or' ? "ସବମିଟ୍ ହେଉଛି..." : "Submitting...";
 
-        // Save to state
-        appState.alumni.push(newAlumni);
-        localStorage.setItem('ramjaa_alumni', JSON.stringify(appState.alumni));
-
-        // Update count text
-        document.getElementById('stat-alumni-count').textContent = `${appState.alumni.length}+`;
-
-        // Populate Badge Modal fields
-        document.getElementById('badge-name').textContent = name;
-        document.getElementById('badge-batch').textContent = batch;
-        document.getElementById('badge-location').textContent = location;
-        document.getElementById('badge-id').textContent = memberId;
-        document.getElementById('badge-photo').src = photoBase64 || photoDataUrl;
+    fetch('api/alumni', {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => {
+        if (!res.ok) throw new Error('Registration failed');
+        return res.json();
+    })
+    .then(data => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalBtnText;
 
         // Toggle success screens
         document.getElementById('registration-form-card').style.display = 'none';
         document.getElementById('registration-success-card').style.display = 'block';
 
-        showToast(appState.currentLanguage === 'or' ? "ପଞ୍ଜୀକରଣ ସଫଳ ହେଲା!" : "Registration submitted successfully!", "success");
-    };
+        const badgeContainer = document.getElementById('success-badge-container');
+        const pendingContainer = document.getElementById('success-pending-container');
 
-    if (photoInput.files && photoInput.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            proceedWithSave(event.target.result);
-        };
-        reader.readAsDataURL(photoInput.files[0]);
-    } else {
-        proceedWithSave(null);
-    }
+        if (data.status === 'approved') {
+            if (badgeContainer) badgeContainer.style.display = 'block';
+            if (pendingContainer) pendingContainer.style.display = 'none';
+
+            // Populate Badge Modal fields
+            document.getElementById('badge-name').textContent = data.name;
+            document.getElementById('badge-batch').textContent = data.batch;
+            document.getElementById('badge-location').textContent = data.location;
+            document.getElementById('badge-id').textContent = data.id;
+            document.getElementById('badge-photo').src = data.photo;
+        } else {
+            if (badgeContainer) badgeContainer.style.display = 'none';
+            if (pendingContainer) pendingContainer.style.display = 'block';
+        }
+
+        loadDataFromServer();
+        showToast(appState.currentLanguage === 'or' ? "ପଞ୍କୀକରଣ ସଫଳ ହେଲା!" : "Registration submitted successfully!", "success");
+    })
+    .catch(err => {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalBtnText;
+        console.error(err);
+        showToast(appState.currentLanguage === 'or' ? "ସମସ୍ୟା ଦେଖାଦେଲା, ଦୟାକରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ।" : "An error occurred, please try again.", "error");
+    });
 }
 
 // Reset the registration form
@@ -774,9 +704,6 @@ function resetRegistrationForm() {
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Database Init
     initDatabase();
-
-    // Set updated dynamic alumni count
-    document.getElementById('stat-alumni-count').textContent = `${appState.alumni.length}+`;
 
     // 2. Language Switcher Buttons
     document.getElementById('lang-en-btn').addEventListener('click', () => setLanguage('en'));
