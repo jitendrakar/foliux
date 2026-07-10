@@ -139,6 +139,7 @@ urlpatterns = [
     path('calc/ais/import/', views.import_ais_api, name='import_ais_api'),
     path('calc/ais/dashboard/', views.ais_dashboard, name='ais_dashboard'),
     path('calc/ais/data/', views.ais_data_api, name='ais_data_api'),
+    path('calc/ais/delete/', views.delete_ais_data_api, name='delete_ais_data_api'),
     path('api/tax-calculator/', views.tax_calculator_api, name='tax_calculator_api'),
     path('calc/download-report/', views.download_tax_report, name='download_tax_report'),
     path('calc/api/login/', views.ajax_login_api, name='ajax_login_api'),

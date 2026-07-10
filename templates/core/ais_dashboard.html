@@ -134,6 +134,12 @@
     background: transparent; color: var(--ais-muted); cursor: pointer;
   }
   .ais-topbar-btn:hover { border-color: var(--ais-indigo); color: var(--ais-indigo); }
+  .ais-topbar-btn.btn-delete-fy:hover {
+    border-color: var(--ais-rose) !important;
+    color: var(--ais-rose) !important;
+    background: rgba(225,29,72,0.08) !important;
+    box-shadow: 0 0 10px rgba(225,29,72,0.15);
+  }
 
   /* ── BODY LAYOUT ── */
   .ais-body { display: flex; flex: 1; }
@@ -452,6 +458,9 @@
           <option value="{{ fy }}" {% if fy == selected_fy %}selected{% endif %}>{% if fy|slice:":3" == "FY " %}{{ fy }}{% else %}FY {{ fy }}{% endif %}</option>
         {% endfor %}
       </select>
+      <button class="ais-topbar-btn text-danger border-danger-subtle ms-1 btn-delete-fy" onclick="confirmDeleteFY()" title="Delete currently selected Financial Year data" style="border-color: rgba(225,29,72,0.3);">
+        <i class="fas fa-trash-alt"></i> Delete FY
+      </button>
       {% endif %}
       <a href="/calc/" class="ais-topbar-btn ais-topbar-btn-outline">
         <i class="fas fa-calculator"></i> Tax Calculator
@@ -946,6 +955,28 @@
         <div class="modal-footer border-top pt-3">
           <button type="button" class="btn btn-outline-secondary rounded-pill px-4 btn-sm" data-bs-dismiss="modal">Cancel</button>
           <button type="button" class="btn btn-primary rounded-pill px-4 btn-sm" onclick="confirmAisImport()">Proceed</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal fade" id="aisDeleteConfirmModal" tabindex="-1" aria-labelledby="aisDeleteConfirmLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 rounded-4 shadow" style="background-color: var(--ais-surface); color: var(--ais-text); border: 1px solid var(--ais-border) !important;">
+        <div class="modal-header border-bottom pb-3">
+          <h5 class="modal-title fw-bold text-danger" id="aisDeleteConfirmLabel"><i class="fas fa-exclamation-triangle me-2"></i>Delete Financial Year Data</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" style="filter: var(--ais-close-filter);"></button>
+        </div>
+        <div class="modal-body py-4" style="color: var(--ais-text);">
+          <p class="mb-3">Are you sure you want to delete all imported AIS records for Financial Year <strong id="aisDeleteFYText"></strong>?</p>
+          <div class="alert alert-danger rounded-3 p-3 mb-0 small">
+            <i class="fas fa-exclamation-circle me-1.5"></i><strong>Warning:</strong> This action is permanent and cannot be undone. All data fields (Salary, TDS, Dividends, Capital Gains, etc.) for this year will be cleared.
+          </div>
+        </div>
+        <div class="modal-footer border-top pt-3">
+          <button type="button" class="btn btn-outline-secondary rounded-pill px-4 btn-sm" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-danger rounded-pill px-4 btn-sm" onclick="executeDeleteFY()">Delete Data</button>
         </div>
       </div>
     </div>
@@ -2160,5 +2191,50 @@ function renderCgSummary(equityRows, mfRows) {
 
   tbody.innerHTML = html;
 }
+
+window.confirmDeleteFY = function() {
+  const sel = document.getElementById('aisFYSelector');
+  if (!sel || !sel.value) return;
+  const fy = sel.value;
+  document.getElementById('aisDeleteFYText').innerText = fy;
+  const delModal = new bootstrap.Modal(document.getElementById('aisDeleteConfirmModal'));
+  delModal.show();
+};
+
+window.executeDeleteFY = function() {
+  const sel = document.getElementById('aisFYSelector');
+  if (!sel || !sel.value) return;
+  const fy = sel.value;
+  
+  const delModalEl = document.getElementById('aisDeleteConfirmModal');
+  const delModal = bootstrap.Modal.getInstance(delModalEl);
+  if (delModal) delModal.hide();
+  
+  document.getElementById('aisLoadingOverlay').classList.remove('d-none');
+  
+  fetch('/calc/ais/delete/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': '{{ csrf_token }}'
+    },
+    body: JSON.stringify({ fy: fy })
+  })
+  .then(response => response.json())
+  .then(res => {
+    if (res.status === 'success') {
+      window.location.href = '/calc/ais/dashboard/';
+    } else {
+      alert(res.message || 'An error occurred while deleting data.');
+    }
+  })
+  .catch(err => {
+    alert('Failed to delete data.');
+    console.error(err);
+  })
+  .finally(() => {
+    document.getElementById('aisLoadingOverlay').classList.add('d-none');
+  });
+};
 </script>
 {% endblock %}

@@ -1,0 +1,17 @@
+
+============================================================
+TO: debasish.rout@example.com
+FROM: "RAMJAA Alumni Association" <your_email@gmail.com>
+SUBJECT: RAMJAA Alumni Registration Approved!
+ATTACHMENT SAVED AT: G:\My Drive\NETPROFIT\FOLIUX\RAMJAA\temp_mails\RAMJAA_ICard_RM-055182.pdf
+============================================================
+Dear Debasish Rout,
+
+Congratulations! Your RAMJAA Alumni registration has been approved.
+
+Please find attached your official digital Alumni Identity Card.
+
+Thank you for joining Radha Mohan Jew Alumni Association.
+
+Best Regards,
+RAMJAA Admin Team

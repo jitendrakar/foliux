@@ -5447,6 +5447,52 @@ def ais_data_api(request):
 
 @login_required
 @require_POST
+def delete_ais_data_api(request):
+    import json
+    try:
+        data = json.loads(request.body)
+        fy = data.get('fy')
+    except Exception:
+        fy = request.POST.get('fy')
+
+    if not fy:
+        return JsonResponse({'status': 'error', 'message': 'Missing Financial Year parameter.'}, status=400)
+
+    try:
+        from .models import normalize_and_validate_fy
+        fy = normalize_and_validate_fy(fy)
+    except ValueError as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+    user = request.user
+    from .models import (
+        IncomeTaxProfile, IncomeTaxTds, IncomeTaxSalary, IncomeTaxInterest,
+        IncomeTaxDividend, IncomeTaxEquity, IncomeTaxMutualFund, IncomeTaxSft,
+        IncomeTaxTaxPaid, IncomeTaxRefund, IncomeTaxDemand, IncomeTaxOther
+    )
+
+    try:
+        # Delete existing data for this financial year
+        IncomeTaxProfile.objects.filter(user=user, financial_year=fy).delete()
+        IncomeTaxTds.objects.filter(user=user, financial_year=fy).delete()
+        IncomeTaxSalary.objects.filter(user=user, financial_year=fy).delete()
+        IncomeTaxInterest.objects.filter(user=user, financial_year=fy).delete()
+        IncomeTaxDividend.objects.filter(user=user, financial_year=fy).delete()
+        IncomeTaxEquity.objects.filter(user=user, financial_year=fy).delete()
+        IncomeTaxMutualFund.objects.filter(user=user, financial_year=fy).delete()
+        IncomeTaxSft.objects.filter(user=user, financial_year=fy).delete()
+        IncomeTaxTaxPaid.objects.filter(user=user, financial_year=fy).delete()
+        IncomeTaxRefund.objects.filter(user=user, financial_year=fy).delete()
+        IncomeTaxDemand.objects.filter(user=user, financial_year=fy).delete()
+        IncomeTaxOther.objects.filter(user=user, financial_year=fy).delete()
+
+        return JsonResponse({'status': 'success', 'message': f'Successfully deleted AIS data for Financial Year {fy}.'})
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+
+@login_required
+@require_POST
 def update_theme_preference(request):
     try:
         data = json.loads(request.body)

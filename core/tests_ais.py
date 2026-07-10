@@ -419,3 +419,28 @@ class AISTests(TestCase):
         self.assertEqual(counts_legacy['tds'], 1)
         self.assertEqual(counts_legacy['dividend'], 1)
 
+    def test_delete_ais_data_api(self):
+        # 1. Setup mock data
+        fy = "2025-26"
+        from .models import IncomeTaxProfile, IncomeTaxTds
+        IncomeTaxProfile.objects.create(user=self.user, financial_year=fy, pan="ABCDE1234F")
+        IncomeTaxTds.objects.create(user=self.user, financial_year=fy, deductor_name="Test Deductor")
+        
+        # 2. Login client
+        self.client.login(username='testtaxpayer', password='password123')
+        
+        # 3. Request deletion
+        url = '/calc/ais/delete/'
+        import json
+        response = self.client.post(url, data=json.dumps({'fy': fy}), content_type='application/json')
+        
+        # 4. Verify response
+        self.assertEqual(response.status_code, 200)
+        res_data = response.json()
+        self.assertEqual(res_data['status'], 'success')
+        
+        # 5. Verify records are deleted
+        self.assertFalse(IncomeTaxProfile.objects.filter(user=self.user, financial_year=fy).exists())
+        self.assertFalse(IncomeTaxTds.objects.filter(user=self.user, financial_year=fy).exists())
+
+
