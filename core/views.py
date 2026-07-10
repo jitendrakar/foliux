@@ -5458,11 +5458,30 @@ def delete_ais_data_api(request):
     if not fy:
         return JsonResponse({'status': 'error', 'message': 'Missing Financial Year parameter.'}, status=400)
 
+    # Clean the input string
+    fy = str(fy).strip()
+
+    # Generate potential variations to ensure clean deletion of both raw and normalized values
+    fy_list = [fy]
+    if fy.startswith("FY "):
+        fy_list.append(fy[3:].strip())
+    else:
+        fy_list.append(f"FY {fy}")
+
     try:
         from .models import normalize_and_validate_fy
-        fy = normalize_and_validate_fy(fy)
-    except ValueError as e:
-        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+        normalized_fy = normalize_and_validate_fy(fy)
+        if normalized_fy not in fy_list:
+            fy_list.append(normalized_fy)
+        # Also add variation of normalized_fy
+        if normalized_fy.startswith("FY "):
+            raw_norm = normalized_fy[3:].strip()
+            if raw_norm not in fy_list:
+                fy_list.append(raw_norm)
+    except ValueError:
+        # If it's a corrupted/invalid financial year format, we still proceed using the variations
+        # of the raw input so the user can successfully delete it.
+        pass
 
     user = request.user
     from .models import (
@@ -5472,19 +5491,19 @@ def delete_ais_data_api(request):
     )
 
     try:
-        # Delete existing data for this financial year
-        IncomeTaxProfile.objects.filter(user=user, financial_year=fy).delete()
-        IncomeTaxTds.objects.filter(user=user, financial_year=fy).delete()
-        IncomeTaxSalary.objects.filter(user=user, financial_year=fy).delete()
-        IncomeTaxInterest.objects.filter(user=user, financial_year=fy).delete()
-        IncomeTaxDividend.objects.filter(user=user, financial_year=fy).delete()
-        IncomeTaxEquity.objects.filter(user=user, financial_year=fy).delete()
-        IncomeTaxMutualFund.objects.filter(user=user, financial_year=fy).delete()
-        IncomeTaxSft.objects.filter(user=user, financial_year=fy).delete()
-        IncomeTaxTaxPaid.objects.filter(user=user, financial_year=fy).delete()
-        IncomeTaxRefund.objects.filter(user=user, financial_year=fy).delete()
-        IncomeTaxDemand.objects.filter(user=user, financial_year=fy).delete()
-        IncomeTaxOther.objects.filter(user=user, financial_year=fy).delete()
+        # Delete existing data for this financial year (supporting raw and normalized variations)
+        IncomeTaxProfile.objects.filter(user=user, financial_year__in=fy_list).delete()
+        IncomeTaxTds.objects.filter(user=user, financial_year__in=fy_list).delete()
+        IncomeTaxSalary.objects.filter(user=user, financial_year__in=fy_list).delete()
+        IncomeTaxInterest.objects.filter(user=user, financial_year__in=fy_list).delete()
+        IncomeTaxDividend.objects.filter(user=user, financial_year__in=fy_list).delete()
+        IncomeTaxEquity.objects.filter(user=user, financial_year__in=fy_list).delete()
+        IncomeTaxMutualFund.objects.filter(user=user, financial_year__in=fy_list).delete()
+        IncomeTaxSft.objects.filter(user=user, financial_year__in=fy_list).delete()
+        IncomeTaxTaxPaid.objects.filter(user=user, financial_year__in=fy_list).delete()
+        IncomeTaxRefund.objects.filter(user=user, financial_year__in=fy_list).delete()
+        IncomeTaxDemand.objects.filter(user=user, financial_year__in=fy_list).delete()
+        IncomeTaxOther.objects.filter(user=user, financial_year__in=fy_list).delete()
 
         return JsonResponse({'status': 'success', 'message': f'Successfully deleted AIS data for Financial Year {fy}.'})
     except Exception as e:

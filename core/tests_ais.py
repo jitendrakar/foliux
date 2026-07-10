@@ -443,4 +443,32 @@ class AISTests(TestCase):
         self.assertFalse(IncomeTaxProfile.objects.filter(user=self.user, financial_year=fy).exists())
         self.assertFalse(IncomeTaxTds.objects.filter(user=self.user, financial_year=fy).exists())
 
+    def test_delete_invalid_ais_data_api(self):
+        # 1. Setup mock data with invalid consecutive year end (e.g. 2025-2611) using bulk_create to bypass clean/save validation
+        fy = "2025-2611"
+        from .models import IncomeTaxProfile, IncomeTaxTds
+        IncomeTaxProfile.objects.bulk_create([
+            IncomeTaxProfile(user=self.user, financial_year=fy, pan="ABCDE1234F", name="Test taxpayer name", dob="04/08/1982")
+        ])
+        IncomeTaxTds.objects.bulk_create([
+            IncomeTaxTds(user=self.user, financial_year=fy, deductor_name="Test Deductor", tax_deducted=Decimal('100.0'))
+        ])
+        
+        # 2. Login client
+        self.client.login(username='testtaxpayer', password='password123')
+        
+        # 3. Request deletion
+        url = '/calc/ais/delete/'
+        import json
+        response = self.client.post(url, data=json.dumps({'fy': fy}), content_type='application/json')
+        
+        # 4. Verify response
+        self.assertEqual(response.status_code, 200)
+        res_data = response.json()
+        self.assertEqual(res_data['status'], 'success')
+        
+        # 5. Verify records are deleted
+        self.assertFalse(IncomeTaxProfile.objects.filter(user=self.user, financial_year=fy).exists())
+        self.assertFalse(IncomeTaxTds.objects.filter(user=self.user, financial_year=fy).exists())
+
 
