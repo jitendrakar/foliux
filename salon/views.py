@@ -68,8 +68,6 @@ def home(request):
     gallery = SalonGallery.objects.filter(status=True)[:6]
     testimonials = SalonTestimonial.objects.filter(status=True)[:6]
     offers = SalonOffer.objects.filter(status=True, end_date__gte=timezone.now().date())[:3]
-    blogs = SalonBlog.objects.filter(status=True).order_name = '-created_at'
-    # Wait, order_name is a typo, it should be order_by. Let's fix that
     blogs = SalonBlog.objects.filter(status=True).order_by('-created_at')[:3]
     form = SalonAppointmentForm()
     

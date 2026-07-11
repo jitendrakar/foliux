@@ -83,7 +83,7 @@ rsync -av --delete \
     --exclude 'venv/' \
     --exclude '__pycache__/' \
     --exclude '.env' \
-    --exclude 'db.sqlite3' \
+    --exclude '/db.sqlite3' \
     --exclude 'media/' \
     --exclude 'staticfiles/' \
     $GIT_DIR/ $LIVE_DIR/
