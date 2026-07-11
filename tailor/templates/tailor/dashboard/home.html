@@ -1,0 +1,262 @@
+{% extends 'tailor/dashboard/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+        <span class="text-gold text-uppercase fw-semibold small">Boutique Executive Suite</span>
+        <h1 class="font-luxury mb-0 text-dark">Dashboard Metrics</h1>
+    </div>
+    <div>
+        <span class="badge bg-gold py-2 px-3 text-white rounded">{% now "j M Y" %}</span>
+    </div>
+</div>
+
+<!-- 1. Stats Row -->
+<div class="row g-4 mb-5">
+    <div class="col-lg-3 col-sm-6">
+        <div class="stat-card d-flex align-items-center justify-content-between">
+            <div>
+                <span class="text-muted small text-uppercase">Total Customers</span>
+                <h3 class="font-luxury mb-0 mt-1 fw-bold text-dark">{{ total_customers }}</h3>
+            </div>
+            <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="stat-card d-flex align-items-center justify-content-between">
+            <div>
+                <span class="text-muted small text-uppercase">Orders Placed</span>
+                <h3 class="font-luxury mb-0 mt-1 fw-bold text-dark">{{ total_orders }}</h3>
+            </div>
+            <div class="stat-icon"><i class="fa-solid fa-file-invoice"></i></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="stat-card d-flex align-items-center justify-content-between">
+            <div>
+                <span class="text-muted small text-uppercase">Pending Stitching</span>
+                <h3 class="font-luxury mb-0 mt-1 fw-bold text-dark">{{ pending_orders }}</h3>
+            </div>
+            <div class="stat-icon"><i class="fa-solid fa-scissors"></i></div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="stat-card d-flex align-items-center justify-content-between">
+            <div>
+                <span class="text-muted small text-uppercase">Boutique Revenue</span>
+                <h3 class="font-luxury mb-0 mt-1 fw-bold text-gold">₹{{ revenue|floatformat:2 }}</h3>
+            </div>
+            <div class="stat-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+        </div>
+    </div>
+</div>
+
+<!-- 2. Chart.js Graphs -->
+<div class="row g-4 mb-5">
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm p-4 h-100">
+            <h4 class="font-luxury text-dark mb-4"><i class="fa-solid fa-chart-line text-gold me-2"></i>Monthly Sales & Orders</h4>
+            <div style="height: 300px;"><canvas id="salesChart"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm p-4 h-100">
+            <h4 class="font-luxury text-dark mb-4"><i class="fa-solid fa-chart-pie text-gold me-2"></i>Order Categories</h4>
+            <div style="height: 300px;"><canvas id="categoryChart"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<!-- 3. Tables Row -->
+<div class="row g-4">
+    <!-- Today's Appointments -->
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm p-4 h-100">
+            <h4 class="font-luxury text-dark mb-4"><i class="fa-solid fa-clock text-gold me-2"></i>Today's Sizing Fittings</h4>
+            {% if today_appointments %}
+            <div class="table-responsive">
+                <table class="table table-sm align-middle table-hover text-start">
+                    <thead>
+                        <tr class="table-light">
+                            <th>Client</th>
+                            <th>Time</th>
+                            <th>Visit</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appt in today_appointments %}
+                        <tr>
+                            <td class="fw-bold">{{ appt.customer_name }}</td>
+                            <td>{{ appt.appointment_time }}</td>
+                            <td>
+                                {% if appt.home_visit %}
+                                    <span class="badge bg-gold text-white text-xs">Home</span>
+                                {% else %}
+                                    <span class="badge bg-secondary text-white text-xs">Boutique</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge text-xs {% if appt.status == 'Confirmed' %}bg-success{% elif appt.status == 'Pending' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                                    {{ appt.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+                <p class="text-muted small text-center my-4">No appointments scheduled for today.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Orders -->
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="font-luxury text-dark mb-0"><i class="fa-solid fa-receipt text-gold me-2"></i>Recent Orders</h4>
+                <a href="{% url 'tailor:dashboard_order_add' %}" class="btn btn-gold btn-sm"><i class="fa-solid fa-plus me-1"></i>New Order</a>
+            </div>
+            {% if recent_orders %}
+            <div class="table-responsive">
+                <table class="table table-sm align-middle table-hover text-start">
+                    <thead>
+                        <tr class="table-light">
+                            <th>Order #</th>
+                            <th>Customer</th>
+                            <th>Service</th>
+                            <th>Delivery</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in recent_orders %}
+                        <tr>
+                            <td class="fw-bold">{{ order.order_number }}</td>
+                            <td>{{ order.customer.name }}</td>
+                            <td class="font-luxury">{{ order.service.service_name }}</td>
+                            <td>{{ order.delivery_date }}</td>
+                            <td>
+                                <span class="badge text-uppercase text-xs 
+                                    {% if order.status == 'New' %}bg-secondary
+                                    {% elif order.status == 'Cutting' or order.status == 'Stitching' %}bg-info
+                                    {% elif order.status == 'Trial' or order.status == 'Ready' %}bg-warning text-dark
+                                    {% elif order.status == 'Delivered' %}bg-success
+                                    {% else %}bg-danger{% endif %}">
+                                    {{ order.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+                <p class="text-muted small text-center my-4">No orders placed recently.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+$(document).ready(function() {
+    // Data structures injected from backend
+    var monthlyLabels = [];
+    var monthlyOrders = [];
+    var monthlyRevenue = [];
+    
+    {% for row in monthly_data %}
+        monthlyLabels.push("{{ row.month }}");
+        monthlyOrders.push({{ row.orders }});
+        monthlyRevenue.push({{ row.revenue }});
+    {% endfor %}
+
+    var catLabels = [];
+    var catCounts = [];
+    {% for row in orders_by_category %}
+        catLabels.push("{{ row.category }}");
+        catCounts.push({{ row.count }});
+    {% endfor %}
+
+    // Sales Chart
+    var ctxSales = document.getElementById('salesChart').getContext('2d');
+    new Chart(ctxSales, {
+        type: 'bar',
+        data: {
+            labels: monthlyLabels,
+            datasets: [
+                {
+                    label: 'Revenue (₹)',
+                    data: monthlyRevenue,
+                    backgroundColor: 'rgba(197, 160, 89, 0.4)',
+                    borderColor: 'rgba(197, 160, 89, 1)',
+                    borderWidth: 1,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Orders',
+                    data: monthlyOrders,
+                    type: 'line',
+                    borderColor: '#0B2545',
+                    backgroundColor: 'transparent',
+                    borderWidth: 3,
+                    tension: 0.3,
+                    yAxisID: 'y1'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    grid: { drawOnChartArea: false }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    grid: { drawOnChartArea: false }
+                }
+            }
+        }
+    });
+
+    // Category Doughnut Chart
+    var ctxCat = document.getElementById('categoryChart').getContext('2d');
+    new Chart(ctxCat, {
+        type: 'doughnut',
+        data: {
+            labels: catLabels,
+            datasets: [{
+                data: catCounts,
+                backgroundColor: [
+                    '#0B2545',
+                    '#C5A059',
+                    '#080E1A',
+                    '#8D99AE',
+                    '#2B2D42'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends 'tailor/dashboard/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+        <span class="text-gold text-uppercase fw-semibold small">Boutique Accounts Ledger</span>
+        <h1 class="font-luxury mb-0 text-dark">Boutique Sales Reports</h1>
+    </div>
+    <div class="no-print">
+        <button onclick="window.print();" class="btn btn-gold btn-sm"><i class="fa-solid fa-print me-1"></i>Print Report</button>
+    </div>
+</div>
+
+<!-- Date Filter Form -->
+<div class="card border-0 shadow-sm p-4 mb-5 no-print text-start">
+    <h5 class="font-luxury text-dark mb-3"><i class="fa-solid fa-filter text-gold me-2"></i>Filter Date Range</h5>
+    <form class="row g-3 align-items-end" method="GET">
+        <div class="col-md-4">
+            <label class="form-label small fw-bold">From Date</label>
+            <input type="date" name="start_date" class="form-control form-control-sm" value="{{ start_date }}">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label small fw-bold">To Date</label>
+            <input type="date" name="end_date" class="form-control form-control-sm" value="{{ end_date }}">
+        </div>
+        <div class="col-md-4 d-flex gap-2">
+            <button type="submit" class="btn btn-gold btn-sm flex-grow-1">Filter Records</button>
+            <a href="{% url 'tailor:dashboard_reports' %}" class="btn btn-outline-dark btn-sm flex-grow-1">Reset</a>
+        </div>
+    </form>
+</div>
+
+<!-- Report Summary cards -->
+<div class="row g-4 mb-5" id="printable-invoice-area">
+    <div class="col-md-4">
+        <div class="stat-card p-4 border border-secondary bg-light text-start">
+            <span class="text-muted small text-uppercase">Total Sales Booked</span>
+            <h3 class="font-luxury mb-0 mt-1 fw-bold text-dark">₹{{ total_sales|floatformat:2 }}</h3>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card p-4 border border-success bg-light text-start">
+            <span class="text-muted small text-uppercase">Total Payments Collected</span>
+            <h3 class="font-luxury mb-0 mt-1 fw-bold text-success">₹{{ total_received|floatformat:2 }}</h3>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card p-4 border border-warning bg-light text-start">
+            <span class="text-muted small text-uppercase">Outstanding Balance</span>
+            <h3 class="font-luxury mb-0 mt-1 fw-bold text-warning">₹{{ total_outstanding|floatformat:2 }}</h3>
+        </div>
+    </div>
+
+    <!-- Details Table -->
+    <div class="col-12 mt-5 text-start">
+        <h4 class="font-luxury text-dark mb-4"><i class="fa-solid fa-list-check text-gold me-2"></i>Sales Ledger Detail</h4>
+        <div class="table-responsive">
+            <table class="table align-middle table-striped border">
+                <thead>
+                    <tr class="table-dark">
+                        <th>Date</th>
+                        <th>Order #</th>
+                        <th>Customer</th>
+                        <th>Service</th>
+                        <th>Fabric</th>
+                        <th>Status</th>
+                        <th class="text-end">Cost (INR)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in orders %}
+                    <tr>
+                        <td>{{ order.created_at.date }}</td>
+                        <td class="fw-bold">{{ order.order_number }}</td>
+                        <td>{{ order.customer.name }}</td>
+                        <td class="font-luxury">{{ order.service.service_name }}</td>
+                        <td>{{ order.fabric }}</td>
+                        <td>
+                            <span class="badge text-uppercase text-xs
+                                {% if order.status == 'Delivered' %}bg-success
+                                {% elif order.status == 'Cancelled' %}bg-danger
+                                {% else %}bg-secondary{% endif %}">
+                                {{ order.status }}
+                            </span>
+                        </td>
+                        <td class="text-end fw-bold">₹{{ order.amount|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center py-4 text-muted">No sales matching these date ranges.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

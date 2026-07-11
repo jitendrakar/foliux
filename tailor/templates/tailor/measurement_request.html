@@ -1,0 +1,88 @@
+{% extends 'tailor/base.html' %}
+
+{% block title %}Submit Measurements - {{ settings.brand_name }}{% endblock %}
+
+{% block content %}
+<section class="section-padding bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card premium-card p-5">
+                    <h2 class="font-luxury text-gold text-center mb-2">Sizing & Measurements</h2>
+                    <p class="text-muted text-center mb-5">Submit your sizing specs. We store these records securely to handle your custom stitching orders.</p>
+                    
+                    <form action="{% url 'tailor:measurement_request' %}" method="POST">
+                        {% csrf_token %}
+                        
+                        <!-- Guest Details (only if not logged in) -->
+                        {% if not customer %}
+                        <div class="row g-3 mb-5 p-4 bg-light rounded-3 border">
+                            <h4 class="font-luxury text-dark mb-3"><i class="fa-solid fa-user me-2 text-gold"></i>Contact Information</h4>
+                            <div class="col-md-4">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Your Full Name</label>
+                                <input type="text" name="guest_name" class="form-control" placeholder="Enter full name" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Mobile Number</label>
+                                <input type="text" name="guest_mobile" class="form-control" placeholder="Enter mobile" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Email Address</label>
+                                <input type="email" name="guest_email" class="form-control" placeholder="Enter email" required>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Measurements Sizing Form -->
+                        <div class="row g-4">
+                            <h4 class="font-luxury text-dark mb-1"><i class="fa-solid fa-ruler me-2 text-gold"></i>Measurement Specification</h4>
+                            <p class="text-muted small mt-0 mb-4">Provide measurements in inches or centimeters (e.g. 38 inches, 175 cm). Leave blank if unsure.</p>
+                            
+                            <div class="col-md-4">
+                                <label class="small text-dark text-uppercase fw-semibold mb-1">Height</label>
+                                {{ form.height }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="small text-dark text-uppercase fw-semibold mb-1">Chest</label>
+                                {{ form.chest }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="small text-dark text-uppercase fw-semibold mb-1">Waist</label>
+                                {{ form.waist }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="small text-dark text-uppercase fw-semibold mb-1">Hip</label>
+                                {{ form.hip }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="small text-dark text-uppercase fw-semibold mb-1">Shoulder</label>
+                                {{ form.shoulder }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="small text-dark text-uppercase fw-semibold mb-1">Sleeve</label>
+                                {{ form.sleeve }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="small text-dark text-uppercase fw-semibold mb-1">Neck</label>
+                                {{ form.neck }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="small text-dark text-uppercase fw-semibold mb-1">Inseam</label>
+                                {{ form.inseam }}
+                            </div>
+                            <div class="col-md-12">
+                                <label class="small text-dark text-uppercase fw-semibold mb-1">Notes / Custom fit preferences</label>
+                                {{ form.notes }}
+                            </div>
+                        </div>
+
+                        <div class="text-center mt-5">
+                            <button type="submit" class="btn btn-gold px-5 py-3">Submit Sizing measurements</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

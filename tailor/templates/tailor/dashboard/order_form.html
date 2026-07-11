@@ -1,0 +1,114 @@
+{% extends 'tailor/dashboard/base.html' %}
+
+{% block content %}
+<div class="mb-4">
+    <span class="text-gold text-uppercase fw-semibold small">Boutique Production Pipeline</span>
+    <h1 class="font-luxury mb-0 text-dark">{{ action }} Stitching Order</h1>
+</div>
+
+<div class="card border-0 shadow-sm p-5 text-start">
+    <form method="POST">
+        {% csrf_token %}
+        
+        <div class="row g-4">
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Select Customer</label>
+                <select name="customer" class="form-select" required {% if action == "Edit" %}disabled{% endif %}>
+                    <option value="">Choose customer...</option>
+                    {% for cust in customers %}
+                    <option value="{{ cust.id }}" {% if order.customer.id == cust.id %}selected{% endif %}>{{ cust.name }} ({{ cust.mobile }})</option>
+                    {% endfor %}
+                </select>
+                {% if action == "Edit" %}
+                <!-- Hidden input to submit value since select is disabled -->
+                <input type="hidden" name="customer" value="{{ order.customer.id }}">
+                {% endif %}
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Select Stitching Service</label>
+                <select name="service" id="id_service" class="form-select" required>
+                    <option value="">Choose service...</option>
+                    {% for srv in services %}
+                    <option value="{{ srv.id }}" data-price="{{ srv.price }}" {% if order.service.id == srv.id %}selected{% endif %}>{{ srv.service_name }} (₹{{ srv.price|floatformat:0 }} - {{ srv.category }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Fabric Material details</label>
+                <input type="text" name="fabric" class="form-control" placeholder="e.g. Linen Cotton, Pure Silk, Banarasi" value="{{ order.fabric|default:'' }}" required>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Pipeline Status</label>
+                <select name="status" class="form-select" required>
+                    <option value="New" {% if order.status == "New" %}selected{% endif %}>New</option>
+                    <option value="Cutting" {% if order.status == "Cutting" %}selected{% endif %}>Cutting</option>
+                    <option value="Stitching" {% if order.status == "Stitching" %}selected{% endif %}>Stitching</option>
+                    <option value="Trial" {% if order.status == "Trial" %}selected{% endif %}>Trial</option>
+                    <option value="Ready" {% if order.status == "Ready" %}selected{% endif %}>Ready</option>
+                    <option value="Delivered" {% if order.status == "Delivered" %}selected{% endif %}>Delivered</option>
+                    <option value="Cancelled" {% if order.status == "Cancelled" %}selected{% endif %}>Cancelled</option>
+                </select>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Trial Fitting Date</label>
+                <input type="date" name="trial_date" class="form-control" value="{{ order.trial_date|date:'Y-m-d' }}">
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Expected Delivery Date</label>
+                <input type="date" name="delivery_date" class="form-control" value="{{ order.delivery_date|date:'Y-m-d' }}" required>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label fw-bold">Total Cost (₹)</label>
+                <input type="number" step="0.01" name="amount" id="id_amount" class="form-control" value="{{ order.amount|default:0 }}" required>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label fw-bold">Advance Payment Paid (₹)</label>
+                <input type="number" step="0.01" name="advance" id="id_advance" class="form-control" value="{{ order.advance|default:0 }}" {% if action == "Edit" %}readonly{% endif %}>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label fw-bold">Balance Outstanding (₹)</label>
+                <input type="number" step="0.01" id="id_balance" class="form-control" value="{{ order.balance|default:0 }}" disabled>
+            </div>
+        </div>
+
+        <div class="d-flex gap-3 mt-5 col-md-6">
+            <button type="submit" class="btn btn-gold flex-grow-1">Save Stitching Order</button>
+            <a href="{% url 'tailor:dashboard_orders' %}" class="btn btn-outline-dark">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Autopopulate service price on selection
+    $('#id_service').on('change', function() {
+        var price = $(this).find(':selected').data('price');
+        if (price) {
+            $('#id_amount').val(price);
+            updateBalance();
+        }
+    });
+
+    $('#id_amount, #id_advance').on('input', function() {
+        updateBalance();
+    });
+
+    function updateBalance() {
+        var total = parseFloat($('#id_amount').val()) || 0;
+        var adv = parseFloat($('#id_advance').val()) || 0;
+        var bal = total - adv;
+        $('#id_balance').val(bal.toFixed(2));
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends 'tailor/dashboard/base.html' %}
+
+{% block content %}
+<div class="mb-4">
+    <span class="text-gold text-uppercase fw-semibold small">Boutique Campaigns</span>
+    <h1 class="font-luxury mb-0 text-dark">{{ action }} Coupon Campaign</h1>
+</div>
+
+<div class="card border-0 shadow-sm p-5 max-width-600 mx-auto text-start">
+    <form method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label fw-bold">Coupon Title</label>
+            <input type="text" name="title" class="form-control" value="{{ offer.title|default:'' }}" required placeholder="e.g. Diwali Stitching Festival Discount">
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Promo Code</label>
+            <input type="text" name="code" class="form-control text-uppercase" value="{{ offer.code|default:'' }}" required placeholder="e.g. DIWALI20">
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Discount Rate tag</label>
+            <input type="text" name="discount" class="form-control" value="{{ offer.discount|default:'' }}" required placeholder="e.g. 20% OFF, Flat ₹500 Off">
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Description</label>
+            <textarea name="description" class="form-control" rows="3" required placeholder="Describe coupon terms or eligibility...">{{ offer.description|default:'' }}</textarea>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Start Date</label>
+            <input type="date" name="start_date" class="form-control" value="{{ offer.start_date|date:'Y-m-d' }}" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Expiry Date</label>
+            <input type="date" name="end_date" class="form-control" value="{{ offer.end_date|date:'Y-m-d' }}" required>
+        </div>
+        <div class="form-check mb-4">
+            <input type="checkbox" name="status" class="form-check-input" id="id_status" {% if offer.status or action == "Add" %}checked{% endif %}>
+            <label class="form-check-label" for="id_status">Active coupon code</label>
+        </div>
+        <div class="d-flex gap-3">
+            <button type="submit" class="btn btn-gold flex-grow-1">Save Campaign</button>
+            <a href="{% url 'tailor:dashboard_offers' %}" class="btn btn-outline-dark">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

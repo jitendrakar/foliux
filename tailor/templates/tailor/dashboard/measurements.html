@@ -1,0 +1,54 @@
+{% extends 'tailor/dashboard/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+        <span class="text-gold text-uppercase fw-semibold small">Boutique Sizing Records</span>
+        <h1 class="font-luxury mb-0 text-dark">Measurement Profiles</h1>
+    </div>
+    <div>
+        <a href="{% url 'tailor:dashboard_measurement_add' %}" class="btn btn-gold btn-sm"><i class="fa-solid fa-plus me-1"></i>Add Sizing Specs</a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm p-4">
+    <div class="table-responsive">
+        <table class="table align-middle table-hover text-start">
+            <thead>
+                <tr class="table-dark">
+                    <th>Customer Name</th>
+                    <th>Mobile</th>
+                    <th class="text-center">Chest (in)</th>
+                    <th class="text-center">Waist (in)</th>
+                    <th class="text-center">Hip (in)</th>
+                    <th class="text-center">Shoulder (in)</th>
+                    <th class="text-center">Sleeve (in)</th>
+                    <th class="text-center">Neck (in)</th>
+                    <th class="text-center">Inseam (in)</th>
+                    <th>Updated At</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in measurements %}
+                <tr>
+                    <td class="fw-bold text-dark">{{ m.customer.name }}</td>
+                    <td>{{ m.customer.mobile }}</td>
+                    <td class="text-center">{{ m.chest|default:"-" }}</td>
+                    <td class="text-center">{{ m.waist|default:"-" }}</td>
+                    <td class="text-center">{{ m.hip|default:"-" }}</td>
+                    <td class="text-center">{{ m.shoulder|default:"-" }}</td>
+                    <td class="text-center">{{ m.sleeve|default:"-" }}</td>
+                    <td class="text-center">{{ m.neck|default:"-" }}</td>
+                    <td class="text-center">{{ m.inseam|default:"-" }}</td>
+                    <td>{{ m.updated_at.date }}</td>
+                    <td class="text-end">
+                        <a href="{% url 'tailor:dashboard_measurement_edit' m.id %}" class="btn btn-outline-dark btn-sm py-0 px-2" title="Edit Sizing"><i class="fa-solid fa-edit"></i></a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

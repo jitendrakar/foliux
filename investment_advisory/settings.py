@@ -104,6 +104,7 @@ INSTALLED_APPS = [
     # Field-level encryption
     'encrypted_model_fields',
     'salon',
+    'tailor',
 ]
 
 SITE_ID = 1
@@ -193,7 +194,16 @@ DATABASES['salon'] = {
         'timeout': 20,
     }
 }
-DATABASE_ROUTERS = ['salon.router.SalonRouter']
+
+# Independent Tailor Database Config
+DATABASES['tailor'] = {
+    'ENGINE': 'django.db.backends.sqlite3',
+    'NAME': BASE_DIR / 'tailor' / 'db.sqlite3',
+    'OPTIONS': {
+        'timeout': 20,
+    }
+}
+DATABASE_ROUTERS = ['salon.router.SalonRouter', 'tailor.router.TailorRouter']
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/

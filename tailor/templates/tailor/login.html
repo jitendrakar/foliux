@@ -1,0 +1,36 @@
+{% extends 'tailor/base.html' %}
+
+{% block title %}Login - {{ settings.brand_name }}{% endblock %}
+
+{% block content %}
+<section class="section-padding bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="card premium-card p-5">
+                    <h2 class="font-luxury text-gold text-center mb-2">Welcome Back</h2>
+                    <p class="text-muted text-center small mb-5">Access your custom fits, measurements, and invoice details.</p>
+                    
+                    <form action="{% url 'tailor:login' %}" method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="small text-dark text-uppercase fw-semibold mb-1">Email Address</label>
+                            {{ form.email }}
+                        </div>
+                        <div class="mb-4">
+                            <label class="small text-dark text-uppercase fw-semibold mb-1">Password</label>
+                            {{ form.password }}
+                        </div>
+                        <button type="submit" class="btn btn-gold w-100 py-3 mb-4">Login</button>
+                    </form>
+                    
+                    <div class="text-center">
+                        <span class="text-muted small">Don't have an account?</span>
+                        <a href="{% url 'tailor:register' %}" class="text-gold small fw-bold ms-1">Register Here</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

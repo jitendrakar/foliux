@@ -1,0 +1,42 @@
+{% extends 'tailor/dashboard/base.html' %}
+
+{% block content %}
+<div class="mb-4">
+    <span class="text-gold text-uppercase fw-semibold small">Boutique Directory</span>
+    <h1 class="font-luxury mb-0 text-dark">Edit Customer Profile</h1>
+</div>
+
+<div class="card border-0 shadow-sm p-5 max-width-600 mx-auto text-start">
+    <form action="{% url 'tailor:dashboard_customer_edit' customer.id %}" method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label fw-bold">Full Name</label>
+            <input type="text" name="name" class="form-control" value="{{ customer.name }}" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Mobile Number</label>
+            <input type="text" name="mobile" class="form-control" value="{{ customer.mobile }}" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Email Address</label>
+            <input type="email" name="email" class="form-control" value="{{ customer.email }}" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Gender</label>
+            <select name="gender" class="form-select">
+                <option value="Male" {% if customer.gender == "Male" %}selected{% endif %}>Male</option>
+                <option value="Female" {% if customer.gender == "Female" %}selected{% endif %}>Female</option>
+                <option value="Other" {% if customer.gender == "Other" %}selected{% endif %}>Other</option>
+            </select>
+        </div>
+        <div class="mb-4">
+            <label class="form-label fw-bold">Billing & Delivery Address</label>
+            <textarea name="address" class="form-control" rows="3" required>{{ customer.address }}</textarea>
+        </div>
+        <div class="d-flex gap-3">
+            <button type="submit" class="btn btn-gold flex-grow-1">Save Profile</button>
+            <a href="{% url 'tailor:dashboard_customers' %}" class="btn btn-outline-dark">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

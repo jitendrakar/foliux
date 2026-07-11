@@ -1,0 +1,96 @@
+{% extends 'tailor/dashboard/base.html' %}
+
+{% block content %}
+<div class="mb-4">
+    <span class="text-gold text-uppercase fw-semibold small">Boutique Accounts</span>
+    <h1 class="font-luxury mb-0 text-dark">Payment History</h1>
+</div>
+
+<div class="row g-4">
+    <!-- List -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm p-4 h-100">
+            <h4 class="font-luxury text-dark mb-4"><i class="fa-solid fa-list text-gold me-2"></i>Receipt Transactions</h4>
+            {% if payments %}
+            <div class="table-responsive">
+                <table class="table table-sm align-middle table-hover text-start">
+                    <thead>
+                        <tr class="table-light">
+                            <th>Date</th>
+                            <th>Order #</th>
+                            <th>Customer</th>
+                            <th>Type</th>
+                            <th>Method</th>
+                            <th class="text-end">Amount Paid</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pay in payments %}
+                        <tr>
+                            <td>{{ pay.payment_date }}</td>
+                            <td class="fw-bold">{{ pay.order.order_number }}</td>
+                            <td>{{ pay.order.customer.name }}</td>
+                            <td><span class="badge bg-light text-dark">{{ pay.payment_type }}</span></td>
+                            <td>{{ pay.payment_method }}</td>
+                            <td class="text-end fw-bold text-success">₹{{ pay.amount_paid }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+                <p class="text-muted small text-center my-4">No payment records found.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Quick Add Form -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm p-4 text-start bg-light h-100">
+            <h4 class="font-luxury text-dark mb-3"><i class="fa-solid fa-plus-circle text-gold me-2"></i>Log Payment</h4>
+            <p class="text-muted small mb-4">Record advance or balance payments for pending customer orders.</p>
+            
+            <form action="{% url 'tailor:dashboard_payment_add' %}" method="POST">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Select Order</label>
+                    <select name="order" class="form-select form-select-sm" required>
+                        <option value="">Select order...</option>
+                        {% for order in orders %}
+                        <option value="{{ order.id }}">
+                            {{ order.order_number }} - {{ order.customer.name }} (Bal: ₹{{ order.balance|floatformat:0 }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Amount Paid (₹)</label>
+                    <input type="number" step="0.01" name="amount_paid" class="form-control form-control-sm" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Payment Type</label>
+                    <select name="payment_type" class="form-select form-select-sm" required>
+                        <option value="Advance">Advance</option>
+                        <option value="Balance">Balance</option>
+                        <option value="Full">Full</option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label small fw-bold">Payment Method</label>
+                    <select name="payment_method" class="form-select form-select-sm" required>
+                        <option value="Cash">Cash</option>
+                        <option value="UPI">UPI</option>
+                        <option value="Card">Card</option>
+                        <option value="Bank Transfer">Bank Transfer</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-gold btn-sm w-100 py-2">Record Transaction</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends 'tailor/base.html' %}
+
+{% block title %}About Us - {{ settings.brand_name }}{% endblock %}
+
+{% block content %}
+<section class="section-padding bg-dark text-white text-center" style="background-image: linear-gradient(rgba(8,14,26,0.85), rgba(8,14,26,0.85)), url('https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?auto=format&fit=crop&w=1600&q=80'); background-size: cover; padding: 100px 0;">
+    <div class="container">
+        <h1 class="font-luxury text-gold display-4 mb-3">Our Boutique Story</h1>
+        <p class="lead max-width-600 mx-auto">Discover the art, details, and philosophy of custom tailoring at TailorX.</p>
+    </div>
+</section>
+
+<section class="section-padding">
+    <div class="container">
+        <div class="row g-5 align-items-center">
+            <div class="col-lg-6">
+                <span class="text-gold text-uppercase fw-semibold">Crafting Heritage</span>
+                <h2 class="font-luxury h1 mt-2 mb-4">Precision, Fit & Styling Excellence</h2>
+                <p>TailorX Boutique was founded in New Delhi with a clear objective: to bring high-end custom apparel stitching directly to your doorstep. We believe that clothing should adjust to your body structure, not the other way around.</p>
+                <p>Every piece we stitch undergoes thorough checks: from fabric cutting alignments to thread margins and final trial checks. We maintain detailed size profiles of every customer, simplifying subsequent order bookings.</p>
+                <div class="row g-4 mt-2">
+                    <div class="col-sm-6 border-start border-gold border-3 ps-3">
+                        <h4 class="font-luxury mb-1">Premium Trims</h4>
+                        <p class="text-muted small mb-0">We use high-quality threads, linings, and durable buttons.</p>
+                    </div>
+                    <div class="col-sm-6 border-start border-gold border-3 ps-3">
+                        <h4 class="font-luxury mb-1">Elite Sizing</h4>
+                        <p class="text-muted small mb-0">Detailed 9-point size records kept secure for every user.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <img src="https://images.unsplash.com/photo-1593032465175-481ac7f401a0?auto=format&fit=crop&w=400&q=80" alt="Boutique Tailoring" class="img-fluid rounded-3 shadow">
+                    </div>
+                    <div class="col-6 mt-4">
+                        <img src="https://images.unsplash.com/photo-1594909122845-11baa439b7bf?auto=format&fit=crop&w=400&q=80" alt="Custom Suit Stitching" class="img-fluid rounded-3 shadow">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Vision & Mission -->
+<section class="section-padding bg-light">
+    <div class="container">
+        <div class="row g-4 text-center">
+            <div class="col-lg-4">
+                <div class="card premium-card p-5 h-100">
+                    <div class="text-gold mb-3 h1"><i class="fa-solid fa-eye"></i></div>
+                    <h3 class="font-luxury mb-3">Our Vision</h3>
+                    <p class="text-muted mb-0">To lead the premium custom tailoring market in Delhi by combining digital order tracking, customer profile sizing, and traditional craftsmanship.</p>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card premium-card p-5 h-100">
+                    <div class="text-gold mb-3 h1"><i class="fa-solid fa-bullseye"></i></div>
+                    <h3 class="font-luxury mb-3">Our Mission</h3>
+                    <p class="text-muted mb-0">To offer a stress-free custom clothing experience through door-to-door sizing, clear trial checking, and consistent quality.</p>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card premium-card p-5 h-100">
+                    <div class="text-gold mb-3 h1"><i class="fa-solid fa-gem"></i></div>
+                    <h3 class="font-luxury mb-3">Our Values</h3>
+                    <p class="text-muted mb-0">We value precise fit integrity, clear pricing structures, eco-friendly fabric suggestions, and respectful customer relationships.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

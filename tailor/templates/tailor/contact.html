@@ -1,0 +1,99 @@
+{% extends 'tailor/base.html' %}
+
+{% block title %}Contact Us - {{ settings.brand_name }}{% endblock %}
+
+{% block content %}
+<section class="section-padding bg-dark text-white text-center" style="background-image: linear-gradient(rgba(8,14,26,0.85), rgba(8,14,26,0.85)), url('https://images.unsplash.com/photo-1593032465175-481ac7f401a0?auto=format&fit=crop&w=1600&q=80'); background-size: cover; padding: 100px 0;">
+    <div class="container">
+        <h1 class="font-luxury text-gold display-4 mb-3">Connect With Us</h1>
+        <p class="lead max-width-600 mx-auto">Drop by our Sriniwaspuri boutique or request home visits for sizing measurements.</p>
+    </div>
+</section>
+
+<section class="section-padding">
+    <div class="container">
+        <div class="row g-5">
+            <!-- Left Info -->
+            <div class="col-lg-5">
+                <div class="card premium-card p-4 h-100 bg-light border-0">
+                    <h3 class="font-luxury text-gold mb-4">Contact Details</h3>
+                    
+                    <div class="d-flex align-items-start mb-4">
+                        <div class="h2 text-gold me-3"><i class="fa-solid fa-location-dot"></i></div>
+                        <div>
+                            <h5 class="font-luxury mb-1">Boutique Address</h5>
+                            <p class="text-muted mb-0">{{ settings.address }}</p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-start mb-4">
+                        <div class="h2 text-gold me-3"><i class="fa-solid fa-phone"></i></div>
+                        <div>
+                            <h5 class="font-luxury mb-1">Cell Number</h5>
+                            <p class="text-muted mb-0">{{ settings.phone }}</p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-start mb-4">
+                        <div class="h2 text-gold me-3"><i class="fa-brands fa-whatsapp"></i></div>
+                        <div>
+                            <h5 class="font-luxury mb-1">WhatsApp Chat</h5>
+                            <p class="text-muted mb-0">9871808718</p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-start mb-4">
+                        <div class="h2 text-gold me-3"><i class="fa-solid fa-envelope"></i></div>
+                        <div>
+                            <h5 class="font-luxury mb-1">Email Address</h5>
+                            <p class="text-muted mb-0">{{ settings.email }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Form -->
+            <div class="col-lg-7">
+                <div class="card premium-card p-5 h-100">
+                    <h3 class="font-luxury text-dark mb-3">Send Us a Message</h3>
+                    <p class="text-muted small mb-4">Have bulk uniform tailoring requests, or wedding styling queries? Write to us.</p>
+                    
+                    <div id="contact-form-result"></div>
+                    
+                    <form action="{% url 'tailor:contact' %}" method="POST" id="ajax-contact-form">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Your Name</label>
+                                <input type="text" name="name" class="form-control" placeholder="Enter name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Mobile Number</label>
+                                <input type="text" name="mobile" class="form-control" placeholder="Enter mobile" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Email Address</label>
+                                <input type="email" name="email" class="form-control" placeholder="Enter email" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Your Message</label>
+                                <textarea name="message" rows="4" class="form-control" placeholder="Specify fabric, quantity or fit style" required></textarea>
+                            </div>
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-gold w-100 py-3">Send Message</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-5">
+            <h3 class="font-luxury text-center mb-4">Location Map</h3>
+            <div class="ratio ratio-21x9 rounded-4 overflow-hidden border border-secondary shadow">
+                <iframe src="{{ settings.google_map }}" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

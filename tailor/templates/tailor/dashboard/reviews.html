@@ -1,0 +1,56 @@
+{% extends 'tailor/dashboard/base.html' %}
+
+{% block content %}
+<div class="mb-4">
+    <span class="text-gold text-uppercase fw-semibold small">Boutique Feedbacks</span>
+    <h1 class="font-luxury mb-0 text-dark">Customer Reviews Control</h1>
+</div>
+
+<div class="card border-0 shadow-sm p-4">
+    <div class="table-responsive">
+        <table class="table align-middle table-hover text-start">
+            <thead>
+                <tr class="table-dark">
+                    <th>Guest Name</th>
+                    <th>Rating</th>
+                    <th>Feedback Review</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rev in reviews %}
+                <tr>
+                    <td class="fw-bold text-dark">{{ rev.customer_name }}</td>
+                    <td>
+                        <div class="text-warning">
+                            {% for i in "12345"|make_list %}
+                                {% if forloop.counter <= rev.rating %}
+                                    <i class="fa-solid fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </td>
+                    <td><span class="small text-muted text-wrap d-block" style="max-width: 450px;">"{{ rev.review }}"</span></td>
+                    <td>
+                        {% if rev.status %}
+                            <span class="badge bg-success">Approved</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">Pending Approval</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <div class="d-flex gap-2 justify-content-end">
+                            {% if not rev.status %}
+                            <a href="{% url 'tailor:dashboard_review_approve' rev.id %}" class="btn btn-success btn-sm py-1 px-3">Approve</a>
+                            {% endif %}
+                            <a href="{% url 'tailor:dashboard_review_delete' rev.id %}" class="btn btn-gold btn-sm py-1 px-2" onclick="return confirm('Delete this review?');"><i class="fa-solid fa-trash"></i></a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

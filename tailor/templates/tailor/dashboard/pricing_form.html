@@ -1,0 +1,46 @@
+{% extends 'tailor/dashboard/base.html' %}
+
+{% block content %}
+<div class="mb-4">
+    <span class="text-gold text-uppercase fw-semibold small">Boutique Services</span>
+    <h1 class="font-luxury mb-0 text-dark">{{ action }} Stitching Service</h1>
+</div>
+
+<div class="card border-0 shadow-sm p-5 max-width-600 mx-auto text-start">
+    <form method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label fw-bold">Service Name</label>
+            <input type="text" name="service_name" class="form-control" value="{{ service.service_name|default:'' }}" required placeholder="e.g. Premium Silk Blazer">
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Category</label>
+            <select name="category" class="form-select" required>
+                <option value="Men's Tailoring" {% if service.category == "Men's Tailoring" %}selected{% endif %}>Men's Tailoring</option>
+                <option value="Women's Tailoring" {% if service.category == "Women's Tailoring" %}selected{% endif %}>Women's Tailoring</option>
+                <option value="Other Services" {% if service.category == "Other Services" %}selected{% endif %}>Other Services</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Base Price (INR)</label>
+            <input type="number" step="0.01" name="price" class="form-control" value="{{ service.price|default:0 }}" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">FontAwesome Icon Class</label>
+            <input type="text" name="icon" class="form-control" value="{{ service.icon|default:'fa-scissors' }}" placeholder="e.g. fa-shirt, fa-scissors">
+        </div>
+        <div class="mb-3">
+            <label class="form-label fw-bold">Service Description</label>
+            <textarea name="description" class="form-control" rows="3" required placeholder="Describe cuff trims, sizing margins, or lining details...">{{ service.description|default:'' }}</textarea>
+        </div>
+        <div class="form-check mb-4">
+            <input type="checkbox" name="status" class="form-check-input" id="id_status" {% if service.status or action == "Add" %}checked{% endif %}>
+            <label class="form-check-label" for="id_status">Active and visible on site</label>
+        </div>
+        <div class="d-flex gap-3">
+            <button type="submit" class="btn btn-gold flex-grow-1">Save Service</button>
+            <a href="{% url 'tailor:dashboard_pricing' %}" class="btn btn-outline-dark">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

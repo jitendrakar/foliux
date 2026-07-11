@@ -1,0 +1,73 @@
+{% extends 'tailor/base.html' %}
+
+{% block title %}Register Profile - {{ settings.brand_name }}{% endblock %}
+
+{% block content %}
+<section class="section-padding bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card premium-card p-5">
+                    <h2 class="font-luxury text-gold text-center mb-2">Create Customer Account</h2>
+                    <p class="text-muted text-center small mb-5">Save your sizing measurements and view order tracking stages.</p>
+                    
+                    <form action="{% url 'tailor:register' %}" method="POST">
+                        {% csrf_token %}
+                        
+                        {% if form.errors %}
+                        <div class="alert alert-danger" role="alert">
+                            Please fix registration validation errors.
+                        </div>
+                        {% endif %}
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="small text-dark text-uppercase fw-semibold mb-1">Full Name</label>
+                                {{ form.name }}
+                                <span class="text-danger small">{{ form.name.errors }}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-dark text-uppercase fw-semibold mb-1">Mobile Number</label>
+                                {{ form.mobile }}
+                                <span class="text-danger small">{{ form.mobile.errors }}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-dark text-uppercase fw-semibold mb-1">Email Address</label>
+                                {{ form.email }}
+                                <span class="text-danger small">{{ form.email.errors }}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-dark text-uppercase fw-semibold mb-1">Gender</label>
+                                {{ form.gender }}
+                                <span class="text-danger small">{{ form.gender.errors }}</span>
+                            </div>
+                            <div class="col-12">
+                                <label class="small text-dark text-uppercase fw-semibold mb-1">Billing & Delivery Address</label>
+                                {{ form.address }}
+                                <span class="text-danger small">{{ form.address.errors }}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-dark text-uppercase fw-semibold mb-1">Password</label>
+                                {{ form.password }}
+                                <span class="text-danger small">{{ form.password.errors }}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-dark text-uppercase fw-semibold mb-1">Confirm Password</label>
+                                {{ form.confirm_password }}
+                                <span class="text-danger small">{{ form.confirm_password.errors }}</span>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-gold w-100 py-3 mt-4 mb-4">Register</button>
+                    </form>
+                    
+                    <div class="text-center">
+                        <span class="text-muted small">Already have an account?</span>
+                        <a href="{% url 'tailor:login' %}" class="text-gold small fw-bold ms-1">Login here</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

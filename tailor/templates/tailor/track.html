@@ -1,0 +1,124 @@
+{% extends 'tailor/base.html' %}
+
+{% block title %}Track Order - {{ settings.brand_name }}{% endblock %}
+
+{% block content %}
+<section class="section-padding bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Search Card -->
+                <div class="card premium-card p-5 mb-5">
+                    <h2 class="font-luxury text-gold text-center mb-2">Track Stitching Order</h2>
+                    <p class="text-muted text-center mb-4">Enter your order number and mobile number to track real-time cutting and stitching status.</p>
+                    
+                    <form action="{% url 'tailor:track_order' %}" method="POST">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-5">
+                                <input type="text" name="order_number" class="form-control" placeholder="Order Number (e.g. TLR-12345)" required value="{{ request.POST.order_number }}{{ request.GET.order_number }}">
+                            </div>
+                            <div class="col-md-5">
+                                <input type="text" name="mobile" class="form-control" placeholder="Mobile Number" required value="{{ request.POST.mobile }}{{ request.GET.mobile }}">
+                            </div>
+                            <div class="col-md-2">
+                                <button type="submit" class="btn btn-gold w-100"><i class="fa-solid fa-search"></i></button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Result Card -->
+                {% if searched %}
+                    {% if order %}
+                    <div class="card premium-card p-5">
+                        <div class="d-flex justify-content-between align-items-center mb-4 pb-3 border-bottom flex-wrap g-3">
+                            <div>
+                                <span class="text-gold text-uppercase fw-semibold small">Order Status Summary</span>
+                                <h3 class="font-luxury mb-0 text-dark">{{ order.order_number }}</h3>
+                            </div>
+                            <div class="text-md-end">
+                                <span class="badge bg-gold py-2 px-3 text-white rounded-pill text-uppercase">{{ order.status }}</span>
+                            </div>
+                        </div>
+
+                        <div class="row g-4 mb-5 text-start">
+                            <div class="col-md-4">
+                                <span class="text-muted small">Customer Name</span>
+                                <h5 class="font-luxury text-dark mb-0">{{ order.customer.name }}</h5>
+                            </div>
+                            <div class="col-md-4">
+                                <span class="text-muted small">Fabric Material</span>
+                                <h5 class="font-luxury text-dark mb-0">{{ order.fabric }}</h5>
+                            </div>
+                            <div class="col-md-4">
+                                <span class="text-muted small">Delivery Date</span>
+                                <h5 class="font-luxury text-gold mb-0">{{ order.delivery_date }}</h5>
+                            </div>
+                        </div>
+
+                        <!-- Progress Timeline -->
+                        <h4 class="font-luxury text-dark mb-4"><i class="fa-solid fa-chart-line text-gold me-2"></i>Stitching Pipeline</h4>
+                        <ul class="tracking-timeline text-start">
+                            <!-- New -->
+                            <li class="timeline-item {% if order.status != 'Cancelled' %}completed{% endif %}">
+                                <div class="timeline-badge"><i class="fa-solid fa-file-invoice"></i></div>
+                                <h5 class="font-luxury mb-1 text-dark">Order Booked</h5>
+                                <p class="text-muted small mb-0">Your custom order has been registered and scheduled.</p>
+                            </li>
+                            <!-- Cutting -->
+                            <li class="timeline-item {% if order.status in 'Cutting Stitching Trial Ready Delivered' %}completed{% endif %} {% if order.status == 'Cutting' %}active{% endif %}">
+                                <div class="timeline-badge"><i class="fa-solid fa-scissors"></i></div>
+                                <h5 class="font-luxury mb-1 text-dark">Cutting Stage</h5>
+                                <p class="text-muted small mb-0">Fabric is cut according to your recorded sizes.</p>
+                            </li>
+                            <!-- Stitching -->
+                            <li class="timeline-item {% if order.status in 'Stitching Trial Ready Delivered' %}completed{% endif %} {% if order.status == 'Stitching' %}active{% endif %}">
+                                <div class="timeline-badge"><i class="fa-solid fa-shirt"></i></div>
+                                <h5 class="font-luxury mb-1 text-dark">Stitching Stage</h5>
+                                <p class="text-muted small mb-0">Master tailors are assembling and stitching your apparel.</p>
+                            </li>
+                            <!-- Trial -->
+                            <li class="timeline-item {% if order.status in 'Trial Ready Delivered' %}completed{% endif %} {% if order.status == 'Trial' %}active{% endif %}">
+                                <div class="timeline-badge"><i class="fa-solid fa-chalkboard-user"></i></div>
+                                <h5 class="font-luxury mb-1 text-dark">Trial Stage</h5>
+                                <p class="text-muted small mb-0">Fit checking and styling corrections scheduled for: <strong>{{ order.trial_date|default:"TBA" }}</strong></p>
+                            </li>
+                            <!-- Ready -->
+                            <li class="timeline-item {% if order.status in 'Ready Delivered' %}completed{% endif %} {% if order.status == 'Ready' %}active{% endif %}">
+                                <div class="timeline-badge"><i class="fa-solid fa-check-double"></i></div>
+                                <h5 class="font-luxury mb-1 text-dark">Ready for Pickup</h5>
+                                <p class="text-muted small mb-0">Stitching is complete and fabric has been steam-ironed.</p>
+                            </li>
+                            <!-- Delivered -->
+                            <li class="timeline-item {% if order.status == 'Delivered' %}completed{% endif %}">
+                                <div class="timeline-badge"><i class="fa-solid fa-gift"></i></div>
+                                <h5 class="font-luxury mb-1 text-dark">Delivered</h5>
+                                <p class="text-muted small mb-0">Order collected by customer.</p>
+                            </li>
+                        </ul>
+
+                        <div class="row pt-4 border-top mt-4 text-start g-3">
+                            <div class="col-md-6">
+                                <div class="p-3 bg-light rounded border">
+                                    <span class="text-muted small">Total Cost:</span>
+                                    <h4 class="font-luxury text-dark mb-0">₹{{ order.amount }}</h4>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-3 bg-light rounded border">
+                                    <span class="text-muted small">Payment Status:</span>
+                                    <h4 class="font-luxury mb-0 {% if order.balance == 0 %}text-success{% else %}text-warning{% endif %}">
+                                        {% if order.balance == 0 %}Fully Paid{% else %}Pending Balance: ₹{{ order.balance }}{% endif %}
+                                    </h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

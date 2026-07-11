@@ -1,0 +1,382 @@
+{% extends 'tailor/base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- 1. Hero Banner Section -->
+<div id="heroCarousel" class="carousel slide hero-slider" data-bs-ride="carousel">
+    <div class="carousel-indicators">
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+    </div>
+    <div class="carousel-inner">
+        <div class="carousel-item active" style="background-image: url('https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?auto=format&fit=crop&w=1600&q=80');">
+            <div class="container h-100">
+                <div class="hero-content">
+                    <span class="text-gold text-uppercase fw-semibold letter-spacing-1 mb-2 d-inline-block">Premium Boutique</span>
+                    <h1>Crafting Perfect Custom Fits</h1>
+                    <p class="lead mb-4">India's leading custom tailoring destination for bespoke suits, designer wedding lehengas, and professional alterations.</p>
+                    <a href="{% url 'tailor:book_appointment' %}" class="btn btn-gold">Book Fitting Session</a>
+                    <a href="{% url 'tailor:measurement_request' %}" class="btn btn-outline-gold ms-3">Send Measurements</a>
+                </div>
+            </div>
+        </div>
+        <div class="carousel-item" style="background-image: url('https://images.unsplash.com/photo-1594909122845-11baa439b7bf?auto=format&fit=crop&w=1600&q=80');">
+            <div class="container h-100">
+                <div class="hero-content">
+                    <span class="text-gold text-uppercase fw-semibold letter-spacing-1 mb-2 d-inline-block">Master Craftsmanship</span>
+                    <h1>Bespoke Men's & Women's Fashion</h1>
+                    <p class="lead mb-4">Precision stitching, rich linings, and customized neck cuts designed exactly to match your personal style.</p>
+                    <a href="{% url 'tailor:gallery' %}" class="btn btn-gold">View Lookbook</a>
+                    <a href="{% url 'tailor:track_order' %}" class="btn btn-outline-gold ms-3">Track My Order</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    </button>
+</div>
+
+<!-- 2. About Us Section -->
+<section class="section-padding bg-light">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <img src="https://images.unsplash.com/photo-1593032465175-481ac7f401a0?auto=format&fit=crop&w=600&q=80" alt="Boutique Tailoring" class="img-fluid rounded-4 shadow-lg">
+            </div>
+            <div class="col-lg-6">
+                <span class="text-gold text-uppercase fw-semibold">Our Boutique Story</span>
+                <h2 class="h1 mt-2 mb-4 font-luxury">Experience Premium Sizing & Elite Fashion</h2>
+                <p>Welcome to **TailorX**, where custom clothing meets master craftsmanship. Managed by **Jitendra Kar**, we provide personalized sizing and custom designs from our boutique located in Sriniwaspuri, New Delhi.</p>
+                <p class="mb-4">Whether it is an executive two-piece suit for work, padded designer blouse styling, or a heavily embroidered bridal lehenga, our master tailors combine traditional handcrafting techniques with modern precision cuts to deliver the perfect fit.</p>
+                <div class="d-flex gap-3">
+                    <a href="{% url 'tailor:about' %}" class="btn btn-outline-gold">Our Philosophy</a>
+                    <a href="{% url 'tailor:book_appointment' %}" class="btn btn-gold">Book Fitting</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 3. Why Choose Us Section -->
+<section class="section-padding">
+    <div class="container">
+        <div class="section-title">
+            <h2>Why Choose TailorX</h2>
+            <p>Our commitment to custom precision sizing, premium fabrics, and quick trials sets us apart.</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card premium-card p-4 text-center h-100">
+                    <div class="text-gold mb-3 h1"><i class="fa-solid fa-pencil-ruler"></i></div>
+                    <h4 class="font-luxury mb-3">Custom Sizing Records</h4>
+                    <p class="text-muted mb-0">We store detailed sizing measurements for every client, allowing quick subsequent order requests without re-measuring.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card premium-card p-4 text-center h-100">
+                    <div class="text-gold mb-3 h1"><i class="fa-solid fa-house-user"></i></div>
+                    <h4 class="font-luxury mb-3">Home Visit Measurement</h4>
+                    <p class="text-muted mb-0">Too busy? Request a boutique home visit. Our sizing experts will visit your home to take measurements and pick up fabric.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card premium-card p-4 text-center h-100">
+                    <div class="text-gold mb-3 h1"><i class="fa-solid fa-scissors"></i></div>
+                    <h4 class="font-luxury mb-3">Bespoke Fit Trails</h4>
+                    <p class="text-muted mb-0">We schedule trial dates for every order, ensuring final fitting corrections are completed before final delivery.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 4. Men's Tailoring Section -->
+<section class="section-padding bg-light">
+    <div class="container">
+        <div class="section-title">
+            <h2>Men's Custom Stitching</h2>
+            <p>From sharp formal wear to majestic groomsmen collections.</p>
+        </div>
+        <div class="row g-4">
+            {% for srv in services_men|slice:":4" %}
+            <div class="col-lg-3 col-md-6 col-sm-6">
+                <div class="service-icon-box">
+                    <div class="icon-wrapper"><i class="fa-solid {{ srv.icon }}"></i></div>
+                    <h4 class="font-luxury mb-3">{{ srv.service_name }}</h4>
+                    <p class="text-muted small mb-4">{{ srv.description }}</p>
+                    <div class="fw-bold text-gold pricing-menu-price">Starting ₹{{ srv.price|floatformat:0 }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-5">
+            <a href="{% url 'tailor:services' %}" class="btn btn-gold">View Men's Catalog</a>
+        </div>
+    </div>
+</section>
+
+<!-- 5. Women's Tailoring Section -->
+<section class="section-padding">
+    <div class="container">
+        <div class="section-title">
+            <h2>Women's Boutique Designs</h2>
+            <p>Perfect cuts, customized back lining, padding, and traditional pico works.</p>
+        </div>
+        <div class="row g-4">
+            {% for srv in services_women|slice:":4" %}
+            <div class="col-lg-3 col-md-6 col-sm-6">
+                <div class="service-icon-box">
+                    <div class="icon-wrapper"><i class="fa-solid {{ srv.icon }}"></i></div>
+                    <h4 class="font-luxury mb-3">{{ srv.service_name }}</h4>
+                    <p class="text-muted small mb-4">{{ srv.description }}</p>
+                    <div class="fw-bold text-gold pricing-menu-price">Starting ₹{{ srv.price|floatformat:0 }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-5">
+            <a href="{% url 'tailor:services' %}" class="btn btn-outline-gold">View Women's Catalog</a>
+        </div>
+    </div>
+</section>
+
+<!-- 6. Bridal Wear Collection Section -->
+<section class="section-padding bg-dark-premium text-white" style="background-image: linear-gradient(rgba(8,14,26,0.9), rgba(8,14,26,0.9)), url('https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=1600&q=80'); background-size: cover;">
+    <div class="container">
+        <div class="row g-5 align-items-center">
+            <div class="col-lg-6">
+                <span class="text-gold text-uppercase fw-semibold">Grand Celebrations</span>
+                <h2 class="font-luxury text-white display-5 my-3">Bridal & Groom Wedding Stitching</h2>
+                <p class="text-light mb-4">We offer end-to-end heavy trousseau designing, custom matching sherwanis, turbans, saree pleating settings, and lehengas tailored to perfection for the royal couple. Trial dates are strictly managed to guarantee flawless fitting.</p>
+                <div class="row g-3 text-start">
+                    <div class="col-sm-6 border-start border-gold border-3 ps-3">
+                        <h5 class="text-gold font-luxury">Lehengas & Dupattas</h5>
+                        <p class="small text-light">Custom heavy flares and embroidery works.</p>
+                    </div>
+                    <div class="col-sm-6 border-start border-gold border-3 ps-3">
+                        <h5 class="text-gold font-luxury">Groom Sherwani Sets</h5>
+                        <p class="small text-light">Zardozi and Banarasi luxury stitching.</p>
+                    </div>
+                </div>
+                <a href="{% url 'tailor:book_appointment' %}" class="btn btn-gold mt-4">Book Wedding Trial</a>
+            </div>
+            <div class="col-lg-6">
+                <div class="glass-panel">
+                    <h3 class="font-luxury text-gold mb-3">Festival Offers</h3>
+                    <p class="text-light small mb-4">Planning a bulk family package? Apply active coupon codes at the boutique and unlock premium benefits.</p>
+                    <div class="d-flex flex-column gap-3">
+                        {% for offer in offers %}
+                        <div class="border border-secondary p-3 rounded d-flex justify-content-between align-items-center bg-transparent">
+                            <div>
+                                <div class="fw-bold font-luxury text-gold">{{ offer.title }}</div>
+                                <code class="text-white">{{ offer.code }}</code>
+                            </div>
+                            <h4 class="text-gold mb-0 font-luxury">{{ offer.discount }}</h4>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 7. Design Gallery Section -->
+<section class="section-padding bg-light">
+    <div class="container">
+        <div class="section-title">
+            <h2>Boutique Design Lookbook</h2>
+            <p>Explore recently completed styling works for clients.</p>
+        </div>
+        <div class="row g-4">
+            {% for item in gallery %}
+            <div class="col-lg-4 col-md-6">
+                <div class="gallery-item-wrapper">
+                    <img src="{{ item.get_image }}" alt="{{ item.title }}">
+                    <div class="gallery-overlay">
+                        <span class="text-gold small text-uppercase mb-2"><i class="fa-solid fa-tags me-1"></i>{{ item.category }}</span>
+                        <h5 class="font-luxury text-white text-center">{{ item.title }}</h5>
+                        <div class="mt-3 text-gold"><i class="fa-solid fa-maximize h3"></i></div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-5">
+            <a href="{% url 'tailor:gallery' %}" class="btn btn-gold">Explore All Designs</a>
+        </div>
+    </div>
+</section>
+
+<!-- 8. Pricing Cards Section -->
+<section class="section-padding">
+    <div class="container">
+        <div class="section-title">
+            <h2>Pricing Cards</h2>
+            <p>Transparent tailoring rates with zero hidden charges.</p>
+        </div>
+        <div class="row g-4 justify-content-center">
+            <div class="col-lg-4 col-md-6">
+                <div class="pricing-card-box">
+                    <div class="pricing-card-header">
+                        <h3 class="font-luxury text-gold mb-1">Men's Styling</h3>
+                        <p class="text-muted small mb-0">From formal office trims to wedding wear</p>
+                    </div>
+                    <div class="p-4">
+                        <ul class="list-unstyled text-start mb-4 gap-3 d-flex flex-column">
+                            <li class="d-flex justify-content-between"><span>Premium Shirt</span> <strong class="text-gold">₹499+</strong></li>
+                            <li class="d-flex justify-content-between"><span>Formal Trouser</span> <strong class="text-gold">₹599+</strong></li>
+                            <li class="d-flex justify-content-between"><span>Bespoke 2-Piece Suit</span> <strong class="text-gold">₹5,499+</strong></li>
+                            <li class="d-flex justify-content-between"><span>Traditional Kurta</span> <strong class="text-gold">₹799+</strong></li>
+                            <li class="d-flex justify-content-between"><span>Designer Sherwani</span> <strong class="text-gold">₹7,999+</strong></li>
+                        </ul>
+                        <a href="{% url 'tailor:pricing' %}" class="btn btn-outline-gold w-100">View Full Price List</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="pricing-card-box">
+                    <div class="pricing-card-header">
+                        <h3 class="font-luxury text-gold mb-1">Women's Sizing</h3>
+                        <p class="text-muted small mb-0">From padded blouses to ball gowns</p>
+                    </div>
+                    <div class="p-4">
+                        <ul class="list-unstyled text-start mb-4 gap-3 d-flex flex-column">
+                            <li class="d-flex justify-content-between"><span>Designer Blouse</span> <strong class="text-gold">₹799+</strong></li>
+                            <li class="d-flex justify-content-between"><span>Salwar Kameez Suit</span> <strong class="text-gold">₹999+</strong></li>
+                            <li class="d-flex justify-content-between"><span>Anarkali Kurti</span> <strong class="text-gold">₹1,199+</strong></li>
+                            <li class="d-flex justify-content-between"><span>Evening Party Gown</span> <strong class="text-gold">₹3,499+</strong></li>
+                            <li class="d-flex justify-content-between"><span>Bridal Lehenga set</span> <strong class="text-gold">₹8,999+</strong></li>
+                        </ul>
+                        <a href="{% url 'tailor:pricing' %}" class="btn btn-outline-gold w-100">View Full Price List</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 9. Customer Reviews Section -->
+<section class="section-padding bg-light">
+    <div class="container">
+        <div class="section-title">
+            <h2>Reviews from Boutique Guests</h2>
+            <p>Read what our clients say about their custom fits.</p>
+        </div>
+        <div id="reviewCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                {% for rev in reviews %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8">
+                            <div class="card premium-card p-5 text-center">
+                                <div class="text-gold h1 mb-3"><i class="fa-solid fa-quote-left"></i></div>
+                                <p class="lead mb-4 text-dark font-luxury">"{{ rev.review }}"</p>
+                                <h5 class="font-luxury mb-1 text-gold">{{ rev.customer_name }}</h5>
+                                <div class="text-warning">
+                                    {% for i in "12345"|make_list %}
+                                        {% if forloop.counter <= rev.rating %}
+                                            <i class="fa-solid fa-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#reviewCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon bg-dark rounded-circle" aria-hidden="true"></span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#reviewCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon bg-dark rounded-circle" aria-hidden="true"></span>
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- 10. Booking Form Section -->
+<section class="section-padding bg-light" id="booking-form-section">
+    <div class="container">
+        <div class="row g-5 align-items-center">
+            <!-- Form -->
+            <div class="col-lg-6">
+                <div class="glass-panel-dark text-white p-5 rounded-4 shadow">
+                    <h3 class="font-luxury text-gold mb-3">Book Fitting Slot</h3>
+                    <p class="text-light small mb-4">Request appointment date and sizing options. We will verify and message you back shortly.</p>
+                    
+                    <div id="booking-form-result"></div>
+                    
+                    <form action="{% url 'tailor:book_appointment' %}" method="POST" id="ajax-booking-form">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Your Name</label>
+                                {{ form.customer_name }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Mobile Number</label>
+                                {{ form.mobile }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Email Address</label>
+                                {{ form.email }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Gender</label>
+                                {{ form.gender }}
+                            </div>
+                            <div class="col-md-12">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Stitching Service</label>
+                                {{ form.service }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Preferred Date</label>
+                                {{ form.appointment_date }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Preferred Time</label>
+                                {{ form.appointment_time }}
+                            </div>
+                            <div class="col-12 my-2">
+                                <div class="form-check">
+                                    {{ form.home_visit }}
+                                    <label class="form-check-label text-gold small fw-bold" for="id_home_visit">
+                                        Request Home Sizing Visit (Pick up fabric & take measurements at home)
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Message / Fit Preferences</label>
+                                {{ form.message }}
+                            </div>
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-gold w-100 py-3">Book Fitting Session</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Contact & Map -->
+            <div class="col-lg-6">
+                <span class="text-gold text-uppercase fw-semibold">Visit Sriniwaspuri Boutique</span>
+                <h2 class="h1 mt-2 mb-4 font-luxury">Locate Our Boutique</h2>
+                <p class="mb-4">We are located at Private Colony, Sriniwaspuri. Drop off your fabric or request a trial directly. Connect via call/WhatsApp for fast support.</p>
+                <div class="ratio ratio-16x9 rounded-4 overflow-hidden border border-secondary shadow mb-4">
+                    <iframe src="{{ settings.google_map }}" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <a href="tel:{{ settings.phone }}" class="btn btn-outline-gold"><i class="fa-solid fa-phone me-2"></i>Call Us</a>
+                    <a href="https://wa.me/{{ settings.whatsapp|cut:' '|cut:'+' }}" class="btn btn-gold" target="_blank"><i class="fa-brands fa-whatsapp me-2"></i>WhatsApp Chat</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

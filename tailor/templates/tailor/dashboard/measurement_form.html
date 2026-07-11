@@ -1,0 +1,76 @@
+{% extends 'tailor/dashboard/base.html' %}
+
+{% block content %}
+<div class="mb-4">
+    <span class="text-gold text-uppercase fw-semibold small">Boutique Sizing Specs</span>
+    <h1 class="font-luxury mb-0 text-dark">{{ action }} Measurement Profile</h1>
+</div>
+
+<div class="card border-0 shadow-sm p-5 text-start">
+    <form method="POST">
+        {% csrf_token %}
+        
+        <!-- Select Customer (only on Add) -->
+        {% if action == "Add" %}
+        <div class="mb-4 col-md-6">
+            <label class="form-label fw-bold">Select Customer</label>
+            <select name="customer" class="form-select" required>
+                <option value="">Select customer...</option>
+                {% for cust in customers %}
+                <option value="{{ cust.id }}">{{ cust.name }} ({{ cust.mobile }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% else %}
+        <div class="mb-4">
+            <label class="form-label fw-bold">Customer</label>
+            <input type="text" class="form-control" value="{{ measurement.customer.name }} ({{ measurement.customer.mobile }})" disabled>
+        </div>
+        {% endif %}
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <label class="form-label fw-bold">Height</label>
+                {{ form.height }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold">Chest (inches)</label>
+                {{ form.chest }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold">Waist (inches)</label>
+                {{ form.waist }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold">Hip (inches)</label>
+                {{ form.hip }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold">Shoulder width (inches)</label>
+                {{ form.shoulder }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold">Sleeve length (inches)</label>
+                {{ form.sleeve }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold">Neck size (inches)</label>
+                {{ form.neck }}
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold">Inseam (inches)</label>
+                {{ form.inseam }}
+            </div>
+            <div class="col-md-12">
+                <label class="form-label fw-bold">Notes / Fit preferences</label>
+                {{ form.notes }}
+            </div>
+        </div>
+
+        <div class="d-flex gap-3 mt-5 col-md-6">
+            <button type="submit" class="btn btn-gold flex-grow-1">Save Sizing Specs</button>
+            <a href="{% url 'tailor:dashboard_measurements' %}" class="btn btn-outline-dark">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

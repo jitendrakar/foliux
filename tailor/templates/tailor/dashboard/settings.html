@@ -1,0 +1,52 @@
+{% extends 'tailor/dashboard/base.html' %}
+
+{% block content %}
+<div class="mb-4">
+    <span class="text-gold text-uppercase fw-semibold small">Boutique Executive Suite</span>
+    <h1 class="font-luxury mb-0 text-dark">Boutique Configuration</h1>
+</div>
+
+<div class="card border-0 shadow-sm p-5 text-start">
+    <form action="{% url 'tailor:dashboard_settings' %}" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="row g-4">
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Brand Name</label>
+                <input type="text" name="brand_name" class="form-control" value="{{ settings.brand_name }}" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Email Address</label>
+                <input type="email" name="email" class="form-control" value="{{ settings.email }}" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Phone Number</label>
+                <input type="text" name="phone" class="form-control" value="{{ settings.phone }}" required>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-bold">WhatsApp Number</label>
+                <input type="text" name="whatsapp" class="form-control" value="{{ settings.whatsapp }}" required>
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-bold">Boutique Physical Address</label>
+                <textarea name="address" class="form-control" rows="3" required>{{ settings.address }}</textarea>
+            </div>
+            <div class="col-12">
+                <label class="form-label fw-bold">Google Map Embed Link (iframe src URL)</label>
+                <input type="text" name="google_map" class="form-control" value="{{ settings.google_map }}" required>
+                <span class="text-muted text-xs">Copy the direct source URL of Google maps iframe embed.</span>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-bold">Boutique Logo</label>
+                <input type="file" name="logo" class="form-control mb-2">
+                {% if settings.logo %}
+                    <img src="{{ settings.logo.url }}" class="img-thumbnail" style="max-height: 80px;">
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="d-flex gap-3 mt-5 col-md-4">
+            <button type="submit" class="btn btn-gold flex-grow-1">Save Configuration</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

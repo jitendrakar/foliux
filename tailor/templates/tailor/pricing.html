@@ -1,0 +1,102 @@
+{% extends 'tailor/base.html' %}
+
+{% block title %}Pricing Guide - {{ settings.brand_name }}{% endblock %}
+
+{% block content %}
+<section class="section-padding bg-dark text-white text-center" style="background-image: linear-gradient(rgba(8,14,26,0.85), rgba(8,14,26,0.85)), url('https://images.unsplash.com/photo-1593032465175-481ac7f401a0?auto=format&fit=crop&w=1600&q=80'); background-size: cover; padding: 100px 0;">
+    <div class="container">
+        <h1 class="font-luxury text-gold display-4 mb-3">Custom Tailoring Prices</h1>
+        <p class="lead max-width-600 mx-auto">Transparent and competitive stitching rates for all custom apparel.</p>
+    </div>
+</section>
+
+<section class="section-padding">
+    <div class="container">
+        <div class="row mb-5 justify-content-between align-items-center g-4">
+            <div class="col-md-5">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="fa-solid fa-search text-gold"></i></span>
+                    <input type="text" id="pricing-search" class="form-control border-start-0 ps-0" placeholder="Search for suit, shirt, blouse, lehenga...">
+                </div>
+            </div>
+            <div class="col-md-7 text-md-end">
+                <div class="gallery-filters pricing-category-filters">
+                    <button class="btn-filter active btn btn-outline-dark btn-sm m-1" data-filter="all">All Categories</button>
+                    <button class="btn-filter btn btn-outline-dark btn-sm m-1" data-filter="Men's Tailoring">Men's Tailoring</button>
+                    <button class="btn-filter btn btn-outline-dark btn-sm m-1" data-filter="Women's Tailoring">Women's Tailoring</button>
+                    <button class="btn-filter btn btn-outline-dark btn-sm m-1" data-filter="Other Services">Other Services</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card premium-card p-4">
+                    <div class="table-responsive">
+                        <table class="table align-middle table-hover" id="pricing-table">
+                            <thead>
+                                <tr class="table-dark">
+                                    <th>Stitching Service</th>
+                                    <th>Category</th>
+                                    <th class="text-end">Base Price (INR)</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for srv in services %}
+                                <tr class="pricing-row" data-cat="{{ srv.category }}" data-name="{{ srv.service_name|lower }}">
+                                    <td>
+                                        <div class="fw-bold font-luxury text-dark"><i class="fa-solid {{ srv.icon }} text-gold me-2"></i>{{ srv.service_name }}</div>
+                                        <div class="text-muted small">{{ srv.description }}</div>
+                                    </td>
+                                    <td><span class="badge bg-light text-dark">{{ srv.category }}</span></td>
+                                    <td class="text-end fw-bold text-dark pricing-menu-price">₹{{ srv.price|floatformat:0 }}</td>
+                                    <td class="text-end">
+                                        <a href="{% url 'tailor:book_appointment' %}?service={{ srv.id }}" class="btn btn-gold btn-sm py-1 px-3">Book Fitting</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('#pricing-search').on('keyup', function() {
+        filterTable();
+    });
+
+    $('.pricing-category-filters').on('click', '.btn-filter', function() {
+        $('.pricing-category-filters .btn-filter').removeClass('active btn-gold').addClass('btn-outline-dark');
+        $(this).addClass('active btn-gold').removeClass('btn-outline-dark');
+        filterTable();
+    });
+
+    function filterTable() {
+        var query = $('#pricing-search').val().toLowerCase();
+        var selectedCat = $('.pricing-category-filters .btn-filter.active').attr('data-filter');
+
+        $('.pricing-row').each(function() {
+            var name = $(this).attr('data-name');
+            var cat = $(this).attr('data-cat');
+
+            var matchSearch = name.indexOf(query) > -1;
+            var matchCat = (selectedCat === 'all') || (cat === selectedCat);
+
+            if (matchSearch && matchCat) {
+                $(this).fadeIn(200);
+            } else {
+                $(this).hide();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

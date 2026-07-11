@@ -1,0 +1,69 @@
+{% extends 'tailor/base.html' %}
+
+{% block title %}Book Appointment - {{ settings.brand_name }}{% endblock %}
+
+{% block content %}
+<section class="section-padding bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="glass-panel-dark text-white p-5 rounded-4 shadow">
+                    <h2 class="font-luxury text-gold text-center mb-2">Book Fitting Session</h2>
+                    <p class="text-light text-center small mb-5">Select a convenient date and time. Request home visits if you would like us to take measurements at your home.</p>
+                    
+                    <div id="booking-form-result"></div>
+                    
+                    <form action="{% url 'tailor:book_appointment' %}" method="POST" id="ajax-booking-form">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Your Name</label>
+                                {{ form.customer_name }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Mobile Number</label>
+                                {{ form.mobile }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Email Address</label>
+                                {{ form.email }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Gender</label>
+                                {{ form.gender }}
+                            </div>
+                            <div class="col-md-12">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Stitching Service</label>
+                                {{ form.service }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Preferred Date</label>
+                                {{ form.appointment_date }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Preferred Time</label>
+                                {{ form.appointment_time }}
+                            </div>
+                            <div class="col-12 my-2">
+                                <div class="form-check">
+                                    {{ form.home_visit }}
+                                    <label class="form-check-label text-gold small fw-bold" for="id_home_visit">
+                                        Request Home Sizing Visit (Pick up fabric & take measurements at home)
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Message / Fit Preferences</label>
+                                {{ form.message }}
+                            </div>
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-gold w-100 py-3">Book Fitting Session</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

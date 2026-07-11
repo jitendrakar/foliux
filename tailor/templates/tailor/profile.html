@@ -1,0 +1,140 @@
+{% extends 'tailor/base.html' %}
+
+{% block title %}My Profile - {{ settings.brand_name }}{% endblock %}
+
+{% block content %}
+<section class="section-padding bg-light">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Left Info -->
+            <div class="col-lg-4">
+                <div class="card premium-card p-4 text-center mb-4">
+                    <div class="h1 text-gold mb-3"><i class="fa-solid fa-user-circle"></i></div>
+                    <h3 class="font-luxury mb-1 text-dark">{{ user.name }}</h3>
+                    <span class="badge bg-gold py-1 px-3 text-white rounded-pill text-uppercase">{{ user.role }}</span>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="text-start gap-3 d-flex flex-column">
+                        <div>
+                            <span class="text-muted small d-block">Mobile</span>
+                            <strong class="text-dark">{{ user.mobile }}</strong>
+                        </div>
+                        <div>
+                            <span class="text-muted small d-block">Email</span>
+                            <strong class="text-dark">{{ user.email }}</strong>
+                        </div>
+                        <div>
+                            <span class="text-muted small d-block">Gender</span>
+                            <strong class="text-dark">{{ user.gender|default:"Not specified" }}</strong>
+                        </div>
+                        <div>
+                            <span class="text-muted small d-block">Address</span>
+                            <strong class="text-dark small">{{ user.address|default:"Not specified" }}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Latest Sizes Card -->
+                <div class="card premium-card p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="font-luxury text-dark mb-0"><i class="fa-solid fa-ruler text-gold me-2"></i>My Sizing</h4>
+                        <a href="{% url 'tailor:measurement_request' %}" class="btn btn-outline-gold btn-sm"><i class="fa-solid fa-edit"></i></a>
+                    </div>
+                    {% if measurements %}
+                        {% with m=measurements.first %}
+                        <div class="table-responsive">
+                            <table class="table table-sm table-borderless text-start mb-0">
+                                <tbody>
+                                    <tr><td class="text-muted">Height:</td><td class="fw-bold">{{ m.height|default:"-" }}</td></tr>
+                                    <tr><td class="text-muted">Chest:</td><td class="fw-bold">{{ m.chest|default:"-" }}</td></tr>
+                                    <tr><td class="text-muted">Waist:</td><td class="fw-bold">{{ m.waist|default:"-" }}</td></tr>
+                                    <tr><td class="text-muted">Hip:</td><td class="fw-bold">{{ m.hip|default:"-" }}</td></tr>
+                                    <tr><td class="text-muted">Shoulder:</td><td class="fw-bold">{{ m.shoulder|default:"-" }}</td></tr>
+                                    <tr><td class="text-muted">Sleeve:</td><td class="fw-bold">{{ m.sleeve|default:"-" }}</td></tr>
+                                    <tr><td class="text-muted">Neck:</td><td class="fw-bold">{{ m.neck|default:"-" }}</td></tr>
+                                    <tr><td class="text-muted">Inseam:</td><td class="fw-bold">{{ m.inseam|default:"-" }}</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="mt-3 p-2 bg-light rounded text-start">
+                            <span class="text-muted small d-block">Sizing Notes:</span>
+                            <span class="small text-dark italic">"{{ m.notes|default:"None" }}"</span>
+                        </div>
+                        {% endwith %}
+                    {% else %}
+                        <p class="text-muted small text-center mb-0">No size records found. Please submit your sizes.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Right Orders -->
+            <div class="col-lg-8">
+                <div class="card premium-card p-5">
+                    <h3 class="font-luxury text-dark mb-4"><i class="fa-solid fa-scissors text-gold me-2"></i>My Stitching Orders</h3>
+                    
+                    {% if orders %}
+                    <div class="table-responsive">
+                        <table class="table align-middle table-hover text-start">
+                            <thead>
+                                <tr class="table-dark">
+                                    <th>Order #</th>
+                                    <th>Apparel Service</th>
+                                    <th>Fabric</th>
+                                    <th>Delivery Date</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Outstanding</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in orders %}
+                                <tr>
+                                    <td class="fw-bold text-dark">{{ order.order_number }}</td>
+                                    <td>
+                                        <div class="fw-bold font-luxury">{{ order.service.service_name }}</div>
+                                        <span class="text-muted small">{{ order.category }}</span>
+                                    </td>
+                                    <td><span class="badge bg-light text-dark">{{ order.fabric }}</span></td>
+                                    <td>{{ order.delivery_date }}</td>
+                                    <td>
+                                        <span class="badge py-1 px-2 rounded-pill text-uppercase small
+                                            {% if order.status == 'New' %}bg-secondary
+                                            {% elif order.status == 'Cutting' or order.status == 'Stitching' %}bg-info
+                                            {% elif order.status == 'Trial' or order.status == 'Ready' %}bg-warning text-dark
+                                            {% elif order.status == 'Delivered' %}bg-success
+                                            {% else %}bg-danger{% endif %}">
+                                            {{ order.status }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end fw-bold">
+                                        {% if order.balance == 0 %}
+                                            <span class="text-success">₹0.00</span>
+                                        {% else %}
+                                            <span class="text-warning">₹{{ order.balance }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="d-flex gap-2 justify-content-end">
+                                            <a href="{% url 'tailor:track_order' %}?order_number={{ order.order_number }}&mobile={{ user.mobile }}" class="btn btn-outline-dark btn-sm py-0 px-2" title="Track Status"><i class="fa-solid fa-truck"></i></a>
+                                            <a href="{% url 'tailor:dashboard_order_invoice' order.id %}" target="_blank" class="btn btn-gold btn-sm py-0 px-2" title="View/Print Invoice"><i class="fa-solid fa-print"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <h5 class="text-muted">You have no stitching orders yet.</h5>
+                            <p class="text-muted small">Once you submit fabric at our boutique, orders will appear here.</p>
+                            <a href="{% url 'tailor:book_appointment' %}" class="btn btn-gold mt-3">Book Sizing Appointment</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

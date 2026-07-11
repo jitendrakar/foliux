@@ -1,0 +1,76 @@
+{% extends 'tailor/dashboard/base.html' %}
+
+{% block content %}
+<div class="mb-4">
+    <span class="text-gold text-uppercase fw-semibold small">Boutique Lookbook</span>
+    <h1 class="font-luxury mb-0 text-dark">Gallery Management</h1>
+</div>
+
+<div class="row g-4">
+    <!-- List -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm p-4 h-100">
+            <h4 class="font-luxury text-dark mb-4"><i class="fa-solid fa-images text-gold me-2"></i>Design Catalog</h4>
+            <div class="row g-3">
+                {% for item in gallery %}
+                <div class="col-md-4 col-sm-6">
+                    <div class="card h-100 border">
+                        <img src="{{ item.get_image }}" class="card-img-top" style="height: 150px; object-fit: cover;">
+                        <div class="card-body p-3 text-start">
+                            <span class="badge bg-gold text-white text-xs mb-1">{{ item.category }}</span>
+                            <h6 class="font-luxury mb-2 text-dark">{{ item.title }}</h6>
+                            <a href="{% url 'tailor:dashboard_gallery_delete' item.id %}" class="btn btn-outline-danger btn-sm w-100 py-1" onclick="return confirm('Delete this image?');"><i class="fa-solid fa-trash me-1"></i>Delete</a>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                    <p class="text-muted small text-center my-4">No gallery items uploaded yet.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Upload Form -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm p-4 text-start bg-light h-100">
+            <h4 class="font-luxury text-dark mb-3"><i class="fa-solid fa-upload text-gold me-2"></i>Upload Design</h4>
+            <p class="text-muted small mb-4">Upload high-resolution design images to showcase on the landing page lookbook.</p>
+            
+            <form action="{% url 'tailor:dashboard_gallery_add' %}" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Design Title</label>
+                    <input type="text" name="title" class="form-control form-control-sm" placeholder="e.g. Navy blue wedding blazer" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Category</label>
+                    <select name="category" class="form-select form-select-sm" required>
+                        <option value="Men">Men</option>
+                        <option value="Women">Women</option>
+                        <option value="Bridal">Bridal</option>
+                        <option value="Boutique">Boutique</option>
+                        <option value="Uniform">Uniform</option>
+                        <option value="Latest Designs">Latest Designs</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Select Image</label>
+                    <!-- Support both file upload and external URL inputs for flexibility -->
+                    <input type="file" name="image" class="form-control form-control-sm mb-2">
+                    <span class="text-muted text-xs d-block">Or enter an image link during testing:</span>
+                    <input type="text" name="image_url" class="form-control form-control-sm" placeholder="https://unsplash.com/...">
+                </div>
+
+                <div class="form-check mb-4">
+                    <input type="checkbox" name="status" class="form-check-input" id="id_status" checked>
+                    <label class="form-check-label small" for="id_status">Visible on website</label>
+                </div>
+
+                <button type="submit" class="btn btn-gold btn-sm w-100 py-2">Upload Image</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends 'tailor/dashboard/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+    <div>
+        <span class="text-gold text-uppercase fw-semibold small">Boutique Campaigns</span>
+        <h1 class="font-luxury mb-0 text-dark">Offer Coupons</h1>
+    </div>
+    <div>
+        <a href="{% url 'tailor:dashboard_offer_add' %}" class="btn btn-gold btn-sm"><i class="fa-solid fa-plus me-1"></i>New Coupon</a>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm p-4">
+    <div class="table-responsive">
+        <table class="table align-middle table-hover text-start">
+            <thead>
+                <tr class="table-dark">
+                    <th>Coupon Title</th>
+                    <th>Promo Code</th>
+                    <th>Discount Rate</th>
+                    <th>Description</th>
+                    <th>Start Date</th>
+                    <th>Expiry Date</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for offer in offers %}
+                <tr>
+                    <td class="fw-bold text-dark">{{ offer.title }}</td>
+                    <td><code class="text-gold fw-bold">{{ offer.code }}</code></td>
+                    <td class="fw-bold text-dark">{{ offer.discount }}</td>
+                    <td><span class="small text-muted">{{ offer.description }}</span></td>
+                    <td>{{ offer.start_date }}</td>
+                    <td>{{ offer.end_date }}</td>
+                    <td>
+                        {% if offer.status %}
+                            <span class="badge bg-success">Active</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Expired/Disabled</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a href="{% url 'tailor:dashboard_offer_edit' offer.id %}" class="btn btn-outline-dark btn-sm py-0 px-2" title="Edit"><i class="fa-solid fa-edit"></i></a>
+                            <a href="{% url 'tailor:dashboard_offer_delete' offer.id %}" class="btn btn-gold btn-sm py-0 px-2" title="Delete" onclick="return confirm('Delete this coupon?');"><i class="fa-solid fa-trash"></i></a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
