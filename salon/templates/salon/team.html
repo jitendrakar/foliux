@@ -1,0 +1,43 @@
+{% extends 'salon/base.html' %}
+
+{% block title %}Our Stylists & Team - {{ settings.salon_name }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="section-padding bg-dark text-white text-center" style="background-image: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.85)), url('https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=1600&q=80'); background-size: cover; background-position: center; padding: 100px 0;">
+    <div class="container">
+        <h1 class="font-luxury text-gold display-4 mb-3">Meet Our Styling Experts</h1>
+        <p class="lead max-width-600 mx-auto">Learn more about our award-winning designers and therapists trained at top beauty academies worldwide.</p>
+    </div>
+</section>
+
+<!-- Stylists Grid -->
+<section class="section-padding">
+    <div class="container">
+        <div class="row g-5 justify-content-center">
+            {% for sty in stylists %}
+            <div class="col-lg-4 col-md-6">
+                <div class="card premium-card h-100 p-4 text-center border-0" style="background-color: var(--light-gray);">
+                    <div class="stylist-img-wrapper" style="width: 160px; height: 160px; margin-bottom: 25px;">
+                        <img src="{{ sty.get_photo }}" alt="{{ sty.name }}">
+                    </div>
+                    <div class="card-body p-0 d-flex flex-column">
+                        <h3 class="font-luxury h4 mb-1 text-dark">{{ sty.name }}</h3>
+                        <span class="text-gold small fw-semibold text-uppercase letter-spacing-1 mb-2">{{ sty.designation }}</span>
+                        <div class="badge bg-white text-gold border border-gold align-self-center px-3 py-2 mb-3">
+                            <i class="bi bi-clock me-1"></i>{{ sty.experience }} Experience
+                        </div>
+                        <p class="card-text text-muted small px-2 mb-4">{{ sty.description }}</p>
+                        <a href="{% url 'salon:book_appointment' %}?stylist={{ sty.id }}" class="btn btn-gold btn-sm mt-auto align-self-center py-2 px-4">Book with {{ sty.name|truncatewords:1|cut:'...' }}</a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <p class="text-muted">No stylists found.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends 'salon/dashboard/base.html' %}
+
+{% block header_title %}Manage Customers{% endblock %}
+
+{% block dashboard_content %}
+<div class="card p-4 shadow-sm border-0 bg-white">
+    <h4 class="font-luxury h5 mb-4 text-dark">Registered Customers ({{ customers|length }})</h4>
+
+    <div class="table-responsive">
+        <table class="table align-middle table-hover table-premium">
+            <thead>
+                <tr>
+                    <th>Customer Name</th>
+                    <th>Mobile</th>
+                    <th>Email Address</th>
+                    <th>Registration Date</th>
+                    <th class="text-center">Total Bookings</th>
+                    <th class="text-center">Completed Visits</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cust in customers %}
+                <tr>
+                    <td><div class="fw-bold text-dark font-luxury">{{ cust.name }}</div></td>
+                    <td><i class="bi bi-telephone text-muted me-1"></i>{{ cust.mobile }}</td>
+                    <td><i class="bi bi-envelope text-muted me-1"></i>{{ cust.email }}</td>
+                    <td><span class="text-muted"><i class="bi bi-calendar3 me-1"></i>{{ cust.created_at|date:"d M, Y" }}</span></td>
+                    <td class="text-center"><span class="badge bg-gold-light text-gold font-body fw-bold">{{ cust.appointment_count }}</span></td>
+                    <td class="text-center">
+                        <span class="badge bg-success font-body">{{ cust.completed_count }}</span>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">No customers registered yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

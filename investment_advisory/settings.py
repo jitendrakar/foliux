@@ -103,6 +103,7 @@ INSTALLED_APPS = [
     'corsheaders',
     # Field-level encryption
     'encrypted_model_fields',
+    'salon',
 ]
 
 SITE_ID = 1
@@ -183,6 +184,16 @@ else:
             },
         }
     }
+
+# Independent Salon Database and Router Config
+DATABASES['salon'] = {
+    'ENGINE': 'django.db.backends.sqlite3',
+    'NAME': BASE_DIR / 'salon' / 'db.sqlite3',
+    'OPTIONS': {
+        'timeout': 20,
+    }
+}
+DATABASE_ROUTERS = ['salon.router.SalonRouter']
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/

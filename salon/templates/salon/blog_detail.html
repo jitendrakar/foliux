@@ -1,0 +1,73 @@
+{% extends 'salon/base.html' %}
+
+{% block title %}{{ blog.title }} - Blog - {{ settings.salon_name }}{% endblock %}
+
+{% block content %}
+<!-- Page Header / Cover -->
+<section class="section-padding bg-dark text-white" style="background-image: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)), url('{{ blog.get_image }}'); background-size: cover; background-position: center; padding: 120px 0 60px;">
+    <div class="container text-center text-md-start">
+        <div class="row align-items-end">
+            <div class="col-lg-8">
+                <span class="badge bg-gold px-3 py-2 mb-3"><i class="bi bi-tag-fill me-1"></i>Beauty & Grooming</span>
+                <h1 class="font-luxury text-white display-5 mb-3">{{ blog.title }}</h1>
+                <div class="d-flex justify-content-center justify-content-md-start align-items-center gap-3 text-gold">
+                    <span><i class="bi bi-calendar3 me-1"></i>{{ blog.created_at|date:"F d, Y" }}</span>
+                    <span>•</span>
+                    <span><i class="bi bi-person me-1"></i>By SalonX Experts</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Blog Content Section -->
+<section class="section-padding">
+    <div class="container">
+        <div class="row g-5">
+            <!-- Article Body -->
+            <div class="col-lg-8">
+                <div class="pe-lg-4">
+                    <p class="lead text-dark font-luxury mb-4" style="font-size: 1.25rem; line-height: 1.8;">{{ blog.short_description }}</p>
+                    <hr class="my-4">
+                    <div class="blog-full-content" style="font-size: 1.1rem; line-height: 1.9; color: #333;">
+                        {{ blog.description|linebreaks }}
+                    </div>
+                    
+                    <!-- Share section -->
+                    <div class="d-flex align-items-center gap-3 mt-5 p-4 bg-light rounded-3">
+                        <span class="fw-bold">Share this article:</span>
+                        <a href="https://facebook.com" target="_blank" class="btn btn-outline-dark btn-sm rounded-circle" style="width: 32px; height: 32px; padding: 0; line-height: 32px; text-align: center;"><i class="bi bi-facebook"></i></a>
+                        <a href="https://twitter.com" target="_blank" class="btn btn-outline-dark btn-sm rounded-circle" style="width: 32px; height: 32px; padding: 0; line-height: 32px; text-align: center;"><i class="bi bi-twitter-x"></i></a>
+                        <a href="https://whatsapp.com" target="_blank" class="btn btn-outline-dark btn-sm rounded-circle" style="width: 32px; height: 32px; padding: 0; line-height: 32px; text-align: center;"><i class="bi bi-whatsapp"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <div class="card premium-card p-4 mb-4">
+                    <h4 class="font-luxury text-gold mb-3 border-bottom pb-2">Recent Articles</h4>
+                    <div class="d-flex flex-column gap-3">
+                        {% for r_blog in recent_blogs %}
+                        <div class="d-flex align-items-center gap-3">
+                            <img src="{{ r_blog.get_image }}" alt="{{ r_blog.title }}" style="width: 70px; height: 70px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <h5 class="font-body small fw-bold mb-1"><a href="{% url 'salon:blog_detail' r_blog.slug %}" class="text-black text-decoration-none">{{ r_blog.title|truncatewords:6 }}</a></h5>
+                                <span class="text-muted small" style="font-size: 0.75rem;">{{ r_blog.created_at|date:"d M, Y" }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Banner Call to action -->
+                <div class="glass-panel-dark text-white p-4 text-center rounded-3">
+                    <h4 class="font-luxury text-gold">Ready for styling?</h4>
+                    <p class="small text-light mt-2 mb-4">Book your haircut, styling, or facial online in just few clicks.</p>
+                    <a href="{% url 'salon:book_appointment' %}" class="btn btn-gold w-100 btn-sm">Book Appointment</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

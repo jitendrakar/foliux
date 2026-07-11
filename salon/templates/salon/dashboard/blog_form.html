@@ -1,0 +1,56 @@
+{% extends 'salon/dashboard/base.html' %}
+
+{% block header_title %}{{ action }} Blog Post{% endblock %}
+
+{% block dashboard_content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="dashboard-form-card">
+            <h3 class="font-luxury text-gold mb-4 border-bottom pb-2">{{ action }} Blog Post Details</h3>
+            
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold text-muted">Blog Title</label>
+                        <input type="text" name="title" class="form-control" value="{{ blog.title }}" placeholder="e.g. 5 Secrets to Prevent Hair Fall" required>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold text-muted">Short Summary Description</label>
+                        <textarea name="short_description" class="form-control" rows="3" placeholder="Brief summary of the article..." required>{{ blog.short_description }}</textarea>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold text-muted">Full Article Body Content</label>
+                        <textarea name="description" class="form-control" rows="10" placeholder="Write full article body details here..." required>{{ blog.description }}</textarea>
+                    </div>
+
+                    <div class="col-md-8">
+                        <label class="form-label fw-bold text-muted">Cover Image</label>
+                        {% if blog.image %}
+                        <div class="mb-2">
+                            <span class="small text-muted">Current image:</span><br>
+                            <img src="{{ blog.get_image }}" alt="Current Cover" class="rounded" style="width: 120px; height: 90px; object-fit: cover;">
+                        </div>
+                        {% endif %}
+                        <input type="file" name="image" class="form-control">
+                    </div>
+
+                    <div class="col-md-4 align-self-end">
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" name="status" id="statusSwitch" {% if action == 'Add' or blog.status %}checked{% endif %}>
+                            <label class="form-check-label fw-bold text-muted" for="statusSwitch">Publish Immediately</label>
+                        </div>
+                    </div>
+
+                    <div class="col-12 mt-4 pt-3 border-top d-flex gap-3">
+                        <button type="submit" class="btn btn-gold px-4">{{ action }} Blog Post</button>
+                        <a href="{% url 'salon:dashboard_blogs' %}" class="btn btn-outline-dark px-4">Cancel</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

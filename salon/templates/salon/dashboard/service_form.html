@@ -1,0 +1,71 @@
+{% extends 'salon/dashboard/base.html' %}
+
+{% block header_title %}{{ action }} Service{% endblock %}
+
+{% block dashboard_content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="dashboard-form-card">
+            <h3 class="font-luxury text-gold mb-4 border-bottom pb-2">{{ action }} Salon Service Details</h3>
+            
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold text-muted">Service Name</label>
+                        <input type="text" name="service_name" class="form-control" value="{{ service.service_name }}" placeholder="e.g. Executive Hair Cut" required>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-muted">Category</label>
+                        <select name="category" class="form-select" required>
+                            <option value="">Select Category</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.id }}" {% if service.category.id == cat.id %}selected{% endif %}>{{ cat.category_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold text-muted">Price (INR)</label>
+                        <input type="number" step="0.01" name="price" class="form-control" value="{{ service.price }}" placeholder="e.g. 399" required>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold text-muted">Duration (Mins)</label>
+                        <input type="number" name="duration" class="form-control" value="{{ service.duration }}" placeholder="e.g. 30" required>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold text-muted">Description</label>
+                        <textarea name="description" class="form-control" rows="4" placeholder="Brief details about the service details and benefits..." required>{{ service.description }}</textarea>
+                    </div>
+
+                    <div class="col-md-8">
+                        <label class="form-label fw-bold text-muted">Service Image</label>
+                        {% if service.image %}
+                        <div class="mb-2">
+                            <span class="small text-muted">Current image:</span><br>
+                            <img src="{{ service.get_image }}" alt="Current Service Image" class="rounded" style="width: 120px; height: 90px; object-fit: cover;">
+                        </div>
+                        {% endif %}
+                        <input type="file" name="image" class="form-control">
+                    </div>
+
+                    <div class="col-md-4 align-self-end">
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" name="status" id="statusSwitch" {% if action == 'Add' or service.status %}checked{% endif %}>
+                            <label class="form-check-label fw-bold text-muted" for="statusSwitch">Service Active Status</label>
+                        </div>
+                    </div>
+
+                    <div class="col-12 mt-4 pt-3 border-top d-flex gap-3">
+                        <button type="submit" class="btn btn-gold px-4">{{ action }} Service</button>
+                        <a href="{% url 'salon:dashboard_services' %}" class="btn btn-outline-dark px-4">Cancel</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

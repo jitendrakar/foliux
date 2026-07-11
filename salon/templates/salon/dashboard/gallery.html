@@ -1,0 +1,94 @@
+{% extends 'salon/dashboard/base.html' %}
+
+{% block header_title %}Manage Gallery{% endblock %}
+
+{% block dashboard_content %}
+<div class="row">
+    <!-- Add Gallery Item Form -->
+    <div class="col-lg-4 mb-4">
+        <div class="dashboard-form-card">
+            <h3 class="font-luxury text-gold mb-3 border-bottom pb-2">Upload Portfolio Image</h3>
+            
+            <form method="POST" action="{% url 'salon:dashboard_gallery_add' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted">Title / Caption</label>
+                    <input type="text" name="title" class="form-control" placeholder="e.g. Blonde Balayage Style" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted">Category Folder</label>
+                    <select name="category" class="form-select" required>
+                        <option value="">Select Category</option>
+                        <option value="Hair">Hair</option>
+                        <option value="Spa">Spa</option>
+                        <option value="Skin">Skin</option>
+                        <option value="Bridal">Bridal</option>
+                        <option value="Before After">Before After</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-muted">Portfolio File</label>
+                    <input type="file" name="image" class="form-control" required>
+                </div>
+
+                <div class="mb-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="status" id="statusSwitch" checked>
+                        <label class="form-check-label small fw-bold text-muted" for="statusSwitch">Visible Status</label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-gold w-100 py-2"><i class="bi bi-cloud-arrow-up me-1"></i>Upload Portfolio</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Gallery List -->
+    <div class="col-lg-8">
+        <div class="card p-4 shadow-sm border-0 bg-white">
+            <h4 class="font-luxury h5 mb-4 text-dark">Portfolio List ({{ gallery|length }})</h4>
+            
+            <div class="table-responsive">
+                <table class="table align-middle table-hover table-premium">
+                    <thead>
+                        <tr>
+                            <th>Preview</th>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in gallery %}
+                        <tr>
+                            <td>
+                                <img src="{{ item.get_image }}" alt="{{ item.title }}" class="rounded shadow-sm" style="width: 70px; height: 50px; object-fit: cover;">
+                            </td>
+                            <td><div class="fw-bold text-dark">{{ item.title }}</div></td>
+                            <td><span class="badge bg-gold-light text-gold text-uppercase">{{ item.category }}</span></td>
+                            <td>
+                                {% if item.status %}
+                                    <span class="badge bg-success">Visible</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Hidden</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{% url 'salon:dashboard_gallery_delete' item.id %}" onclick="return confirm('Are you sure you want to delete this gallery item?');" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">No gallery items found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

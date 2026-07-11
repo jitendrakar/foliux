@@ -1,0 +1,117 @@
+{% extends 'salon/base.html' %}
+
+{% block title %}Contact Us - {{ settings.salon_name }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="section-padding bg-dark text-white text-center" style="background-image: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.85)), url('https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?auto=format&fit=crop&w=1600&q=80'); background-size: cover; background-position: center; padding: 100px 0;">
+    <div class="container">
+        <h1 class="font-luxury text-gold display-4 mb-3">Connect With Us</h1>
+        <p class="lead max-width-600 mx-auto">Get in touch with our team for questions, corporate bookings, or special bridal package bookings.</p>
+    </div>
+</section>
+
+<!-- Contact Info & Form -->
+<section class="section-padding">
+    <div class="container">
+        <div class="row g-5">
+            <!-- Contact Details -->
+            <div class="col-lg-5">
+                <span class="text-gold text-uppercase fw-semibold mb-2 d-inline-block">Contact Info</span>
+                <h2 class="font-luxury h1 mb-4">We'd Love To Hear From You</h2>
+                <p class="mb-4">Visit our premium salon location or call us directly. Our customer care desk is active from 9:00 AM to 9:30 PM everyday.</p>
+                
+                <div class="d-flex flex-column gap-4">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="text-gold h3 mt-1"><i class="bi bi-geo-alt"></i></div>
+                        <div>
+                            <h4 class="font-luxury h5 mb-1">Our Location</h4>
+                            <p class="text-muted small mb-0">{{ settings.address }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="text-gold h3 mt-1"><i class="bi bi-telephone"></i></div>
+                        <div>
+                            <h4 class="font-luxury h5 mb-1">Call Us</h4>
+                            <p class="text-muted small mb-0">{{ settings.phone }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="text-gold h3 mt-1"><i class="bi bi-whatsapp"></i></div>
+                        <div>
+                            <h4 class="font-luxury h5 mb-1">WhatsApp Chat</h4>
+                            <p class="text-muted small mb-0">{{ settings.whatsapp }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="text-gold h3 mt-1"><i class="bi bi-envelope"></i></div>
+                        <div>
+                            <h4 class="font-luxury h5 mb-1">Email Queries</h4>
+                            <p class="text-muted small mb-0">{{ settings.email }}</p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="text-gold h3 mt-1"><i class="bi bi-clock"></i></div>
+                        <div>
+                            <h4 class="font-luxury h5 mb-1">Business Hours</h4>
+                            <p class="text-muted small mb-0">{{ settings.opening_hours|linebreaksbr }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contact Form -->
+            <div class="col-lg-7">
+                <div class="card premium-card p-5 border-0" style="background-color: var(--light-gray);">
+                    <h3 class="font-luxury text-gold mb-3">Send Us A Message</h3>
+                    <p class="text-muted small mb-4">Complete the fields below and we will get back to you as soon as possible.</p>
+                    
+                    <div id="contact-form-result"></div>
+                    
+                    <form action="{% url 'salon:contact' %}" method="POST" id="ajax-contact-form">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="small text-muted fw-semibold mb-1">Full Name</label>
+                                <input type="text" name="name" class="form-control" placeholder="Enter your name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-muted fw-semibold mb-1">Mobile Number</label>
+                                <input type="tel" name="mobile" class="form-control" placeholder="Enter mobile number" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="small text-muted fw-semibold mb-1">Email Address</label>
+                                <input type="email" name="email" class="form-control" placeholder="Enter email" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="small text-muted fw-semibold mb-1">Subject</label>
+                                <input type="text" name="subject" class="form-control" placeholder="How can we help you?" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="small text-muted fw-semibold mb-1">Message Detail</label>
+                                <textarea name="message" class="form-control" rows="4" placeholder="Write your message details..." required></textarea>
+                            </div>
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-gold w-100">Send Message</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Embedded Map -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="ratio ratio-21x9 rounded-4 overflow-hidden shadow border border-secondary">
+                    <iframe src="{{ settings.google_map }}" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

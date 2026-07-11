@@ -1,0 +1,126 @@
+{% extends 'salon/base.html' %}
+
+{% block title %}Book Appointment Slot - {{ settings.salon_name }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="section-padding bg-dark text-white text-center" style="background-image: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.85)), url('https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1600&q=80'); background-size: cover; background-position: center; padding: 80px 0;">
+    <div class="container">
+        <h1 class="font-luxury text-gold display-4 mb-2">Book Your Session</h1>
+        <p class="lead max-width-600 mx-auto">Select your preferred services and stylists to book a premium slot instantly.</p>
+    </div>
+</section>
+
+<!-- Booking Form & Policies -->
+<section class="section-padding">
+    <div class="container">
+        <div class="row g-5">
+            <!-- Form -->
+            <div class="col-lg-7">
+                <div class="card premium-card p-5" style="border: 1px solid rgba(197, 160, 89, 0.3);">
+                    <h3 class="font-luxury text-gold mb-3">Appointment Details</h3>
+                    <p class="text-muted small mb-4">Complete the fields below to book. We will verify and send a confirmation to your phone/WhatsApp.</p>
+                    
+                    <div id="booking-form-result"></div>
+                    
+                    <form action="{% url 'salon:book_appointment' %}" method="POST" id="ajax-booking-form">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="small text-dark fw-bold mb-1">Your Name</label>
+                                {{ form.customer_name }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-dark fw-bold mb-1">Mobile Number</label>
+                                {{ form.mobile }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-dark fw-bold mb-1">Email Address</label>
+                                {{ form.email }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-dark fw-bold mb-1">Preferred Gender</label>
+                                {{ form.gender }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-dark fw-bold mb-1">Preferred Service</label>
+                                {{ form.service }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-dark fw-bold mb-1">Preferred Stylist</label>
+                                {{ form.stylist }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-dark fw-bold mb-1">Appointment Date</label>
+                                {{ form.appointment_date }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-dark fw-bold mb-1">Preferred Time</label>
+                                {{ form.appointment_time }}
+                            </div>
+                            <div class="col-12">
+                                <label class="small text-dark fw-bold mb-1">Special Message / Instructions</label>
+                                {{ form.message }}
+                            </div>
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-gold w-100 py-3">Book Appointment</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Policies / Details -->
+            <div class="col-lg-5">
+                <div class="card premium-card p-4 bg-light mb-4 border-0">
+                    <h4 class="font-luxury text-gold mb-3"><i class="bi bi-info-circle-fill me-2"></i>Booking Policies</h4>
+                    <ul class="list-unstyled text-muted small">
+                        <li class="mb-3 d-flex gap-2">
+                            <i class="bi bi-clock text-gold"></i>
+                            <span>Please arrive 10 minutes prior to your booking. We maintain a strict **15-minute grace period**, after which slots are automatically released.</span>
+                        </li>
+                        <li class="mb-3 d-flex gap-2">
+                            <i class="bi bi-whatsapp text-gold"></i>
+                            <span>Confirmations are sent via SMS/WhatsApp. Please ensure your mobile number is active.</span>
+                        </li>
+                        <li class="mb-3 d-flex gap-2">
+                            <i class="bi bi-calendar-x text-gold"></i>
+                            <span>Need to cancel or reschedule? Please notify us at least **2 hours** in advance via call or WhatsApp.</span>
+                        </li>
+                        <li class="mb-0 d-flex gap-2">
+                            <i class="bi bi-cup-hot text-gold"></i>
+                            <span>All premium bookings include complimentary gourmet beverages (specialty coffee, green tea, or fresh juices).</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Contact info card -->
+                <div class="glass-panel-dark text-white p-4 rounded-3 text-center">
+                    <h4 class="font-luxury text-gold mb-2">Need Help?</h4>
+                    <p class="small text-light mb-4">Connect with our reception desk directly for group bookings or special bridal customized packages.</p>
+                    <a href="tel:{{ settings.phone }}" class="btn btn-outline-gold btn-sm w-100 mb-2"><i class="bi bi-telephone me-2"></i>Call {{ settings.phone }}</a>
+                    <a href="https://wa.me/{{ settings.whatsapp|cut:' '|cut:'+' }}" class="btn btn-gold btn-sm w-100" target="_blank"><i class="bi bi-whatsapp me-2"></i>WhatsApp Chat</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Read query parameters to preset values
+    const urlParams = new URLSearchParams(window.location.search);
+    const serviceId = urlParams.get('service');
+    const stylistId = urlParams.get('stylist');
+
+    if (serviceId) {
+        $('#id_service').val(serviceId);
+    }
+    if (stylistId) {
+        $('#id_stylist').val(stylistId);
+    }
+});
+</script>
+{% endblock %}

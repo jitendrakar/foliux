@@ -1,0 +1,139 @@
+{% extends 'salon/base.html' %}
+{% load static %}
+
+{% block title %}About Us - {{ settings.salon_name }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="section-padding bg-dark text-white text-center" style="background-image: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1600&q=80'); background-size: cover; background-position: center; padding: 100px 0;">
+    <div class="container">
+        <h1 class="font-luxury text-gold display-4 mb-3">Our Salon Story</h1>
+        <p class="lead max-width-600 mx-auto">Discover the art, luxury, and philosophy behind SalonX's premium Unisex Salon experience.</p>
+    </div>
+</section>
+
+<!-- Story Section -->
+<section class="section-padding">
+    <div class="container">
+        <div class="row g-5 align-items-center">
+            <div class="col-lg-6">
+                <span class="text-gold text-uppercase fw-semibold">Refinement & Art</span>
+                <h2 class="font-luxury h1 mt-2 mb-4">Grooming Crafted as a Masterpiece</h2>
+                <p>SalonX was conceptualized with a single goal: to fill the void of authentic, high-end, luxury unisex grooming in India. We wanted to build a place where clients didn't just get a service, but indulged in a revitalizing experience.</p>
+                <p>From the choice of layout, lighting, and ambient sounds to our strictly chosen international product ranges, everything at SalonX is tailored to appeal to those who value quality above all else.</p>
+                <p class="mb-4">Our creative directors and senior therapists undergo quarterly training programs to keep them aligned with trending haircuts, skincare science, and styling technologies.</p>
+                <div class="row g-4">
+                    <div class="col-sm-6 border-start border-gold border-3 ps-3">
+                        <h4 class="font-luxury mb-1">100% Organic Spas</h4>
+                        <p class="text-muted small mb-0">We use cold-pressed botanical oils and natural floral extracts.</p>
+                    </div>
+                    <div class="col-sm-6 border-start border-gold border-3 ps-3">
+                        <h4 class="font-luxury mb-1">Elite Styling</h4>
+                        <p class="text-muted small mb-0">Hair styling and texturizing using global academy-certified techniques.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <img src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=80" alt="Salon Styling" class="img-fluid rounded-3 shadow">
+                    </div>
+                    <div class="col-6 mt-4">
+                        <img src="https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?auto=format&fit=crop&w=400&q=80" alt="Bridal Makeover" class="img-fluid rounded-3 shadow">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Vision, Mission, Values -->
+<section class="section-padding bg-light">
+    <div class="container">
+        <div class="row g-4 text-center">
+            <div class="col-lg-4">
+                <div class="card premium-card p-5 h-100">
+                    <div class="text-gold mb-3 h1"><i class="bi bi-eye"></i></div>
+                    <h3 class="font-luxury mb-3">Our Vision</h3>
+                    <p class="text-muted mb-0">To become the benchmark of premium unisex styling and luxury wellness in India, making world-class grooming accessible to everyone.</p>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card premium-card p-5 h-100">
+                    <div class="text-gold mb-3 h1"><i class="bi bi-bullseye"></i></div>
+                    <h3 class="font-luxury mb-3">Our Mission</h3>
+                    <p class="text-muted mb-0">To deliver personalized hair, skin, and bridal styling services combining master craftsmanship, organic science, and high sanitation standards.</p>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card premium-card p-5 h-100">
+                    <div class="text-gold mb-3 h1"><i class="bi bi-gem"></i></div>
+                    <h3 class="font-luxury mb-3">Our Values</h3>
+                    <p class="text-muted mb-0">We believe in customer-first integrity, continuous styling innovation, meticulous hygiene, and promoting eco-friendly, cruelty-free beauty brands.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose Us Detail -->
+<section class="section-padding">
+    <div class="container">
+        <div class="section-title">
+            <h2>Why SalonX Leads the Luxury Market</h2>
+            <p>Our commitment to excellence makes us the preferred choice of celebrities, professionals, and wedding planners.</p>
+        </div>
+        <div class="row g-4 align-items-center">
+            <div class="col-lg-4 col-md-6">
+                <div class="d-flex mb-4">
+                    <div class="text-gold me-3 h3"><i class="bi bi-check-circle-fill"></i></div>
+                    <div>
+                        <h4 class="font-luxury h5">1-on-1 Consultation</h4>
+                        <p class="text-muted small">Every session starts with a detail assessment of your hair/skin health and structure before applying products.</p>
+                    </div>
+                </div>
+                <div class="d-flex mb-4">
+                    <div class="text-gold me-3 h3"><i class="bi bi-check-circle-fill"></i></div>
+                    <div>
+                        <h4 class="font-luxury h5">Autoclave Sterilization</h4>
+                        <p class="text-muted small">All metal tools undergo medical-grade heat autoclave sterilization. Sealed in fresh packs opened in front of you.</p>
+                    </div>
+                </div>
+                <div class="d-flex">
+                    <div class="text-gold me-3 h3"><i class="bi bi-check-circle-fill"></i></div>
+                    <div>
+                        <h4 class="font-luxury h5">Complimentary Valet</h4>
+                        <p class="text-muted small">No parking stress. Drop off your car at our entrance with our professional, secure valet parking staff.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 d-none d-lg-block text-center">
+                <img src="https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=400&q=80" alt="Luxury Grooming" class="img-fluid rounded-circle border border-gold border-3 p-2">
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="d-flex mb-4">
+                    <div class="text-gold me-3 h3"><i class="bi bi-check-circle-fill"></i></div>
+                    <div>
+                        <h4 class="font-luxury h5">Customized Bridal Trials</h4>
+                        <p class="text-muted small">We conduct detailed trial sessions for makeups and hair styling beforehand to lock in your perfect wedding day look.</p>
+                    </div>
+                </div>
+                <div class="d-flex mb-4">
+                    <div class="text-gold me-3 h3"><i class="bi bi-check-circle-fill"></i></div>
+                    <div>
+                        <h4 class="font-luxury h5">Ammonia-Free Products</h4>
+                        <p class="text-muted small">We value safety. Standard coloring and chemical works are done with safe, zero-ammonia products.</p>
+                    </div>
+                </div>
+                <div class="d-flex">
+                    <div class="text-gold me-3 h3"><i class="bi bi-check-circle-fill"></i></div>
+                    <div>
+                        <h4 class="font-luxury h5">WhatsApp Quick Booking</h4>
+                        <p class="text-muted small">Need immediate slot updates? Message us directly on WhatsApp and get instant confirmations.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

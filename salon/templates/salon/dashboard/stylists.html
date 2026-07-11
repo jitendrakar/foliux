@@ -1,0 +1,59 @@
+{% extends 'salon/dashboard/base.html' %}
+
+{% block header_title %}Manage Stylists{% endblock %}
+
+{% block dashboard_content %}
+<div class="card p-4 shadow-sm border-0 bg-white">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="font-luxury h5 mb-0 text-dark">Creative Team List ({{ stylists|length }})</h4>
+        <a href="{% url 'salon:dashboard_stylist_add' %}" class="btn btn-gold btn-sm"><i class="bi bi-plus-lg me-1"></i>Add New Stylist</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table align-middle table-hover table-premium">
+            <thead>
+                <tr>
+                    <th>Photo</th>
+                    <th>Stylist Name</th>
+                    <th>Designation</th>
+                    <th>Experience</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sty in stylists %}
+                <tr>
+                    <td>
+                        <img src="{{ sty.get_photo }}" alt="{{ sty.name }}" class="rounded-circle shadow-sm" style="width: 50px; height: 50px; object-fit: cover; border: 2px solid var(--gold);">
+                    </td>
+                    <td>
+                        <div class="fw-bold font-luxury text-dark">{{ sty.name }}</div>
+                        <div class="text-muted small text-truncate" style="max-width: 250px;">{{ sty.description }}</div>
+                    </td>
+                    <td><span class="badge bg-light text-dark">{{ sty.designation }}</span></td>
+                    <td class="fw-bold text-gold">{{ sty.experience }}</td>
+                    <td>
+                        {% if sty.status %}
+                            <span class="badge bg-success">Active</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Inactive</span>
+                        </td>
+                        {% endif %}
+                    <td class="text-end">
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a href="{% url 'salon:dashboard_stylist_edit' sty.id %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil-square"></i></a>
+                            <a href="{% url 'salon:dashboard_stylist_delete' sty.id %}" onclick="return confirm('Are you sure you want to delete this stylist?');" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">No stylists found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

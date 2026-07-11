@@ -31,6 +31,7 @@ sitemaps = {
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
+    path('salon/', include('salon.urls')),
     path('search-instruments/', core_views.search_instruments, name='search_instruments'),
     path('', include('core.urls')),
     # Custom password change view

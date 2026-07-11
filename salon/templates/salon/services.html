@@ -1,0 +1,59 @@
+{% extends 'salon/base.html' %}
+
+{% block title %}Salon Services - {{ settings.salon_name }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="section-padding bg-dark text-white text-center" style="background-image: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.85)), url('https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1600&q=80'); background-size: cover; background-position: center; padding: 100px 0;">
+    <div class="container">
+        <h1 class="font-luxury text-gold display-4 mb-3">Our Grooming Services</h1>
+        <p class="lead max-width-600 mx-auto">Explore our wide selection of precision hair, organic skin care, luxury nail extensions, wedding bridal sessions, and therapeutic spas.</p>
+    </div>
+</section>
+
+<!-- Services Grid -->
+<section class="section-padding">
+    <div class="container">
+        {% for cat in categories %}
+        <div class="mb-5 pb-4 {% if not forloop.last %}border-bottom{% endif %}">
+            <h2 class="font-luxury text-gold mb-4"><i class="bi bi-stars me-2"></i>{{ cat.category_name }}</h2>
+            <div class="row g-4">
+                {% for srv in cat.services.all %}
+                <div class="col-lg-3 col-md-6 col-sm-6">
+                    <div class="card premium-card h-100">
+                        <div class="card-img-wrapper">
+                            <img src="{{ srv.get_image }}" alt="{{ srv.service_name }}" class="lazy-load">
+                        </div>
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title font-luxury mb-2">{{ srv.service_name }}</h5>
+                            <p class="card-text text-muted small mb-3">{{ srv.description }}</p>
+                            <div class="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="pricing-menu-price d-block">₹{{ srv.price|floatformat:0 }}</span>
+                                    <span class="text-muted small"><i class="bi bi-clock me-1"></i>{{ srv.duration }} mins</span>
+                                </div>
+                                <a href="{% url 'salon:book_appointment' %}?service={{ srv.id }}" class="btn btn-gold btn-sm py-1 px-3">Book</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <p class="text-muted">No services found under this category.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="section-padding bg-dark-premium text-white text-center">
+    <div class="container">
+        <h2 class="font-luxury text-gold h1 mb-3">Custom Packages Needed?</h2>
+        <p class="lead max-width-600 mx-auto mb-4 text-light">We offer customized beauty and grooming combo packages for families, corporations, and pre-wedding events. Get in touch with us to design your package.</p>
+        <a href="{% url 'salon:contact' %}" class="btn btn-gold">Contact Consultant</a>
+    </div>
+</section>
+{% endblock %}

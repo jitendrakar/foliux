@@ -1,0 +1,62 @@
+{% extends 'salon/base.html' %}
+
+{% block title %}Register Account - {{ settings.salon_name }}{% endblock %}
+
+{% block content %}
+<section class="section-padding bg-light" style="min-height: 80vh; display: flex; align-items: center;">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="card premium-card p-5" style="border: 1px solid rgba(197, 160, 89, 0.2);">
+                    <div class="text-center mb-4">
+                        <span class="text-gold h1"><i class="bi bi-person-plus-fill"></i></span>
+                        <h2 class="font-luxury text-dark mt-2 mb-1">Create Account</h2>
+                        <p class="text-muted small">Register to track and speed up your premium salon bookings.</p>
+                    </div>
+
+                    <form method="POST" action="{% url 'salon:register' %}">
+                        {% csrf_token %}
+                        {% if form.errors %}
+                        <div class="alert alert-danger p-2 small">
+                            Please correct the errors in the fields below.
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            <label class="small fw-semibold text-muted mb-1">Full Name</label>
+                            {{ form.name }}
+                            {{ form.name.errors }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="small fw-semibold text-muted mb-1">Mobile Number</label>
+                            {{ form.mobile }}
+                            {{ form.mobile.errors }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="small fw-semibold text-muted mb-1">Email Address</label>
+                            {{ form.email }}
+                            {{ form.email.errors }}
+                        </div>
+                        <div class="mb-3">
+                            <label class="small fw-semibold text-muted mb-1">Password</label>
+                            {{ form.password }}
+                            {{ form.password.errors }}
+                        </div>
+                        <div class="mb-4">
+                            <label class="small fw-semibold text-muted mb-1">Confirm Password</label>
+                            {{ form.confirm_password }}
+                            {{ form.confirm_password.errors }}
+                        </div>
+                        
+                        <button type="submit" class="btn btn-gold w-100 py-2">Register Account</button>
+                    </form>
+
+                    <div class="text-center mt-4">
+                        <p class="small text-muted mb-0">Already have an account? <a href="{% url 'salon:login' %}" class="text-gold fw-bold text-decoration-none">Log In Here</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

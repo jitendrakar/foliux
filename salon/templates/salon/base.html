@@ -1,0 +1,149 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ settings.salon_name }}{% endblock %}</title>
+    
+    <!-- Meta SEO Tags -->
+    <meta name="description" content="{% block meta_description %}Experience premium Indian Unisex salon services at SalonX. Expert hair styling, skincare, bridal makeovers, and luxury spa therapies.{% endblock %}">
+    <meta name="keywords" content="Salon, Unisex Salon, Bridal Makeup, Hair Spa, Hair Cut, Facial Bangalore, Premium Salon India, Stylist">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{% block og_title %}{{ settings.salon_name }}{% endblock %}">
+    <meta property="og:description" content="Discover premium beauty and hair styling at SalonX. Book your appointment online today.">
+    
+    <!-- Google Fonts & Bootstrap 5 & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Custom Style -->
+    <link rel="stylesheet" href="{% static 'salon/css/salon.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Header Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-premium sticky-top">
+        <div class="container">
+            <a class="navbar-brand text-gold font-luxury" href="{% url 'salon:home' %}">
+                <i class="bi bi-scissors me-2"></i>SALON<span class="text-white">X</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'salon:home' %}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'salon:about' %}">About Us</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'salon:services' %}">Services</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'salon:pricing' %}">Pricing</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'salon:gallery' %}">Gallery</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'salon:team' %}">Team</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'salon:blog_list' %}">Blog</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'salon:contact' %}">Contact</a></li>
+                </ul>
+                <div class="d-flex align-items-center gap-3">
+                    {% if request.session.salon_user_id %}
+                        {% if request.session.salon_user_role == 'admin' %}
+                            <a href="{% url 'salon:dashboard_home' %}" class="btn btn-outline-gold btn-sm"><i class="bi bi-speedometer2 me-1"></i>Admin</a>
+                        {% else %}
+                            <a href="{% url 'salon:profile' %}" class="btn btn-outline-gold btn-sm"><i class="bi bi-person me-1"></i>My Profile</a>
+                        {% endif %}
+                        <a href="{% url 'salon:logout' %}" class="btn btn-gold btn-sm">Logout</a>
+                    {% else %}
+                        <a href="{% url 'salon:login' %}" class="btn btn-outline-gold btn-sm">Login</a>
+                        <a href="{% url 'salon:book_appointment' %}" class="btn btn-gold btn-sm">Book Appointment</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Message Alerts -->
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Floating WhatsApp Widget -->
+    <a href="https://wa.me/{{ settings.whatsapp|cut:' '|cut:'+' }}" class="whatsapp-float" target="_blank" title="Chat on WhatsApp">
+        <i class="bi bi-whatsapp"></i>
+    </a>
+
+    <!-- Footer -->
+    <footer class="footer-premium">
+        <div class="container">
+            <div class="row g-4 mb-5">
+                <div class="col-lg-4">
+                    <h4 class="text-gold mb-3 font-luxury">SALONX</h4>
+                    <p class="mb-4">Step into a world of luxury and rejuvenation. Experience state-of-the-art styling, organic skincare, and personalized beauty therapy treatments matching international standards.</p>
+                    <div class="footer-social-icons">
+                        {% if settings.facebook %}<a href="{{ settings.facebook }}" target="_blank"><i class="bi bi-facebook"></i></a>{% endif %}
+                        {% if settings.instagram %}<a href="{{ settings.instagram }}" target="_blank"><i class="bi bi-instagram"></i></a>{% endif %}
+                        {% if settings.youtube %}<a href="{{ settings.youtube }}" target="_blank"><i class="bi bi-youtube"></i></a>{% endif %}
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{% url 'salon:about' %}">Our Story</a></li>
+                        <li><a href="{% url 'salon:services' %}">Salon Services</a></li>
+                        <li><a href="{% url 'salon:pricing' %}">Pricing Rates</a></li>
+                        <li><a href="{% url 'salon:gallery' %}">Before & After</a></li>
+                        <li><a href="{% url 'salon:team' %}">Our Stylists</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h5>Opening Hours</h5>
+                    <p class="mb-2"><i class="bi bi-clock text-gold me-2"></i>{{ settings.opening_hours|linebreaksbr }}</p>
+                    <h5 class="mt-4">Contact Info</h5>
+                    <p class="mb-1"><i class="bi bi-telephone text-gold me-2"></i>{{ settings.phone }}</p>
+                    <p class="mb-1"><i class="bi bi-envelope text-gold me-2"></i>{{ settings.email }}</p>
+                </div>
+                <div class="col-lg-3">
+                    <h5>Newsletter</h5>
+                    <p>Subscribe to receive exclusive festive offers and grooming tips.</p>
+                    <form class="mt-3">
+                        <div class="input-group">
+                            <input type="email" class="form-control" placeholder="Email Address" required>
+                            <button class="btn btn-gold" type="submit"><i class="bi bi-send"></i></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <hr class="border-secondary">
+            
+            <div class="row align-items-center mt-4">
+                <div class="col-md-6 text-center text-md-start">
+                    <p class="mb-0">&copy; 2026 SalonX. Developed by <strong>Jitendra Kar</strong>. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-center text-md-end mt-2 mt-md-0">
+                    <a href="{% url 'salon:home' %}" class="me-3">Privacy Policy</a>
+                    <a href="{% url 'salon:home' %}">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Core Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'salon/js/salon.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,98 @@
+{% extends 'salon/base.html' %}
+
+{% block title %}My Profile - {{ settings.salon_name }}{% endblock %}
+
+{% block content %}
+<section class="section-padding bg-light" style="min-height: 80vh;">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Profile Info Card -->
+            <div class="col-lg-4">
+                <div class="card premium-card p-4 border-0">
+                    <div class="text-center mb-4">
+                        <div class="bg-gold-light text-gold rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 80px; height: 80px; font-size: 32px;">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                        <h3 class="font-luxury mb-1">{{ user.name }}</h3>
+                        <span class="badge bg-gold text-uppercase">{{ user.role }}</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex flex-column gap-3 small">
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted fw-semibold">Email:</span>
+                            <span class="text-dark">{{ user.email }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted fw-semibold">Mobile:</span>
+                            <span class="text-dark">{{ user.mobile }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted fw-semibold">Member Since:</span>
+                            <span class="text-dark">{{ user.created_at|date:"d M, Y" }}</span>
+                        </div>
+                    </div>
+                    <div class="text-center mt-4">
+                        <a href="{% url 'salon:book_appointment' %}" class="btn btn-gold btn-sm w-100 mb-2">Book New Appointment</a>
+                        <a href="{% url 'salon:logout' %}" class="btn btn-outline-dark btn-sm w-100">Log Out</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Appointment History -->
+            <div class="col-lg-8">
+                <div class="card premium-card p-4 border-0">
+                    <h3 class="font-luxury text-gold mb-4 border-bottom pb-2"><i class="bi bi-calendar-check me-2"></i>My Appointment Bookings</h3>
+                    
+                    <div class="table-responsive">
+                        <table class="table align-middle table-hover">
+                            <thead>
+                                <tr class="table-dark">
+                                    <th>Booking ID</th>
+                                    <th>Service</th>
+                                    <th>Stylist</th>
+                                    <th>Date & Time</th>
+                                    <th class="text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appt in appointments %}
+                                <tr>
+                                    <td class="fw-bold">#{{ appt.id }}</td>
+                                    <td>
+                                        <div class="fw-bold font-luxury">{{ appt.service.service_name }}</div>
+                                        <div class="text-muted small">₹{{ appt.service.price|floatformat:0 }} • {{ appt.service.duration }} mins</div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold">{{ appt.stylist.name }}</div>
+                                        <div class="text-muted small">{{ appt.stylist.designation }}</div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold"><i class="bi bi-calendar-event me-1"></i>{{ appt.appointment_date|date:"d M, Y" }}</div>
+                                        <div class="text-muted small"><i class="bi bi-clock me-1"></i>{{ appt.appointment_time|time:"h:i A" }}</div>
+                                    </td>
+                                    <td class="text-center">
+                                        {% if appt.status == 'Pending' %}
+                                            <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>Pending</span>
+                                        {% elif appt.status == 'Confirmed' %}
+                                            <span class="badge bg-primary"><i class="bi bi-check-circle-fill me-1"></i>Confirmed</span>
+                                        {% elif appt.status == 'Completed' %}
+                                            <span class="badge bg-success"><i class="bi bi-check-lg me-1"></i>Completed</span>
+                                        {% else %}
+                                            <span class="badge bg-danger"><i class="bi bi-x-circle-fill me-1"></i>Cancelled</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-muted">You have not booked any appointments yet.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

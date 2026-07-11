@@ -1,0 +1,209 @@
+{% extends 'salon/dashboard/base.html' %}
+
+{% block header_title %}Dashboard Analytics{% endblock %}
+
+{% block dashboard_content %}
+<!-- Stats Cards Row -->
+<div class="row">
+    <div class="col-xl-3 col-md-6">
+        <div class="dashboard-stat-card">
+            <div class="dashboard-stat-icon"><i class="bi bi-calendar2-check"></i></div>
+            <div class="dashboard-stat-info">
+                <h4>{{ total_appointments }}</h4>
+                <p>Total Bookings</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="dashboard-stat-card" style="border-left-color: #ffc107;">
+            <div class="dashboard-stat-icon" style="background-color: #fffbeb; color: #ffc107;"><i class="bi bi-hourglass-split"></i></div>
+            <div class="dashboard-stat-info">
+                <h4>{{ pending_appointments }}</h4>
+                <p>Pending Slots</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="dashboard-stat-card" style="border-left-color: #28a745;">
+            <div class="dashboard-stat-icon" style="background-color: #f0fdf4; color: #28a745;"><i class="bi bi-check-circle"></i></div>
+            <div class="dashboard-stat-info">
+                <h4>{{ completed_appointments }}</h4>
+                <p>Completed Visits</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="dashboard-stat-card" style="border-left-color: #0d6efd;">
+            <div class="dashboard-stat-icon" style="background-color: #f0fdfa; color: #0d6efd;"><i class="bi bi-currency-rupee"></i></div>
+            <div class="dashboard-stat-info">
+                <h4>₹{{ revenue|floatformat:0 }}</h4>
+                <p>Est. Revenue</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <!-- Chart 1: Appointments Status -->
+    <div class="col-lg-6 mb-4">
+        <div class="card p-4 shadow-sm border-0 h-100 bg-white">
+            <h4 class="font-luxury h5 mb-3 text-gold">Bookings by Status</h4>
+            <div style="max-height: 300px; display: flex; justify-content: center;">
+                <canvas id="statusChart" width="300" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Chart 2: Category distribution -->
+    <div class="col-lg-6 mb-4">
+        <div class="card p-4 shadow-sm border-0 h-100 bg-white">
+            <h4 class="font-luxury h5 mb-3 text-gold">Bookings by Service Category</h4>
+            <div style="max-height: 300px; display: flex; justify-content: center;">
+                <canvas id="categoryChart" width="300" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Appointments Section -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card p-4 shadow-sm border-0 bg-white">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="font-luxury h5 mb-0 text-dark">Recent Appointment Bookings</h4>
+                <a href="{% url 'salon:dashboard_appointments' %}" class="btn btn-outline-gold btn-sm">View All Bookings</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle table-hover">
+                    <thead>
+                        <tr class="table-dark">
+                            <th>ID</th>
+                            <th>Customer</th>
+                            <th>Service</th>
+                            <th>Stylist</th>
+                            <th>Date & Time</th>
+                            <th>Status</th>
+                            <th>Update Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for appt in recent_appointments %}
+                        <tr>
+                            <td>#{{ appt.id }}</td>
+                            <td>
+                                <div class="fw-bold">{{ appt.customer_name }}</div>
+                                <div class="text-muted small">{{ appt.mobile }} • {{ appt.email }}</div>
+                            </td>
+                            <td>
+                                <div class="fw-bold font-luxury">{{ appt.service.service_name }}</div>
+                                <div class="text-gold small">₹{{ appt.service.price|floatformat:0 }}</div>
+                            </td>
+                            <td>{{ appt.stylist.name }}</td>
+                            <td>
+                                <div>{{ appt.appointment_date|date:"d M, Y" }}</div>
+                                <div class="text-muted small">{{ appt.appointment_time|time:"h:i A" }}</div>
+                            </td>
+                            <td>
+                                {% if appt.status == 'Pending' %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                {% elif appt.status == 'Confirmed' %}
+                                    <span class="badge bg-primary">Confirmed</span>
+                                {% elif appt.status == 'Completed' %}
+                                    <span class="badge bg-success">Completed</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Cancelled</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form action="{% url 'salon:dashboard_appointment_update' appt.id %}" method="POST" class="d-flex gap-2">
+                                    {% csrf_token %}
+                                    <select name="status" class="form-select form-select-sm" style="width: auto;">
+                                        <option value="Pending" {% if appt.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                        <option value="Confirmed" {% if appt.status == 'Confirmed' %}selected{% endif %}>Confirm</option>
+                                        <option value="Completed" {% if appt.status == 'Completed' %}selected{% endif %}>Complete</option>
+                                        <option value="Cancelled" {% if appt.status == 'Cancelled' %}selected{% endif %}>Cancel</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-gold btn-sm"><i class="bi bi-save"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted">No appointments found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+$(document).ready(function() {
+    // 1. Status Chart Setup
+    var statusData = [
+        {% for item in status_chart_data %}
+            { label: "{{ item.status }}", count: {{ item.count }} },
+        {% endfor %}
+    ];
+
+    if (statusData.length > 0) {
+        var statusCtx = document.getElementById('statusChart').getContext('2d');
+        new Chart(statusCtx, {
+            type: 'doughnut',
+            data: {
+                labels: statusData.map(d => d.label),
+                datasets: [{
+                    data: statusData.map(d => d.count),
+                    backgroundColor: ['#ffc107', '#0d6efd', '#28a745', '#dc3545'],
+                    borderColor: '#ffffff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    }
+
+    // 2. Category Chart Setup
+    var catData = [
+        {% for item in category_chart_data %}
+            { label: "{{ item.service__category__category_name }}", count: {{ item.count }} },
+        {% endfor %}
+    ];
+
+    if (catData.length > 0) {
+        var catCtx = document.getElementById('categoryChart').getContext('2d');
+        new Chart(catCtx, {
+            type: 'bar',
+            data: {
+                labels: catData.map(d => d.label),
+                datasets: [{
+                    label: 'Bookings Count',
+                    data: catData.map(d => d.count),
+                    backgroundColor: '#c5a059',
+                    borderColor: '#b48e48',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

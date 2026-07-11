@@ -1,0 +1,111 @@
+{% extends 'salon/base.html' %}
+
+{% block title %}Pricing & Service Rates - {{ settings.salon_name }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<section class="section-padding bg-dark text-white text-center" style="background-image: linear-gradient(rgba(0,0,0,0.85), rgba(0,0,0,0.85)), url('https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?auto=format&fit=crop&w=1600&q=80'); background-size: cover; background-position: center; padding: 100px 0;">
+    <div class="container">
+        <h1 class="font-luxury text-gold display-4 mb-3">Service Pricing Guide</h1>
+        <p class="lead max-width-600 mx-auto">Complete, transparent rates of all SalonX premium Unisex styling, beauty, and spa services.</p>
+    </div>
+</section>
+
+<!-- Pricing Directory -->
+<section class="section-padding">
+    <div class="container">
+        <div class="row mb-5 justify-content-between align-items-center g-4">
+            <div class="col-md-6">
+                <!-- Search bar -->
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-gold"></i></span>
+                    <input type="text" id="pricing-search" class="form-control border-start-0 ps-0" placeholder="Search for hair cut, facial, spa, makeup...">
+                </div>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <div class="gallery-filters pricing-category-filters">
+                    <button class="btn-filter active btn btn-outline-dark" data-filter="all">All Categories</button>
+                    {% for cat in categories %}
+                    <button class="btn-filter btn btn-outline-dark" data-filter="cat-{{ cat.id }}">{{ cat.category_name }}</button>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card premium-card p-4">
+                    <div class="table-responsive">
+                        <table class="table align-middle table-hover" id="pricing-table">
+                            <thead>
+                                <tr class="table-dark">
+                                    <th style="border-top-left-radius: 8px;">Service Name</th>
+                                    <th>Category</th>
+                                    <th>Duration</th>
+                                    <th style="border-top-right-radius: 8px;" class="text-end">Price (INR)</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for cat in categories %}
+                                    {% for srv in cat.services.all %}
+                                    <tr class="pricing-row" data-cat-id="cat-{{ cat.id }}" data-service-name="{{ srv.service_name|lower }}">
+                                        <td>
+                                            <div class="fw-bold font-luxury text-dark">{{ srv.service_name }}</div>
+                                            <div class="text-muted small">{{ srv.description }}</div>
+                                        </td>
+                                        <td><span class="badge bg-gold-light text-gold text-uppercase">{{ cat.category_name }}</span></td>
+                                        <td class="text-muted"><i class="bi bi-clock me-1"></i>{{ srv.duration }} mins</td>
+                                        <td class="text-end fw-bold text-dark pricing-menu-price">₹{{ srv.price|floatformat:0 }}</td>
+                                        <td class="text-end">
+                                            <a href="{% url 'salon:book_appointment' %}?service={{ srv.id }}" class="btn btn-gold btn-sm py-1 px-3">Book Slot</a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Pricing Real-time search filter
+    $('#pricing-search').on('keyup', function() {
+        filterTable();
+    });
+
+    // Category button filter
+    $('.pricing-category-filters').on('click', '.btn-filter', function() {
+        $('.pricing-category-filters .btn-filter').removeClass('active');
+        $(this).addClass('active');
+        filterTable();
+    });
+
+    function filterTable() {
+        var query = $('#pricing-search').val().toLowerCase();
+        var selectedCat = $('.pricing-category-filters .btn-filter.active').attr('data-filter');
+
+        $('.pricing-row').each(function() {
+            var rowName = $(this).attr('data-service-name');
+            var rowCat = $(this).attr('data-cat-id');
+
+            var matchSearch = rowName.indexOf(query) > -1;
+            var matchCat = (selectedCat === 'all') || (rowCat === selectedCat);
+
+            if (matchSearch && matchCat) {
+                $(this).fadeIn(200);
+            } else {
+                $(this).hide();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

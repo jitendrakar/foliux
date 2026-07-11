@@ -1,0 +1,486 @@
+{% extends 'salon/base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- 1. Hero Slider Section -->
+<div id="heroCarousel" class="carousel slide hero-slider" data-bs-ride="carousel">
+    <div class="carousel-indicators">
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+    </div>
+    <div class="carousel-inner">
+        <div class="carousel-item active" style="background-image: url('https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1600&q=80');">
+            <div class="container h-100">
+                <div class="hero-content">
+                    <span class="text-gold text-uppercase fw-semibold letter-spacing-1 mb-2 d-inline-block">Welcome to SalonX</span>
+                    <h1>Experience Premium Luxury Grooming</h1>
+                    <p class="lead mb-4">India's leading unisex salon for elite haircuts, personalized beauty therapies, and professional bridal makeover services.</p>
+                    <a href="{% url 'salon:book_appointment' %}" class="btn btn-gold">Book Appointment</a>
+                    <a href="{% url 'salon:services' %}" class="btn btn-outline-gold ms-3">Explore Services</a>
+                </div>
+            </div>
+        </div>
+        <div class="carousel-item" style="background-image: url('https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1600&q=80');">
+            <div class="container h-100">
+                <div class="hero-content">
+                    <span class="text-gold text-uppercase fw-semibold letter-spacing-1 mb-2 d-inline-block">Bridal Makeovers</span>
+                    <h1>Radiate Beauty On Your Wedding Day</h1>
+                    <p class="lead mb-4">Exquisite HD and Airbrush bridal makeups customized for the modern Indian bride by certified specialists.</p>
+                    <a href="{% url 'salon:book_appointment' %}" class="btn btn-gold">Book Bridal Session</a>
+                    <a href="{% url 'salon:gallery' %}" class="btn btn-outline-gold ms-3">View Portfolio</a>
+                </div>
+            </div>
+        </div>
+        <div class="carousel-item" style="background-image: url('https://images.unsplash.com/photo-1600334089648-b0d9d3028eb2?auto=format&fit=crop&w=1600&q=80');">
+            <div class="container h-100">
+                <div class="hero-content">
+                    <span class="text-gold text-uppercase fw-semibold letter-spacing-1 mb-2 d-inline-block">Rejuvenating Spas</span>
+                    <h1>Revitalize Your Mind, Body & Soul</h1>
+                    <p class="lead mb-4">De-stress from city life with organic aromatherapy massages, foot reflexology, and premium skin therapies.</p>
+                    <a href="{% url 'salon:book_appointment' %}" class="btn btn-gold">Book Spa Session</a>
+                    <a href="{% url 'salon:pricing' %}" class="btn btn-outline-gold ms-3">View Pricing</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+    </button>
+</div>
+
+<!-- 2. About Intro Section -->
+<section class="section-padding bg-light">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <div class="position-relative">
+                    <img src="https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?auto=format&fit=crop&w=600&q=80" alt="About SalonX" class="img-fluid rounded-4 shadow-lg">
+                    <div class="position-absolute bottom-0 end-0 bg-gold text-white p-4 rounded-4 m-3 d-none d-md-block" style="max-width: 200px;">
+                        <h4 class="h2 mb-0 fw-bold">12+</h4>
+                        <p class="small mb-0">Years of Luxury Styling Experience</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <span class="text-gold text-uppercase fw-semibold">Our Story</span>
+                <h2 class="h1 mt-2 mb-4 font-luxury">Redefining Indian Salon Luxury Standards</h2>
+                <p>Founded by **Jitendra Kar**, SalonX is India's premier Unisex Salon destination. We believe that grooming is an art form. Our salon is designed as a sanctuary of refinement, combining state-of-the-art styling facilities with highly customized customer care.</p>
+                <p class="mb-4">From precision haircuts to advanced skin therapies and celebrity makeovers, our experts ensure you look and feel your absolute best.</p>
+                <a href="{% url 'salon:about' %}" class="btn btn-outline-gold">Learn More About Us</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 3. Why Choose Us Section -->
+<section class="section-padding">
+    <div class="container">
+        <div class="section-title">
+            <h2>Why Choose SalonX</h2>
+            <p>We provide a premium experience that sets us apart from ordinary salons.</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card premium-card p-4 text-center h-100">
+                    <div class="text-gold mb-3 h1"><i class="bi bi-person-badge"></i></div>
+                    <h4 class="font-luxury mb-3">Certified Stylists</h4>
+                    <p class="text-muted mb-0">Our creative directors are trained at international academies in London and Paris, bringing global trends to you.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card premium-card p-4 text-center h-100">
+                    <div class="text-gold mb-3 h1"><i class="bi bi-shield-check"></i></div>
+                    <h4 class="font-luxury mb-3">Medical-Grade Hygiene</h4>
+                    <p class="text-muted mb-0">100% sterilized tools, disposable gowns, and rigorous sanitation routines after every customer visit.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card premium-card p-4 text-center h-100">
+                    <div class="text-gold mb-3 h1"><i class="bi bi-award"></i></div>
+                    <h4 class="font-luxury mb-3">International Brands</h4>
+                    <p class="text-muted mb-0">We exclusively use premium brands like L'Oreal Professionnel, Kérastase, Olaplex, and Dermalogica.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 4. Services Grid Section -->
+<section class="section-padding bg-light">
+    <div class="container">
+        <div class="section-title">
+            <h2>Our Signature Services</h2>
+            <p>Pamper yourself with our hand-crafted signature grooming services.</p>
+        </div>
+        <div class="row g-4">
+            {% for srv in services %}
+            <div class="col-md-3 col-sm-6">
+                <div class="card premium-card h-100">
+                    <div class="card-img-wrapper">
+                        <img src="{{ srv.get_image }}" alt="{{ srv.service_name }}" class="lazy-load">
+                    </div>
+                    <div class="card-body">
+                        <span class="badge bg-gold mb-2">{{ srv.category.category_name }}</span>
+                        <h5 class="card-title font-luxury">{{ srv.service_name }}</h5>
+                        <p class="card-text text-muted small">{{ srv.description|truncatewords:10 }}</p>
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <span class="pricing-menu-price">₹{{ srv.price|floatformat:0 }}</span>
+                            <span class="text-muted small"><i class="bi bi-clock me-1"></i>{{ srv.duration }}m</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-5">
+            <a href="{% url 'salon:services' %}" class="btn btn-gold">View All Services</a>
+        </div>
+    </div>
+</section>
+
+<!-- 5. Pricing Table Section -->
+<section class="section-padding">
+    <div class="container">
+        <div class="section-title">
+            <h2>Menu & Pricing</h2>
+            <p>Premium Indian salon services transparently priced.</p>
+        </div>
+        <div class="row g-5">
+            {% for cat in categories|slice:":2" %}
+            <div class="col-lg-6">
+                <h3 class="font-luxury text-gold mb-4 border-bottom pb-2"><i class="bi bi-check2-circle me-2"></i>{{ cat.category_name }}</h3>
+                {% for srv in cat.services.all|slice:":5" %}
+                <div class="pricing-menu-item">
+                    <div>
+                        <div class="pricing-menu-title font-luxury">{{ srv.service_name }}</div>
+                        <div class="text-muted small">{{ srv.description|truncatewords:8 }}</div>
+                    </div>
+                    <div class="pricing-menu-price">₹{{ srv.price|floatformat:0 }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-5">
+            <a href="{% url 'salon:pricing' %}" class="btn btn-outline-gold">View Complete Price List</a>
+        </div>
+    </div>
+</section>
+
+<!-- 6. Special Offers Section -->
+<section class="section-padding bg-dark-premium text-white">
+    <div class="container">
+        <div class="section-title text-center text-white mb-5">
+            <h2 class="text-gold">Exclusive Offers & Packages</h2>
+            <p class="text-light">Unlock seasonal discounts, student privileges, and customized wedding deals.</p>
+        </div>
+        <div class="row g-4">
+            {% for offer in offers %}
+            <div class="col-md-4">
+                <div class="glass-panel text-center h-100">
+                    <div class="text-gold mb-3 h2"><i class="bi bi-tags-fill"></i></div>
+                    <h3 class="font-luxury h4 text-white">{{ offer.title }}</h3>
+                    <h2 class="text-gold my-3 font-luxury">{{ offer.discount }}</h2>
+                    <p class="text-light small">{{ offer.description }}</p>
+                    <p class="text-muted small mt-2">Valid till {{ offer.end_date|date:"d M, Y" }}</p>
+                    <a href="{% url 'salon:book_appointment' %}" class="btn btn-outline-gold btn-sm mt-3">Claim Offer</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-5">
+            <a href="{% url 'salon:offers' %}" class="btn btn-gold">View All Offers</a>
+        </div>
+    </div>
+</section>
+
+<!-- 7. Stylists/Team Section -->
+<section class="section-padding">
+    <div class="container">
+        <div class="section-title">
+            <h2>Meet Our Creative Directors</h2>
+            <p>Our stylists combine international fashion expertise with personalized care.</p>
+        </div>
+        <div class="row g-4 justify-content-center">
+            {% for sty in stylists %}
+            <div class="col-lg-3 col-md-6 col-sm-6">
+                <div class="stylist-card">
+                    <div class="stylist-img-wrapper">
+                        <img src="{{ sty.get_photo }}" alt="{{ sty.name }}">
+                    </div>
+                    <h4 class="font-luxury">{{ sty.name }}</h4>
+                    <p class="text-gold small mb-2">{{ sty.designation }}</p>
+                    <p class="text-muted small px-3">{{ sty.description|truncatewords:15 }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-5">
+            <a href="{% url 'salon:team' %}" class="btn btn-outline-gold">View Full Team</a>
+        </div>
+    </div>
+</section>
+
+<!-- 8. Gallery Section -->
+<section class="section-padding bg-light">
+    <div class="container">
+        <div class="section-title">
+            <h2>Salon Work Gallery</h2>
+            <p>Visual previews of our haircuts, coloring, skincare, and transformations.</p>
+        </div>
+        <div class="row g-4">
+            {% for item in gallery %}
+            <div class="col-lg-4 col-md-6">
+                <div class="gallery-item-wrapper">
+                    <img src="{{ item.get_image }}" alt="{{ item.title }}">
+                    <div class="gallery-overlay">
+                        <h5 class="font-luxury mb-1">{{ item.title }}</h5>
+                        <span class="badge bg-gold">{{ item.category }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-5">
+            <a href="{% url 'salon:gallery' %}" class="btn btn-gold">View Photo Gallery</a>
+        </div>
+    </div>
+</section>
+
+<!-- 9. Testimonials Section -->
+<section class="section-padding">
+    <div class="container">
+        <div class="section-title">
+            <h2>What Our Clients Say</h2>
+            <p>Read real, unbiased reviews from our luxury salon guests.</p>
+        </div>
+        <div id="testimonialCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                {% for test in testimonials %}
+                <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-8">
+                            <div class="testimonial-box text-center">
+                                <div class="text-gold h1 mb-3"><i class="bi bi-quote"></i></div>
+                                <p class="lead mb-4">"{{ test.review }}"</p>
+                                <img src="{{ test.get_photo }}" alt="{{ test.customer_name }}" class="customer-img mb-3">
+                                <h5 class="font-luxury mb-1">{{ test.customer_name }}</h5>
+                                <div class="text-gold">
+                                    {% for i in "12345"|make_list %}
+                                        <i class="bi bi-star-fill"></i>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon bg-dark rounded-circle" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon bg-dark rounded-circle" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- 10. Membership Section -->
+<section class="section-padding bg-light">
+    <div class="container">
+        <div class="section-title">
+            <h2>SalonX Club Memberships</h2>
+            <p>Unlock luxury privileges and heavy savings with our annual club cards.</p>
+        </div>
+        <div class="row g-4 justify-content-center">
+            <div class="col-md-5 col-lg-4">
+                <div class="card premium-card text-center h-100 p-4 border border-secondary">
+                    <span class="badge bg-secondary align-self-center mb-3">Silver Plan</span>
+                    <h3 class="font-luxury mb-3">Elite Grooming</h3>
+                    <h2 class="text-gold font-luxury mb-4">₹4,999<span class="small text-muted font-body"> / Year</span></h2>
+                    <ul class="list-unstyled text-start mb-4">
+                        <li class="mb-2"><i class="bi bi-check text-gold me-2"></i>Complementary Hair Spa (1 Visit)</li>
+                        <li class="mb-2"><i class="bi bi-check text-gold me-2"></i>Flat 10% OFF on all services</li>
+                        <li class="mb-2"><i class="bi bi-check text-gold me-2"></i>Priority slots on weekends</li>
+                        <li class="mb-2"><i class="bi bi-check text-gold me-2"></i>Free welcome beverage</li>
+                    </ul>
+                    <a href="{% url 'salon:contact' %}" class="btn btn-outline-gold mt-auto">Purchase Plan</a>
+                </div>
+            </div>
+            <div class="col-md-5 col-lg-4">
+                <div class="card premium-card text-center h-100 p-4 border border-warning" style="border-width: 2px !important;">
+                    <span class="badge bg-gold align-self-center mb-3">Royal Gold Plan</span>
+                    <h3 class="font-luxury mb-3">Luxury Indulgence</h3>
+                    <h2 class="text-gold font-luxury mb-4">₹9,999<span class="small text-muted font-body"> / Year</span></h2>
+                    <ul class="list-unstyled text-start mb-4">
+                        <li class="mb-2"><i class="bi bi-check text-gold me-2"></i>Free Hair Spa + Gold Facial (1 each)</li>
+                        <li class="mb-2"><i class="bi bi-check text-gold me-2"></i>Flat 20% OFF on all services</li>
+                        <li class="mb-2"><i class="bi bi-check text-gold me-2"></i>Free hair cuts for kids</li>
+                        <li class="mb-2"><i class="bi bi-check text-gold me-2"></i>Dedicated creative director</li>
+                        <li class="mb-2"><i class="bi bi-check text-gold me-2"></i>Priority valet parking booking</li>
+                    </ul>
+                    <a href="{% url 'salon:contact' %}" class="btn btn-gold mt-auto">Purchase Plan</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 11. Gift Cards Section -->
+<section class="section-padding">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <span class="text-gold text-uppercase fw-semibold">Gift Vouchers</span>
+                <h2 class="h1 mt-2 mb-4 font-luxury">Gift the Ultimate Luxury Experience</h2>
+                <p>Surprise your loved ones with customized SalonX luxury gift vouchers. Perfect for birthdays, weddings, anniversaries, or corporate rewards. Vouchers can be redeemed for any hair cuts, facials, spas, or makeup packages.</p>
+                <p class="mb-4">Available in denominations of **₹1,000**, **₹2,500**, and **₹5,000** with 1-year validity.</p>
+                <a href="{% url 'salon:contact' %}" class="btn btn-outline-gold">Buy Gift Card</a>
+            </div>
+            <div class="col-lg-6">
+                <img src="https://images.unsplash.com/photo-1610992015762-4113b700191a?auto=format&fit=crop&w=600&q=80" alt="Gift Voucher" class="img-fluid rounded-4 shadow-lg">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 12. Latest Blogs Section -->
+<section class="section-padding bg-light">
+    <div class="container">
+        <div class="section-title">
+            <h2>Grooming Tips & Trends</h2>
+            <p>Read articles from our stylist directors about hair care, bridal tips, and trends.</p>
+        </div>
+        <div class="row g-4">
+            {% for blog in blogs %}
+            <div class="col-md-4">
+                <div class="card premium-card h-100">
+                    <div class="card-img-wrapper">
+                        <img src="{{ blog.get_image }}" alt="{{ blog.title }}">
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <span class="text-gold small mb-2">{{ blog.created_at|date:"d M, Y" }}</span>
+                        <h5 class="card-title font-luxury"><a href="{% url 'salon:blog_detail' blog.slug %}" class="text-black text-decoration-none">{{ blog.title }}</a></h5>
+                        <p class="card-text text-muted small mt-2">{{ blog.short_description|truncatewords:15 }}</p>
+                        <a href="{% url 'salon:blog_detail' blog.slug %}" class="text-gold text-decoration-none mt-auto small fw-semibold">Read Full Article <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- 13. FAQ Section -->
+<section class="section-padding">
+    <div class="container">
+        <div class="section-title">
+            <h2>Frequently Asked Questions</h2>
+            <p>Everything you need to know about our services, booking, and hygiene.</p>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="accordion faq-accordion" id="faqAccordion">
+                    {% for faq in faqs %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="heading{{ forloop.counter }}">
+                            <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ forloop.counter }}" aria-expanded="{% if forloop.first %}true{% endif %}" aria-controls="collapse{{ forloop.counter }}">
+                                {{ faq.question }}
+                            </button>
+                        </h2>
+                        <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="heading{{ forloop.counter }}" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body text-muted">
+                                {{ faq.answer }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 14. Appointment Form & Map Section -->
+<section class="section-padding bg-light" id="appointment-booking">
+    <div class="container">
+        <div class="row g-5 align-items-center">
+            <div class="col-lg-6">
+                <div class="glass-panel-dark text-white p-5 rounded-4 shadow">
+                    <h3 class="font-luxury text-gold mb-3">Book Your Luxury Slot</h3>
+                    <p class="text-light mb-4">Complete the form below to request a premium slot. We will contact you via phone/WhatsApp to confirm within 15 minutes.</p>
+                    
+                    <div id="booking-form-result"></div>
+                    
+                    <form action="{% url 'salon:book_appointment' %}" method="POST" id="ajax-booking-form">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Your Name</label>
+                                {{ form.customer_name }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Mobile Number</label>
+                                {{ form.mobile }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Email Address</label>
+                                {{ form.email }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Preferred Gender</label>
+                                {{ form.gender }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Preferred Service</label>
+                                {{ form.service }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Preferred Stylist</label>
+                                {{ form.stylist }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Appointment Date</label>
+                                {{ form.appointment_date }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Preferred Time</label>
+                                {{ form.appointment_time }}
+                            </div>
+                            <div class="col-12">
+                                <label class="small text-gold text-uppercase fw-semibold mb-1">Special Message / Notes</label>
+                                {{ form.message }}
+                            </div>
+                            <div class="col-12 mt-4 text-center">
+                                <button type="submit" class="btn btn-gold w-100">Book Appointment</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <span class="text-gold text-uppercase fw-semibold">Visit Our Salon</span>
+                <h2 class="h1 mt-2 mb-4 font-luxury">Locate SalonX Premium</h2>
+                <p class="mb-4">We are located at a prime commercial area with valet parking. Stop by or connect with us directly via phone or WhatsApp.</p>
+                <div class="ratio ratio-16x9 rounded-4 overflow-hidden border border-secondary shadow mb-4">
+                    <iframe src="{{ settings.google_map }}" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <a href="tel:{{ settings.phone }}" class="btn btn-outline-gold"><i class="bi bi-telephone me-2"></i>Call Us</a>
+                    <a href="https://wa.me/{{ settings.whatsapp|cut:' '|cut:'+' }}" target="_blank" class="btn btn-gold"><i class="bi bi-whatsapp me-2"></i>WhatsApp Chat</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

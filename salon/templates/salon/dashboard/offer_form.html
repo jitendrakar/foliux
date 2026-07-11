@@ -1,0 +1,66 @@
+{% extends 'salon/dashboard/base.html' %}
+
+{% block header_title %}{{ action }} Offer{% endblock %}
+
+{% block dashboard_content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="dashboard-form-card">
+            <h3 class="font-luxury text-gold mb-4 border-bottom pb-2">{{ action }} Special Offer Details</h3>
+            
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <label class="form-label fw-bold text-muted">Offer Title</label>
+                        <input type="text" name="title" class="form-control" value="{{ offer.title }}" placeholder="e.g. Monsoon Glow Magic" required>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold text-muted">Discount Tag</label>
+                        <input type="text" name="discount" class="form-control" value="{{ offer.discount }}" placeholder="e.g. 20% OFF or Flat Rs. 500 Off" required>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold text-muted">Description</label>
+                        <textarea name="description" class="form-control" rows="3" placeholder="Brief details about the promotional campaign..." required>{{ offer.description }}</textarea>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-muted">Start Date</label>
+                        <input type="date" name="start_date" class="form-control" value="{{ offer.start_date|date:'Y-m-d' }}" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-muted">End Date</label>
+                        <input type="date" name="end_date" class="form-control" value="{{ offer.end_date|date:'Y-m-d' }}" required>
+                    </div>
+
+                    <div class="col-md-8">
+                        <label class="form-label fw-bold text-muted">Offer Banner</label>
+                        {% if offer.image %}
+                        <div class="mb-2">
+                            <span class="small text-muted">Current image:</span><br>
+                            <img src="{{ offer.get_image }}" alt="Current Banner" class="rounded" style="width: 120px; height: 90px; object-fit: cover;">
+                        </div>
+                        {% endif %}
+                        <input type="file" name="image" class="form-control">
+                    </div>
+
+                    <div class="col-md-4 align-self-end">
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" name="status" id="statusSwitch" {% if action == 'Add' or offer.status %}checked{% endif %}>
+                            <label class="form-check-label fw-bold text-muted" for="statusSwitch">Offer Active Status</label>
+                        </div>
+                    </div>
+
+                    <div class="col-12 mt-4 pt-3 border-top d-flex gap-3">
+                        <button type="submit" class="btn btn-gold px-4">{{ action }} Offer</button>
+                        <a href="{% url 'salon:dashboard_offers' %}" class="btn btn-outline-dark px-4">Cancel</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

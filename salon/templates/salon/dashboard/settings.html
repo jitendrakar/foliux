@@ -1,0 +1,89 @@
+{% extends 'salon/dashboard/base.html' %}
+
+{% block header_title %}Website Settings{% endblock %}
+
+{% block dashboard_content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="dashboard-form-card">
+            <h3 class="font-luxury text-gold mb-4 border-bottom pb-2">Salon Website Configuration</h3>
+            
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row g-4">
+                    <!-- General Settings -->
+                    <div class="col-12">
+                        <h4 class="h6 text-gold text-uppercase fw-semibold border-bottom pb-2">General Info</h4>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-muted">Salon Name</label>
+                        <input type="text" name="salon_name" class="form-control" value="{{ settings.salon_name }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-muted">Contact Email</label>
+                        <input type="email" name="email" class="form-control" value="{{ settings.email }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-muted">Contact Phone</label>
+                        <input type="text" name="phone" class="form-control" value="{{ settings.phone }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-muted">WhatsApp Number (with country code, no space)</label>
+                        <input type="text" name="whatsapp" class="form-control" value="{{ settings.whatsapp }}" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-muted">Logo Upload</label>
+                        {% if settings.logo %}
+                        <div class="mb-2">
+                            <span class="small text-muted">Current Logo:</span><br>
+                            <img src="{{ settings.get_logo }}" alt="Salon Logo" class="rounded p-2 bg-dark" style="max-height: 40px;">
+                        </div>
+                        {% endif %}
+                        <input type="file" name="logo" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-muted">Opening Hours Description</label>
+                        <textarea name="opening_hours" class="form-control" rows="2" required>{{ settings.opening_hours }}</textarea>
+                    </div>
+
+                    <!-- Address & Map -->
+                    <div class="col-12 mt-5">
+                        <h4 class="h6 text-gold text-uppercase fw-semibold border-bottom pb-2">Address & Location Map</h4>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-muted">Postal Address</label>
+                        <textarea name="address" class="form-control" rows="4" required>{{ settings.address }}</textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-muted">Google Maps Embed URL</label>
+                        <textarea name="google_map" class="form-control" rows="4" placeholder="Embed URL inside iframe src..." required>{{ settings.google_map }}</textarea>
+                        <div class="form-text small text-muted">Extract only the URL inside the src='...' attribute from Google Maps Share Embed iframe.</div>
+                    </div>
+
+                    <!-- Social Media Links -->
+                    <div class="col-12 mt-5">
+                        <h4 class="h6 text-gold text-uppercase fw-semibold border-bottom pb-2">Social Media Handles</h4>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold text-muted">Facebook URL</label>
+                        <input type="url" name="facebook" class="form-control" value="{{ settings.facebook|default:'' }}" placeholder="https://facebook.com/handle">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold text-muted">Instagram URL</label>
+                        <input type="url" name="instagram" class="form-control" value="{{ settings.instagram|default:'' }}" placeholder="https://instagram.com/handle">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-bold text-muted">YouTube Channel URL</label>
+                        <input type="url" name="youtube" class="form-control" value="{{ settings.youtube|default:'' }}" placeholder="https://youtube.com/channel">
+                    </div>
+
+                    <!-- Submit -->
+                    <div class="col-12 mt-5 pt-3 border-top">
+                        <button type="submit" class="btn btn-gold px-4"><i class="bi bi-save me-1"></i>Save Settings</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
