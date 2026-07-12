@@ -1,0 +1,87 @@
+{% extends 'restaurant/base.html' %}
+{% load static %}
+
+{% block title %}{{ post.title }} | {{ restaurant_info.name }}{% endblock %}
+
+{% block breadcrumbs %}
+<li class="breadcrumb-item"><a href="{% url 'blog_list' %}">Blog</a></li>
+<li class="breadcrumb-item active text-gold" aria-current="page">{{ post.title|truncatechars:30 }}</li>
+{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-dark-primary text-white">
+    <div class="container py-4">
+        <div class="row g-5">
+            <!-- Article Body -->
+            <div class="col-lg-8">
+                <article class="blog-detail-post">
+                    <!-- Post Header -->
+                    <div class="mb-4">
+                        <span class="text-gold text-uppercase tracking-wider font-xs fw-bold"><i class="fa-solid fa-user me-1 text-gold"></i> By {{ post.author }} | <i class="fa-solid fa-calendar-days me-1 text-gold"></i> {{ post.created_at|date:"F d, Y" }}</span>
+                        <h1 class="playfair display-4 mt-2 text-white">{{ post.title }}</h1>
+                        <div class="gold-divider mt-3"></div>
+                    </div>
+                    
+                    <!-- Post Image -->
+                    <div class="blog-detail-image-wrapper rounded-4 overflow-hidden mb-5 shadow">
+                        {% if post.image %}
+                            <img src="{{ post.image.url }}" alt="{{ post.title }}" class="w-100 object-fit-cover" style="max-height: 450px;">
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Post Content -->
+                    <div class="blog-detail-content text-light-muted fs-5 lh-lg font-serif">
+                        {{ post.content|linebreaks }}
+                    </div>
+                </article>
+                
+                <!-- Share and Back buttons -->
+                <div class="d-flex justify-content-between align-items-center mt-5 pt-4 border-top border-secondary border-opacity-15">
+                    <a href="{% url 'blog_list' %}" class="btn btn-outline-white rounded-pill px-4 py-2"><i class="fa-solid fa-arrow-left me-2"></i>Back to Blog</a>
+                    
+                    <div class="share-links d-flex align-items-center gap-3">
+                        <span class="font-sm text-muted">Share:</span>
+                        <a href="https://facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" class="text-white"><i class="fa-brands fa-facebook fa-lg"></i></a>
+                        <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ post.title }}" target="_blank" class="text-white"><i class="fa-brands fa-x-twitter fa-lg"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <aside class="blog-sidebar bg-dark-secondary p-4 rounded-4 border border-secondary border-opacity-10 h-100">
+                    <h4 class="playfair text-gold mb-4 pb-2 border-bottom border-secondary border-opacity-20">Recent Stories</h4>
+                    
+                    <div class="recent-posts-list">
+                        {% for recent in recent_posts %}
+                            <div class="recent-post-item d-flex gap-3 mb-4">
+                                <div class="recent-post-thumb rounded overflow-hidden flex-shrink-0" style="width: 80px; height: 80px;">
+                                    {% if recent.image %}
+                                        <img src="{{ recent.image.url }}" alt="{{ recent.title }}" class="w-100 h-100 object-fit-cover">
+                                    {% else %}
+                                        <div class="bg-secondary w-100 h-100"></div>
+                                    {% endif %}
+                                </div>
+                                <div class="recent-post-info">
+                                    <span class="text-gold font-xs d-block mb-1">{{ recent.created_at|date:"M d, Y" }}</span>
+                                    <h5 class="mb-0 font-sm playfair"><a href="{% url 'blog_detail' recent.slug %}" class="text-white text-decoration-none hover-gold">{{ recent.title }}</a></h5>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <p class="text-muted font-sm">No other posts yet.</p>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Call To Action Reservation -->
+                    <div class="sidebar-cta text-center p-4 bg-dark-primary rounded-4 border border-gold border-opacity-15 mt-5">
+                        <h4 class="playfair text-gold mb-3">Reserve a Table</h4>
+                        <p class="text-muted font-sm mb-4">Indulge in a fine dining experience tonight.</p>
+                        <a href="{% url 'reservation' %}" class="btn btn-gold w-100 py-3 rounded-pill"><i class="fa-solid fa-calendar-check me-2"></i>Book Table</a>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+

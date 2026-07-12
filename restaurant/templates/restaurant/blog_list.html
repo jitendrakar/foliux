@@ -1,0 +1,57 @@
+{% extends 'restaurant/base.html' %}
+{% load static %}
+
+{% block title %}Blog & News | {{ restaurant_info.name }}{% endblock %}
+
+{% block breadcrumbs %}
+<li class="breadcrumb-item active text-gold" aria-current="page">Blog</li>
+{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-dark-primary text-white">
+    <div class="container py-4">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <h5 class="text-gold text-uppercase tracking-wider">News & Stories</h5>
+            <h1 class="playfair display-4">Our Cooking Blog</h1>
+            <div class="gold-divider mx-auto mt-3"></div>
+            <p class="lead text-muted max-w-xl mx-auto mt-4">Discover cooking secrets, food pairings, behind-the-scenes stories, and announcements directly from our kitchen.</p>
+        </div>
+        
+        <!-- Blog Grid -->
+        <div class="row g-4">
+            {% for post in posts %}
+                <div class="col-lg-4 col-md-6">
+                    <div class="blog-page-card bg-dark-secondary rounded-4 overflow-hidden border border-secondary border-opacity-10 shadow-sm h-100 d-flex flex-column">
+                        <div class="position-relative overflow-hidden" style="height: 220px;">
+                            {% if post.image %}
+                                <img src="{{ post.image.url }}" alt="{{ post.title }}" class="w-100 h-100 object-fit-cover blog-img">
+                            {% else %}
+                                <div class="bg-secondary w-100 h-100"></div>
+                            {% endif %}
+                            <div class="blog-date position-absolute top-0 start-0 m-3 px-3 py-1 rounded bg-gold text-dark font-xs fw-bold">
+                                {{ post.created_at|date:"M d, Y" }}
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 d-flex flex-column flex-grow-1">
+                            <span class="text-gold text-uppercase tracking-wider font-xs mb-1">By {{ post.author }}</span>
+                            <h3 class="playfair text-white h4 mb-3">{{ post.title }}</h3>
+                            <p class="text-muted flex-grow-1 font-sm">{{ post.summary }}</p>
+                            
+                            <a href="{% url 'blog_detail' post.slug %}" class="text-gold text-decoration-none mt-4 font-sm fw-bold d-flex align-items-center gap-2">
+                                Read Full Article <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12 text-center py-5">
+                    <p class="text-muted">No blog posts published yet. Visit the Admin Panel to write blog posts.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+

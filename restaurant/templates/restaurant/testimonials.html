@@ -1,0 +1,72 @@
+{% extends 'restaurant/base.html' %}
+{% load static %}
+
+{% block title %}Guest Reviews & Testimonials | {{ restaurant_info.name }}{% endblock %}
+
+{% block breadcrumbs %}
+<li class="breadcrumb-item active text-gold" aria-current="page">Testimonials</li>
+{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-dark-primary text-white">
+    <div class="container py-4">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <h5 class="text-gold text-uppercase tracking-wider">Customer Feedback</h5>
+            <h1 class="playfair display-4">What Our Guests Say</h1>
+            <div class="gold-divider mx-auto mt-3"></div>
+            <p class="lead text-muted max-w-xl mx-auto mt-4">We are dedicated to providing a premium experience to our guests. Read some of our recent reviews from Google, TripAdvisor, and Yelp.</p>
+        </div>
+        
+        <!-- Reviews Grid -->
+        <div class="row g-4">
+            {% for review in reviews %}
+                <div class="col-lg-4 col-md-6">
+                    <div class="review-page-card p-4 rounded-4 bg-dark-secondary border border-secondary border-opacity-10 shadow h-100 d-flex flex-column justify-content-between">
+                        <div>
+                            <!-- Star Rating -->
+                            <div class="stars text-gold mb-3">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= review.rating %}
+                                        <i class="fa-solid fa-star"></i>
+                                    {% else %}
+                                        <i class="fa-regular fa-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <!-- Review Text -->
+                            <p class="text-light-muted font-serif font-sm mb-4">"{{ review.review_text }}"</p>
+                        </div>
+                        
+                        <!-- Reviewer Info -->
+                        <div class="reviewer-info d-flex align-items-center gap-3 pt-3 border-top border-secondary border-opacity-20">
+                            {% if review.image %}
+                                <img src="{{ review.image.url }}" alt="{{ review.name }}" class="rounded-circle reviewer-avatar" style="width: 50px; height: 50px; object-fit: cover;">
+                            {% else %}
+                                <div class="bg-gold text-dark rounded-circle d-flex align-items-center justify-content-center fw-bold reviewer-avatar" style="width: 50px; height: 50px;">
+                                    {{ review.name|slice:":1" }}
+                                </div>
+                            {% endif %}
+                            <div>
+                                <h5 class="mb-0 text-white font-sm">{{ review.name }}</h5>
+                                <span class="text-gold font-xs">{{ review.designation }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12 text-center py-5">
+                    <p class="text-muted">No testimonials added yet. Visit the Admin Panel to write testimonials.</p>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- CTA Section -->
+        <div class="text-center mt-5 pt-4">
+            <h4 class="playfair text-white mb-3">Would you like to share your experience?</h4>
+            <a href="{% url 'contact' %}" class="btn btn-gold px-4 py-2 rounded-pill">Submit a Review</a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+

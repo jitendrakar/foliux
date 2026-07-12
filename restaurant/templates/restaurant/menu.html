@@ -1,0 +1,148 @@
+{% extends 'restaurant/base.html' %}
+{% load static %}
+
+{% block title %}Our Menu | {{ restaurant_info.name }}{% endblock %}
+
+{% block breadcrumbs %}
+<li class="breadcrumb-item active text-gold" aria-current="page">Our Menu</li>
+{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-dark-primary text-white">
+    <div class="container py-4">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <h5 class="text-gold text-uppercase tracking-wider">Taste the Culinary Art</h5>
+            <h1 class="playfair display-4">Our Exquisite Menu</h1>
+            <div class="gold-divider mx-auto mt-3"></div>
+        </div>
+        
+        <!-- Search and Filter Bar -->
+        <div class="search-filter-bar p-4 rounded-4 bg-dark-secondary border border-secondary border-opacity-15 mb-5 shadow-sm">
+            <form action="{% url 'menu' %}" method="GET" id="menuFilterForm">
+                <div class="row g-3 align-items-center">
+                    <!-- Search Input -->
+                    <div class="col-lg-4 col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text bg-dark border-secondary text-muted"><i class="fa-solid fa-magnifying-glass"></i></span>
+                            <input type="text" name="q" value="{{ query }}" class="form-control bg-dark border-secondary text-white" placeholder="Search for dishes, flavors...">
+                        </div>
+                    </div>
+                    
+                    <!-- Category Select Dropdown -->
+                    <div class="col-lg-3 col-md-6">
+                        <select name="category" class="form-select bg-dark border-secondary text-white">
+                            <option value="">All Categories</option>
+                            {% for cat in categories %}
+                                <option value="{{ cat.slug }}" {% if selected_category == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Sorting Dropdown -->
+                    <div class="col-lg-3 col-md-6">
+                        <select name="sort" class="form-select bg-dark border-secondary text-white">
+                            <option value="">Sort By</option>
+                            <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>Price: Low to High</option>
+                            <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>Price: High to Low</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="col-lg-2 col-md-6 d-flex gap-2">
+                        <button type="submit" class="btn btn-gold w-100 py-2 rounded-3">Filter</button>
+                        <a href="{% url 'menu' %}" class="btn btn-outline-white py-2 px-3 rounded-3" title="Clear Filters"><i class="fa-solid fa-rotate-left"></i></a>
+                    </div>
+                </div>
+                
+                <!-- Toggle Badges (Veg, Best Seller, Chef Specials) -->
+                <div class="d-flex flex-wrap gap-3 mt-4 pt-3 border-top border-secondary border-opacity-20">
+                    <div class="form-check form-switch form-check-inline">
+                        <input class="form-check-input bg-dark border-secondary" type="checkbox" name="veg" value="1" id="switchVeg" {% if is_veg == '1' %}checked{% endif %} onchange="this.form.submit()">
+                        <label class="form-check-label text-muted font-sm" for="switchVeg">Vegetarian Only</label>
+                    </div>
+                    <div class="form-check form-switch form-check-inline">
+                        <input class="form-check-input bg-dark border-secondary" type="checkbox" name="best_seller" value="1" id="switchBest" {% if is_best_seller == '1' %}checked{% endif %} onchange="this.form.submit()">
+                        <label class="form-check-label text-muted font-sm" for="switchBest">Bestsellers</label>
+                    </div>
+                    <div class="form-check form-switch form-check-inline">
+                        <input class="form-check-input bg-dark border-secondary" type="checkbox" name="chef_special" value="1" id="switchSpecial" {% if is_chef_special == '1' %}checked{% endif %} onchange="this.form.submit()">
+                        <label class="form-check-label text-muted font-sm" for="switchSpecial">Chef's Specials</label>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Menu Categories Navigation Tabs -->
+        <div class="category-tabs-container mb-5 overflow-auto">
+            <div class="d-flex justify-content-start justify-content-md-center gap-2 pb-2">
+                <a href="{% url 'menu' %}" class="btn {% if not selected_category %}btn-gold{% else %}btn-outline-white{% endif %} px-4 py-2 rounded-pill whitespace-nowrap">All Dishes</a>
+                {% for cat in categories %}
+                    <a href="{% url 'menu' %}?category={{ cat.slug }}" class="btn {% if selected_category == cat.slug %}btn-gold{% else %}btn-outline-white{% endif %} px-4 py-2 rounded-pill whitespace-nowrap">{{ cat.name }}</a>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Menu Grid -->
+        <div class="row g-4">
+            {% for item in items %}
+                <div class="col-lg-4 col-md-6">
+                    <div class="menu-item-card h-100 bg-dark-secondary rounded-4 overflow-hidden border border-secondary border-opacity-10 d-flex flex-column shadow-sm">
+                        <div class="position-relative overflow-hidden">
+                            {% if item.image %}
+                                <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-100 menu-item-img">
+                            {% else %}
+                                <div class="bg-secondary w-100 menu-item-img" style="height: 240px;"></div>
+                            {% endif %}
+                            
+                            <!-- Badges -->
+                            <div class="item-badges position-absolute top-0 start-0 p-3 d-flex flex-column gap-2">
+                                {% if item.is_veg %}
+                                    <span class="badge bg-success-badge text-white d-flex align-items-center gap-1 px-3 py-2 rounded-pill"><i class="fa-solid fa-leaf text-success"></i> Veg</span>
+                                {% else %}
+                                    <span class="badge bg-danger-badge text-white d-flex align-items-center gap-1 px-3 py-2 rounded-pill"><i class="fa-solid fa-circle text-danger"></i> Non-Veg</span>
+                                {% endif %}
+                                
+                                {% if item.is_best_seller %}
+                                    <span class="badge bg-gold-badge text-dark d-flex align-items-center gap-1 px-3 py-2 rounded-pill"><i class="fa-solid fa-fire text-dark"></i> Bestseller</span>
+                                {% endif %}
+                                
+                                {% if item.is_chef_special %}
+                                    <span class="badge bg-primary bg-opacity-75 text-white d-flex align-items-center gap-1 px-3 py-2 rounded-pill"><i class="fa-solid fa-star text-gold"></i> Chef Special</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="menu-item-price position-absolute bottom-0 end-0 m-3 px-3 py-2 rounded-pill bg-dark bg-opacity-75 border border-gold">
+                                <span class="text-gold fw-bold">${{ item.price }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 d-flex flex-column flex-grow-1">
+                            <span class="text-gold text-uppercase tracking-wider font-xs mb-1">{{ item.category.name }}</span>
+                            <h3 class="playfair text-white h5 mb-3">{{ item.name }}</h3>
+                            <p class="text-muted flex-grow-1 font-sm">{{ item.description }}</p>
+                            
+                            <div class="mt-4 pt-3 border-top border-secondary border-opacity-20 d-flex justify-content-between align-items-center">
+                                {% if item.is_available %}
+                                    <span class="text-success text-sm"><i class="fa-solid fa-circle-check me-1"></i> Available</span>
+                                {% else %}
+                                    <span class="text-danger text-sm"><i class="fa-solid fa-circle-xmark me-1"></i> Out of Stock</span>
+                                {% endif %}
+                                <a href="{% url 'reservation' %}" class="btn btn-outline-gold btn-sm px-4 py-2 rounded-pill"><i class="fa-solid fa-calendar-days me-1"></i>Book Table</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12 text-center py-5">
+                    <div class="text-muted mb-4 fs-2"><i class="fa-solid fa-circle-exclamation text-gold"></i></div>
+                    <h3 class="text-white playfair mb-2">No Dishes Found</h3>
+                    <p class="text-muted">We couldn't find any dishes matching your query or filter criteria. Try clearing filters or refining your search.</p>
+                    <a href="{% url 'menu' %}" class="btn btn-gold px-4 py-2 rounded-pill mt-3">Reset Menu</a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+

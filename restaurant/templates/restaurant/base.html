@@ -1,0 +1,272 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ restaurant_info.name }} | {{ restaurant_info.tagline }}{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}{{ restaurant_info.about_text|truncatewords:25 }}{% endblock %}">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Custom Style CSS -->
+    <link rel="stylesheet" href="{% static 'restaurant/css/style.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Top Bar Info -->
+    <div class="top-bar py-2 d-none d-lg-block">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="top-bar-info">
+                <span><i class="fa-solid fa-phone me-2 text-gold"></i> <a href="tel:{{ restaurant_info.phone }}">{{ restaurant_info.phone }}</a></span>
+                <span class="ms-4"><i class="fa-solid fa-envelope me-2 text-gold"></i> <a href="mailto:{{ restaurant_info.email }}">{{ restaurant_info.email }}</a></span>
+                <span class="ms-4"><i class="fa-solid fa-location-dot me-2 text-gold"></i> {{ restaurant_info.address|truncatechars:45 }}</span>
+            </div>
+            <div class="top-bar-social">
+                {% for link in social_links %}
+                    <a href="{{ link.url }}" target="_blank" class="ms-3"><i class="{{ link.icon_class }}"></i></a>
+                {% empty %}
+                    <a href="#" class="ms-3"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#" class="ms-3"><i class="fa-brands fa-facebook"></i></a>
+                    <a href="#" class="ms-3"><i class="fa-brands fa-x-twitter"></i></a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Header -->
+    <header class="header-nav {% if active_page == 'home' %}fixed-top{% else %}sticky-top{% endif %}">
+        <nav class="navbar navbar-expand-lg navbar-dark py-3">
+            <div class="container">
+                <a class="navbar-brand d-flex align-items-center" href="{% url 'home' %}">
+                    {% if restaurant_info.logo %}
+                        <img src="{{ restaurant_info.logo.url }}" alt="{{ restaurant_info.name }}" class="navbar-logo me-2">
+                    {% endif %}
+                    <span class="brand-text">{{ restaurant_info.name }}</span>
+                </a>
+                
+                <!-- Toggle Button for Mobile -->
+                <button class="navbar-toggler border-0" type="button" id="mobileMenuOpen">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <!-- Desktop Navigation Links -->
+                <div class="collapse navbar-collapse justify-content-end d-none d-lg-flex" id="navbarNav">
+                    <ul class="navbar-nav me-4">
+                        <li class="nav-item">
+                            <a class="nav-link {% if active_page == 'home' %}active{% endif %}" href="{% url 'home' %}">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if active_page == 'about' %}active{% endif %}" href="{% url 'about' %}">About Us</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if active_page == 'menu' %}active{% endif %}" href="{% url 'menu' %}">Our Menu</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if active_page == 'categories' %}active{% endif %}" href="{% url 'categories' %}">Categories</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if active_page == 'specials' %}active{% endif %}" href="{% url 'specials' %}">Specials</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if active_page == 'gallery' %}active{% endif %}" href="{% url 'gallery' %}">Gallery</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if active_page == 'testimonials' %}active{% endif %}" href="{% url 'testimonials' %}">Reviews</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if active_page == 'blog' %}active{% endif %}" href="{% url 'blog_list' %}">Blog</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if active_page == 'contact' %}active{% endif %}" href="{% url 'contact' %}">Contact</a>
+                        </li>
+                    </ul>
+                    <a href="{% url 'reservation' %}" class="btn btn-gold px-4 py-2 rounded-pill"><i class="fa-solid fa-calendar-days me-2"></i>Book Table</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Mobile Navigation Drawer -->
+    <div class="mobile-drawer-overlay" id="drawerOverlay"></div>
+    <div class="mobile-drawer" id="mobileDrawer">
+        <div class="drawer-header p-4 d-flex justify-content-between align-items-center">
+            <span class="brand-text text-gold">{{ restaurant_info.name }}</span>
+            <button class="btn-close-drawer btn border-0 text-white" id="mobileMenuClose">
+                <i class="fa-solid fa-xmark fa-xl"></i>
+            </button>
+        </div>
+        <div class="drawer-body p-4">
+            <ul class="drawer-nav-list list-unstyled mb-4">
+                <li><a href="{% url 'home' %}" class="drawer-nav-link {% if active_page == 'home' %}active{% endif %}">Home</a></li>
+                <li><a href="{% url 'about' %}" class="drawer-nav-link {% if active_page == 'about' %}active{% endif %}">About Us</a></li>
+                <li><a href="{% url 'menu' %}" class="drawer-nav-link {% if active_page == 'menu' %}active{% endif %}">Our Menu</a></li>
+                <li><a href="{% url 'categories' %}" class="drawer-nav-link {% if active_page == 'categories' %}active{% endif %}">Categories</a></li>
+                <li><a href="{% url 'specials' %}" class="drawer-nav-link {% if active_page == 'specials' %}active{% endif %}">Chef's Specials</a></li>
+                <li><a href="{% url 'gallery' %}" class="drawer-nav-link {% if active_page == 'gallery' %}active{% endif %}">Gallery</a></li>
+                <li><a href="{% url 'testimonials' %}" class="drawer-nav-link {% if active_page == 'testimonials' %}active{% endif %}">Testimonials</a></li>
+                <li><a href="{% url 'blog_list' %}" class="drawer-nav-link {% if active_page == 'blog' %}active{% endif %}">Blog & News</a></li>
+                <li><a href="{% url 'contact' %}" class="drawer-nav-link {% if active_page == 'contact' %}active{% endif %}">Contact Us</a></li>
+            </ul>
+            <a href="{% url 'reservation' %}" class="btn btn-gold w-100 py-3 rounded-pill mb-4"><i class="fa-solid fa-calendar-days me-2"></i>Book a Table</a>
+            
+            <div class="drawer-contact text-center mt-5">
+                <p class="mb-1 text-muted">Call us to order or reserve</p>
+                <a href="tel:{{ restaurant_info.phone }}" class="text-white fw-bold fs-5">{{ restaurant_info.phone }}</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Django Messages System -->
+    {% if messages %}
+        <div class="container mt-4 messages-container">
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags == 'info' %}info{% else %}success{% endif %} alert-dismissible fade show" role="alert">
+                    <i class="fa-solid {% if message.tags == 'error' %}fa-circle-exclamation{% else %}fa-circle-check{% endif %} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Breadcrumb for Inner Pages -->
+    {% if active_page != 'home' %}
+        <div class="breadcrumb-section py-4">
+            <div class="container">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+                        {% block breadcrumbs %}
+                            <li class="breadcrumb-item active text-gold" aria-current="page">{{ active_page|capfirst }}</li>
+                        {% endblock %}
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer-section pt-5 pb-3">
+        <div class="container">
+            <div class="row g-4 mb-5">
+                <!-- About Column -->
+                <div class="col-lg-3 col-md-6">
+                    <h4 class="footer-title text-gold mb-4">{{ restaurant_info.name }}</h4>
+                    <p class="text-muted">{{ restaurant_info.about_text|truncatewords:20 }}</p>
+                    <div class="footer-social mt-4">
+                        {% for link in social_links %}
+                            <a href="{{ link.url }}" target="_blank" class="me-3"><i class="{{ link.icon_class }} fa-lg"></i></a>
+                        {% empty %}
+                            <a href="#" class="me-3"><i class="fa-brands fa-instagram fa-lg"></i></a>
+                            <a href="#" class="me-3"><i class="fa-brands fa-facebook fa-lg"></i></a>
+                            <a href="#" class="me-3"><i class="fa-brands fa-x-twitter fa-lg"></i></a>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Quick Links Column -->
+                <div class="col-lg-3 col-md-6">
+                    <h5 class="footer-title text-gold mb-4">Quick Links</h5>
+                    <ul class="footer-links list-unstyled">
+                        <li class="mb-2"><a href="{% url 'about' %}">About Us</a></li>
+                        <li class="mb-2"><a href="{% url 'menu' %}">Our Menu</a></li>
+                        <li class="mb-2"><a href="{% url 'specials' %}">Chef's Specials</a></li>
+                        <li class="mb-2"><a href="{% url 'gallery' %}">Gallery</a></li>
+                        <li class="mb-2"><a href="{% url 'testimonials' %}">Reviews</a></li>
+                        <li class="mb-2"><a href="{% url 'blog_list' %}">Blog & News</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Opening Hours Column -->
+                <div class="col-lg-3 col-md-6">
+                    <h5 class="footer-title text-gold mb-4">Opening Hours</h5>
+                    <ul class="footer-hours list-unstyled text-muted">
+                        {% for hour in opening_hours %}
+                            <li class="d-flex justify-content-between mb-2">
+                                <span>{{ hour.day }}</span>
+                                <span class="text-white">
+                                    {% if hour.is_closed %}
+                                        Closed
+                                    {% else %}
+                                        {{ hour.opens_at|time:"P" }} - {{ hour.closes_at|time:"P" }}
+                                    {% endif %}
+                                </span>
+                            </li>
+                        {% empty %}
+                            <li class="d-flex justify-content-between mb-2"><span>Monday - Friday</span><span class="text-white">11:00 AM - 10:00 PM</span></li>
+                            <li class="d-flex justify-content-between mb-2"><span>Saturday - Sunday</span><span class="text-white">10:00 AM - 11:00 PM</span></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                
+                <!-- Contact & Newsletter Column -->
+                <div class="col-lg-3 col-md-6">
+                    <h5 class="footer-title text-gold mb-4">Contact Info</h5>
+                    <p class="text-muted"><i class="fa-solid fa-location-dot me-2 text-gold"></i> {{ restaurant_info.address }}</p>
+                    <p class="text-muted"><i class="fa-solid fa-phone me-2 text-gold"></i> <a href="tel:{{ restaurant_info.phone }}" class="text-muted">{{ restaurant_info.phone }}</a></p>
+                    
+                    <h5 class="footer-title text-gold mt-4 mb-3">Newsletter</h5>
+                    <form action="{% url 'newsletter_subscribe' %}" method="POST" class="footer-newsletter">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <input type="email" name="email" class="form-control bg-dark border-gold text-white" placeholder="Your Email" required>
+                            <button type="submit" class="btn btn-gold"><i class="fa-solid fa-paper-plane"></i></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <hr class="border-secondary">
+            
+            <div class="row pt-3 align-items-center">
+                <div class="col-md-6 text-center text-md-start">
+                    <p class="text-muted mb-0">&copy; 2026 {{ restaurant_info.name }}. All Rights Reserved.</p>
+                </div>
+                <div class="col-md-6 text-center text-md-end mt-2 mt-md-0">
+                    <p class="text-muted mb-0">Designed and Developed independently on FOLIUX.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Floating Action Buttons -->
+    <div class="floating-actions">
+        <!-- Click to Call -->
+        <a href="tel:{{ restaurant_info.phone }}" class="btn-floating btn-call" title="Call Us Now">
+            <i class="fa-solid fa-phone"></i>
+        </a>
+        <!-- WhatsApp -->
+        {% if restaurant_info.whatsapp_number %}
+            <a href="https://wa.me/{{ restaurant_info.whatsapp_number }}" target="_blank" class="btn-floating btn-whatsapp" title="Chat on WhatsApp">
+                <i class="fa-brands fa-whatsapp"></i>
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Bootstrap 5 Bundle JS (Popper included) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="{% static 'restaurant/js/main.js' %}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
+

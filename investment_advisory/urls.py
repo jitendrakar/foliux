@@ -34,6 +34,7 @@ urlpatterns = [
     path('salon/', include('salon.urls')),
     path('tailor/', include('tailor.urls')),
     path('screener/', include('screener.urls')),
+    path('restaurant/', include('restaurant.urls')),
     path('search-instruments/', core_views.search_instruments, name='search_instruments'),
     path('', include('core.urls')),
     # Custom password change view
@@ -47,12 +48,15 @@ urlpatterns = [
 from django.urls import re_path
 from django.views.static import serve
 
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, RedirectView
 
 urlpatterns += [
     path('robots.txt', TemplateView.as_view(template_name="robots.txt", content_type="text/plain")),
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
     re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
+    # Redirect common spelling typo 'restaurent' to 'restaurant'
+    path('restaurent', RedirectView.as_view(url='/restaurant/', permanent=True)),
+    re_path(r'^restaurent/(?P<path>.*)$', RedirectView.as_view(url='/restaurant/%(path)s', permanent=True)),
 ]
 
 

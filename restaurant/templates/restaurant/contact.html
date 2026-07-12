@@ -1,0 +1,161 @@
+{% extends 'restaurant/base.html' %}
+{% load static %}
+
+{% block title %}Contact Us | {{ restaurant_info.name }}{% endblock %}
+
+{% block breadcrumbs %}
+<li class="breadcrumb-item active text-gold" aria-current="page">Contact</li>
+{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-dark-primary text-white">
+    <div class="container py-4">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <h5 class="text-gold text-uppercase tracking-wider">Get in Touch</h5>
+            <h1 class="playfair display-4">Contact Us</h1>
+            <div class="gold-divider mx-auto mt-3"></div>
+            <p class="lead text-muted max-w-xl mx-auto mt-4">Have questions about our menu, private events, or reservations? Send us a message and we'll reply as soon as possible.</p>
+        </div>
+        
+        <div class="row g-5">
+            <!-- Contact Details & Opening Hours -->
+            <div class="col-lg-5">
+                <!-- Info Box -->
+                <div class="bg-dark-secondary p-4 p-md-5 rounded-4 border border-secondary border-opacity-15 mb-4 text-white">
+                    <h3 class="playfair text-gold mb-4">Contact Information</h3>
+                    
+                    <div class="d-flex align-items-start gap-3 mb-4">
+                        <div class="text-gold fs-4"><i class="fa-solid fa-location-dot"></i></div>
+                        <div>
+                            <h5 class="mb-1 text-white">Address</h5>
+                            <p class="text-muted mb-0 font-sm">{{ restaurant_info.address }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-start gap-3 mb-4">
+                        <div class="text-gold fs-4"><i class="fa-solid fa-phone"></i></div>
+                        <div>
+                            <h5 class="mb-1 text-white">Phone Numbers</h5>
+                            <p class="text-muted mb-0 font-sm"><a href="tel:{{ restaurant_info.phone }}" class="text-muted">{{ restaurant_info.phone }}</a></p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-start gap-3 mb-4">
+                        <div class="text-gold fs-4"><i class="fa-solid fa-envelope"></i></div>
+                        <div>
+                            <h5 class="mb-1 text-white">Email Address</h5>
+                            <p class="text-muted mb-0 font-sm"><a href="mailto:{{ restaurant_info.email }}" class="text-muted">{{ restaurant_info.email }}</a></p>
+                        </div>
+                    </div>
+                    
+                    {% if restaurant_info.whatsapp_number %}
+                        <div class="pt-4 border-top border-secondary border-opacity-15 text-center">
+                            <a href="https://wa.me/{{ restaurant_info.whatsapp_number }}" target="_blank" class="btn btn-success px-4 py-3 rounded-pill w-100"><i class="fa-brands fa-whatsapp me-2 fa-lg"></i>Quick WhatsApp Chat</a>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Opening Hours Box -->
+                <div class="bg-dark-secondary p-4 p-md-5 rounded-4 border border-secondary border-opacity-15 text-white">
+                    <h3 class="playfair text-gold mb-4">Opening Hours</h3>
+                    <ul class="list-unstyled mb-0 font-sm text-muted">
+                        {% for hour in opening_hours %}
+                            <li class="d-flex justify-content-between py-2 border-bottom border-secondary border-opacity-10">
+                                <span>{{ hour.day }}</span>
+                                <span class="text-white">
+                                    {% if hour.is_closed %}
+                                        Closed
+                                    {% else %}
+                                        {{ hour.opens_at|time:"P" }} - {{ hour.closes_at|time:"P" }}
+                                    {% endif %}
+                                </span>
+                            </li>
+                        {% empty %}
+                            <li class="d-flex justify-content-between py-2 border-bottom border-secondary border-opacity-10"><span>Monday - Friday</span><span class="text-white">11:00 AM - 10:00 PM</span></li>
+                            <li class="d-flex justify-content-between py-2"><span>Saturday - Sunday</span><span class="text-white">10:00 AM - 11:00 PM</span></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Contact Form -->
+            <div class="col-lg-7">
+                <div class="p-4 p-md-5 bg-dark-secondary border border-gold border-opacity-20 rounded-4 shadow-lg text-white">
+                    <h3 class="playfair text-gold text-center mb-4">Send a Message</h3>
+                    
+                    <form action="{% url 'contact' %}" method="POST" id="contactPageForm">
+                        {% csrf_token %}
+                        
+                        <div class="row g-4">
+                            <!-- Name -->
+                            <div class="col-md-6">
+                                <label class="form-label font-sm text-gold">Your Name *</label>
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                    <div class="text-danger font-xs mt-1">{{ form.name.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Email -->
+                            <div class="col-md-6">
+                                <label class="form-label font-sm text-gold">Email Address *</label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="text-danger font-xs mt-1">{{ form.email.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Phone -->
+                            <div class="col-12">
+                                <label class="form-label font-sm text-gold">Phone Number (Optional)</label>
+                                {{ form.phone }}
+                                {% if form.phone.errors %}
+                                    <div class="text-danger font-xs mt-1">{{ form.phone.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Subject -->
+                            <div class="col-12">
+                                <label class="form-label font-sm text-gold">Subject *</label>
+                                {{ form.subject }}
+                                {% if form.subject.errors %}
+                                    <div class="text-danger font-xs mt-1">{{ form.subject.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Message -->
+                            <div class="col-12">
+                                <label class="form-label font-sm text-gold">Message *</label>
+                                {{ form.message }}
+                                {% if form.message.errors %}
+                                    <div class="text-danger font-xs mt-1">{{ form.message.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Submit Button -->
+                            <div class="col-12 mt-5">
+                                <button type="submit" class="btn btn-gold btn-lg w-100 py-3 rounded-pill">
+                                    <i class="fa-solid fa-paper-plane me-2"></i>Send Message
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Google Map Section -->
+        <div class="mt-5 pt-4">
+            <div class="map-wrapper rounded-4 overflow-hidden shadow" style="height: 450px;">
+                {% if restaurant_info.google_maps_iframe %}
+                    <iframe src="{{ restaurant_info.google_maps_iframe }}" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                {% else %}
+                    <div class="bg-secondary d-flex align-items-center justify-content-center h-100 text-white">Google Map Placeholder</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+

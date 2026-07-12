@@ -1,0 +1,99 @@
+{% extends 'restaurant/base.html' %}
+{% load static %}
+
+{% block title %}Gallery | {{ restaurant_info.name }}{% endblock %}
+
+{% block breadcrumbs %}
+<li class="breadcrumb-item active text-gold" aria-current="page">Gallery</li>
+{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-dark-primary text-white">
+    <div class="container py-4">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <h5 class="text-gold text-uppercase tracking-wider">Visual Delights</h5>
+            <h1 class="playfair display-4">Our Photo Gallery</h1>
+            <div class="gold-divider mx-auto mt-3"></div>
+        </div>
+        
+        <!-- Filter Controls -->
+        <div class="d-flex justify-content-center gap-2 mb-5 flex-wrap">
+            <button class="btn btn-gold px-4 py-2 rounded-pill gallery-filter-btn" data-filter="all">All Photos</button>
+            <button class="btn btn-outline-white px-4 py-2 rounded-pill gallery-filter-btn" data-filter="Food">Dishes & Drinks</button>
+            <button class="btn btn-outline-white px-4 py-2 rounded-pill gallery-filter-btn" data-filter="Ambiance">Restaurant Ambiance</button>
+            <button class="btn btn-outline-white px-4 py-2 rounded-pill gallery-filter-btn" data-filter="Chef">Chefs & Kitchen</button>
+        </div>
+        
+        <!-- Gallery Grid -->
+        <div class="row g-4 gallery-grid">
+            {% for item in items %}
+                <div class="col-lg-3 col-md-4 col-sm-6 gallery-card-wrapper" data-category="{{ item.category }}">
+                    <div class="gallery-item-card rounded-4 overflow-hidden position-relative shadow border border-secondary border-opacity-10 h-100">
+                        <div class="overflow-hidden" style="height: 250px;">
+                            {% if item.image %}
+                                <img src="{{ item.image.url }}" alt="{{ item.title }}" class="w-100 h-100 object-fit-cover gallery-img">
+                            {% else %}
+                                <div class="bg-secondary w-100 h-100"></div>
+                            {% endif %}
+                        </div>
+                        <div class="gallery-overlay-hover position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center text-center p-3">
+                            <h5 class="text-gold playfair mb-1">{{ item.title }}</h5>
+                            <p class="text-light-muted font-xs mb-3">{{ item.caption }}</p>
+                            <span class="badge bg-gold text-dark font-xs rounded-pill px-3 py-1">{{ item.get_category_display }}</span>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12 text-center py-5">
+                    <p class="text-muted">No photos uploaded to the gallery yet. Visit the Admin Panel to add some.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const filterButtons = document.querySelectorAll('.gallery-filter-btn');
+        const galleryItems = document.querySelectorAll('.gallery-card-wrapper');
+        
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Update active button styling
+                filterButtons.forEach(btn => {
+                    btn.classList.remove('btn-gold');
+                    btn.classList.add('btn-outline-white');
+                });
+                this.classList.remove('btn-outline-white');
+                this.classList.add('btn-gold');
+                
+                const filterValue = this.getAttribute('data-filter');
+                
+                galleryItems.forEach(item => {
+                    if (filterValue === 'all' || item.getAttribute('data-category') === filterValue) {
+                        item.style.display = 'block';
+                        // Add fade-in animation class
+                        item.classList.add('fade-in-animation');
+                    } else {
+                        item.style.display = 'none';
+                        item.classList.remove('fade-in-animation');
+                    }
+                });
+            });
+        });
+    });
+</script>
+<style>
+    .fade-in-animation {
+        animation: fadeIn 0.4s ease forwards;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.95); }
+        to { opacity: 1; transform: scale(1); }
+    }
+</style>
+{% endblock %}
+

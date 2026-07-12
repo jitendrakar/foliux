@@ -1,0 +1,65 @@
+{% extends 'restaurant/base.html' %}
+{% load static %}
+
+{% block title %}Chef's Specials | {{ restaurant_info.name }}{% endblock %}
+
+{% block breadcrumbs %}
+<li class="breadcrumb-item active text-gold" aria-current="page">Chef's Specials</li>
+{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-dark-primary text-white">
+    <div class="container py-4">
+        <div class="text-center mb-5">
+            <h5 class="text-gold text-uppercase tracking-wider">Culinary Masterpieces</h5>
+            <h1 class="playfair display-4">Chef's Specials</h1>
+            <div class="gold-divider mx-auto mt-3"></div>
+            <p class="lead text-muted max-w-xl mx-auto mt-4">Each dish is a masterpiece designed and prepared by our culinary team using refined classical techniques and premium select ingredients.</p>
+        </div>
+        
+        <div class="row g-4">
+            {% for item in special_items %}
+                <div class="col-lg-6">
+                    <div class="special-dish-card p-4 rounded-4 bg-dark-secondary border border-secondary border-opacity-10 shadow-sm h-100">
+                        <div class="row g-4 align-items-center">
+                            <div class="col-md-5">
+                                <div class="overflow-hidden rounded-3 position-relative" style="height: 200px;">
+                                    {% if item.image %}
+                                        <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-100 h-100 object-fit-cover item-zoom-img">
+                                    {% else %}
+                                        <div class="bg-secondary w-100 h-100"></div>
+                                    {% endif %}
+                                    
+                                    <div class="position-absolute top-0 start-0 m-3">
+                                        {% if item.is_veg %}
+                                            <span class="badge bg-success-badge text-white px-3 py-1 rounded-pill"><i class="fa-solid fa-leaf text-success"></i> Veg</span>
+                                        {% else %}
+                                            <span class="badge bg-danger-badge text-white px-3 py-1 rounded-pill"><i class="fa-solid fa-circle text-danger"></i> Non-Veg</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-7">
+                                <span class="text-gold text-uppercase tracking-wider font-xs fw-bold">{{ item.category.name }}</span>
+                                <h3 class="playfair text-white h4 mt-1 mb-2">{{ item.name }}</h3>
+                                <p class="text-muted font-sm mb-3">{{ item.description }}</p>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-gold fw-bold fs-4">${{ item.price }}</span>
+                                    <a href="{% url 'reservation' %}" class="btn btn-gold btn-sm px-4 py-2 rounded-pill"><i class="fa-solid fa-calendar-days me-1"></i>Book Table</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12 text-center py-5">
+                    <p class="text-muted">No chef specials are currently featured. Check back soon or browse our full menu.</p>
+                    <a href="{% url 'menu' %}" class="btn btn-gold px-4 py-2 rounded-pill mt-3">Browse Full Menu</a>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+

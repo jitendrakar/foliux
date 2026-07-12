@@ -1,0 +1,457 @@
+{% extends 'restaurant/base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Hero Banner -->
+<section class="hero-section d-flex align-items-center justify-content-center text-center">
+    <div class="hero-overlay"></div>
+    <div class="container hero-content py-5">
+        <h5 class="text-gold text-uppercase tracking-wider mb-3">Welcome to {{ restaurant_info.name }}</h5>
+        <h1 class="display-3 text-white playfair mb-4">{{ restaurant_info.tagline }}</h1>
+        <p class="lead text-light-muted max-w-2xl mx-auto mb-5">Experience culinary artistry in a cozy, elegant atmosphere. From our kitchen to your table, every dish is crafted with passion and local ingredients.</p>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a href="{% url 'menu' %}" class="btn btn-gold btn-lg px-5 py-3 rounded-pill">Explore Menu</a>
+            <a href="{% url 'reservation' %}" class="btn btn-outline-white btn-lg px-5 py-3 rounded-pill">Book a Table</a>
+        </div>
+    </div>
+</section>
+
+<!-- Popular Categories -->
+<section class="py-5 bg-dark-secondary">
+    <div class="container py-4">
+        <div class="text-center mb-5">
+            <h5 class="text-gold text-uppercase tracking-wider">Explore</h5>
+            <h2 class="playfair display-5 text-white">Popular Categories</h2>
+            <div class="gold-divider mx-auto mt-3"></div>
+        </div>
+        <div class="row g-4">
+            {% for cat in categories %}
+                <div class="col-lg-3 col-md-6">
+                    <a href="{% url 'menu' %}?category={{ cat.slug }}" class="category-card d-block text-decoration-none">
+                        <div class="category-img-wrapper position-relative overflow-hidden rounded-4">
+                            {% if cat.image %}
+                                <img src="{{ cat.image.url }}" alt="{{ cat.name }}" class="w-100 category-img">
+                            {% else %}
+                                <div class="bg-secondary w-100 category-img" style="height: 250px;"></div>
+                            {% endif %}
+                            <div class="category-overlay d-flex flex-column justify-content-end p-4">
+                                <h4 class="text-white playfair mb-1">{{ cat.name }}</h4>
+                                <span class="text-gold text-sm">View Items <i class="fa-solid fa-arrow-right ms-1"></i></span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% empty %}
+                <!-- Placeholders in case db is empty initially -->
+                <div class="col text-center text-muted">
+                    <p>No categories added yet. Visit the Admin Panel to set them up.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Featured Dishes / Chef Specials -->
+<section class="py-5 bg-dark-primary">
+    <div class="container py-4">
+        <div class="text-center mb-5">
+            <h5 class="text-gold text-uppercase tracking-wider">Our Signature</h5>
+            <h2 class="playfair display-5 text-white">Featured Creations</h2>
+            <div class="gold-divider mx-auto mt-3"></div>
+        </div>
+        <div class="row g-4">
+            {% for item in featured_items %}
+                <div class="col-lg-4 col-md-6">
+                    <div class="menu-item-card h-100 bg-dark-secondary rounded-4 overflow-hidden border border-secondary border-opacity-10 d-flex flex-column">
+                        <div class="position-relative overflow-hidden">
+                            {% if item.image %}
+                                <img src="{{ item.image.url }}" alt="{{ item.name }}" class="w-100 menu-item-img">
+                            {% else %}
+                                <div class="bg-secondary w-100 menu-item-img" style="height: 240px;"></div>
+                            {% endif %}
+                            
+                            <!-- Badges -->
+                            <div class="item-badges position-absolute top-0 start-0 p-3 d-flex flex-column gap-2">
+                                {% if item.is_veg %}
+                                    <span class="badge bg-success-badge text-white d-flex align-items-center gap-1 px-3 py-2 rounded-pill"><i class="fa-solid fa-leaf text-success"></i> Veg</span>
+                                {% else %}
+                                    <span class="badge bg-danger-badge text-white d-flex align-items-center gap-1 px-3 py-2 rounded-pill"><i class="fa-solid fa-circle text-danger"></i> Non-Veg</span>
+                                {% endif %}
+                                
+                                {% if item.is_best_seller %}
+                                    <span class="badge bg-gold-badge text-dark d-flex align-items-center gap-1 px-3 py-2 rounded-pill"><i class="fa-solid fa-fire text-dark"></i> Bestseller</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="menu-item-price position-absolute bottom-0 end-0 m-3 px-3 py-2 rounded-pill bg-dark bg-opacity-75 border border-gold">
+                                <span class="text-gold fw-bold">${{ item.price }}</span>
+                            </div>
+                        </div>
+                        <div class="p-4 d-flex flex-column flex-grow-1">
+                            <span class="text-gold text-uppercase tracking-wider font-sm mb-1">{{ item.category.name }}</span>
+                            <h3 class="playfair text-white h5 mb-3">{{ item.name }}</h3>
+                            <p class="text-muted flex-grow-1 font-sm">{{ item.description|truncatechars:100 }}</p>
+                            <div class="mt-4 pt-3 border-top border-secondary border-opacity-20 d-flex justify-content-between align-items-center">
+                                {% if item.is_available %}
+                                    <span class="text-success text-sm"><i class="fa-solid fa-circle-check me-1"></i> Available</span>
+                                {% else %}
+                                    <span class="text-danger text-sm"><i class="fa-solid fa-circle-xmark me-1"></i> Out of Stock</span>
+                                {% endif %}
+                                <a href="{% url 'menu' %}?q={{ item.name }}" class="btn btn-outline-gold btn-sm px-3 rounded-pill">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col text-center text-muted">
+                    <p>No featured dishes added yet. Visit the Admin Panel to configure menu items.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Chef's Recommendation (Hero Spot) -->
+<section class="py-5 recommendation-section position-relative">
+    <div class="recommendation-overlay"></div>
+    <div class="container py-5 position-relative z-index-2 text-white">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <span class="text-gold text-uppercase tracking-wider fw-bold">Chef's Special Recommendation</span>
+                <h2 class="playfair display-4 mt-2 mb-4">Tournedos Rossini</h2>
+                <p class="lead text-light-muted mb-4">A classic French steak dish created for composer Gioachino Rossini. It features pan-fried filet mignon topped with hot seared fresh whole foie gras, garnished with freshly shaved black truffles, and served with a rich Madeira demi-glace sauce.</p>
+                
+                <div class="d-flex align-items-center gap-4 mb-5">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-danger-badge px-3 py-2 rounded-pill"><i class="fa-solid fa-circle text-danger"></i> Non-Veg</span>
+                        <span class="badge bg-gold-badge text-dark px-3 py-2 rounded-pill"><i class="fa-solid fa-star"></i> Chef's Signature</span>
+                    </div>
+                    <div class="fs-4 text-gold fw-bold">$54.00</div>
+                </div>
+                
+                <div class="chef-signature d-flex align-items-center gap-3">
+                    <div class="chef-info">
+                        <h5 class="mb-0 text-white font-serif">Pierre Laurent</h5>
+                        <p class="mb-0 text-gold font-sm">Chef de Cuisine</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <div class="recommendation-image-wrapper p-3 border border-gold border-opacity-30 rounded-4 inline-block">
+                    <!-- We'll generate this image in the static directory later -->
+                    <img src="{% static 'restaurant/images/chef_special.jpg' %}" alt="Chef Recommendation" class="img-fluid rounded-4 shadow-lg" style="max-height: 400px; object-fit: cover;">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose Us -->
+<section class="py-5 bg-dark-secondary">
+    <div class="container py-4">
+        <div class="text-center mb-5">
+            <h5 class="text-gold text-uppercase tracking-wider">Features</h5>
+            <h2 class="playfair display-5 text-white">Why Choose Us</h2>
+            <div class="gold-divider mx-auto mt-3"></div>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-3 col-md-6 text-center">
+                <div class="feature-card p-4 rounded-4 bg-dark-primary border border-secondary border-opacity-10">
+                    <div class="feature-icon-wrapper text-gold mb-4 fs-1">
+                        <i class="fa-solid fa-utensils"></i>
+                    </div>
+                    <h3 class="text-white h5 playfair mb-3">Fresh Ingredients</h3>
+                    <p class="text-muted font-sm mb-0">We source only the freshest produce, meats, and seafood daily from local organic farms.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 text-center">
+                <div class="feature-card p-4 rounded-4 bg-dark-primary border border-secondary border-opacity-10">
+                    <div class="feature-icon-wrapper text-gold mb-4 fs-1">
+                        <i class="fa-solid fa-hat-chef"></i>
+                    </div>
+                    <h3 class="text-white h5 playfair mb-3">Experienced Chefs</h3>
+                    <p class="text-muted font-sm mb-0">Our kitchen team is led by internationally trained chefs who craft each recipe to perfection.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 text-center">
+                <div class="feature-card p-4 rounded-4 bg-dark-primary border border-secondary border-opacity-10">
+                    <div class="feature-icon-wrapper text-gold mb-4 fs-1">
+                        <i class="fa-solid fa-glass-water"></i>
+                    </div>
+                    <h3 class="text-white h5 playfair mb-3">Cozy Ambiance</h3>
+                    <p class="text-muted font-sm mb-0">Enjoy your meals in our warm, beautifully lit dining room designed for comfort and luxury.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 text-center">
+                <div class="feature-card p-4 rounded-4 bg-dark-primary border border-secondary border-opacity-10">
+                    <div class="feature-icon-wrapper text-gold mb-4 fs-1">
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
+                    <h3 class="text-white h5 playfair mb-3">Flawless Service</h3>
+                    <p class="text-muted font-sm mb-0">Our professional service staff is trained to deliver a smooth, elegant dining experience.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Carousel -->
+<section class="py-5 bg-dark-primary">
+    <div class="container py-4">
+        <div class="text-center mb-5">
+            <h5 class="text-gold text-uppercase tracking-wider">Reviews</h5>
+            <h2 class="playfair display-5 text-white">What Our Guests Say</h2>
+            <div class="gold-divider mx-auto mt-3"></div>
+        </div>
+        
+        <div id="reviewsCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                {% for review in testimonials %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <div class="testimonial-card max-w-2xl mx-auto text-center p-4">
+                            <div class="stars mb-3 text-gold fs-5">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= review.rating %}
+                                        <i class="fa-solid fa-star"></i>
+                                    {% else %}
+                                        <i class="fa-regular fa-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <p class="text-light-muted fs-5 font-serif mb-4">"{{ review.review_text }}"</p>
+                            <h5 class="text-white mb-1">{{ review.name }}</h5>
+                            <span class="text-gold font-sm">{{ review.designation }}</span>
+                        </div>
+                    </div>
+                {% empty %}
+                    <!-- Fallback -->
+                    <div class="carousel-item active">
+                        <div class="testimonial-card max-w-2xl mx-auto text-center p-4">
+                            <div class="stars mb-3 text-gold fs-5">
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                            </div>
+                            <p class="text-light-muted fs-5 font-serif mb-4">"The food was absolutely divine! The truffle pasta was cooked to perfection, and the staff made us feel incredibly special. We'll definitely be back!"</p>
+                            <h5 class="text-white mb-1">Emily R.</h5>
+                            <span class="text-gold font-sm">Food Critic & Writer</span>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#reviewsCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#reviewsCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- Reservation Snippet -->
+<section class="py-5 reservation-section-home position-relative">
+    <div class="reservation-home-overlay"></div>
+    <div class="container py-4 position-relative z-index-2">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-5 text-white">
+                <h5 class="text-gold text-uppercase tracking-wider">Book a Table</h5>
+                <h2 class="playfair display-4 mb-4">Reserve Your Culinary Journey</h2>
+                <p class="text-light-muted mb-4">Secure your dining spot for a memorable dinner or lunch. For parties larger than 10 or private events, please call us directly.</p>
+                <div class="phone-call-big mt-4 d-flex align-items-center gap-3">
+                    <div class="call-icon-bg bg-gold text-dark fs-3 rounded-circle d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                        <i class="fa-solid fa-phone"></i>
+                    </div>
+                    <div>
+                        <span class="text-gold text-sm d-block">Reservation Hotline</span>
+                        <a href="tel:{{ restaurant_info.phone }}" class="text-white fw-bold fs-4">{{ restaurant_info.phone }}</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-7">
+                <div class="booking-form-wrapper p-4 p-md-5 rounded-4 bg-dark bg-opacity-90 border border-gold border-opacity-20 shadow-lg text-white">
+                    <h3 class="playfair text-gold text-center mb-4">Table Reservation Form</h3>
+                    <form action="{% url 'reservation' %}" method="POST" id="reservationFormHome">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label font-sm">Your Name</label>
+                                {{ reservation_form.name }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label font-sm">Email Address</label>
+                                {{ reservation_form.email }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label font-sm">Phone Number</label>
+                                {{ reservation_form.phone }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label font-sm">Number of Guests</label>
+                                {{ reservation_form.guests }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label font-sm">Date</label>
+                                {{ reservation_form.date }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label font-sm">Time</label>
+                                {{ reservation_form.time }}
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label font-sm">Special Requests</label>
+                                {{ reservation_form.special_request }}
+                            </div>
+                            <div class="col-12 text-center mt-4">
+                                <button type="submit" class="btn btn-gold btn-lg px-5 py-3 w-100 rounded-pill"><i class="fa-solid fa-calendar-check me-2"></i>Request Reservation</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Gallery Preview -->
+<section class="py-5 bg-dark-secondary">
+    <div class="container py-4">
+        <div class="text-center mb-5">
+            <h5 class="text-gold text-uppercase tracking-wider">Social Feed</h5>
+            <h2 class="playfair display-5 text-white">Our Food Gallery</h2>
+            <div class="gold-divider mx-auto mt-3"></div>
+        </div>
+        
+        <div class="row g-3">
+            {% for item in gallery_items %}
+                <div class="col-lg-3 col-md-4 col-6">
+                    <div class="gallery-item-wrapper position-relative overflow-hidden rounded-4 shadow">
+                        {% if item.image %}
+                            <img src="{{ item.image.url }}" alt="{{ item.title }}" class="w-100 gallery-img">
+                        {% else %}
+                            <div class="bg-secondary w-100 gallery-img" style="height: 200px;"></div>
+                        {% endif %}
+                        <div class="gallery-overlay-hover position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-center align-items-center text-center p-3">
+                            <h5 class="text-gold playfair mb-1">{{ item.title }}</h5>
+                            <span class="badge bg-gold text-dark font-xs rounded-pill px-3 py-1">{{ item.category }}</span>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-lg-3 col-md-4 col-6"><div class="bg-secondary rounded-4" style="height: 200px;"></div></div>
+                <div class="col-lg-3 col-md-4 col-6"><div class="bg-secondary rounded-4" style="height: 200px;"></div></div>
+                <div class="col-lg-3 col-md-4 col-6"><div class="bg-secondary rounded-4" style="height: 200px;"></div></div>
+                <div class="col-lg-3 col-md-4 col-6"><div class="bg-secondary rounded-4" style="height: 200px;"></div></div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-5">
+            <a href="{% url 'gallery' %}" class="btn btn-outline-gold px-5 py-3 rounded-pill">View Full Gallery</a>
+        </div>
+    </div>
+</section>
+
+<!-- Blog Snippet -->
+<section class="py-5 bg-dark-primary">
+    <div class="container py-4">
+        <div class="text-center mb-5">
+            <h5 class="text-gold text-uppercase tracking-wider">News & Stories</h5>
+            <h2 class="playfair display-5 text-white">From Our Cooking Blog</h2>
+            <div class="gold-divider mx-auto mt-3"></div>
+        </div>
+        
+        <div class="row g-4">
+            {% for post in recent_posts %}
+                <div class="col-lg-4 col-md-6">
+                    <div class="blog-card bg-dark-secondary rounded-4 overflow-hidden border border-secondary border-opacity-10 d-flex flex-column h-100">
+                        <div class="position-relative overflow-hidden">
+                            {% if post.image %}
+                                <img src="{{ post.image.url }}" alt="{{ post.title }}" class="w-100 blog-img">
+                            {% else %}
+                                <div class="bg-secondary w-100 blog-img" style="height: 200px;"></div>
+                            {% endif %}
+                            <div class="blog-date position-absolute top-0 start-0 m-3 px-3 py-1 rounded bg-gold text-dark font-xs fw-bold">
+                                {{ post.created_at|date:"M d, Y" }}
+                            </div>
+                        </div>
+                        <div class="p-4 d-flex flex-column flex-grow-1">
+                            <h3 class="playfair text-white h5 mb-3">{{ post.title }}</h3>
+                            <p class="text-muted flex-grow-1 font-sm">{{ post.summary|truncatechars:120 }}</p>
+                            <a href="{% url 'blog_detail' post.slug %}" class="text-gold text-decoration-none mt-4 font-sm d-flex align-items-center gap-2">Read Full Story <i class="fa-solid fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col text-center text-muted">
+                    <p>No blog posts published yet. Visit the Admin Panel to write blogs.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Contact Info & Google Map -->
+<section class="py-5 bg-dark-secondary">
+    <div class="container py-4">
+        <div class="text-center mb-5">
+            <h5 class="text-gold text-uppercase tracking-wider">Find Us</h5>
+            <h2 class="playfair display-5 text-white">Location & Contact</h2>
+            <div class="gold-divider mx-auto mt-3"></div>
+        </div>
+        
+        <div class="row g-4 align-items-stretch">
+            <div class="col-lg-5">
+                <div class="bg-dark-primary p-4 rounded-4 border border-secondary border-opacity-10 h-100 d-flex flex-column justify-content-between text-white">
+                    <div>
+                        <h4 class="playfair text-gold mb-4">Contact Details</h4>
+                        <div class="d-flex align-items-start gap-3 mb-4">
+                            <div class="text-gold fs-4"><i class="fa-solid fa-location-dot"></i></div>
+                            <div>
+                                <h5 class="mb-1">Address</h5>
+                                <p class="text-muted mb-0 font-sm">{{ restaurant_info.address }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex align-items-start gap-3 mb-4">
+                            <div class="text-gold fs-4"><i class="fa-solid fa-phone"></i></div>
+                            <div>
+                                <h5 class="mb-1">Phone</h5>
+                                <p class="text-muted mb-0 font-sm"><a href="tel:{{ restaurant_info.phone }}" class="text-muted">{{ restaurant_info.phone }}</a></p>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex align-items-start gap-3 mb-4">
+                            <div class="text-gold fs-4"><i class="fa-solid fa-envelope"></i></div>
+                            <div>
+                                <h5 class="mb-1">Email</h5>
+                                <p class="text-muted mb-0 font-sm"><a href="mailto:{{ restaurant_info.email }}" class="text-muted">{{ restaurant_info.email }}</a></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="pt-4 border-top border-secondary border-opacity-20 text-center">
+                        <a href="https://wa.me/{{ restaurant_info.whatsapp_number }}" target="_blank" class="btn btn-success px-4 py-2 rounded-pill w-100"><i class="fa-brands fa-whatsapp me-2"></i>Quick WhatsApp Chat</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-7">
+                <div class="map-wrapper rounded-4 overflow-hidden shadow h-100" style="min-height: 350px;">
+                    {% if restaurant_info.google_maps_iframe %}
+                        <iframe src="{{ restaurant_info.google_maps_iframe }}" width="100%" height="100%" style="border:0; min-height: 350px;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    {% else %}
+                        <div class="bg-secondary d-flex align-items-center justify-content-center h-100 text-white">Google Map Iframe Placeholder</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+

@@ -1,0 +1,51 @@
+{% extends 'restaurant/base.html' %}
+{% load static %}
+
+{% block title %}Menu Categories | {{ restaurant_info.name }}{% endblock %}
+
+{% block breadcrumbs %}
+<li class="breadcrumb-item active text-gold" aria-current="page">Categories</li>
+{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-dark-primary text-white">
+    <div class="container py-4">
+        <div class="text-center mb-5">
+            <h5 class="text-gold text-uppercase tracking-wider">Browse our Collections</h5>
+            <h1 class="playfair display-4">Food Categories</h1>
+            <div class="gold-divider mx-auto mt-3"></div>
+        </div>
+        
+        <div class="row g-4">
+            {% for cat in categories_list %}
+                <div class="col-lg-4 col-md-6">
+                    <div class="category-showcase-card rounded-4 overflow-hidden bg-dark-secondary border border-secondary border-opacity-10 shadow h-100 d-flex flex-column">
+                        <div class="position-relative overflow-hidden" style="height: 250px;">
+                            {% if cat.image %}
+                                <img src="{{ cat.image.url }}" alt="{{ cat.name }}" class="w-100 h-100 object-fit-cover category-zoom-img">
+                            {% else %}
+                                <div class="bg-secondary w-100 h-100 d-flex align-items-center justify-content-center">No Image</div>
+                            {% endif %}
+                            <div class="category-tag bg-gold text-dark px-3 py-1 font-xs fw-bold position-absolute top-0 start-0 m-3 rounded">
+                                Category
+                            </div>
+                        </div>
+                        <div class="p-4 d-flex flex-column flex-grow-1">
+                            <h3 class="playfair text-white h4 mb-3">{{ cat.name }}</h3>
+                            <p class="text-muted font-sm flex-grow-1">{{ cat.description }}</p>
+                            <a href="{% url 'menu' %}?category={{ cat.slug }}" class="btn btn-gold w-100 py-3 rounded-pill mt-4">
+                                Browse {{ cat.name }} <i class="fa-solid fa-arrow-right ms-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col text-center py-5">
+                    <p class="text-muted">No categories created yet. Visit the Admin Panel to add categories.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+

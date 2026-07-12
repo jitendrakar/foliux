@@ -106,6 +106,7 @@ INSTALLED_APPS = [
     'salon',
     'tailor',
     'screener',
+    'restaurant',
 ]
 
 SITE_ID = 1
@@ -213,7 +214,16 @@ DATABASES['screener'] = {
         'timeout': 20,
     }
 }
-DATABASE_ROUTERS = ['salon.router.SalonRouter', 'tailor.router.TailorRouter', 'screener.router.ScreenerRouter']
+
+# Independent Restaurant Database Config
+DATABASES['restaurant'] = {
+    'ENGINE': 'django.db.backends.sqlite3',
+    'NAME': BASE_DIR / 'restaurant' / 'db.sqlite3',
+    'OPTIONS': {
+        'timeout': 20,
+    }
+}
+DATABASE_ROUTERS = ['salon.router.SalonRouter', 'tailor.router.TailorRouter', 'screener.router.ScreenerRouter', 'restaurant.router.RestaurantRouter']
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/

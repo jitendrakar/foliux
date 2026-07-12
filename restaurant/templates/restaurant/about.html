@@ -1,0 +1,152 @@
+{% extends 'restaurant/base.html' %}
+{% load static %}
+
+{% block title %}About Us | {{ restaurant_info.name }}{% endblock %}
+
+{% block breadcrumbs %}
+<li class="breadcrumb-item active text-gold" aria-current="page">About Us</li>
+{% endblock %}
+
+{% block content %}
+<!-- Story Section -->
+<section class="py-5 bg-dark-primary text-white">
+    <div class="container py-4">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6">
+                <span class="text-gold text-uppercase tracking-wider fw-bold">Our Story</span>
+                <h2 class="playfair display-4 mt-2 mb-4">Crafting Culinary Experiences Since 2018</h2>
+                <p class="lead text-light-muted mb-4">{{ restaurant_info.about_text }}</p>
+                <p class="text-muted mb-4">Every ingredient in our kitchen is handled with the utmost respect. We work closely with local fishermen, farmers, and butchers to procure ingredients of exceptional quality. From hand-crafted pastas to dry-aged steaks, we curate a menu that respects tradition while embracing innovation.</p>
+                
+                <div class="row g-4 mt-2">
+                    <div class="col-6">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="fs-1 text-gold playfair fw-bold">8+</span>
+                            <div>
+                                <h6 class="mb-0">Years of Service</h6>
+                                <p class="text-muted font-xs mb-0">Perfecting recipes</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="fs-1 text-gold playfair fw-bold">30+</span>
+                            <div>
+                                <h6 class="mb-0">Signature Dishes</h6>
+                                <p class="text-muted font-xs mb-0">Crafted with care</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="about-image-grid position-relative">
+                    <!-- We'll put some optimized images in the static folder -->
+                    <img src="{% static 'restaurant/images/about_ambiance.jpg' %}" alt="Restaurant Ambiance" class="w-100 rounded-4 shadow-lg mb-4">
+                    <div class="position-absolute bottom-0 start-0 m-4 p-4 rounded-4 bg-dark bg-opacity-95 border border-gold border-opacity-30 d-none d-md-block max-w-sm">
+                        <h4 class="playfair text-gold mb-2">Our Culinary Promise</h4>
+                        <p class="text-muted font-xs mb-0">We never compromise on freshness or quality. That is our oath to every guest.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Our Team / Chef Section -->
+<section class="py-5 bg-dark-secondary text-white">
+    <div class="container py-4">
+        <div class="text-center mb-5">
+            <h5 class="text-gold text-uppercase tracking-wider">Masters of Taste</h5>
+            <h2 class="playfair display-5">Meet Our Culinary Artists</h2>
+            <div class="gold-divider mx-auto mt-3"></div>
+        </div>
+        
+        <div class="row g-4 justify-content-center">
+            <!-- Executive Chef -->
+            <div class="col-md-4">
+                <div class="chef-card text-center rounded-4 overflow-hidden bg-dark-primary border border-secondary border-opacity-10">
+                    <div class="position-relative overflow-hidden">
+                        <img src="{% static 'restaurant/images/chef_pierre.jpg' %}" alt="Chef Pierre Laurent" class="w-100 chef-img">
+                        <div class="chef-social position-absolute bottom-0 start-50 translate-middle-x mb-4 px-3 py-2 bg-dark bg-opacity-90 border border-gold rounded-pill d-flex gap-3">
+                            <a href="#" class="text-gold"><i class="fa-brands fa-facebook"></i></a>
+                            <a href="#" class="text-gold"><i class="fa-brands fa-instagram"></i></a>
+                            <a href="#" class="text-gold"><i class="fa-brands fa-linkedin"></i></a>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h4 class="playfair mb-1 text-gold">Pierre Laurent</h4>
+                        <span class="text-muted font-sm">Executive Chef / Founder</span>
+                        <p class="text-muted font-xs mt-3 mb-0">With over 15 years of experience in Michelin-starred French restaurants, Chef Pierre leads the culinary direction at our restaurant.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pastry Chef -->
+            <div class="col-md-4">
+                <div class="chef-card text-center rounded-4 overflow-hidden bg-dark-primary border border-secondary border-opacity-10">
+                    <div class="position-relative overflow-hidden">
+                        <img src="{% static 'restaurant/images/chef_sophie.jpg' %}" alt="Chef Sophie Moreau" class="w-100 chef-img">
+                        <div class="chef-social position-absolute bottom-0 start-50 translate-middle-x mb-4 px-3 py-2 bg-dark bg-opacity-90 border border-gold rounded-pill d-flex gap-3">
+                            <a href="#" class="text-gold"><i class="fa-brands fa-facebook"></i></a>
+                            <a href="#" class="text-gold"><i class="fa-brands fa-instagram"></i></a>
+                            <a href="#" class="text-gold"><i class="fa-brands fa-linkedin"></i></a>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h4 class="playfair mb-1 text-gold">Sophie Moreau</h4>
+                        <span class="text-muted font-sm">Head Pastry Chef</span>
+                        <p class="text-muted font-xs mt-3 mb-0">Sophie specializes in contemporary French desserts. Her creations blend rich traditional textures with modern visual presentations.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Opening Hours & Address -->
+<section class="py-5 bg-dark-primary text-white">
+    <div class="container py-4">
+        <div class="row g-5 align-items-center">
+            <div class="col-lg-6">
+                <h2 class="playfair display-5 text-gold mb-4">Our Opening Hours</h2>
+                <p class="text-muted mb-5">We look forward to hosting you! Please see our weekly dining hours below. We recommend making reservations in advance, especially for dinner service from Thursday to Sunday.</p>
+                
+                <div class="bg-dark-secondary p-4 rounded-4 border border-secondary border-opacity-15">
+                    <ul class="list-unstyled mb-0">
+                        {% for hour in opening_hours %}
+                            <li class="d-flex justify-content-between py-3 {% if not forloop.last %}border-bottom border-secondary border-opacity-20{% endif %}">
+                                <span class="fw-bold">{{ hour.day }}</span>
+                                <span class="text-gold">
+                                    {% if hour.is_closed %}
+                                        Closed
+                                    {% else %}
+                                        {{ hour.opens_at|time:"P" }} - {{ hour.closes_at|time:"P" }}
+                                    {% endif %}
+                                </span>
+                            </li>
+                        {% empty %}
+                            <li class="d-flex justify-content-between py-3 border-bottom border-secondary border-opacity-20"><span class="fw-bold">Monday - Friday</span><span class="text-gold">11:00 AM - 10:00 PM</span></li>
+                            <li class="d-flex justify-content-between py-3"><span class="fw-bold">Saturday - Sunday</span><span class="text-gold">10:00 AM - 11:00 PM</span></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="col-lg-6 text-center">
+                <div class="p-5 bg-dark-secondary border border-gold border-opacity-20 rounded-4">
+                    <h3 class="playfair text-gold mb-3">Address & Directions</h3>
+                    <p class="text-muted mb-4">{{ restaurant_info.address }}</p>
+                    
+                    <div class="d-flex justify-content-center gap-3">
+                        <a href="tel:{{ restaurant_info.phone }}" class="btn btn-gold px-4 py-2 rounded-pill"><i class="fa-solid fa-phone me-2"></i>Call Now</a>
+                        <a href="{% url 'reservation' %}" class="btn btn-outline-white px-4 py-2 rounded-pill"><i class="fa-solid fa-calendar me-2"></i>Book Table</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+
