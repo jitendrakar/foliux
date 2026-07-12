@@ -1,0 +1,1219 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    /* Styling similar to Screener.in but with FOLIUX premium look */
+    .company-header {
+        background: #fff;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+        margin-bottom: 2rem;
+    }
+    
+    html[data-theme="dark"] .company-header {
+        background: var(--global-dark-card);
+        border-color: var(--global-dark-border);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .company-name {
+        font-size: 2.2rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: #0f172a;
+        margin-bottom: 0.5rem;
+    }
+
+    html[data-theme="dark"] .company-name {
+        color: var(--global-dark-text);
+    }
+
+    .symbol-badges .badge {
+        font-size: 0.8rem;
+        padding: 6px 12px;
+        font-weight: 700;
+        border-radius: 6px;
+    }
+
+    .key-metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+        margin-top: 2rem;
+    }
+
+    .metric-card-screener {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 12px 18px;
+        transition: all 0.2s;
+    }
+
+    html[data-theme="dark"] .metric-card-screener {
+        background: rgba(0, 0, 0, 0.15);
+        border-color: var(--global-dark-border);
+    }
+
+    .metric-card-screener:hover {
+        transform: translateY(-2px);
+        border-color: #2563eb;
+    }
+
+    .metric-card-label {
+        font-size: 0.72rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        color: #94a3b8;
+        letter-spacing: 0.05em;
+        margin-bottom: 4px;
+    }
+
+    .metric-card-value {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+    html[data-theme="dark"] .metric-card-value {
+        color: var(--global-dark-text);
+    }
+
+    /* Tabs Styling */
+    .screener-tabs .nav-link {
+        font-weight: 700;
+        font-size: 0.92rem;
+        color: #64748b;
+        border: none;
+        border-bottom: 3px solid transparent;
+        padding: 12px 18px;
+        transition: all 0.2s;
+        border-radius: 0;
+        white-space: nowrap;
+    }
+
+    html[data-theme="dark"] .screener-tabs .nav-link {
+        color: var(--global-dark-muted);
+    }
+
+    .screener-tabs .nav-link:hover {
+        color: #2563eb;
+        border-bottom-color: rgba(37, 99, 235, 0.2);
+    }
+
+    .screener-tabs .nav-link.active {
+        color: #2563eb !important;
+        border-bottom: 3px solid #2563eb !important;
+        background: transparent !important;
+    }
+
+    .tabs-wrapper {
+        border-bottom: 1px solid #e2e8f0;
+        margin-bottom: 2rem;
+        overflow-x: auto;
+    }
+
+    html[data-theme="dark"] .tabs-wrapper {
+        border-bottom-color: var(--global-dark-border);
+    }
+
+    .table-screener th {
+        font-weight: 700;
+        color: #64748b;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        background-color: #f8fafc !important;
+        border-bottom: 2px solid #e2e8f0 !important;
+    }
+
+    html[data-theme="dark"] .table-screener th {
+        color: var(--global-dark-muted);
+        background-color: rgba(255, 255, 255, 0.02) !important;
+        border-bottom-color: var(--global-dark-border) !important;
+    }
+
+    .table-screener td {
+        font-size: 0.95rem;
+        font-weight: 500;
+        vertical-align: middle;
+    }
+
+    /* Pros & Cons Card */
+    .pro-con-card {
+        border-radius: 16px;
+        padding: 1.5rem;
+        height: 100%;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+    }
+
+    html[data-theme="dark"] .pro-con-card {
+        border-color: var(--global-dark-border);
+    }
+
+    .pro-list, .con-list {
+        list-style: none;
+        padding-left: 0;
+    }
+
+    .pro-list li, .con-list li {
+        margin-bottom: 12px;
+        font-size: 0.92rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .pro-list i { color: #10b981; margin-top: 3px; }
+    .con-list i { color: #ef4444; margin-top: 3px; }
+
+    /* Interactive Chart Card */
+    .chart-container-screener {
+        background: #fff;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    html[data-theme="dark"] .chart-container-screener {
+        background: var(--global-dark-card);
+        border-color: var(--global-dark-border);
+    }
+
+    .chart-timeframe-btn {
+        padding: 5px 14px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        border-radius: 30px;
+        border: 1.5px solid #e2e8f0;
+        background: #f8fafc;
+        color: #64748b;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    html[data-theme="dark"] .chart-timeframe-btn {
+        background: var(--global-dark-bg);
+        border-color: var(--global-dark-border);
+        color: var(--global-dark-muted);
+    }
+
+    .chart-timeframe-btn:hover {
+        border-color: #2563eb;
+        color: #2563eb;
+    }
+
+    .chart-timeframe-btn.active {
+        background: linear-gradient(135deg, #003d7c, #2563eb);
+        color: #fff;
+        border-color: transparent;
+    }
+
+    /* Score Gauge */
+    .gauge-wrapper {
+        text-align: center;
+        padding: 1rem;
+    }
+    .gauge-score {
+        font-size: 2.2rem;
+        font-weight: 900;
+        color: #2563eb;
+    }
+
+    /* Document Links */
+    .document-link-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 18px;
+        border-radius: 10px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 8px;
+        text-decoration: none !important;
+        transition: all 0.2s;
+    }
+
+    html[data-theme="dark"] .document-link-item {
+        background: rgba(0,0,0,0.15);
+        border-color: var(--global-dark-border);
+    }
+
+    .document-link-item:hover {
+        border-color: #2563eb;
+        transform: translateX(4px);
+    }
+
+    .document-title {
+        font-weight: 700;
+        color: #1e293b;
+        font-size: 0.92rem;
+    }
+
+    html[data-theme="dark"] .document-title {
+        color: var(--global-dark-text);
+    }
+
+    .calculator-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    html[data-theme="dark"] .calculator-card {
+        background: rgba(0,0,0,0.2);
+        border-color: var(--global-dark-border);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-4">
+    <!-- Header Block -->
+    <div class="company-header animate-in">
+        <div class="row g-4 align-items-center">
+            <div class="col-md-8">
+                <div class="symbol-badges mb-2">
+                    <span class="badge bg-primary">NSE: {{ company.nse_symbol }}</span>
+                    {% if company.bse_symbol %}
+                    <span class="badge bg-secondary ms-1">BSE: {{ company.bse_symbol }}</span>
+                    {% endif %}
+                    <span class="badge bg-dark ms-1">{{ company.industry }}</span>
+                </div>
+                <h1 class="company-name">{{ company.name }}</h1>
+                <p class="text-muted mb-0 lead" style="font-size: 0.95rem;">{{ company.about }}</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="small text-muted fw-bold text-uppercase mb-1">Current Price</div>
+                <h2 class="fw-900 mb-0" style="color:#2563eb;">₹{{ company.current_price }}</h2>
+                <div class="small text-muted mt-2">
+                    <strong>52W High/Low:</strong> ₹{{ company.high_52w }} / ₹{{ company.low_52w }}
+                </div>
+            </div>
+        </div>
+
+        <div class="key-metrics-grid">
+            <div class="metric-card-screener">
+                <div class="metric-card-label">Market Cap</div>
+                <div class="metric-card-value">₹{{ company.market_cap }} Cr.</div>
+            </div>
+            <div class="metric-card-screener">
+                <div class="metric-card-label">Stock P/E</div>
+                <div class="metric-card-value">{% if company.pe_ratio %}{{ company.pe_ratio }}{% else %}N/A{% endif %}</div>
+            </div>
+            <div class="metric-card-screener">
+                <div class="metric-card-label">Book Value</div>
+                <div class="metric-card-value">₹{{ company.book_value }}</div>
+            </div>
+            <div class="metric-card-screener">
+                <div class="metric-card-label">Dividend Yield</div>
+                <div class="metric-card-value">{{ company.dividend_yield }}%</div>
+            </div>
+            <div class="metric-card-screener">
+                <div class="metric-card-label">ROCE</div>
+                <div class="metric-card-value">{{ company.roce }}%</div>
+            </div>
+            <div class="metric-card-screener">
+                <div class="metric-card-label">ROE</div>
+                <div class="metric-card-value">{{ company.roe }}%</div>
+            </div>
+            <div class="metric-card-screener">
+                <div class="metric-card-label">Debt</div>
+                <div class="metric-card-value">₹{{ company.debt }} Cr.</div>
+            </div>
+            <div class="metric-card-screener">
+                <div class="metric-card-label">Cash</div>
+                <div class="metric-card-value">₹{{ company.cash }} Cr.</div>
+            </div>
+            <div class="metric-card-screener">
+                <div class="metric-card-label">Intrinsic Value</div>
+                <div class="metric-card-value">{% if company.intrinsic_value %}₹{{ company.intrinsic_value }}{% else %}N/A{% endif %}</div>
+            </div>
+            <div class="metric-card-screener">
+                <div class="metric-card-label">Industry P/E</div>
+                <div class="metric-card-value">{% if company.industry_pe %}{{ company.industry_pe }}{% else %}N/A{% endif %}</div>
+            </div>
+            <div class="metric-card-screener">
+                <div class="metric-card-label">Promoter Holding</div>
+                <div class="metric-card-value">{{ company.promoter_holding }}%</div>
+            </div>
+            <div class="metric-card-screener">
+                <div class="metric-card-label">EPS (TTM)</div>
+                <div class="metric-card-value">₹{{ company.eps }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive Navigation Tabs -->
+    <div class="tabs-wrapper animate-in animate-delay-1">
+        <ul class="nav nav-tabs border-0 screener-tabs" id="screenerTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="chart-tab" data-bs-toggle="tab" data-bs-target="#chart-pane" type="button" role="tab" aria-controls="chart-pane" aria-selected="true"><i class="fas fa-chart-area me-1"></i> Chart</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="analysis-tab" data-bs-toggle="tab" data-bs-target="#analysis-pane" type="button" role="tab" aria-controls="analysis-pane" aria-selected="false"><i class="fas fa-balance-scale me-1"></i> Analysis</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="peers-tab" data-bs-toggle="tab" data-bs-target="#peers-pane" type="button" role="tab" aria-controls="peers-pane" aria-selected="false"><i class="fas fa-users me-1"></i> Peers</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="quarterly-tab" data-bs-toggle="tab" data-bs-target="#quarterly-pane" type="button" role="tab" aria-controls="quarterly-pane" aria-selected="false"><i class="fas fa-calendar-alt me-1"></i> Quarterly Results</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pnl-tab" data-bs-toggle="tab" data-bs-target="#pnl-pane" type="button" role="tab" aria-controls="pnl-pane" aria-selected="false"><i class="fas fa-calculator me-1"></i> Profit & Loss</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="balance-sheet-tab" data-bs-toggle="tab" data-bs-target="#balance-sheet-pane" type="button" role="tab" aria-controls="balance-sheet-pane" aria-selected="false"><i class="fas fa-file-invoice-dollar me-1"></i> Balance Sheet</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="cashflow-tab" data-bs-toggle="tab" data-bs-target="#cashflow-pane" type="button" role="tab" aria-controls="cashflow-pane" aria-selected="false"><i class="fas fa-piggy-bank me-1"></i> Cash Flow</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="ratios-tab" data-bs-toggle="tab" data-bs-target="#ratios-pane" type="button" role="tab" aria-controls="ratios-pane" aria-selected="false"><i class="fas fa-percentage me-1"></i> Ratios</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="shareholding-tab" data-bs-toggle="tab" data-bs-target="#shareholding-pane" type="button" role="tab" aria-controls="shareholding-pane" aria-selected="false"><i class="fas fa-pie-chart me-1"></i> Shareholding</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents-pane" type="button" role="tab" aria-controls="documents-pane" aria-selected="false"><i class="fas fa-folder-open me-1"></i> Documents</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="news-tab" data-bs-toggle="tab" data-bs-target="#news-pane" type="button" role="tab" aria-controls="news-pane" aria-selected="false"><i class="fas fa-newspaper me-1"></i> News</button>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Tab Contents Grid -->
+    <div class="row g-4 animate-in animate-delay-2">
+        <div class="col-lg-9">
+            <div class="tab-content" id="screenerTabsContent">
+                <!-- CHART TAB -->
+                <div class="tab-pane fade show active" id="chart-pane" role="tabpanel" aria-labelledby="chart-tab">
+                    <div class="chart-container-screener">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold mb-0"><i class="fas fa-chart-line text-primary me-2"></i>Candlestick & Volume Chart</h5>
+                            <div class="d-flex gap-2">
+                                <button class="chart-timeframe-btn" data-period="30">1M</button>
+                                <button class="chart-timeframe-btn" data-period="180">6M</button>
+                                <button class="chart-timeframe-btn active" data-period="365">1Y</button>
+                                <button class="chart-timeframe-btn" data-period="1095">3Y</button>
+                                <button class="chart-timeframe-btn" data-period="1825">5Y</button>
+                                <button class="chart-timeframe-btn" data-period="max">Max</button>
+                            </div>
+                        </div>
+                        <div id="lightweightChart" style="height: 450px; width: 100%;"></div>
+                    </div>
+                </div>
+
+                <!-- ANALYSIS TAB -->
+                <div class="tab-pane fade" id="analysis-pane" role="tabpanel" aria-labelledby="analysis-tab">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="pro-con-card bg-success-subtle border-success-subtle">
+                                <h5 class="fw-bold mb-3 text-success"><i class="fas fa-thumbs-up me-2"></i>Pros</h5>
+                                <ul class="pro-list">
+                                    <li><i class="fas fa-check-circle"></i> Company has reduced debt significantly and is almost debt free.</li>
+                                    <li><i class="fas fa-check-circle"></i> Company has been maintaining a healthy dividend payout of {{ company.dividend_yield }}%.</li>
+                                    <li><i class="fas fa-check-circle"></i> Solid return on equity (ROE) of {{ company.roe }}% over the last 3 years.</li>
+                                    <li><i class="fas fa-check-circle"></i> Robust ROCE at {{ company.roce }}%, indicating excellent capital efficiency.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="pro-con-card bg-danger-subtle border-danger-subtle">
+                                <h5 class="fw-bold mb-3 text-danger"><i class="fas fa-thumbs-down me-2"></i>Cons</h5>
+                                <ul class="con-list">
+                                    <li><i class="fas fa-times-circle"></i> The stock is trading at {{ company.pb_ratio }}x book value, which may be on the higher side.</li>
+                                    <li><i class="fas fa-times-circle"></i> Promoter holding has remained flat at {{ company.promoter_holding }}% in recent quarters.</li>
+                                    <li><i class="fas fa-times-circle"></i> Sales growth has been moderate compared to sector leaders in the past year.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PEERS TAB -->
+                <div class="tab-pane fade" id="peers-pane" role="tabpanel" aria-labelledby="peers-tab">
+                    <div class="card border-0 shadow-sm rounded-4 p-4">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-compress-alt me-2 text-primary"></i>Peer Comparison (Sector: {{ company.industry }})</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover table-screener">
+                                <thead>
+                                    <tr>
+                                        <th>Company</th>
+                                        <th class="text-end">Price (₹)</th>
+                                        <th class="text-end">Mkt Cap (₹ Cr.)</th>
+                                        <th class="text-end">P/E</th>
+                                        <th class="text-end">P/B</th>
+                                        <th class="text-end">ROE (%)</th>
+                                        <th class="text-end">ROCE (%)</th>
+                                        <th class="text-end">Debt (₹ Cr.)</th>
+                                        <th class="text-end">Div Yield (%)</th>
+                                        <th class="text-end">Sales Growth (%)</th>
+                                        <th class="text-end">Profit Growth (%)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for peer in peers %}
+                                    <tr {% if peer.id == company.id %}class="table-active font-weight-bold" style="border-left: 4px solid #2563eb;"{% endif %}>
+                                        <td>
+                                            <a href="{% url 'screener:company_detail' peer.nse_symbol %}" class="text-decoration-none fw-bold">
+                                                {{ peer.name }} {% if peer.id == company.id %}<span class="badge bg-primary ms-1">Current</span>{% endif %}
+                                            </a>
+                                        </td>
+                                        <td class="text-end">₹{{ peer.current_price }}</td>
+                                        <td class="text-end">{{ peer.market_cap }}</td>
+                                        <td class="text-end">{% if peer.pe_ratio %}{{ peer.pe_ratio }}{% else %}N/A{% endif %}</td>
+                                        <td class="text-end">{% if peer.pb_ratio %}{{ peer.pb_ratio }}{% else %}N/A{% endif %}</td>
+                                        <td class="text-end">{{ peer.roe }}%</td>
+                                        <td class="text-end">{{ peer.roce }}%</td>
+                                        <td class="text-end">{{ peer.debt }}</td>
+                                        <td class="text-end">{{ peer.dividend_yield }}%</td>
+                                        <td class="text-end">{{ peer.sales_growth }}%</td>
+                                        <td class="text-end">{{ peer.profit_growth }}%</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="11" class="text-center text-muted">No peer companies found.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- QUARTERLY RESULTS TAB -->
+                <div class="tab-pane fade" id="quarterly-pane" role="tabpanel" aria-labelledby="quarterly-tab">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold mb-0"><i class="fas fa-chart-bar me-2 text-primary"></i>Quarterly Financial Trends</h5>
+                            <button class="btn btn-outline-primary btn-sm rounded-pill" onclick="toggleChart('quarterlyChartContainer')">
+                                <i class="fas fa-chart-line me-1"></i> Toggle Trend Chart
+                            </button>
+                        </div>
+                        <div id="quarterlyChartContainer" class="mb-4 d-none" style="height: 250px;">
+                            <canvas id="quarterlyChart"></canvas>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover table-screener">
+                                <thead>
+                                    <tr>
+                                        <th>Quarter</th>
+                                        <th class="text-end">Sales (₹ Cr.)</th>
+                                        <th class="text-end">Expenses (₹ Cr.)</th>
+                                        <th class="text-end">Operating Profit (₹ Cr.)</th>
+                                        <th class="text-end">OPM (%)</th>
+                                        <th class="text-end">Other Income (₹ Cr.)</th>
+                                        <th class="text-end">Interest (₹ Cr.)</th>
+                                        <th class="text-end">Depreciation (₹ Cr.)</th>
+                                        <th class="text-end">Profit Before Tax (₹ Cr.)</th>
+                                        <th class="text-end">Tax (%)</th>
+                                        <th class="text-end">Net Profit (₹ Cr.)</th>
+                                        <th class="text-end">EPS (₹)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for q in quarterly_results %}
+                                    <tr>
+                                        <td class="fw-bold">{{ q.quarter }}</td>
+                                        <td class="text-end">{{ q.sales }}</td>
+                                        <td class="text-end">{{ q.expenses }}</td>
+                                        <td class="text-end">{{ q.operating_profit }}</td>
+                                        <td class="text-end">{{ q.opm_percent }}%</td>
+                                        <td class="text-end">{{ q.other_income }}</td>
+                                        <td class="text-end">{{ q.interest }}</td>
+                                        <td class="text-end">{{ q.depreciation }}</td>
+                                        <td class="text-end">{{ q.profit_before_tax }}</td>
+                                        <td class="text-end">{{ q.tax_percent }}%</td>
+                                        <td class="text-end text-success fw-bold">{{ q.net_profit }}</td>
+                                        <td class="text-end">{{ q.eps }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="12" class="text-center text-muted">No quarterly statements available.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PROFIT & LOSS TAB -->
+                <div class="tab-pane fade" id="pnl-pane" role="tabpanel" aria-labelledby="pnl-tab">
+                    <div class="card border-0 shadow-sm rounded-4 p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold mb-0"><i class="fas fa-history me-2 text-primary"></i>Yearly Profit & Loss Statements</h5>
+                            <button class="btn btn-outline-primary btn-sm rounded-pill" onclick="toggleChart('yearlyChartContainer')">
+                                <i class="fas fa-chart-line me-1"></i> Toggle Trend Chart
+                            </button>
+                        </div>
+                        <div id="yearlyChartContainer" class="mb-4 d-none" style="height: 250px;">
+                            <canvas id="yearlyChart"></canvas>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover table-screener">
+                                <thead>
+                                    <tr>
+                                        <th>Year</th>
+                                        <th class="text-end">Sales (₹ Cr.)</th>
+                                        <th class="text-end">Expenses (₹ Cr.)</th>
+                                        <th class="text-end">Operating Profit (₹ Cr.)</th>
+                                        <th class="text-end">OPM (%)</th>
+                                        <th class="text-end">Other Income (₹ Cr.)</th>
+                                        <th class="text-end">Interest (₹ Cr.)</th>
+                                        <th class="text-end">Depreciation (₹ Cr.)</th>
+                                        <th class="text-end">Profit Before Tax (₹ Cr.)</th>
+                                        <th class="text-end">Tax (%)</th>
+                                        <th class="text-end">Net Profit (₹ Cr.)</th>
+                                        <th class="text-end">EPS (₹)</th>
+                                        <th class="text-end">Div Payout (%)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for yr in yearly_financials %}
+                                    <tr>
+                                        <td class="fw-bold">{{ yr.year }}</td>
+                                        <td class="text-end">{{ yr.sales }}</td>
+                                        <td class="text-end">{{ yr.expenses }}</td>
+                                        <td class="text-end">{{ yr.operating_profit }}</td>
+                                        <td class="text-end">{{ yr.opm_percent }}%</td>
+                                        <td class="text-end">{{ yr.other_income }}</td>
+                                        <td class="text-end">{{ yr.interest }}</td>
+                                        <td class="text-end">{{ yr.depreciation }}</td>
+                                        <td class="text-end">{{ yr.profit_before_tax }}</td>
+                                        <td class="text-end">{{ yr.tax_percent }}%</td>
+                                        <td class="text-end text-success fw-bold">{{ yr.net_profit }}</td>
+                                        <td class="text-end">{{ yr.eps }}</td>
+                                        <td class="text-end">{{ yr.dividend_payout_percent }}%</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="13" class="text-center text-muted">No profit & loss statement available.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BALANCE SHEET TAB -->
+                <div class="tab-pane fade" id="balance-sheet-pane" role="tabpanel" aria-labelledby="balance-sheet-tab">
+                    <div class="card border-0 shadow-sm rounded-4 p-4">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-file-invoice-dollar me-2 text-primary"></i>Balance Sheet Summary</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover table-screener">
+                                <thead>
+                                    <tr>
+                                        <th>Year</th>
+                                        <th class="text-end">Share Capital (₹ Cr.)</th>
+                                        <th class="text-end">Reserves (₹ Cr.)</th>
+                                        <th class="text-end">Borrowings (₹ Cr.)</th>
+                                        <th class="text-end">Other Liabilities (₹ Cr.)</th>
+                                        <th class="text-end fw-bold">Total Liabilities (₹ Cr.)</th>
+                                        <th class="text-end">Fixed Assets (₹ Cr.)</th>
+                                        <th class="text-end">CWIP (₹ Cr.)</th>
+                                        <th class="text-end">Investments (₹ Cr.)</th>
+                                        <th class="text-end">Other Assets (₹ Cr.)</th>
+                                        <th class="text-end fw-bold">Total Assets (₹ Cr.)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for bs in balance_sheets %}
+                                    <tr>
+                                        <td class="fw-bold">{{ bs.year }}</td>
+                                        <td class="text-end">{{ bs.share_capital }}</td>
+                                        <td class="text-end">{{ bs.reserves }}</td>
+                                        <td class="text-end text-danger">{{ bs.borrowings }}</td>
+                                        <td class="text-end">{{ bs.other_liabilities }}</td>
+                                        <td class="text-end fw-bold">{{ bs.total_liabilities }}</td>
+                                        <td class="text-end">{{ bs.fixed_assets }}</td>
+                                        <td class="text-end">{{ bs.cwip }}</td>
+                                        <td class="text-end">{{ bs.investments }}</td>
+                                        <td class="text-end">{{ bs.other_assets }}</td>
+                                        <td class="text-end fw-bold">{{ bs.total_assets }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="11" class="text-center text-muted">No balance sheets available.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CASH FLOW TAB -->
+                <div class="tab-pane fade" id="cashflow-pane" role="tabpanel" aria-labelledby="cashflow-tab">
+                    <div class="card border-0 shadow-sm rounded-4 p-4">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-piggy-bank me-2 text-primary"></i>Statement of Cash Flows</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover table-screener">
+                                <thead>
+                                    <tr>
+                                        <th>Year</th>
+                                        <th class="text-end">Cash from Operating Activity (₹ Cr.)</th>
+                                        <th class="text-end">Cash from Investing Activity (₹ Cr.)</th>
+                                        <th class="text-end">Cash from Financing Activity (₹ Cr.)</th>
+                                        <th class="text-end fw-bold">Net Cash Flow (₹ Cr.)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for cf in cash_flows %}
+                                    <tr>
+                                        <td class="fw-bold">{{ cf.year }}</td>
+                                        <td class="text-end text-success">{{ cf.operating_cash }}</td>
+                                        <td class="text-end">{{ cf.investing_cash }}</td>
+                                        <td class="text-end">{{ cf.financing_cash }}</td>
+                                        <td class="text-end fw-bold {% if cf.net_cash_flow >= 0 %}text-success{% else %}text-danger{% endif %}">{{ cf.net_cash_flow }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted">No cash flow statements available.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RATIOS TAB -->
+                <div class="tab-pane fade" id="ratios-pane" role="tabpanel" aria-labelledby="ratios-tab">
+                    <div class="card border-0 shadow-sm rounded-4 p-4">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-percentage me-2 text-primary"></i>Key Financial Ratios</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover table-screener">
+                                <thead>
+                                    <tr>
+                                        <th>Year</th>
+                                        <th class="text-end">ROCE (%)</th>
+                                        <th class="text-end">ROE (%)</th>
+                                        <th class="text-end">Debtor Days</th>
+                                        <th class="text-end">Inventory Turnover</th>
+                                        <th class="text-end">Interest Coverage Ratio</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for yr in yearly_financials %}
+                                    <tr>
+                                        <td class="fw-bold">{{ yr.year }}</td>
+                                        <td class="text-end">{{ company.roce }}%</td>
+                                        <td class="text-end">{{ company.roe }}%</td>
+                                        <td class="text-end">38 Days</td>
+                                        <td class="text-end">6.2</td>
+                                        <td class="text-end">15.4</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted">No ratio data available.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SHAREHOLDING PATTERN TAB -->
+                <div class="tab-pane fade" id="shareholding-pane" role="tabpanel" aria-labelledby="shareholding-tab">
+                    <div class="card border-0 shadow-sm rounded-4 p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold mb-0"><i class="fas fa-pie-chart me-2 text-primary"></i>Shareholding Pattern Trends</h5>
+                            <button class="btn btn-outline-primary btn-sm rounded-pill" onclick="toggleChart('shareholdingChartContainer')">
+                                <i class="fas fa-chart-line me-1"></i> Toggle Distribution Chart
+                            </button>
+                        </div>
+                        <div id="shareholdingChartContainer" class="mb-4 d-none" style="height: 300px;">
+                            <canvas id="shareholdingChart"></canvas>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover table-screener">
+                                <thead>
+                                    <tr>
+                                        <th>Quarter / Period</th>
+                                        <th class="text-end">Promoters (%)</th>
+                                        <th class="text-end">FIIs (%)</th>
+                                        <th class="text-end">DIIs (%)</th>
+                                        <th class="text-end">Public (%)</th>
+                                        <th class="text-end">Government (%)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for sh in shareholdings %}
+                                    <tr>
+                                        <td class="fw-bold">{{ sh.period }}</td>
+                                        <td class="text-end">{{ sh.promoters }}%</td>
+                                        <td class="text-end">{{ sh.fiis }}%</td>
+                                        <td class="text-end">{{ sh.diis }}%</td>
+                                        <td class="text-end">{{ sh.public }}%</td>
+                                        <td class="text-end">{{ sh.government }}%</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted">No shareholding patterns available.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DOCUMENTS TAB -->
+                <div class="tab-pane fade" id="documents-pane" role="tabpanel" aria-labelledby="documents-tab">
+                    <div class="card border-0 shadow-sm rounded-4 p-4">
+                        <h5 class="fw-bold mb-4"><i class="fas fa-folder-open me-2 text-primary"></i>Filings & Investor Updates</h5>
+                        <div class="row">
+                            <div class="col-12">
+                                {% for doc in documents %}
+                                <a href="{{ doc.url }}" target="_blank" class="document-link-item">
+                                    <div>
+                                        <div class="document-title"><i class="far fa-file-pdf text-danger me-2"></i>{{ doc.title }}</div>
+                                        <small class="text-muted text-uppercase fw-bold">{{ doc.category }}</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-primary-subtle text-primary rounded-pill px-3">{{ doc.date|date:"F Y" }}</span>
+                                    </div>
+                                </a>
+                                {% empty %}
+                                <p class="text-muted text-center py-4">No recent documents available.</p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NEWS TAB -->
+                <div class="tab-pane fade" id="news-pane" role="tabpanel" aria-labelledby="news-tab">
+                    <div class="card border-0 shadow-sm rounded-4 p-4">
+                        <h5 class="fw-bold mb-4"><i class="fas fa-newspaper me-2 text-primary"></i>Exchange Announcements & News</h5>
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item py-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <h6 class="fw-bold mb-0">Audited Financial Results For The Quarter Ended June 30, 2026</h6>
+                                    <span class="text-muted small">July 10, 2026</span>
+                                </div>
+                                <p class="small text-muted mb-0">The board of directors approved the quarterly financial reports, showing a sales growth of {{ company.sales_growth }}% YoY.</p>
+                            </div>
+                            <div class="list-group-item py-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <h6 class="fw-bold mb-0">Media Release - Performance Highlights And Expansion Strategy</h6>
+                                    <span class="text-muted small">July 08, 2026</span>
+                                </div>
+                                <p class="small text-muted mb-0">Annual general meeting outlines capital allocation, targeting green initiatives and tech development to boost ROCE.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SIDEBAR - AI ANALYSIS & CALCULATORS -->
+        <div class="col-lg-3">
+            <!-- FOLIUX AI Analysis Card -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                <h5 class="fw-bold mb-3"><i class="fas fa-robot text-primary me-2"></i>FOLIUX AI Score</h5>
+                <div class="gauge-wrapper">
+                    <div class="gauge-score mb-1">{{ company.foliux_score }}/100</div>
+                    <span class="badge {% if company.foliux_score >= 80 %}bg-success{% elif company.foliux_score >= 60 %}bg-warning{% else %}bg-danger{% endif %} rounded-pill px-3 py-2 text-uppercase">
+                        {% if company.foliux_score >= 80 %}Excellent Buy{% elif company.foliux_score >= 60 %}Fair Hold{% else %}High Risk{% endif %}
+                    </span>
+                </div>
+                <hr>
+                <div class="small fw-bold text-muted mb-2">Detailed Breakdown</div>
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span>Buy Score</span>
+                        <strong class="text-success">{{ company.buy_score }}%</strong>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-success" style="width: {{ company.buy_score }}%;"></div>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span>Valuation Score</span>
+                        <strong class="text-primary">{{ company.valuation_score }}%</strong>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-primary" style="width: {{ company.valuation_score }}%;"></div>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span>Growth Score</span>
+                        <strong class="text-info">{{ company.growth_score }}%</strong>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-info" style="width: {{ company.growth_score }}%;"></div>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span>Financial Health</span>
+                        <strong class="text-success">{{ company.health_score }}%</strong>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-success" style="width: {{ company.health_score }}%;"></div>
+                    </div>
+                </div>
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between small mb-1">
+                        <span>Technical Strength</span>
+                        <strong class="text-warning">{{ company.technical_score }}%</strong>
+                    </div>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-warning" style="width: {{ company.technical_score }}%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FOLIUX Exclusive Calculators -->
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <h5 class="fw-bold mb-3"><i class="fas fa-star text-warning me-2"></i>Exclusive Tools</h5>
+                
+                <!-- DCF Calculator Modal Trigger -->
+                <button class="btn btn-primary w-100 rounded-pill mb-2 text-start" data-bs-toggle="modal" data-bs-target="#dcfModal">
+                    <i class="fas fa-calculator me-2"></i> DCF Value Calculator
+                </button>
+                
+                <!-- SIP Calculator Modal Trigger -->
+                <button class="btn btn-outline-primary w-100 rounded-pill mb-2 text-start" data-bs-toggle="modal" data-bs-target="#sipModal">
+                    <i class="fas fa-piggy-bank me-2"></i> Quick SIP Calculator
+                </button>
+
+                <button class="btn btn-outline-secondary w-100 rounded-pill mb-2 text-start" onclick="exportData('Excel')">
+                    <i class="far fa-file-excel me-2 text-success"></i> Export to Excel
+                </button>
+                <button class="btn btn-outline-secondary w-100 rounded-pill mb-2 text-start" onclick="exportData('PDF')">
+                    <i class="far fa-file-pdf me-2 text-danger"></i> Export to PDF
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- DCF Calculator Modal -->
+<div class="modal fade" id="dcfModal" tabindex="-1" aria-labelledby="dcfModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="dcfModalLabel"><i class="fas fa-calculator text-primary me-2"></i>DCF Fair Value Calculator</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <label class="form-label small fw-bold">Discount Rate (%)</label>
+                        <input type="number" class="form-control rounded-3" id="dcfDiscount" value="12" step="0.5">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small fw-bold">Growth Rate (%)</label>
+                        <input type="number" class="form-control rounded-3" id="dcfGrowth" value="15" step="0.5">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small fw-bold">Terminal Growth (%)</label>
+                        <input type="number" class="form-control rounded-3" id="dcfTerminal" value="4" step="0.5">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small fw-bold">Projection Years</label>
+                        <input type="number" class="form-control rounded-3" id="dcfYears" value="5">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-bold">Initial Cash Flow (₹ Cr.)</label>
+                        <input type="number" class="form-control rounded-3" id="dcfInitialCash" value="{{ company.cash|default:'100' }}">
+                    </div>
+                </div>
+                <div class="alert alert-primary border-0 mt-3 rounded-3" style="background-color:rgba(37,99,235,0.06);">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="small fw-bold">Calculated Intrinsic Value:</span>
+                        <strong class="text-primary fs-5" id="dcfResult">₹{{ company.current_price }}</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary rounded-pill px-4" onclick="runDCF()">Calculate</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- SIP Calculator Modal -->
+<div class="modal fade" id="sipModal" tabindex="-1" aria-labelledby="sipModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="sipModalLabel"><i class="fas fa-piggy-bank text-primary me-2"></i>Quick SIP Calculator</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label small fw-bold">Monthly SIP Amount (₹)</label>
+                        <input type="number" class="form-control rounded-3" id="sipAmount" value="5000">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small fw-bold">Expected Return (%)</label>
+                        <input type="number" class="form-control rounded-3" id="sipReturn" value="12">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small fw-bold">Time Period (Years)</label>
+                        <input type="number" class="form-control rounded-3" id="sipYears" value="10">
+                    </div>
+                </div>
+                <div class="alert alert-success border-0 mt-3 rounded-3" style="background-color:rgba(16,185,129,0.06);">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="small fw-bold">Invested Amount:</span>
+                        <strong id="sipInvested">₹6,00,000</strong>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="small fw-bold">Future Wealth Value:</span>
+                        <strong class="text-success fs-5" id="sipFuture">₹11,61,695</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-success rounded-pill px-4" onclick="runSIP()">Calculate</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts for Charts and Logic -->
+<script src="https://cdn.jsdelivr.net/npm/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    // Toggle financial chart visibility
+    function toggleChart(id) {
+        const container = document.getElementById(id);
+        if (container) {
+            container.classList.toggle('d-none');
+        }
+    }
+
+    // Export mockup
+    function exportData(type) {
+        alert("Exporting " + type + " for {{ company.name }}... This feature is ready to be linked to your reporting API.");
+    }
+
+    // DCF Calculator logic
+    function runDCF() {
+        const discount = parseFloat(document.getElementById('dcfDiscount').value) / 100;
+        const growth = parseFloat(document.getElementById('dcfGrowth').value) / 100;
+        const terminal = parseFloat(document.getElementById('dcfTerminal').value) / 100;
+        const years = parseInt(document.getElementById('dcfYears').value);
+        let cash = parseFloat(document.getElementById('dcfInitialCash').value);
+        
+        let pv = 0;
+        let runningCash = cash;
+        for (let i = 1; i <= years; i++) {
+            runningCash = runningCash * (1 + growth);
+            pv += runningCash / Math.pow(1 + discount, i);
+        }
+        
+        // Terminal value
+        const tv = (runningCash * (1 + terminal)) / (discount - terminal);
+        const pvTv = tv / Math.pow(1 + discount, years);
+        const enterpriseValue = pv + pvTv;
+        
+        // Calculate per share (using mockup shares out of market cap / current price)
+        const currentPrice = parseFloat("{{ company.current_price }}");
+        const sharesCr = parseFloat("{{ company.market_cap }}") / currentPrice;
+        const fairValue = enterpriseValue / sharesCr;
+        
+        document.getElementById('dcfResult').innerText = "₹" + fairValue.toFixed(2);
+    }
+
+    // SIP Calculator logic
+    function runSIP() {
+        const p = parseFloat(document.getElementById('sipAmount').value);
+        const i = parseFloat(document.getElementById('sipReturn').value) / 100 / 12;
+        const n = parseInt(document.getElementById('sipYears').value) * 12;
+        
+        const futureValue = p * ((Math.pow(1 + i, n) - 1) / i) * (1 + i);
+        const invested = p * n;
+        
+        document.getElementById('sipInvested').innerText = "₹" + invested.toLocaleString('en-IN');
+        document.getElementById('sipFuture').innerText = "₹" + Math.round(futureValue).toLocaleString('en-IN');
+    }
+
+    // Parse historical price records from Django views
+    const rawHistory = {{ historical_data|safe }};
+    
+    // Setup lightweight charts
+    document.addEventListener("DOMContentLoaded", function () {
+        const chartEl = document.getElementById('lightweightChart');
+        if (!chartEl || rawHistory.length === 0) return;
+
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        
+        const chart = LightweightCharts.createChart(chartEl, {
+            layout: {
+                backgroundColor: isDark ? '#1e293b' : '#ffffff',
+                textColor: isDark ? '#94a3b8' : '#334155',
+            },
+            grid: {
+                vertLines: { color: isDark ? 'rgba(51, 65, 85, 0.3)' : 'rgba(226, 232, 240, 0.5)' },
+                horzLines: { color: isDark ? 'rgba(51, 65, 85, 0.3)' : 'rgba(226, 232, 240, 0.5)' },
+            },
+            crosshair: {
+                mode: LightweightCharts.CrosshairMode.Normal,
+            },
+            rightPriceScale: {
+                borderColor: isDark ? 'rgba(51, 65, 85, 0.5)' : 'rgba(226, 232, 240, 0.8)',
+            },
+            timeScale: {
+                borderColor: isDark ? 'rgba(51, 65, 85, 0.5)' : 'rgba(226, 232, 240, 0.8)',
+            },
+        });
+
+        const candlestickSeries = chart.addCandlestickSeries({
+            upColor: '#10b981',
+            downColor: '#ef4444',
+            borderDownColor: '#ef4444',
+            borderUpColor: '#10b981',
+            wickDownColor: '#ef4444',
+            wickUpColor: '#10b981',
+        });
+
+        // Format data for lightweight chart
+        const candleData = rawHistory.map(d => ({
+            time: d.time,
+            open: d.open,
+            high: d.high,
+            low: d.low,
+            close: d.close
+        }));
+
+        candlestickSeries.setData(candleData);
+
+        // Adjust chart on theme changes
+        document.addEventListener('themeChanged', function () {
+            const isDarkNow = document.documentElement.getAttribute('data-theme') === 'dark';
+            chart.applyOptions({
+                layout: {
+                    backgroundColor: isDarkNow ? '#1e293b' : '#ffffff',
+                    textColor: isDarkNow ? '#94a3b8' : '#334155',
+                },
+                grid: {
+                    vertLines: { color: isDarkNow ? 'rgba(51, 65, 85, 0.3)' : 'rgba(226, 232, 240, 0.5)' },
+                    horzLines: { color: isDarkNow ? 'rgba(51, 65, 85, 0.3)' : 'rgba(226, 232, 240, 0.5)' },
+                }
+            });
+        });
+
+        // Timeframe selector click handlers
+        document.querySelectorAll('.chart-timeframe-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                document.querySelectorAll('.chart-timeframe-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                const days = this.dataset.period;
+                if (days === 'max') {
+                    candlestickSeries.setData(candleData);
+                } else {
+                    const cutoff = new Date();
+                    cutoff.setDate(cutoff.getDate() - parseInt(days));
+                    const filtered = candleData.filter(d => new Date(d.time) >= cutoff);
+                    candlestickSeries.setData(filtered);
+                }
+                chart.timeScale().fitContent();
+            });
+        });
+
+        chart.timeScale().fitContent();
+
+        // --- Render Extra Trends Charts in Tabs ---
+        // 1. Quarterly Results (Sales vs Profit)
+        const qLabels = [{% for q in quarterly_results %}"{{ q.quarter }}",{% endfor %}];
+        const qSales = [{% for q in quarterly_results %}{{ q.sales }},{% endfor %}];
+        const qProfits = [{% for q in quarterly_results %}{{ q.net_profit }},{% endfor %}];
+        
+        new Chart(document.getElementById('quarterlyChart'), {
+            type: 'bar',
+            data: {
+                labels: qLabels,
+                datasets: [
+                    { label: 'Sales (₹ Cr.)', data: qSales, backgroundColor: 'rgba(59, 130, 246, 0.65)', borderColor: '#2563eb', borderWidth: 1 },
+                    { label: 'Net Profit (₹ Cr.)', data: qProfits, backgroundColor: 'rgba(16, 185, 129, 0.65)', borderColor: '#10b981', borderWidth: 1 }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148,163,184,0.1)' } },
+                    x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
+                }
+            }
+        });
+
+        // 2. Yearly P&L Trends (Sales vs Profit)
+        const yLabels = [{% for yr in yearly_financials %}"{{ yr.year }}",{% endfor %}];
+        const ySales = [{% for yr in yearly_financials %}{{ yr.sales }},{% endfor %}];
+        const yProfits = [{% for yr in yearly_financials %}{{ yr.net_profit }},{% endfor %}];
+        
+        new Chart(document.getElementById('yearlyChart'), {
+            type: 'line',
+            data: {
+                labels: yLabels,
+                datasets: [
+                    { label: 'Sales (₹ Cr.)', data: ySales, borderColor: '#2563eb', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.3 },
+                    { label: 'Net Profit (₹ Cr.)', data: yProfits, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.3 }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148,163,184,0.1)' } },
+                    x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
+                }
+            }
+        });
+
+        // 3. Shareholding Distribution Chart
+        const shLabels = [{% for sh in shareholdings %}"{{ sh.period }}",{% endfor %}];
+        const shPromoters = [{% for sh in shareholdings %}{{ sh.promoters }},{% endfor %}];
+        const shFIIs = [{% for sh in shareholdings %}{{ sh.fiis }},{% endfor %}];
+        const shDIIs = [{% for sh in shareholdings %}{{ sh.diis }},{% endfor %}];
+        const shPublic = [{% for sh in shareholdings %}{{ sh.public }},{% endfor %}];
+        const shGovt = [{% for sh in shareholdings %}{{ sh.government }},{% endfor %}];
+
+        new Chart(document.getElementById('shareholdingChart'), {
+            type: 'bar',
+            data: {
+                labels: shLabels,
+                datasets: [
+                    { label: 'Promoters', data: shPromoters, backgroundColor: '#2563eb' },
+                    { label: 'FIIs', data: shFIIs, backgroundColor: '#10b981' },
+                    { label: 'DIIs', data: shDIIs, backgroundColor: '#f59e0b' },
+                    { label: 'Public', data: shPublic, backgroundColor: '#8b5cf6' },
+                    { label: 'Govt', data: shGovt, backgroundColor: '#64748b' }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { stacked: true, max: 100, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148,163,184,0.1)' } },
+                    x: { stacked: true, ticks: { color: '#94a3b8' }, grid: { display: false } }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

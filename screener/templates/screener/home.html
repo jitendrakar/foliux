@@ -1,0 +1,414 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .screener-hero {
+        padding: 4rem 0 3rem;
+        background: linear-gradient(135deg, rgba(0, 61, 124, 0.05) 0%, rgba(37, 99, 235, 0.05) 100%);
+        border-radius: 24px;
+        margin-bottom: 3rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(0, 61, 124, 0.08);
+    }
+    
+    html[data-theme="dark"] .screener-hero {
+        background: linear-gradient(135deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.4) 100%);
+        border-color: var(--global-dark-border);
+    }
+
+    .screener-title {
+        font-size: 3rem;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        background: linear-gradient(135deg, #003d7c, #2563eb);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 1rem;
+    }
+
+    html[data-theme="dark"] .screener-title {
+        background: linear-gradient(135deg, #fff, #93c5fd);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .screener-sub {
+        font-size: 1.1rem;
+        color: #64748b;
+        max-width: 600px;
+        margin: 0 auto 2.5rem;
+    }
+
+    html[data-theme="dark"] .screener-sub {
+        color: var(--global-dark-muted);
+    }
+
+    .search-card {
+        background: #fff;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+        max-width: 700px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 10;
+    }
+
+    html[data-theme="dark"] .search-card {
+        background: var(--global-dark-card);
+        border-color: var(--global-dark-border);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .search-group {
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 50px;
+        padding: 6px 6px 6px 24px;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s;
+        position: relative;
+    }
+
+    html[data-theme="dark"] .search-group {
+        background: rgba(0, 0, 0, 0.2);
+        border-color: var(--global-dark-border);
+    }
+
+    .search-group:focus-within {
+        border-color: #2563eb;
+        background: #fff;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+    }
+
+    html[data-theme="dark"] .search-group:focus-within {
+        background: rgba(0, 0, 0, 0.4);
+    }
+
+    .search-input {
+        border: none;
+        flex-grow: 1;
+        outline: none;
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #1e293b;
+        background: transparent;
+    }
+
+    html[data-theme="dark"] .search-input {
+        color: var(--global-dark-text);
+    }
+
+    .search-input::placeholder {
+        color: #94a3b8;
+        font-weight: 500;
+    }
+
+    .btn-search-screener {
+        background: linear-gradient(135deg, #003d7c, #2563eb);
+        color: #fff;
+        border: none;
+        border-radius: 50px;
+        padding: 10px 28px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+
+    .btn-search-screener:hover {
+        box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
+        transform: translateY(-1px);
+    }
+
+    .autocomplete-popover {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        margin-top: 10px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        z-index: 2000;
+        display: none;
+        padding: 8px;
+        max-height: 320px;
+        overflow-y: auto;
+    }
+
+    html[data-theme="dark"] .autocomplete-popover {
+        background: var(--global-dark-card);
+        border-color: var(--global-dark-border);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+    }
+
+    .suggest-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .suggest-item {
+        padding: 12px 18px;
+        cursor: pointer;
+        border-radius: 10px;
+        transition: background 0.2s, transform 0.1s;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .suggest-item:hover {
+        background: #f1f5f9;
+        transform: translateX(4px);
+    }
+
+    html[data-theme="dark"] .suggest-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .suggest-name {
+        font-weight: 700;
+        color: #1e293b;
+        font-size: 0.95rem;
+    }
+
+    html[data-theme="dark"] .suggest-name {
+        color: var(--global-dark-text);
+    }
+
+    .suggest-symbol {
+        font-size: 0.8rem;
+        color: #94a3b8;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+    }
+
+    .popular-title {
+        font-weight: 800;
+        font-size: 0.75rem;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    .popular-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+    }
+
+    .popular-chip {
+        padding: 8px 20px;
+        border-radius: 50px;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        color: #475569;
+        font-weight: 700;
+        font-size: 0.85rem;
+        text-decoration: none !important;
+        transition: all 0.2s;
+    }
+
+    html[data-theme="dark"] .popular-chip {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: var(--global-dark-border);
+        color: var(--global-dark-muted);
+    }
+
+    .popular-chip:hover {
+        background: linear-gradient(135deg, #003d7c, #2563eb);
+        color: #fff !important;
+        border-color: transparent;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+    }
+    
+    .features-grid {
+        margin-top: 5rem;
+    }
+
+    .feature-card {
+        background: #fff;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        border-radius: 20px;
+        padding: 2rem;
+        height: 100%;
+        transition: all 0.3s;
+    }
+
+    html[data-theme="dark"] .feature-card {
+        background: var(--global-dark-card);
+        border-color: var(--global-dark-border);
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    }
+
+    html[data-theme="dark"] .feature-card:hover {
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .feature-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Block -->
+    <div class="screener-hero animate-in">
+        <h1 class="screener-title">FOLIUX Stock Screener</h1>
+        <p class="screener-sub text-muted">Analyze financial statements, track key metrics, compare peers, and unlock AI-driven insights for Indian equities.</p>
+        
+        <!-- Search Card -->
+        <div class="search-card">
+            <div class="search-group">
+                <i class="fas fa-search text-muted me-3" style="font-size: 1.1rem;"></i>
+                <input type="text" class="search-input" id="screenerSearchInput" placeholder="Search by Company Name, NSE or BSE Symbol..." autocomplete="off">
+                <button class="btn-search-screener" id="screenerSearchBtn">Search</button>
+                
+                <!-- Autocomplete Popover -->
+                <div class="autocomplete-popover" id="screenerSuggestPopover">
+                    <ul class="suggest-list" id="screenerSuggestList"></ul>
+                </div>
+            </div>
+            
+            <!-- Popular Presets -->
+            <div class="popular-title">Popular Stock Profiles</div>
+            <div class="popular-grid">
+                <a href="{% url 'screener:company_detail' 'RELIANCE' %}" class="popular-chip">RELIANCE</a>
+                <a href="{% url 'screener:company_detail' 'TCS' %}" class="popular-chip">TCS</a>
+                <a href="{% url 'screener:company_detail' 'INFY' %}" class="popular-chip">INFY</a>
+                <a href="{% url 'screener:company_detail' 'HDFCBANK' %}" class="popular-chip">HDFC BANK</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Features -->
+    <div class="row g-4 features-grid animate-in animate-delay-1">
+        <div class="col-md-4">
+            <div class="feature-card">
+                <div class="feature-icon bg-primary-subtle text-primary">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Interactive Candlesticks</h5>
+                <p class="small text-muted mb-0">High-performance TradingView charting with Volume overlays and multiple time-frames from 1M to Max.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card">
+                <div class="feature-icon bg-success-subtle text-success">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                </div>
+                <h5 class="fw-bold mb-2">Deep Financials</h5>
+                <p class="small text-muted mb-0">Comprehensive Quarterly Results, Profit & Loss, Balance Sheet, Cash Flow, and Ratios tabs.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card">
+                <div class="feature-icon bg-warning-subtle text-warning">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h5 class="fw-bold mb-2">FOLIUX AI Analysis</h5>
+                <p class="small text-muted mb-0">Get instant AI ratings for valuation, growth, financial health, risk, and technical strength.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Autocomplete Logic -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.getElementById("screenerSearchInput");
+    const searchBtn = document.getElementById("screenerSearchBtn");
+    const popover = document.getElementById("screenerSuggestPopover");
+    const list = document.getElementById("screenerSuggestList");
+    let timeout = null;
+
+    searchInput.addEventListener("input", function () {
+        clearTimeout(timeout);
+        const query = searchInput.value.trim();
+        if (query.length < 2) {
+            popover.style.display = "none";
+            return;
+        }
+
+        timeout = setTimeout(async function () {
+            try {
+                const response = await fetch(`/screener/api/suggest/?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                
+                list.innerHTML = "";
+                if (data.length === 0) {
+                    const li = document.createElement("li");
+                    li.className = "p-3 text-muted small text-center";
+                    li.innerText = "No companies found";
+                    list.appendChild(li);
+                } else {
+                    data.forEach(item => {
+                        const li = document.createElement("li");
+                        li.className = "suggest-item";
+                        li.dataset.symbol = item.nse_symbol;
+                        li.innerHTML = `
+                            <div class="suggest-name">${item.name}</div>
+                            <div class="suggest-symbol text-end">${item.nse_symbol} <span class="badge bg-secondary-subtle text-secondary ms-1">${item.industry}</span></div>
+                        `;
+                        li.addEventListener("click", function () {
+                            window.location.href = `/screener/${item.nse_symbol}`;
+                        });
+                        list.appendChild(li);
+                    });
+                }
+                popover.style.display = "block";
+            } catch (err) {
+                console.error("Autocompletion failed:", err);
+            }
+        }, 150);
+    });
+
+    // Close popover when clicking outside
+    document.addEventListener("click", function (e) {
+        if (!searchInput.contains(e.target) && !popover.contains(e.target)) {
+            popover.style.display = "none";
+        }
+    });
+
+    searchBtn.addEventListener("click", function () {
+        const query = searchInput.value.trim().toUpperCase();
+        if (query) {
+            window.location.href = `/screener/${query}`;
+        }
+    });
+
+    searchInput.addEventListener("keypress", function (e) {
+        if (e.key === "Enter") {
+            const query = searchInput.value.trim().toUpperCase();
+            if (query) {
+                window.location.href = `/screener/${query}`;
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -680,37 +680,24 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto align-items-center">
-          {% comment %} Navigation: Full menu visible to all users. Portfolio link shown only before login. {% endcomment %}
-{% comment %} Navigation: Full menu visible to all users. Portfolio link shown only before login. {% endcomment %}
-<li class="nav-item">
-    <a class="nav-link" href="{% url 'strategy' %}{% if is_family_view %}?user_id={{ target_user.id }}{% elif is_consolidated %}?user_id=consolidated{% endif %}">Strategy</a>
-</li>
-<li class="nav-item">
-    <a class="nav-link nav-item-dashboard" href="{% url 'dashboard' %}{% if is_family_view %}?user_id={{ target_user.id }}{% elif is_consolidated %}?user_id=consolidated{% endif %}">StockETF</a>
-</li>
-<li class="nav-item">
-    <a class="nav-link" href="{% url 'mf_dashboard' %}{% if is_family_view %}?user_id={{ target_user.id }}{% elif is_consolidated %}?user_id=consolidated{% endif %}">MF</a>
-</li>
-<li class="nav-item">
-    <a class="nav-link" href="{% url 'coin_dashboard' %}{% if is_family_view %}?user_id={{ target_user.id }}{% elif is_consolidated %}?user_id=consolidated{% endif %}">Coin</a>
-</li>
-<li class="nav-item">
-    <a class="nav-link" href="{% url 'nps_dashboard' %}{% if is_family_view %}?user_id={{ target_user.id }}{% elif is_consolidated %}?user_id=consolidated{% endif %}">NPS</a>
-</li>
-<li class="nav-item">
-    <a class="nav-link nav-item-dashboard" href="{% url 'ipo' %}{% if is_family_view %}?user_id={{ target_user.id }}{% elif is_consolidated %}?user_id=consolidated{% endif %}">
-        IPO
-        {% if active_ipo_count > 0 %}
-          <span class="badge-fbi" title="Active IPOs available!">{{ active_ipo_count }}</span>
-        {% endif %}
-    </a>
-</li>
-<li class="nav-item">
-    <a class="nav-link" href="{% url 'wealth_calculators' %}?calc_id=sip{% if is_family_view %}&user_id={{ target_user.id }}{% elif is_consolidated %}&user_id=consolidated{% endif %}">Calc</a>
-</li>
-<li class="nav-item">
-    <a class="nav-link" href="{% url 'cashflow_dashboard' %}{% if is_family_view %}?user_id={{ target_user.id }}{% elif is_consolidated %}?user_id=consolidated{% endif %}">Cashflow</a>
-</li>
+          <li class="nav-item">
+              <a class="nav-link" href="{% url 'landing' %}">Home</a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link" href="{% url 'screener:screener_home' %}">Screener</a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link" href="{% url 'strategy' %}{% if is_family_view %}?user_id={{ target_user.id }}{% elif is_consolidated %}?user_id=consolidated{% endif %}">Strategy</a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link" href="{% url 'education_hub' %}">Education</a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link" href="{% url 'stock_news' %}">News</a>
+          </li>
+          <li class="nav-item">
+              <a class="nav-link" href="{% url 'feedback' %}">Feedback</a>
+          </li>
 <li class="nav-item d-flex align-items-center ms-lg-2">
     <button id="globalThemeToggle" class="btn btn-link nav-link p-0 m-0 d-flex align-items-center justify-content-center" style="font-size: 1.1rem; border: none; background: none; width: 32px; height: 32px;" aria-label="Toggle Theme">
         <i class="fas fa-moon"></i>

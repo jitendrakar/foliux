@@ -105,6 +105,7 @@ INSTALLED_APPS = [
     'encrypted_model_fields',
     'salon',
     'tailor',
+    'screener',
 ]
 
 SITE_ID = 1
@@ -203,7 +204,16 @@ DATABASES['tailor'] = {
         'timeout': 20,
     }
 }
-DATABASE_ROUTERS = ['salon.router.SalonRouter', 'tailor.router.TailorRouter']
+
+# Independent Screener Database Config
+DATABASES['screener'] = {
+    'ENGINE': 'django.db.backends.sqlite3',
+    'NAME': BASE_DIR / 'screener' / 'db.sqlite3',
+    'OPTIONS': {
+        'timeout': 20,
+    }
+}
+DATABASE_ROUTERS = ['salon.router.SalonRouter', 'tailor.router.TailorRouter', 'screener.router.ScreenerRouter']
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
