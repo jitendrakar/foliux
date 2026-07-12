@@ -1054,13 +1054,15 @@
     const rawHistory = {{ historical_data|safe }};
     
     // Setup lightweight charts
-    document.addEventListener("DOMContentLoaded", function () {
+    function initLightweightChart() {
         const chartEl = document.getElementById('lightweightChart');
         if (!chartEl || rawHistory.length === 0) return;
 
         const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
         
         const chart = LightweightCharts.createChart(chartEl, {
+            width: chartEl.clientWidth || 800,
+            height: 450,
             layout: {
                 backgroundColor: isDark ? '#1e293b' : '#ffffff',
                 textColor: isDark ? '#94a3b8' : '#334155',
@@ -1100,6 +1102,10 @@
 
         candlestickSeries.setData(candleData);
 
+        window.addEventListener('resize', () => {
+            chart.resize(chartEl.clientWidth, 450);
+        });
+
         // Adjust chart on theme changes
         document.addEventListener('themeChanged', function () {
             const isDarkNow = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -1135,6 +1141,13 @@
         });
 
         chart.timeScale().fitContent();
+    }
+
+    if (document.readyState === "complete" || document.readyState === "interactive") {
+        initLightweightChart();
+    } else {
+        document.addEventListener("DOMContentLoaded", initLightweightChart);
+    }
 
         // --- Render Extra Trends Charts in Tabs ---
         // 1. Quarterly Results (Sales vs Profit)
