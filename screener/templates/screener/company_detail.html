@@ -498,7 +498,7 @@
                                 <i class="fas fa-chart-line me-1"></i> Toggle Trend Chart
                             </button>
                         </div>
-                        <div id="quarterlyChartContainer" class="mb-4 d-none" style="height: 250px;">
+                        <div id="quarterlyChartContainer" class="mb-4" style="height: 250px;">
                             <canvas id="quarterlyChart"></canvas>
                         </div>
                         <div class="table-responsive">
@@ -555,7 +555,7 @@
                                 <i class="fas fa-chart-line me-1"></i> Toggle Trend Chart
                             </button>
                         </div>
-                        <div id="yearlyChartContainer" class="mb-4 d-none" style="height: 250px;">
+                        <div id="yearlyChartContainer" class="mb-4" style="height: 250px;">
                             <canvas id="yearlyChart"></canvas>
                         </div>
                         <div class="table-responsive">
@@ -733,7 +733,7 @@
                                 <i class="fas fa-chart-line me-1"></i> Toggle Distribution Chart
                             </button>
                         </div>
-                        <div id="shareholdingChartContainer" class="mb-4 d-none" style="height: 300px;">
+                        <div id="shareholdingChartContainer" class="mb-4" style="height: 300px;">
                             <canvas id="shareholdingChart"></canvas>
                         </div>
                         <div class="table-responsive">
@@ -991,8 +991,11 @@
     </div>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
 <!-- Scripts for Charts and Logic -->
-<script src="https://cdn.jsdelivr.net/npm/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
