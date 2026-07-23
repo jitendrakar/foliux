@@ -1,6 +1,27 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block meta_tags %}
+<title>{{ meta_title }}</title>
+<meta name="description" content="{{ meta_description }}">
+<meta name="keywords" content="{% if latest_ipo %}{{ latest_ipo.name }}, {{ latest_ipo.name }} IPO, {% endif %}IPO Tracker, Initial Public Offerings, Stock Market IPO, FOLIUX IPO">
+<meta name="author" content="FOLIUX">
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{ request.build_absolute_uri }}">
+<meta property="og:title" content="{{ meta_title }}">
+<meta property="og:description" content="{{ meta_description }}">
+<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/logo.png' %}">
+
+<!-- Twitter -->
+<meta property="twitter:card" content="summary_large_image">
+<meta property="twitter:url" content="{{ request.build_absolute_uri }}">
+<meta property="twitter:title" content="{{ meta_title }}">
+<meta property="twitter:description" content="{{ meta_description }}">
+<meta property="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/logo.png' %}">
+{% endblock %}
+
 {% block extra_css %}
 <style>
     .ipo-card {
@@ -261,8 +282,13 @@
 {% endif %}
 <div class="row align-items-center mb-5 animate__animated animate__fadeInDown">
     <div class="col-md-7">
-        <h1 class="fw-bold mb-1" style="color: var(--primary-color);">Initial Public Offerings</h1>
-        <p class="text-muted">Expert analysis and real-time advice on latest IPOs.</p>
+        {% if header_title %}
+            <h1 class="fw-bold mb-1" style="color: var(--primary-color);">{{ header_title }}</h1>
+            <p class="text-muted mb-0">{{ header_subheading }}</p>
+        {% else %}
+            <h1 class="fw-bold mb-1" style="color: var(--primary-color);">Initial Public Offerings</h1>
+            <p class="text-muted mb-0">Expert analysis and real-time advice on latest IPOs.</p>
+        {% endif %}
     </div>
     <div class="col-md-5 text-md-end">
         <div class="d-flex flex-wrap gap-2 justify-content-md-end mt-3 mt-md-0">

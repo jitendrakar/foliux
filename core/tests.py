@@ -368,6 +368,38 @@ class IPOTestCase(TestCase):
         self.assertIsNone(ipo_no_sym.cmp)
         self.assertIsNone(ipo_no_sym.price_change)
 
+    def test_dynamic_ipo_header(self):
+        from core.models import IPO
+        from datetime import date, timedelta
+        from django.utils import timezone
+        
+        today = timezone.localdate()
+        ipo = IPO.objects.create(
+            name="ABC Technologies",
+            start_date=today - timedelta(days=1),
+            end_date=today + timedelta(days=5),
+            company_work="Fintech software solutions",
+            notes="Strong fundamentals",
+            advise="APPLY"
+        )
+        
+        response = self.client.get('/ipo/')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("ABC Technologies IPO | FOLIUX", response.content.decode())
+        self.assertIn("ABC Technologies IPO", response.content.decode())
+        self.assertIn("Issue Open:", response.content.decode())
+        self.assertIn("Advice: Apply", response.content.decode())
+
+    def test_dynamic_ipo_header_fallback(self):
+        from core.models import IPO
+        IPO.objects.all().delete()
+        
+        response = self.client.get('/ipo/')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Initial Public Offerings", response.content.decode())
+        self.assertIn("Expert analysis and real-time advice on latest IPOs.", response.content.decode())
+
+
 
 class FinancialYearValidationTestCase(TestCase):
     def test_normalize_and_validate_fy(self):
@@ -488,6 +520,61 @@ class RamjaaTestCase(TestCase):
         # Accessing a nonexistent file should return 404
         response = self.client.get('/ramjaa/nonexistent.xyz')
         self.assertEqual(response.status_code, 404)
+
+
+class BlogKeepReadingViewsOrderingTestCase(TestCase):
+    def test_keep_reading_sorted_by_views_high_to_low(self):
+        from core.models import BlogPost
+        author = User.objects.create_user(username='testauthor', email='author@test.com', password='password')
+        
+        main_post = BlogPost.objects.create(
+            title="Main Article",
+            slug="main-article",
+            content="Main content",
+            author=author,
+            status="published",
+            tags="Market, Stock"
+        )
+        
+        post_low = BlogPost.objects.create(
+            title="Low Views Article",
+            slug="low-views-article",
+            content="Low views content",
+            author=author,
+            status="published",
+            tags="Market",
+            views_count=10
+        )
+        
+        post_high = BlogPost.objects.create(
+            title="High Views Article",
+            slug="high-views-article",
+            content="High views content",
+            author=author,
+            status="published",
+            tags="Market",
+            views_count=500
+        )
+        
+        post_mid = BlogPost.objects.create(
+            title="Mid Views Article",
+            slug="mid-views-article",
+            content="Mid views content",
+            author=author,
+            status="published",
+            tags="Market",
+            views_count=250
+        )
+        
+        response = self.client.get(f"/education/{main_post.slug}/")
+        self.assertEqual(response.status_code, 200)
+        
+        related_posts = list(response.context['related_posts'])
+        # Should be ordered high (500), mid (250), low (10)
+        views_list = [p.views_count for p in related_posts]
+        self.assertEqual(views_list, sorted(views_list, reverse=True))
+        self.assertEqual(related_posts[0].id, post_high.id)
+
 
 
 

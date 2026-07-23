@@ -551,7 +551,10 @@
                                 {% endif %}
                             </div>
                             <div class="p-3 d-flex flex-column flex-grow-1">
-                                <span class="small text-muted mb-1"><i class="far fa-calendar-alt"></i> {{ r_post.created_at|date:"d M Y" }}</span>
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="small text-muted"><i class="far fa-calendar-alt"></i> {{ r_post.created_at|date:"d M Y" }}</span>
+                                    <span class="small text-muted fw-semibold"><i class="far fa-eye ms-1"></i> {{ r_post.views_count }} views</span>
+                                </div>
                                 <a href="{% url 'blog_detail' r_post.slug %}" class="text-decoration-none">
                                     <h4 class="related-title text-truncate-2">{{ r_post.title }}</h4>
                                 </a>

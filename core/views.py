@@ -1755,25 +1755,30 @@ def blog_detail(request, slug):
     post.refresh_from_db()
 
     # Fetch related posts (sharing any tags, excluding current post)
-    related_posts = BlogPost.objects.exclude(id=post.id).filter(status='published')
+    related_posts_qs = BlogPost.objects.exclude(id=post.id).filter(status='published')
     tags_list = post.get_tags_list()
     if tags_list:
         from django.db.models import Q
         tag_queries = Q()
         for t in tags_list:
             tag_queries |= Q(tags__icontains=t)
-        related_posts = related_posts.filter(tag_queries)
-    related_posts = related_posts.order_by('-created_at')[:3]
+        related_posts_qs = related_posts_qs.filter(tag_queries)
 
-    # If not enough related posts, backfill with recent posts
-    if related_posts.count() < 3:
-        exclude_ids = [post.id] + [p.id for p in related_posts]
-        extra_posts = BlogPost.objects.exclude(id__in=exclude_ids).filter(status='published').order_by('-created_at')[:3 - related_posts.count()]
-        related_posts = list(related_posts) + list(extra_posts)
+    # Sort matching related posts by views count descending (highest view count first)
+    related_posts_list = list(related_posts_qs.order_by('-views_count', '-created_at'))
+
+    # If fewer than 6 related posts, backfill with other top-viewed published posts
+    if len(related_posts_list) < 6:
+        exclude_ids = [post.id] + [p.id for p in related_posts_list]
+        extra_posts = list(BlogPost.objects.exclude(id__in=exclude_ids).filter(status='published').order_by('-views_count', '-created_at'))
+        related_posts_list.extend(extra_posts)
+
+    # Sort all collected posts strictly by view count (highest first)
+    related_posts_list.sort(key=lambda p: (p.views_count or 0, p.created_at), reverse=True)
 
     context = {
         'post': post,
-        'related_posts': related_posts[:3],
+        'related_posts': related_posts_list[:6],
     }
     return render(request, 'core/blog_detail.html', context)
 
@@ -1801,20 +1806,74 @@ def stock_news_list(request):
 
 
 def ipo_list(request):
-    """IPO list page for users."""
+    """IPO list page for users with dynamic header and SEO tags."""
     from .models import IPO
+    from django.utils import timezone
+
     target_user, is_family_view, is_consolidated = get_target_user(request) if request.user.is_authenticated else (None, False, False)
     
-    ipos = IPO.objects.all().order_by('-start_date')
+    ipos = IPO.objects.all().order_by('-start_date', '-created_at')
     
     # Optional filtering
     advise_filter = request.GET.get('advise')
     if advise_filter:
         ipos = ipos.filter(advise=advise_filter)
+
+    # Fetch latest active or most recently added IPO for dynamic header & SEO
+    today = timezone.localdate()
+    latest_ipo = IPO.objects.filter(start_date__lte=today, end_date__gte=today).order_by('-created_at', '-start_date').first()
+    if not latest_ipo:
+        latest_ipo = IPO.objects.filter(start_date__gt=today).order_by('start_date', '-created_at').first()
+    if not latest_ipo:
+        latest_ipo = IPO.objects.all().order_by('-created_at', '-id').first()
+
+    header_title = None
+    header_subheading = None
+    meta_title = "Initial Public Offerings (IPO) | FOLIUX"
+    meta_description = "Track latest Indian Initial Public Offerings (IPOs) with expert analysis, issue dates, and real-time subscription advice on FOLIUX."
+
+    if latest_ipo:
+        name_clean = latest_ipo.name.strip()
+        if not name_clean.lower().endswith('ipo'):
+            ipo_name_display = f"{name_clean} IPO"
+        else:
+            ipo_name_display = name_clean
+
+        header_title = ipo_name_display
+        meta_title = f"{ipo_name_display} | FOLIUX"
         
+        start_fmt = latest_ipo.start_date.strftime("%d %b %Y") if latest_ipo.start_date else ""
+        end_fmt = latest_ipo.end_date.strftime("%d %b %Y") if latest_ipo.end_date else ""
+        
+        sub_parts = []
+        if start_fmt and end_fmt:
+            sub_parts.append(f"Issue Open: {start_fmt} – {end_fmt}")
+        elif start_fmt:
+            sub_parts.append(f"Issue Open: {start_fmt}")
+            
+        sub_parts.append(f"Status: {latest_ipo.status}")
+        sub_parts.append(f"Advice: {latest_ipo.get_advise_display()}")
+        
+        if latest_ipo.company_work:
+            work_short = latest_ipo.company_work.strip()
+            if len(work_short) > 80:
+                work_short = work_short[:77] + "..."
+            sub_parts.append(work_short)
+            
+        header_subheading = " • ".join(sub_parts)
+        
+        meta_description = f"{ipo_name_display}: Bidding from {start_fmt} to {end_fmt}. Status: {latest_ipo.status}. Recommendation: {latest_ipo.get_advise_display()}. {latest_ipo.company_work or ''}".strip()
+        if len(meta_description) > 160:
+            meta_description = meta_description[:157] + "..."
+
     context = {
         'ipos': ipos,
-        'title': 'IPO Management',
+        'latest_ipo': latest_ipo,
+        'header_title': header_title,
+        'header_subheading': header_subheading,
+        'meta_title': meta_title,
+        'meta_description': meta_description,
+        'title': meta_title,
         'target_user': target_user,
         'is_family_view': is_family_view,
         'is_consolidated': is_consolidated,
