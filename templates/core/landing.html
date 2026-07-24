@@ -2402,16 +2402,28 @@
             const introModal = new bootstrap.Modal(introModalEl);
             introModal.show();
 
+            let isWatchingIntro = false;
+
+            // Clicking anywhere on or inside the modal (except WATCH INTRO) redirects to Dashboard
+            introModalEl.addEventListener('click', function (e) {
+                const watchLink = e.target.closest('.watch-intro-target');
+                if (watchLink) {
+                    isWatchingIntro = true;
+                    sessionStorage.setItem('introVideoSkipped', 'true');
+                    introModal.hide();
+                    return; // Allow YouTube link to open in new tab
+                }
+
+                sessionStorage.setItem('introVideoSkipped', 'true');
+                window.location.href = "{% url 'dashboard' %}";
+            });
+
             introModalEl.addEventListener('hidden.bs.modal', function () {
                 sessionStorage.setItem('introVideoSkipped', 'true');
+                if (!isWatchingIntro) {
+                    window.location.href = "{% url 'dashboard' %}";
+                }
             });
-            
-            const watchBtn = document.getElementById('watchIntroBtn');
-            if (watchBtn) {
-                watchBtn.addEventListener('click', function() {
-                    introModal.hide();
-                });
-            }
         }
         // --- Review Marquee Logic ---
         function initReviewMarquee() {
@@ -2457,11 +2469,9 @@
                   <div class="mb-3">
                       <h4 class="fw-900 text-dark mb-1">Welcome to <span class="text-primary">FOLIUX!</span></h4>
                       <p class="text-muted fw-bold x-small opacity-75">Rules-Based Wealth Engineering</p>
-                  </div>
- 
-                  <!-- Premium Video Preview -->
+                           <!-- Premium Video Preview -->
                   <div class="video-preview-wrapper video-preview-card mb-4 position-relative mx-auto rounded-4 overflow-hidden shadow-lg shimmer-loading">
-                      <a href="https://youtu.be/2ldU89bOIn4" target="_blank" class="d-flex align-items-center justify-content-center h-100 w-100 text-decoration-none group">
+                      <a href="https://youtu.be/2ldU89bOIn4" target="_blank" class="watch-intro-target d-flex align-items-center justify-content-center h-100 w-100 text-decoration-none group">
                           <img src="{% static 'images/logo.png' %}" class="img-fluid p-5" style="max-height: 90%; object-fit: contain; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); filter: drop-shadow(0 8px 12px rgba(0,0,0,0.03)); z-index: 1;" alt="FOLIUX Logo">
                           
                           <!-- Branded YouTube Play Icon -->
@@ -2475,7 +2485,7 @@
                           <div class="position-absolute w-100 h-100 top-0 start-0 hover-dim" style="background: rgba(0,0,0,0.03); opacity: 0; transition: opacity 0.3s ease; z-index: 3;"></div>
                       </a>
                   </div>
- 
+
                   <!-- Compact Risk Disclaimer -->
                   <div class="risk-alert p-3 mb-4 rounded-3 border-start border-4 border-warning shadow-sm">
                       <p class="mb-0 x-small fw-bold text-dark opacity-90" style="line-height: 1.5;">
@@ -2485,7 +2495,7 @@
                   </div>              </div>
 
                   <div class="action-footer d-flex flex-column gap-2 mb-2">
-                      <a href="https://youtu.be/2ldU89bOIn4" target="_blank" class="btn btn-primary btn-sm rounded-pill py-2 fw-black shadow-sm transform-hover w-100" style="font-size: 0.85rem; letter-spacing: 0.8px; background: linear-gradient(135deg, #003d7c, #0056b3); border: none;">
+                      <a href="https://youtu.be/2ldU89bOIn4" target="_blank" class="watch-intro-target btn btn-primary btn-sm rounded-pill py-2 fw-black shadow-sm transform-hover w-100" style="font-size: 0.85rem; letter-spacing: 0.8px; background: linear-gradient(135deg, #003d7c, #0056b3); border: none;">
                           <i class="fas fa-play-circle me-1"></i> WATCH INTRO
                       </a>
                       <button type="button" class="btn btn-link text-muted btn-sm text-decoration-none fw-bold x-small opacity-75" data-bs-dismiss="modal">Skip to Dashboard</button>
