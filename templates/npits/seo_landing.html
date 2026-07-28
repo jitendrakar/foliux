@@ -1,0 +1,110 @@
+{% extends 'npits/base_npits.html' %}
+
+{% block npits_content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-4">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'npits:home' %}" class="text-decoration-none"><i class="fas fa-home"></i> Home</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ title }}</li>
+  </ol>
+</nav>
+
+<!-- Landing Header -->
+<div class="mb-5 text-center bg-primary-subtle p-5 rounded-4 border">
+  <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold mb-3">
+    <i class="fas fa-award me-1"></i> Expert Buyer Guide & Rankings
+  </span>
+  <h1 class="display-5 fw-extrabold mb-3">{{ h1_title }}</h1>
+  <p class="lead text-secondary max-w-3xl mx-auto mb-0">{{ intro_text }}</p>
+</div>
+
+<!-- Comparison Summary Table -->
+{% if products %}
+<div class="card npits-card p-4 mb-5">
+  <h4 class="fw-bold mb-3"><i class="fas fa-list-ol text-primary me-2"></i> Quick Comparison Summary</h4>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Rank</th>
+          <th>Product</th>
+          <th>Rating</th>
+          <th>Capacity</th>
+          <th>Price</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for prod in products %}
+        <tr>
+          <td class="fw-bold">#{{ forloop.counter }}</td>
+          <td>
+            <div class="d-flex align-items-center gap-3">
+              <img src="{{ prod.image_url }}" alt="{{ prod.title }}" style="width:45px; height:45px; object-fit:contain;">
+              <a href="{% url 'npits:product_detail' prod.slug %}" class="text-decoration-none fw-semibold text-dark">{{ prod.title|truncatechars:50 }}</a>
+            </div>
+          </td>
+          <td>
+            <span class="rating-stars fw-bold"><i class="fas fa-star"></i> {{ prod.rating }}</span>
+          </td>
+          <td><span class="badge bg-secondary-subtle text-secondary">{{ prod.capacity|default:"N/A" }}</span></td>
+          <td class="fw-extrabold text-primary">₹{{ prod.price|floatformat:0 }}</td>
+          <td>
+            <a href="{{ prod.get_tracked_amazon_url }}" target="_blank" rel="nofollow sponsored" class="btn btn-amazon btn-sm">
+              Check Price
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Detailed Product Recommendations Cards -->
+<h3 class="fw-bold mb-4">Detailed Product Reviews & Recommendations</h3>
+<div class="row g-4 mb-5">
+  {% for prod in products %}
+  <div class="col-12">
+    <div class="card npits-card p-4">
+      <div class="row g-4 align-items-center">
+        <div class="col-md-3 text-center bg-light rounded-3 p-3">
+          <img src="{{ prod.image_url }}" alt="{{ prod.title }}" class="img-fluid max-h-200" style="max-height:180px; object-fit:contain;">
+        </div>
+        <div class="col-md-6">
+          <span class="badge bg-primary text-white mb-2">#{{ forloop.counter }} Pick</span>
+          <h4 class="fw-bold mb-2">
+            <a href="{% url 'npits:product_detail' prod.slug %}" class="text-decoration-none text-dark">{{ prod.title }}</a>
+          </h4>
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <div class="rating-stars">
+              <i class="fas fa-star"></i> <span class="fw-bold dark-text">{{ prod.rating }}</span>
+            </div>
+            <span class="text-muted small">({{ prod.review_count }} ratings)</span>
+          </div>
+          <p class="text-secondary small mb-3">{{ prod.short_description }}</p>
+          {% if prod.features %}
+            <ul class="small text-muted ps-3 mb-0">
+              {% for feat in prod.features|slice:":3" %}
+                <li>{{ feat }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </div>
+        <div class="col-md-3 text-center border-start">
+          <span class="text-muted small d-block">Amazon Price</span>
+          <div class="fs-3 fw-extrabold text-primary mb-3">₹{{ prod.price|floatformat:0 }}</div>
+          <a href="{{ prod.get_tracked_amazon_url }}" target="_blank" rel="nofollow sponsored" class="btn btn-amazon w-100 py-2 mb-2">
+            <i class="fab fa-amazon me-1"></i> Buy on Amazon
+          </a>
+          <a href="{% url 'npits:product_detail' prod.slug %}" class="btn btn-outline-secondary btn-sm w-100 rounded-pill">
+            Full Specifications
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

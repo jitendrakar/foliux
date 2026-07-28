@@ -107,6 +107,7 @@ INSTALLED_APPS = [
     'tailor',
     'screener',
     'restaurant',
+    'npits',
 ]
 
 SITE_ID = 1

@@ -1,0 +1,180 @@
+{% extends 'npits/base_npits.html' %}
+
+{% block npits_content %}
+<!-- Hero Section -->
+<div class="npits-hero mb-5 text-center">
+  <div class="container py-2">
+    <span class="badge bg-warning text-dark px-3 py-2 rounded-pill fw-bold mb-3 text-uppercase tracking-wider">
+      <i class="fab fa-amazon me-1"></i> Amazon India IT Deals & Comparison
+    </span>
+    <h1 class="display-5 fw-extrabold mb-3">Find Best Prices on IT Hardware & PC Accessories</h1>
+    <p class="lead text-light opacity-90 max-w-2xl mx-auto mb-4">
+      Compare SSDs, Hard Disks, Monitors, Laptops, Keyboards, and PC Components with real-time specs and direct Amazon Associate discounts.
+    </p>
+
+    <!-- Search Input Bar -->
+    <form action="{% url 'npits:search' %}" method="get" class="max-w-xl mx-auto npits-search-bar d-flex align-items-center">
+      <i class="fas fa-search text-muted me-2"></i>
+      <input type="text" name="q" class="form-control" placeholder="Search by Product Name, Brand (e.g. Seagate, Samsung, Crucial, ASUS), or Capacity..." required>
+      <button type="submit" class="btn btn-primary rounded-pill px-4 ms-2 fw-bold">
+        Search
+      </button>
+    </form>
+
+    <!-- Popular Searches -->
+    <div class="d-flex flex-wrap justify-content-center gap-2 mt-3 small opacity-80">
+      <span class="text-muted text-light">Popular:</span>
+      <a href="{% url 'npits:seo_landing' 'best-1tb-hdd' %}" class="badge bg-secondary text-decoration-none">Best 1TB HDD</a>
+      <a href="{% url 'npits:seo_landing' 'best-512gb-ssd' %}" class="badge bg-secondary text-decoration-none">Best 512GB SSD</a>
+      <a href="{% url 'npits:seo_landing' 'best-1tb-ssd' %}" class="badge bg-secondary text-decoration-none">Best 1TB SSD</a>
+      <a href="{% url 'npits:seo_landing' 'best-gaming-mouse' %}" class="badge bg-secondary text-decoration-none">Gaming Mouse</a>
+      <a href="{% url 'npits:seo_landing' 'best-laptop-under-50000' %}" class="badge bg-secondary text-decoration-none">Laptop under ₹50k</a>
+    </div>
+  </div>
+</div>
+
+<!-- Featured Categories Grid -->
+<div class="mb-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="fw-bold mb-1">Browse IT Product Categories</h3>
+      <p class="text-muted mb-0">Select a category to explore specifications and compare prices.</p>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    {% for cat in featured_categories %}
+    <div class="col-6 col-md-4 col-lg-3">
+      <a href="{% url 'npits:category_detail' cat.slug %}" class="card npits-card h-100 text-decoration-none p-3 text-center">
+        <div class="fs-2 text-primary mb-2">
+          <i class="{{ cat.icon_class }}"></i>
+        </div>
+        <h6 class="fw-bold mb-1 text-dark">{{ cat.name }}</h6>
+        <span class="text-muted small">Explore Specs & Deals <i class="fas fa-arrow-right ms-1 text-primary"></i></span>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Curated Top Recommended Guides -->
+<div class="mb-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="fw-bold mb-1">Top Curated Buyer Guides</h3>
+      <p class="text-muted mb-0">Popular category rankings and recommendations.</p>
+    </div>
+  </div>
+
+  <div class="row g-3">
+    {% for guide in curated_guides %}
+    <div class="col-md-6 col-lg-3">
+      <a href="{% url 'npits:seo_landing' guide.slug %}" class="card npits-card h-100 p-3 text-decoration-none">
+        <div class="d-flex align-items-center gap-3">
+          <div class="bg-primary-subtle text-primary p-3 rounded-circle fs-4">
+            <i class="{{ guide.icon }}"></i>
+          </div>
+          <div>
+            <h6 class="fw-bold mb-1 text-dark">{{ guide.title }}</h6>
+            <p class="text-muted small mb-0">{{ guide.desc }}</p>
+          </div>
+        </div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Top Featured Products Grid -->
+<div class="mb-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="fw-bold mb-1">Featured IT Deals & Recommendations</h3>
+      <p class="text-muted mb-0">Handpicked top-rated products with verified Amazon Associate links.</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    {% for prod in featured_products %}
+    <div class="col-md-6 col-lg-3">
+      <div class="card npits-card h-100">
+        {% if prod.discount_percent > 0 %}
+          <div class="position-absolute top-0 start-0 m-2 z-1">
+            <span class="discount-badge">-{{ prod.discount_percent }}% OFF</span>
+          </div>
+        {% endif %}
+        
+        <div class="npits-card-img-container">
+          <img src="{{ prod.image_url }}" alt="{{ prod.title }}" class="npits-card-img" loading="lazy">
+        </div>
+
+        <div class="card-body d-flex flex-column p-3">
+          <span class="text-muted small fw-semibold text-uppercase mb-1">{{ prod.brand }} • {{ prod.category.name }}</span>
+          <h6 class="fw-bold mb-2 line-clamp-2">
+            <a href="{% url 'npits:product_detail' prod.slug %}" class="text-decoration-none text-dark">{{ prod.title }}</a>
+          </h6>
+
+          <!-- Rating -->
+          <div class="d-flex align-items-center gap-1 mb-3">
+            <div class="rating-stars">
+              <i class="fas fa-star"></i>
+              <span class="fw-bold dark-text">{{ prod.rating }}</span>
+            </div>
+            <span class="text-muted small">({{ prod.review_count }})</span>
+          </div>
+
+          <!-- Price & CTA -->
+          <div class="mt-auto">
+            <div class="d-flex align-items-baseline gap-2 mb-3">
+              <span class="fs-4 fw-extrabold text-primary">₹{{ prod.price|floatformat:0 }}</span>
+              {% if prod.original_price and prod.original_price > prod.price %}
+                <span class="text-muted text-decoration-line-through small">₹{{ prod.original_price|floatformat:0 }}</span>
+              {% endif %}
+            </div>
+
+            <div class="d-grid gap-2">
+              <a href="{{ prod.get_tracked_amazon_url }}" target="_blank" rel="nofollow sponsored" class="btn btn-amazon w-100 text-center">
+                <i class="fab fa-amazon me-1"></i> Buy on Amazon
+              </a>
+              <a href="{% url 'npits:product_detail' prod.slug %}" class="btn btn-outline-secondary btn-sm rounded-pill fw-semibold">
+                <i class="fas fa-info-circle me-1"></i> View Full Specs
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Buying Guides / Blog Articles Section -->
+{% if latest_articles %}
+<div class="mb-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="fw-bold mb-1">Latest IT Buying Guides & Articles</h3>
+      <p class="text-muted mb-0">Learn how to choose the best hardware for your laptop and PC.</p>
+    </div>
+    <a href="{% url 'npits:blog_list' %}" class="btn btn-outline-primary btn-sm rounded-pill fw-bold">View All Articles</a>
+  </div>
+
+  <div class="row g-4">
+    {% for art in latest_articles %}
+    <div class="col-md-6 col-lg-3">
+      <div class="card npits-card h-100 p-3">
+        <span class="badge bg-primary-subtle text-primary w-auto align-self-start mb-2 fw-bold">{{ art.category.name|default:"Buying Guide" }}</span>
+        <h6 class="fw-bold mb-2">
+          <a href="{% url 'npits:blog_detail' art.slug %}" class="text-decoration-none text-dark">{{ art.title }}</a>
+        </h6>
+        <p class="text-muted small mb-3 flex-grow-1">{{ art.summary|truncatewords:18 }}</p>
+        <a href="{% url 'npits:blog_detail' art.slug %}" class="fw-bold text-primary text-decoration-none small">
+          Read Guide <i class="fas fa-chevron-right ms-1"></i>
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

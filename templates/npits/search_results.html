@@ -1,0 +1,79 @@
+{% extends 'npits/base_npits.html' %}
+
+{% block npits_content %}
+<div class="mb-4">
+  <h2 class="fw-extrabold mb-1">Search Results for "{{ query }}"</h2>
+  <p class="text-muted">Found {{ total_results }} product(s) matching your criteria.</p>
+</div>
+
+{% if products %}
+  <div class="row g-4 mb-4">
+    {% for prod in products %}
+    <div class="col-md-6 col-lg-3">
+      <div class="card npits-card h-100">
+        {% if prod.discount_percent > 0 %}
+          <div class="position-absolute top-0 start-0 m-2 z-1">
+            <span class="discount-badge">-{{ prod.discount_percent }}% OFF</span>
+          </div>
+        {% endif %}
+        
+        <div class="npits-card-img-container">
+          <img src="{{ prod.image_url }}" alt="{{ prod.title }}" class="npits-card-img" loading="lazy">
+        </div>
+
+        <div class="card-body d-flex flex-column p-3">
+          <span class="text-muted small fw-semibold text-uppercase mb-1">{{ prod.brand }} {% if prod.capacity %}• {{ prod.capacity }}{% endif %}</span>
+          <h6 class="fw-bold mb-2 line-clamp-2">
+            <a href="{% url 'npits:product_detail' prod.slug %}" class="text-decoration-none text-dark">{{ prod.title }}</a>
+          </h6>
+
+          <div class="d-flex align-items-center gap-1 mb-3">
+            <div class="rating-stars">
+              <i class="fas fa-star"></i>
+              <span class="fw-bold dark-text">{{ prod.rating }}</span>
+            </div>
+            <span class="text-muted small">({{ prod.review_count }})</span>
+          </div>
+
+          <div class="mt-auto">
+            <div class="d-flex align-items-baseline gap-2 mb-3">
+              <span class="fs-4 fw-extrabold text-primary">₹{{ prod.price|floatformat:0 }}</span>
+            </div>
+
+            <div class="d-grid gap-2">
+              <a href="{{ prod.get_tracked_amazon_url }}" target="_blank" rel="nofollow sponsored" class="btn btn-amazon text-center">
+                <i class="fab fa-amazon me-1"></i> Buy on Amazon
+              </a>
+              <a href="{% url 'npits:product_detail' prod.slug %}" class="btn btn-outline-secondary btn-sm rounded-pill fw-semibold">
+                Specs & Review
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if products.has_other_pages %}
+  <nav class="d-flex justify-content-center mt-4">
+    <ul class="pagination">
+      {% if products.has_previous %}
+        <li class="page-item"><a class="page-link" href="?q={{ query }}&page={{ products.previous_page_number }}">Previous</a></li>
+      {% endif %}
+      <li class="page-item active"><span class="page-link">{{ products.number }} / {{ products.paginator.num_pages }}</span></li>
+      {% if products.has_next %}
+        <li class="page-item"><a class="page-link" href="?q={{ query }}&page={{ products.next_page_number }}">Next</a></li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+{% else %}
+  <div class="card npits-card p-5 text-center my-4">
+    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+    <h5>No products found for "{{ query }}"</h5>
+    <p class="text-muted">Try searching with a broader keyword like SSD, HDD, RAM, Mouse, or Seagate.</p>
+    <a href="{% url 'npits:home' %}" class="btn btn-primary rounded-pill btn-sm align-self-center">Return Home</a>
+  </div>
+{% endif %}
+{% endblock %}

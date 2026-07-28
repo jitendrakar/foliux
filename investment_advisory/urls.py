@@ -35,6 +35,7 @@ urlpatterns = [
     path('tailor/', include('tailor.urls')),
     path('screener/', include('screener.urls')),
     path('restaurant/', include('restaurant.urls')),
+    path('npits/', include('npits.urls')),
     path('search-instruments/', core_views.search_instruments, name='search_instruments'),
     path('', include('core.urls')),
     # Custom password change view

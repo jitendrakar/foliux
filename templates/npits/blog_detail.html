@@ -1,0 +1,50 @@
+{% extends 'npits/base_npits.html' %}
+
+{% block npits_content %}
+<nav aria-label="breadcrumb" class="mb-4">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'npits:home' %}" class="text-decoration-none"><i class="fas fa-home"></i> Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'npits:blog_list' %}" class="text-decoration-none">Buying Guides</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ article.title|truncatechars:35 }}</li>
+  </ol>
+</nav>
+
+<div class="row g-4">
+  <!-- Article Content -->
+  <div class="col-lg-8">
+    <div class="card npits-card p-4 p-md-5 mb-4">
+      <span class="badge bg-primary text-white w-auto align-self-start mb-3">{{ article.category.name|default:"Buying Advice" }}</span>
+      <h1 class="fw-extrabold mb-3">{{ article.title }}</h1>
+      <div class="text-muted small mb-4 pb-3 border-bottom d-flex align-items-center gap-3">
+        <span><i class="far fa-calendar-alt me-1"></i> Published {{ article.published_at|date:"F d, Y" }}</span>
+        <span><i class="fas fa-user-edit me-1"></i> FOLIUX NPITS Editorial</span>
+      </div>
+
+      <div class="article-content lead-p">
+        {{ article.content|linebreaks }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar Recommended Products -->
+  <div class="col-lg-4">
+    <div class="card npits-card p-3 mb-4">
+      <h5 class="fw-bold mb-3"><i class="fas fa-thumbs-up text-primary me-2"></i> Recommended Picks</h5>
+      {% for prod in top_recommended_products %}
+        <div class="d-flex gap-3 mb-3 pb-3 border-bottom">
+          <img src="{{ prod.image_url }}" alt="{{ prod.title }}" style="width:60px; height:60px; object-fit:contain;">
+          <div>
+            <h6 class="fw-bold mb-1 line-clamp-2">
+              <a href="{% url 'npits:product_detail' prod.slug %}" class="text-decoration-none text-dark small">{{ prod.title }}</a>
+            </h6>
+            <span class="fw-extrabold text-primary me-2">₹{{ prod.price|floatformat:0 }}</span>
+            <a href="{{ prod.get_tracked_amazon_url }}" target="_blank" rel="nofollow sponsored" class="badge bg-warning text-dark text-decoration-none">
+              Amazon
+            </a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

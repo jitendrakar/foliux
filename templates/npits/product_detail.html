@@ -1,0 +1,173 @@
+{% extends 'npits/base_npits.html' %}
+
+{% block npits_content %}
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-4">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'npits:home' %}" class="text-decoration-none"><i class="fas fa-home"></i> Home</a></li>
+    <li class="breadcrumb-item"><a href="{% url 'npits:category_detail' product.category.slug %}" class="text-decoration-none">{{ product.category.name }}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{ product.brand }} {{ product.title|truncatechars:35 }}</li>
+  </ol>
+</nav>
+
+<!-- Main Product Details Card -->
+<div class="card npits-card p-4 mb-5">
+  <div class="row g-4">
+    <!-- Product Image Gallery -->
+    <div class="col-md-5 d-flex align-items-center justify-content-center bg-light-subtle rounded-3 p-4">
+      <img src="{{ product.image_url }}" alt="{{ product.title }}" class="img-fluid max-h-350 object-fit-contain" style="max-height:350px;">
+    </div>
+
+    <!-- Product Info & Buying Box -->
+    <div class="col-md-7 d-flex flex-column">
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <span class="badge bg-primary-subtle text-primary fw-bold">{{ product.brand }}</span>
+        {% if product.capacity %}<span class="badge bg-secondary-subtle text-secondary fw-bold">{{ product.capacity }}</span>{% endif %}
+        {% if product.discount_percent > 0 %}<span class="discount-badge">-{{ product.discount_percent }}% OFF</span>{% endif %}
+      </div>
+
+      <h2 class="fw-extrabold mb-3">{{ product.title }}</h2>
+
+      <!-- Customer Ratings -->
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <div class="rating-stars fs-5">
+          <i class="fas fa-star"></i>
+          <span class="fw-bold dark-text ms-1">{{ product.rating }}</span>
+        </div>
+        <span class="text-muted">Based on {{ product.review_count }} Amazon customer ratings</span>
+      </div>
+
+      <!-- Price Block -->
+      <div class="p-3 bg-light rounded-3 mb-4 d-flex align-items-baseline gap-3">
+        <div>
+          <span class="text-muted small d-block">Best Price on Amazon</span>
+          <span class="display-6 fw-extrabold text-primary">₹{{ product.price|floatformat:0 }}</span>
+        </div>
+        {% if product.original_price and product.original_price > product.price %}
+          <div class="text-muted text-decoration-line-through fs-5">
+            M.R.P.: ₹{{ product.original_price|floatformat:0 }}
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Short Description -->
+      {% if product.short_description %}
+        <p class="text-secondary mb-4">{{ product.short_description }}</p>
+      {% endif %}
+
+      <!-- Primary Affiliate CTA Button -->
+      <div class="mt-auto">
+        <a href="{{ amazon_buy_url }}" target="_blank" rel="nofollow sponsored" class="btn btn-amazon btn-lg w-100 py-3 mb-2 shadow">
+          <i class="fab fa-amazon me-2 fa-lg"></i> View Deal on Amazon India
+        </a>
+        <p class="text-muted text-center extra-small mb-0">
+          <i class="fas fa-shield-alt text-success me-1"></i> Tracked & Verified Associate Link (ID: {{ associate_id }})
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Features & Specifications Section -->
+<div class="row g-4 mb-5">
+  <!-- Features List -->
+  <div class="col-lg-6">
+    <div class="card npits-card p-4 h-100">
+      <h4 class="fw-bold mb-3"><i class="fas fa-check-circle text-success me-2"></i> Key Features</h4>
+      {% if product.features %}
+        <ul class="list-group list-group-flush">
+          {% for feat in product.features %}
+            <li class="list-group-item bg-transparent px-0 py-2 border-bottom-dashed">
+              <i class="fas fa-arrow-right text-primary me-2"></i> {{ feat }}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-muted">No feature bullet points available for this product.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Technical Specifications Table -->
+  <div class="col-lg-6">
+    <div class="card npits-card p-4 h-100">
+      <h4 class="fw-bold mb-3"><i class="fas fa-sliders-h text-primary me-2"></i> Technical Specifications</h4>
+      {% if product.specifications %}
+        <table class="table table-sm table-striped">
+          <tbody>
+            {% for key, val in product.specifications.items %}
+              <tr>
+                <td class="fw-semibold text-muted w-40">{{ key }}</td>
+                <td class="fw-bold dark-text">{{ val }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p class="text-muted">Specifications table for this product is currently being updated.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Pros & Cons Section -->
+{% if product.pros or product.cons %}
+<div class="row g-4 mb-5">
+  <!-- Pros Box -->
+  <div class="col-md-6">
+    <div class="card npits-card p-4 h-100 border-start border-4 border-success">
+      <h5 class="fw-bold text-success mb-3"><i class="fas fa-thumbs-up me-2"></i> Pros</h5>
+      <ul class="list-unstyled mb-0">
+        {% for pro in product.pros %}
+          <li class="mb-2 text-dark"><i class="fas fa-check text-success me-2"></i> {{ pro }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <!-- Cons Box -->
+  <div class="col-md-6">
+    <div class="card npits-card p-4 h-100 border-start border-4 border-danger">
+      <h5 class="fw-bold text-danger mb-3"><i class="fas fa-thumbs-down me-2"></i> Cons</h5>
+      <ul class="list-unstyled mb-0">
+        {% for con in product.cons %}
+          <li class="mb-2 text-dark"><i class="fas fa-times text-danger me-2"></i> {{ con }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Related Products Section -->
+{% if related_products %}
+<div class="mb-5">
+  <h4 class="fw-bold mb-4">Related {{ product.category.name }} Products</h4>
+  <div class="row g-4">
+    {% for rel in related_products %}
+    <div class="col-md-6 col-lg-3">
+      <div class="card npits-card h-100 p-3">
+        <div class="npits-card-img-container mb-2">
+          <img src="{{ rel.image_url }}" alt="{{ rel.title }}" class="npits-card-img" loading="lazy">
+        </div>
+        <h6 class="fw-bold mb-2 line-clamp-2">
+          <a href="{% url 'npits:product_detail' rel.slug %}" class="text-decoration-none text-dark">{{ rel.title }}</a>
+        </h6>
+        <div class="mt-auto pt-2 border-top">
+          <span class="fw-bold text-primary fs-5">₹{{ rel.price|floatformat:0 }}</span>
+          <a href="{{ rel.get_tracked_amazon_url }}" target="_blank" rel="nofollow sponsored" class="btn btn-amazon btn-sm w-100 mt-2">
+            Buy on Amazon
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Schema.org Product Structured Data Script -->
+<script type="application/ld+json">
+  {{ schema_markup_json|safe }}
+</script>
+{% endblock %}

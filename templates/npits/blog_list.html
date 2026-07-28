@@ -1,0 +1,28 @@
+{% extends 'npits/base_npits.html' %}
+
+{% block npits_content %}
+<div class="mb-4">
+  <h1 class="fw-extrabold mb-2"><i class="fas fa-newspaper text-primary me-2"></i> IT Hardware Buying Guides & Articles</h1>
+  <p class="text-muted">In-depth guides, comparisons, and hardware recommendations for PC builders and laptop users.</p>
+</div>
+
+<div class="row g-4 mb-5">
+  {% for art in articles %}
+  <div class="col-md-6 col-lg-4">
+    <div class="card npits-card h-100 p-4">
+      <span class="badge bg-primary-subtle text-primary w-auto align-self-start mb-3 fw-bold">{{ art.category.name|default:"Buying Guide" }}</span>
+      <h5 class="fw-bold mb-2">
+        <a href="{% url 'npits:blog_detail' art.slug %}" class="text-decoration-none text-dark">{{ art.title }}</a>
+      </h5>
+      <p class="text-muted small mb-4 flex-grow-1">{{ art.summary|truncatewords:25 }}</p>
+      <div class="d-flex justify-content-between align-items-center border-top pt-3">
+        <span class="text-muted extra-small"><i class="far fa-calendar-alt me-1"></i> {{ art.published_at|date:"M d, Y" }}</span>
+        <a href="{% url 'npits:blog_detail' art.slug %}" class="fw-bold text-primary text-decoration-none small">
+          Read Guide <i class="fas fa-arrow-right ms-1"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
