@@ -1806,26 +1806,37 @@ def stock_news_list(request):
 
 
 def _auto_update_ipos():
+    """
+    Pre-warms active registrar companies in cache for allotment status dropdown.
+    Does NOT auto-create database records for main IPO cards (Admin-only).
+    """
     try:
         from django.core.cache import cache
-        cache_key = "ipo_registrar_sync_last"
-        last_sync = cache.get(cache_key)
-        if not last_sync:
-            from django.core.management import call_command
-            call_command('sync_ipos')
-            cache.set(cache_key, timezone.now(), 1800)
+        cache_key = "ipo_registrar_companies_cache"
+        companies = cache.get(cache_key)
+        if not companies:
+            from core.registrars import registrar_registry
+            companies = registrar_registry.get_all_active_ipos()
+            if companies:
+                cache.set(cache_key, companies, 1800)
+        return companies or []
     except Exception as e:
         logger.error(f"Auto update IPOs failed: {e}")
+        return []
 
 def ipo_list(request):
     """IPO list page for users with dynamic header and SEO tags."""
     from .models import IPO
     from django.utils import timezone
 
-    _auto_update_ipos()
+    allotment_companies = _auto_update_ipos()
+    if not allotment_companies:
+        from core.registrars import registrar_registry
+        allotment_companies = registrar_registry.get_all_active_ipos()
 
     target_user, is_family_view, is_consolidated = get_target_user(request) if request.user.is_authenticated else (None, False, False)
     
+    # Only show Admin-created / Admin-managed IPO cards
     ipos = IPO.objects.all().order_by('-start_date', '-created_at')
     
     # Optional filtering
