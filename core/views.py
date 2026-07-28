@@ -1805,10 +1805,24 @@ def stock_news_list(request):
     return render(request, 'core/news_list.html', {'news_alerts': news_alerts})
 
 
+def _auto_update_ipos():
+    try:
+        from django.core.cache import cache
+        cache_key = "ipo_registrar_sync_last"
+        last_sync = cache.get(cache_key)
+        if not last_sync:
+            from django.core.management import call_command
+            call_command('sync_ipos')
+            cache.set(cache_key, timezone.now(), 1800)
+    except Exception as e:
+        logger.error(f"Auto update IPOs failed: {e}")
+
 def ipo_list(request):
     """IPO list page for users with dynamic header and SEO tags."""
     from .models import IPO
     from django.utils import timezone
+
+    _auto_update_ipos()
 
     target_user, is_family_view, is_consolidated = get_target_user(request) if request.user.is_authenticated else (None, False, False)
     
@@ -1818,6 +1832,20 @@ def ipo_list(request):
     advise_filter = request.GET.get('advise')
     if advise_filter:
         ipos = ipos.filter(advise=advise_filter)
+
+    # Fetch active allotment companies from registrars
+    from core.registrars import registrar_registry
+    allotment_companies = registrar_registry.get_all_active_ipos()
+    if not allotment_companies:
+        allotment_companies = [
+            {
+                "id": ipo.registrar_company_id or str(ipo.id),
+                "name": ipo.name,
+                "registrar": ipo.registrar_slug or "mufg",
+                "registrar_name": "MUFG Intime" if (ipo.registrar_slug == "mufg") else ipo.registrar_slug.upper()
+            }
+            for ipo in IPO.objects.filter(is_active=True).order_by('-id')
+        ]
 
     # Fetch latest active or most recently added IPO for dynamic header & SEO
     today = timezone.localdate()
@@ -1868,6 +1896,7 @@ def ipo_list(request):
 
     context = {
         'ipos': ipos,
+        'allotment_companies': allotment_companies,
         'latest_ipo': latest_ipo,
         'header_title': header_title,
         'header_subheading': header_subheading,
@@ -1879,6 +1908,87 @@ def ipo_list(request):
         'is_consolidated': is_consolidated,
     }
     return render(request, 'core/ipo.html', context)
+
+@csrf_exempt
+def ipo_allotment_status_api(request):
+    """
+    API endpoint to check IPO allotment status from registrars (MUFG, etc.).
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method. POST required.'}, status=405)
+
+    try:
+        if request.content_type == 'application/json':
+            data = json.loads(request.body.decode('utf-8'))
+        else:
+            data = request.POST
+
+        company_id = str(data.get('company_id', '')).strip()
+        registrar_slug = str(data.get('registrar', 'mufg')).strip().lower()
+        search_type = str(data.get('search_type', 'PAN')).strip().upper()
+        search_value = str(data.get('search_value', '')).strip()
+        ifsc = str(data.get('ifsc', '')).strip()
+
+        if not company_id:
+            return JsonResponse({'status': 'error', 'message': 'Please select an IPO / Company.'}, status=400)
+
+        if not search_value:
+            return JsonResponse({'status': 'error', 'message': 'Please enter a valid search value.'}, status=400)
+
+        from core.registrars import get_registrar
+        registrar_instance = get_registrar(registrar_slug)
+        if not registrar_instance:
+            return JsonResponse({'status': 'error', 'message': f"Registrar '{registrar_slug}' is not supported."}, status=400)
+
+        result = registrar_instance.check_allotment_status(
+            company_id=company_id,
+            search_type=search_type,
+            search_value=search_value,
+            ifsc=ifsc
+        )
+        return JsonResponse(result)
+
+    except json.JSONDecodeError:
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON format in request.'}, status=400)
+    except Exception as e:
+        logger.error(f"Error in ipo_allotment_status_api: {e}", exc_info=True)
+        return JsonResponse({'status': 'error', 'message': 'An unexpected error occurred while checking allotment status.'}, status=500)
+
+def ipo_companies_api(request):
+    """
+    API endpoint to fetch live list of active IPOs available for allotment status search.
+    """
+    from core.registrars import registrar_registry
+    try:
+        companies = registrar_registry.get_all_active_ipos()
+        if not companies:
+            from core.models import IPO
+            companies = [
+                {
+                    "id": ipo.registrar_company_id or str(ipo.id),
+                    "name": ipo.name,
+                    "registrar": ipo.registrar_slug or "mufg",
+                    "registrar_name": "MUFG Intime"
+                }
+                for ipo in IPO.objects.filter(is_active=True).order_by('-id')
+            ]
+        return JsonResponse({'status': 'success', 'companies': companies})
+    except Exception as e:
+        logger.error(f"Error in ipo_companies_api: {e}", exc_info=True)
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
+def sync_ipos_api(request):
+    """
+    API endpoint to trigger on-demand sync of IPOs from registrars.
+    """
+    try:
+        from django.core.management import call_command
+        call_command('sync_ipos')
+        return JsonResponse({'status': 'success', 'message': 'IPO synchronization completed successfully.'})
+    except Exception as e:
+        logger.error(f"Error in sync_ipos_api: {e}", exc_info=True)
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+
 
 def about_project(request):
     """Project Report Page."""

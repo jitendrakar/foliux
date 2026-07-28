@@ -4,7 +4,7 @@
 {% block meta_tags %}
 <title>{{ meta_title }}</title>
 <meta name="description" content="{{ meta_description }}">
-<meta name="keywords" content="{% if latest_ipo %}{{ latest_ipo.name }}, {{ latest_ipo.name }} IPO, {% endif %}IPO Tracker, Initial Public Offerings, Stock Market IPO, FOLIUX IPO">
+<meta name="keywords" content="{% if latest_ipo %}{{ latest_ipo.name }}, {{ latest_ipo.name }} IPO, {% endif %}IPO Allotment Status, MUFG IPO Allotment, IPO Tracker, Initial Public Offerings, Stock Market IPO, FOLIUX IPO">
 <meta name="author" content="FOLIUX">
 
 <!-- Open Graph / Facebook -->
@@ -147,8 +147,75 @@
         border: 1px solid #edf2f7;
     }
 
+    .cmp-badge {
+        font-size: 0.8rem;
+        padding: 6px 12px;
+        border-radius: 12px;
+        font-weight: 700;
+        background: #f1f5f9;
+        color: #1e293b;
+        border: 1px solid #e2e8f0;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    /* Allotment Hero Card Styles */
+    .allotment-hero-card {
+        border-radius: 20px;
+        background: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .bg-gradient-primary-hero {
+        background: linear-gradient(135deg, #003D7C 0%, #0056b3 100%);
+    }
+
+    .search-pill-btn {
+        border-radius: 20px;
+        padding: 6px 16px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        border: 1px solid #cbd5e1;
+        background: #f8fafc;
+        color: #475569;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .search-pill-btn:hover {
+        background: #e2e8f0;
+        color: #1e293b;
+    }
+
+    .search-pill-btn.active {
+        background: #003D7C;
+        color: #ffffff;
+        border-color: #003D7C;
+        box-shadow: 0 4px 10px rgba(0, 61, 124, 0.2);
+    }
+
+    .allotment-result-card {
+        background: #f8fafc;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+    }
+
+    .allotment-status-badge {
+        font-size: 0.9rem;
+        font-weight: 700;
+        padding: 6px 16px;
+        border-radius: 20px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .badge-allotted { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    .badge-not-allotted { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
     /* Dark Mode Overrides */
-    html[data-theme="dark"] .ipo-card {
+    html[data-theme="dark"] .ipo-card,
+    html[data-theme="dark"] .allotment-hero-card {
         background: var(--global-dark-card) !important;
         border-color: var(--global-dark-border) !important;
     }
@@ -173,64 +240,51 @@
         background: #334155 !important;
         color: #94a3b8 !important;
     }
-    html[data-theme="dark"] .ipo-date-box {
+    html[data-theme="dark"] .ipo-date-box,
+    html[data-theme="dark"] .allotment-result-card {
         background: var(--global-dark-bg) !important;
         border-color: var(--global-dark-border) !important;
     }
-    html[data-theme="dark"] .ipo-date-value {
+    html[data-theme="dark"] .ipo-date-value,
+    html[data-theme="dark"] .dark-text {
         color: var(--global-dark-text) !important;
     }
-    html[data-theme="dark"] .company-work {
-        color: var(--global-dark-muted) !important;
-    }
-    html[data-theme="dark"] .analysis-preview {
-        background: var(--global-dark-bg) !important;
-        border-color: var(--global-dark-border) !important;
-    }
+    html[data-theme="dark"] .company-work,
     html[data-theme="dark"] .analysis-text {
         color: var(--global-dark-muted) !important;
     }
-    html[data-theme="dark"] .filter-btn {
+    html[data-theme="dark"] .analysis-preview,
+    html[data-theme="dark"] .analysis-section {
+        background: var(--global-dark-bg) !important;
+        border-color: var(--global-dark-border) !important;
+    }
+    html[data-theme="dark"] .filter-btn,
+    html[data-theme="dark"] .search-pill-btn {
         background: var(--global-dark-card) !important;
         border-color: var(--global-dark-border) !important;
         color: var(--global-dark-text) !important;
     }
+    html[data-theme="dark"] .search-pill-btn.active,
     html[data-theme="dark"] .filter-btn.active {
         background: var(--primary-color) !important;
         color: #fff !important;
         border-color: var(--primary-color) !important;
     }
-    html[data-theme="dark"] .filter-btn:hover:not(.active) {
-        background: var(--global-dark-bg) !important;
-        color: var(--primary-color) !important;
-    }
-    html[data-theme="dark"] .analysis-section {
-        background: var(--global-dark-bg) !important;
-        border-color: var(--global-dark-border) !important;
-    }
-    .analysis-content {
-        color: #374151;
-    }
-    html[data-theme="dark"] .analysis-section div,
-    html[data-theme="dark"] .analysis-content {
-        color: var(--global-dark-text) !important;
-    }
-    .cmp-badge {
-        font-size: 0.8rem;
-        padding: 6px 12px;
-        border-radius: 12px;
-        font-weight: 700;
-        background: #f1f5f9;
-        color: #1e293b;
-        border: 1px solid #e2e8f0;
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-    }
     html[data-theme="dark"] .cmp-badge {
         background: #1e293b !important;
         color: #f1f5f9 !important;
         border-color: #334155 !important;
+    }
+    html[data-theme="dark"] .form-select,
+    html[data-theme="dark"] .form-control {
+        background-color: var(--global-dark-bg) !important;
+        border-color: var(--global-dark-border) !important;
+        color: var(--global-dark-text) !important;
+    }
+    html[data-theme="dark"] .input-group-text {
+        background-color: var(--global-dark-card) !important;
+        border-color: var(--global-dark-border) !important;
+        color: var(--global-dark-muted) !important;
     }
 </style>
 {% endblock %}
@@ -280,6 +334,85 @@
     </div>
 </div>
 {% endif %}
+
+<!-- Live IPO Allotment Status Check Section -->
+<div class="card shadow-lg border-0 allotment-hero-card mb-5 animate__animated animate__fadeIn">
+    <div class="card-header bg-gradient-primary-hero text-white p-4 border-0 d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div>
+            <span class="badge bg-white text-primary fw-bold text-uppercase px-3 py-1 mb-2 rounded-pill shadow-sm" style="font-size: 0.75rem;">
+                <i class="fas fa-satellite-dish me-1 text-danger"></i> Live Registrar Integration
+            </span>
+            <h3 class="fw-bold mb-1 text-white"><i class="fas fa-search-dollar me-2"></i> Check Live IPO Allotment Status</h3>
+            <p class="mb-0 text-white-50 small">Direct real-time query against MUFG IPO Portal & Official Registrars.</p>
+        </div>
+        <button id="btnRefreshIPOs" class="btn btn-sm btn-light rounded-pill px-3 fw-bold text-primary shadow-sm" title="Refresh dynamic IPO list from MUFG">
+            <i class="fas fa-sync-alt me-1" id="refreshIcon"></i> Sync IPOs
+        </button>
+    </div>
+    <div class="card-body p-4 p-md-5">
+        <form id="allotmentForm" onsubmit="return false;">
+            <div class="row g-3 mb-4">
+                <div class="col-lg-6">
+                    <label for="allotmentCompany" class="form-label fw-bold dark-text">Select IPO / Issue <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text border-end-0"><i class="fas fa-building text-primary"></i></span>
+                        <select class="form-select border-start-0 ps-0 fw-semibold" id="allotmentCompany" required>
+                            <option value="" selected disabled>-- Select Company from Portal --</option>
+                            {% for comp in allotment_companies %}
+                                <option value="{{ comp.id }}" data-registrar="{{ comp.registrar }}">{{ comp.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <label class="form-label fw-bold dark-text">Search Identifier Type <span class="text-danger">*</span></label>
+                    <div class="d-flex flex-wrap gap-2" id="searchTypePills">
+                        <button type="button" class="btn search-pill-btn active" data-type="PAN"><i class="fas fa-id-card me-1"></i> PAN</button>
+                        <button type="button" class="btn search-pill-btn" data-type="APP"><i class="fas fa-file-alt me-1"></i> App No</button>
+                        <button type="button" class="btn search-pill-btn" data-type="DP"><i class="fas fa-user-shield me-1"></i> DP / Client ID</button>
+                        <button type="button" class="btn search-pill-btn" data-type="ACC"><i class="fas fa-university me-1"></i> Account No</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 align-items-end">
+                <div class="col-md-7" id="searchValueContainer">
+                    <label for="searchValueInput" id="searchValueLabel" class="form-label fw-bold dark-text">Enter PAN Number <span class="text-danger">*</span></label>
+                    <div class="input-group">
+                        <span class="input-group-text border-end-0"><i class="fas fa-key text-muted"></i></span>
+                        <input type="text" class="form-control border-start-0 ps-0 text-uppercase fw-bold" id="searchValueInput" placeholder="e.g. ABCDE1234F" maxlength="10" required>
+                    </div>
+                </div>
+
+                <div class="col-md-5 d-none" id="ifscContainer">
+                    <label for="ifscInput" class="form-label fw-bold dark-text">Bank IFSC Code <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control text-uppercase fw-bold" id="ifscInput" placeholder="e.g. SBIN0001234" maxlength="11">
+                </div>
+
+                <div class="col-md-5 mt-3 mt-md-0 ms-auto">
+                    <button type="submit" id="btnCheckStatus" class="btn btn-primary btn-lg w-100 rounded-pill fw-bold shadow">
+                        <span id="btnText"><i class="fas fa-check-circle me-2"></i> Check Status</span>
+                        <span id="btnSpinner" class="d-none"><i class="fas fa-spinner fa-spin me-2"></i> Fetching Status...</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Alert Notification Box -->
+        <div id="allotmentAlert" class="alert alert-dismissible fade show mt-4 d-none rounded-4 border-0 shadow-sm" role="alert">
+            <div class="d-flex align-items-center gap-3">
+                <i id="allotmentAlertIcon" class="fas fa-info-circle fa-2x"></i>
+                <div id="allotmentAlertMsg" class="fw-semibold"></div>
+            </div>
+        </div>
+
+        <!-- Allotment Result Container -->
+        <div id="allotmentResultBox" class="mt-4 d-none animate__animated animate__fadeIn">
+            <!-- Results populated via JavaScript -->
+        </div>
+    </div>
+</div>
+
 <div class="row align-items-center mb-5 animate__animated animate__fadeInDown">
     <div class="col-md-7">
         {% if header_title %}
@@ -374,7 +507,7 @@
     {% endfor %}
 </div>
 
-<!-- Modals Section: Moved outside the animated grid to fix backdrop issue -->
+<!-- Modals Section -->
 {% for ipo in ipos %}
 <div class="modal fade" id="ipoModal{{ ipo.id }}" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -444,4 +577,281 @@
     </div>
 </div>
 {% endfor %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentSearchType = 'PAN';
+    const allotmentForm = document.getElementById('allotmentForm');
+    const companySelect = document.getElementById('allotmentCompany');
+    const searchValueInput = document.getElementById('searchValueInput');
+    const searchValueLabel = document.getElementById('searchValueLabel');
+    const ifscContainer = document.getElementById('ifscContainer');
+    const ifscInput = document.getElementById('ifscInput');
+    const btnCheckStatus = document.getElementById('btnCheckStatus');
+    const btnText = document.getElementById('btnText');
+    const btnSpinner = document.getElementById('btnSpinner');
+    const allotmentAlert = document.getElementById('allotmentAlert');
+    const allotmentAlertIcon = document.getElementById('allotmentAlertIcon');
+    const allotmentAlertMsg = document.getElementById('allotmentAlertMsg');
+    const allotmentResultBox = document.getElementById('allotmentResultBox');
+    const btnRefreshIPOs = document.getElementById('btnRefreshIPOs');
+    const refreshIcon = document.getElementById('refreshIcon');
+
+    // Search Type Pills Handler
+    const searchPills = document.querySelectorAll('#searchTypePills .search-pill-btn');
+    searchPills.forEach(pill => {
+        pill.addEventListener('click', function() {
+            searchPills.forEach(p => p.classList.remove('active'));
+            this.classList.add('active');
+            currentSearchType = this.getAttribute('data-type');
+            updateSearchInputFields();
+        });
+    });
+
+    function updateSearchInputFields() {
+        searchValueInput.value = '';
+        ifscInput.value = '';
+        hideAlert();
+        allotmentResultBox.classList.add('d-none');
+
+        if (currentSearchType === 'PAN') {
+            searchValueLabel.innerHTML = 'Enter PAN Number <span class="text-danger">*</span>';
+            searchValueInput.placeholder = 'e.g. ABCDE1234F';
+            searchValueInput.maxLength = 10;
+            ifscContainer.classList.add('d-none');
+        } else if (currentSearchType === 'APP') {
+            searchValueLabel.innerHTML = 'Enter Application Number <span class="text-danger">*</span>';
+            searchValueInput.placeholder = 'e.g. 12345678';
+            searchValueInput.maxLength = 25;
+            ifscContainer.classList.add('d-none');
+        } else if (currentSearchType === 'DP') {
+            searchValueLabel.innerHTML = 'Enter DP ID / Client ID <span class="text-danger">*</span>';
+            searchValueInput.placeholder = 'e.g. 1208160000000000';
+            searchValueInput.maxLength = 16;
+            ifscContainer.classList.add('d-none');
+        } else if (currentSearchType === 'ACC') {
+            searchValueLabel.innerHTML = 'Enter Bank Account Number <span class="text-danger">*</span>';
+            searchValueInput.placeholder = 'e.g. 987654321012';
+            searchValueInput.maxLength = 20;
+            ifscContainer.classList.remove('d-none');
+        }
+    }
+
+    // Auto-uppercase input value
+    searchValueInput.addEventListener('input', function() {
+        this.value = this.value.toUpperCase();
+    });
+    ifscInput.addEventListener('input', function() {
+        this.value = this.value.toUpperCase();
+    });
+
+    // Alert Helper
+    function showAlert(message, type = 'danger') {
+        allotmentAlert.className = `alert alert-${type} alert-dismissible fade show mt-4 rounded-4 border-0 shadow-sm`;
+        allotmentAlertIcon.className = type === 'success' ? 'fas fa-check-circle fa-2x text-success' : (type === 'warning' ? 'fas fa-exclamation-triangle fa-2x text-warning' : 'fas fa-exclamation-circle fa-2x text-danger');
+        allotmentAlertMsg.innerHTML = message;
+        allotmentAlert.classList.remove('d-none');
+    }
+
+    function hideAlert() {
+        allotmentAlert.classList.add('d-none');
+    }
+
+    // Check Allotment Form Submission
+    allotmentForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        hideAlert();
+        allotmentResultBox.classList.add('d-none');
+        allotmentResultBox.innerHTML = '';
+
+        const companyId = companySelect.value;
+        const selectedOption = companySelect.options[companySelect.selectedIndex];
+        const registrarSlug = selectedOption ? (selectedOption.getAttribute('data-registrar') || 'mufg') : 'mufg';
+        const searchValue = searchValueInput.value.trim();
+        const ifscValue = ifscInput.value.trim();
+
+        if (!companyId) {
+            showAlert('Please select an IPO from the dropdown.', 'warning');
+            return;
+        }
+
+        if (!searchValue) {
+            showAlert(`Please enter your ${currentSearchType === 'PAN' ? 'PAN Number' : (currentSearchType === 'APP' ? 'Application Number' : (currentSearchType === 'DP' ? 'DP / Client ID' : 'Account Number'))}.`, 'warning');
+            return;
+        }
+
+        if (currentSearchType === 'PAN' && searchValue.length !== 10) {
+            showAlert('PAN must be exactly 10 alphanumeric characters.', 'warning');
+            return;
+        }
+
+        if (currentSearchType === 'ACC' && !ifscValue) {
+            showAlert('IFSC Code is required when searching by Bank Account Number.', 'warning');
+            return;
+        }
+
+        // Show Loading Spinner
+        btnText.classList.add('d-none');
+        btnSpinner.classList.remove('d-none');
+        btnCheckStatus.disabled = true;
+
+        fetch('{% url "ipo_allotment_status_api" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken') || ''
+            },
+            body: JSON.stringify({
+                company_id: companyId,
+                registrar: registrarSlug,
+                search_type: currentSearchType,
+                search_value: searchValue,
+                ifsc: ifscValue
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            btnText.classList.remove('d-none');
+            btnSpinner.classList.add('d-none');
+            btnCheckStatus.disabled = false;
+
+            if (data.status === 'error') {
+                showAlert(data.message || 'Error fetching allotment status.', 'danger');
+            } else if (data.status === 'success') {
+                if (!data.results || data.results.length === 0) {
+                    showAlert(data.message || 'No allotment record found for the provided details.', 'info');
+                } else {
+                    renderAllotmentResults(data.results);
+                }
+            }
+        })
+        .catch(err => {
+            btnText.classList.remove('d-none');
+            btnSpinner.classList.add('d-none');
+            btnCheckStatus.disabled = false;
+            console.error('Allotment fetch error:', err);
+            showAlert('Network error or MUFG service unavailable. Please try again in a few moments.', 'danger');
+        });
+    });
+
+    // Render Allotment Results
+    function renderAllotmentResults(results) {
+        let html = '';
+        const selectedOption = companySelect.options[companySelect.selectedIndex];
+        const selectedCompanyName = selectedOption ? selectedOption.text : 'IPO Issue';
+
+        results.forEach((item, index) => {
+            const isAllotted = (item.allotment_status === 'ALLOTTED') || (parseInt(item.shares_allotted) > 0);
+            const badgeClass = isAllotted ? 'badge-allotted' : 'badge-not-allotted';
+            const iconClass = isAllotted ? 'fas fa-trophy' : 'fas fa-info-circle';
+            const statusText = isAllotted ? 'CONGRATULATIONS! ALLOTTED' : 'NOT ALLOTTED';
+            const displayCompanyName = (item.company_name && item.company_name.trim() !== '') ? item.company_name : selectedCompanyName;
+
+            html += `
+            <div class="allotment-result-card p-4 mb-3 shadow-sm border animate__animated animate__fadeInUp">
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-3 border-bottom gap-2">
+                    <div>
+                        <span class="text-muted small d-block">Company Issue</span>
+                        <h4 class="fw-bold mb-0 text-primary">${displayCompanyName}</h4>
+                    </div>
+                    <div class="allotment-status-badge ${badgeClass}">
+                        <i class="${iconClass}"></i> ${statusText}
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-6 col-md-3">
+                        <span class="text-muted small d-block">Applicant Name</span>
+                        <span class="fw-bold dark-text">${item.applicant_name || 'Sole Applicant'}</span>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <span class="text-muted small d-block">Category</span>
+                        <span class="fw-bold dark-text">${item.category || 'Retail'}</span>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <span class="text-muted small d-block">Shares Applied</span>
+                        <span class="fw-bold dark-text fs-6">${item.shares_applied} Shares</span>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <span class="text-muted small d-block">Shares Allotted</span>
+                        <span class="fw-extrabold ${isAllotted ? 'text-success' : 'text-danger'} fs-5">${item.shares_allotted} Shares</span>
+                    </div>
+                </div>
+
+                <hr class="my-3 opacity-10">
+
+                <div class="row g-3 small">
+                    ${item.appln_no ? `<div class="col-6 col-md-3"><span class="text-muted d-block">Application No</span><span class="fw-semibold dark-text">${item.appln_no}</span></div>` : ''}
+                    ${item.pan_no ? `<div class="col-6 col-md-3"><span class="text-muted d-block">PAN Number</span><span class="fw-semibold dark-text">${item.pan_no}</span></div>` : ''}
+                    <div class="col-6 col-md-3">
+                        <span class="text-muted d-block">Cut-Off / Issue Price</span>
+                        <span class="fw-semibold dark-text">${item.cutoff_price && item.cutoff_price !== 'N/A' ? '₹ ' + item.cutoff_price : 'N/A'}</span>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <span class="text-muted d-block">Amount Adjusted</span>
+                        <span class="fw-semibold dark-text">₹ ${item.amount_adjusted || '0'}</span>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <span class="text-muted d-block">DP / Client ID</span>
+                        <span class="fw-semibold dark-text">${item.dp_client_id || 'N/A'}</span>
+                    </div>
+                    ${item.refund_no && item.refund_no !== 'N/A' ? `<div class="col-6 col-md-3"><span class="text-muted d-block">Refund Ref No</span><span class="fw-semibold dark-text">${item.refund_no}</span></div>` : ''}
+                </div>
+            </div>
+            `;
+        });
+
+        allotmentResultBox.innerHTML = html;
+        allotmentResultBox.classList.remove('d-none');
+
+        // Scroll smoothly to results
+        allotmentResultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // Dynamic Refresh IPOs Button
+    btnRefreshIPOs.addEventListener('click', function() {
+        refreshIcon.classList.add('fa-spin');
+        btnRefreshIPOs.disabled = true;
+
+        fetch('{% url "ipo_companies_api" %}')
+        .then(res => res.json())
+        .then(data => {
+            refreshIcon.classList.remove('fa-spin');
+            btnRefreshIPOs.disabled = false;
+            if (data.status === 'success' && data.companies) {
+                let html = '<option value="" selected disabled>-- Select Company from Portal --</option>';
+                data.companies.forEach(comp => {
+                    html += `<option value="${comp.id}" data-registrar="${comp.registrar}">${comp.name}</option>`;
+                });
+                companySelect.innerHTML = html;
+                showAlert(`Successfully synchronized ${data.companies.length} IPOs from registrar!`, 'success');
+            }
+        })
+        .catch(err => {
+            refreshIcon.classList.remove('fa-spin');
+            btnRefreshIPOs.disabled = false;
+            showAlert('Failed to refresh IPO list from server.', 'warning');
+        });
+    });
+
+    // CSRF Cookie Helper
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
 {% endblock %}

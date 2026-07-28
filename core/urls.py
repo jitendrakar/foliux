@@ -123,6 +123,9 @@ urlpatterns = [
     path('api/coin-price/', views.coin_price_api, name='coin_price_api'),
     path('api/coin-suggestions/', views.coin_suggestions_api, name='coin_suggestions_api'),
     path('api/backtest-strategy/', views.backtest_strategy_api, name='backtest_strategy_api'),
+    path('api/ipo/allotment-status/', views.ipo_allotment_status_api, name='ipo_allotment_status_api'),
+    path('api/ipo/companies/', views.ipo_companies_api, name='ipo_companies_api'),
+    path('api/ipo/sync/', views.sync_ipos_api, name='sync_ipos_api'),
     
     # Mobile App API
     path('api/login/', api_views.api_login, name='api_login'),

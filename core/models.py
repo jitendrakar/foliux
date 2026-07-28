@@ -1115,6 +1115,10 @@ class IPO(models.Model):
     company_work = models.TextField(help_text="What company does – short text")
     notes = models.TextField(help_text="Post / Analysis")
     advise = models.CharField(max_length=20, choices=ADVISE_CHOICES, default='WAITING')
+    registrar_slug = models.CharField(max_length=50, default='mufg', blank=True, help_text="Registrar slug (e.g. mufg, kfintech)")
+    registrar_company_id = models.CharField(max_length=50, blank=True, null=True, help_text="Registrar internal company ID")
+    is_synced_from_registrar = models.BooleanField(default=False, help_text="True if dynamically synced from registrar")
+    is_active = models.BooleanField(default=True, help_text="True if IPO is active on registrar portal")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
