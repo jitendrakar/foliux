@@ -48,8 +48,8 @@ def home_view(request):
     ]
 
     context.update({
-        'meta_title': 'FOLIUX NPITS - Best Computer Hardware, SSD, HDD, Laptops & Accessories Comparison',
-        'meta_description': 'Find the best deals on Computer Accessories, SSDs, HDDs, Monitors, Laptops, Keyboards, and PC Hardware with live Amazon price comparison on FOLIUX NPITS.',
+        'meta_title': 'Nehru Place IT Services - Best Computer Hardware, SSD, HDD, Laptops & Accessories Comparison',
+        'meta_description': 'Find the best deals on Computer Accessories, SSDs, HDDs, Monitors, Laptops, Keyboards, and PC Hardware with live Amazon price comparison on Nehru Place IT Services.',
         'featured_products': featured_products,
         'top_deals': top_deals,
         'latest_articles': latest_articles,
@@ -108,7 +108,7 @@ def category_detail_view(request, slug):
         'products': page_obj,
         'available_brands': available_brands,
         'available_capacities': available_capacities,
-        'meta_title': f"Best {category.name} in India - Reviews & Lowest Prices | FOLIUX NPITS",
+        'meta_title': f"Best {category.name} in India - Reviews & Lowest Prices | Nehru Place IT Services",
         'meta_description': f"Browse top-rated {category.name} with price comparison, technical specs, user ratings, and direct Amazon deals.",
     })
     return render(request, 'npits/category_detail.html', context)
@@ -160,7 +160,7 @@ def product_detail_view(request, slug):
         'amazon_buy_url': amazon_buy_url,
         'related_products': related_products,
         'schema_markup_json': json.dumps(schema_markup),
-        'meta_title': product.meta_title or f"{product.title} - Price, Specs & Review | FOLIUX NPITS",
+        'meta_title': product.meta_title or f"{product.title} - Price, Specs & Review | Nehru Place IT Services",
         'meta_description': product.meta_description or f"Buy {product.title} at best price of ₹{product.price}. Features: {product.short_description[:120] if product.short_description else product.title}.",
     })
     return render(request, 'npits/product_detail.html', context)
@@ -190,7 +190,7 @@ def seo_landing_view(request, slug):
             'h1_title': landing.h1_title,
             'intro_text': landing.intro_text,
             'products': products,
-            'meta_title': landing.meta_title or f"{landing.title} | FOLIUX NPITS",
+            'meta_title': landing.meta_title or f"{landing.title} | Nehru Place IT Services",
             'meta_description': landing.meta_description or f"Find the best choices for {landing.title} with complete buying advice and Amazon price comparison.",
         })
         return render(request, 'npits/seo_landing.html', context)
@@ -211,7 +211,7 @@ def seo_landing_view(request, slug):
         'h1_title': f"Top Recommended {dynamic_title}",
         'intro_text': f"Explore our expert recommendation list for {dynamic_title}. Updated with current Amazon India prices, customer ratings, and technical specifications.",
         'products': matched_products,
-        'meta_title': f"{dynamic_title} - Price & Buyer Guide | FOLIUX NPITS",
+        'meta_title': f"{dynamic_title} - Price & Buyer Guide | Nehru Place IT Services",
         'meta_description': f"Compare and buy {dynamic_title} at lowest prices on Amazon India.",
     })
     return render(request, 'npits/seo_landing.html', context)
@@ -241,8 +241,8 @@ def search_view(request):
         'query': query,
         'products': page_obj,
         'total_results': products_qs.count(),
-        'meta_title': f"Search results for '{query}' | FOLIUX NPITS",
-        'meta_description': f"Search results for {query} hardware and computer accessories on FOLIUX NPITS.",
+        'meta_title': f"Search results for '{query}' | Nehru Place IT Services",
+        'meta_description': f"Search results for {query} hardware and computer accessories on Nehru Place IT Services.",
     })
     return render(request, 'npits/search_results.html', context)
 
@@ -258,8 +258,8 @@ def blog_list_view(request):
 
     context.update({
         'articles': page_obj,
-        'meta_title': 'IT Hardware Buying Guides & Computer Comparison Articles | FOLIUX NPITS',
-        'meta_description': 'Read expert IT buying guides, SSD vs HDD comparisons, gaming hardware recommendations, and laptop buying advice on FOLIUX NPITS.',
+        'meta_title': 'IT Hardware Buying Guides & Computer Comparison Articles | Nehru Place IT Services',
+        'meta_description': 'Read expert IT buying guides, SSD vs HDD comparisons, gaming hardware recommendations, and laptop buying advice on Nehru Place IT Services.',
     })
     return render(request, 'npits/blog_list.html', context)
 
@@ -276,7 +276,7 @@ def blog_detail_view(request, slug):
         'article': article,
         'related_articles': related_articles,
         'top_recommended_products': top_recommended_products,
-        'meta_title': article.meta_title or f"{article.title} | FOLIUX NPITS",
+        'meta_title': article.meta_title or f"{article.title} | Nehru Place IT Services",
         'meta_description': article.meta_description or article.summary[:150],
     })
     return render(request, 'npits/blog_detail.html', context)

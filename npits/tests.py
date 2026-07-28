@@ -74,7 +74,7 @@ class NPITSAppTests(TestCase):
         url = reverse('npits:home')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "FOLIUX NPITS")
+        self.assertContains(response, "Nehru Place IT Services")
         self.assertContains(response, "Crucial BX500 512GB SATA SSD")
 
     def test_category_detail_view(self):
