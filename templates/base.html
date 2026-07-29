@@ -665,6 +665,7 @@
     }
   </script>
 
+  {% block navbar %}
   <nav class="navbar navbar-expand-lg navbar-dark mb-0">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center" href="{% url 'landing' %}">
@@ -748,6 +749,7 @@
       </div>
     </div>
   </nav>
+  {% endblock navbar %}
 
   <div class="container main-content">
     {% if messages %}
@@ -806,6 +808,7 @@
     {% endblock %}
   </div>
 
+  {% block footer %}
   <footer class="py-5 bg-white border-top mt-5">
     <div class="container text-center">
       <div class="footer-logo mb-4 animate__animated animate__fadeIn">
@@ -852,6 +855,7 @@
       <p class="mb-0 text-muted small">© 2026 FOLIUX. Rule-based investing for disciplined wealth creation.</p>
     </div>
   </footer>
+  {% endblock footer %}
 
   <!-- Stock Detail Modal (Global) -->
   <div class="modal fade stock-modal-blur" id="stockDetailModal" tabindex="-1" aria-hidden="true">

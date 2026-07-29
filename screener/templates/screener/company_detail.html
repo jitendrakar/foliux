@@ -384,6 +384,9 @@
                 <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents-pane" type="button" role="tab" aria-controls="documents-pane" aria-selected="false"><i class="fas fa-folder-open me-1"></i> Documents</button>
             </li>
             <li class="nav-item" role="presentation">
+                <button class="nav-link" id="guidance-tab" data-bs-toggle="tab" data-bs-target="#guidance-pane" type="button" role="tab" aria-controls="guidance-pane" aria-selected="false"><i class="fas fa-award me-1 text-warning"></i> Guidance & Credibility</button>
+            </li>
+            <li class="nav-item" role="presentation">
                 <button class="nav-link" id="news-tab" data-bs-toggle="tab" data-bs-target="#news-pane" type="button" role="tab" aria-controls="news-pane" aria-selected="false"><i class="fas fa-newspaper me-1"></i> News</button>
             </li>
         </ul>
@@ -790,6 +793,148 @@
                                 {% endfor %}
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- MANAGEMENT GUIDANCE & CREDIBILITY TAB -->
+                <div class="tab-pane fade" id="guidance-pane" role="tabpanel" aria-labelledby="guidance-tab">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h4 class="fw-extrabold mb-1"><i class="fas fa-award text-warning me-2"></i>Management Credibility Scorecard</h4>
+                                <p class="text-muted small mb-0">5-Year Historical Guidance vs. Actual Achievement Track Record</p>
+                            </div>
+                            {% if reliability_score %}
+                            <div class="text-end">
+                                <span class="badge {% if reliability_score.overall_score >= 80 %}bg-success{% elif reliability_score.overall_score >= 60 %}bg-warning text-dark{% else %}bg-danger{% endif %} fs-5 px-3 py-2 rounded-pill">
+                                    Overall Score: {{ reliability_score.overall_score }}/100
+                                </span>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        {% if reliability_score %}
+                        <div class="row g-3 my-2">
+                            <div class="col-md-3">
+                                <div class="p-3 bg-light rounded-3 text-center">
+                                    <div class="text-muted extra-small text-uppercase fw-bold">Reliability %</div>
+                                    <div class="fs-3 fw-extrabold text-primary">{{ reliability_score.reliability_score_percent }}%</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="p-3 bg-light rounded-3 text-center">
+                                    <div class="text-muted extra-small text-uppercase fw-bold">Achieved / Total</div>
+                                    <div class="fs-3 fw-extrabold text-success">{{ reliability_score.achieved_count }} / {{ reliability_score.total_forecasts }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="p-3 bg-light rounded-3 text-center">
+                                    <div class="text-muted extra-small text-uppercase fw-bold">Delayed Commitments</div>
+                                    <div class="fs-3 fw-extrabold text-warning">{{ reliability_score.delayed_count }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="p-3 bg-light rounded-3 text-center">
+                                    <div class="text-muted extra-small text-uppercase fw-bold">Avg Delay (Months)</div>
+                                    <div class="fs-3 fw-extrabold text-secondary">{{ reliability_score.avg_delay_months }} mo</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="mt-4">
+                            <h5 class="fw-bold mb-3"><i class="fas fa-list-check me-2 text-primary"></i>5-Year Forecast History</h5>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>FY Guidance</th>
+                                            <th>Metric & Statement</th>
+                                            <th>Target vs Actual</th>
+                                            <th>Source & Page</th>
+                                            <th>Status</th>
+                                            <th>Local PDF</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for mf in management_forecasts %}
+                                        <tr>
+                                            <td class="fw-bold">{{ mf.financial_year }}</td>
+                                            <td style="max-width:300px;">
+                                                <span class="badge bg-primary-subtle text-primary fw-bold mb-1">{{ mf.metric }}</span>
+                                                <div class="small text-secondary">{{ mf.forecast_statement }}</div>
+                                            </td>
+                                            <td>
+                                                <div class="fw-bold text-dark">Target: {{ mf.target_value }} ({{ mf.target_year }})</div>
+                                                {% if mf.comparison %}
+                                                    <div class="text-success fw-bold small">Actual: {{ mf.comparison.actual_value }}</div>
+                                                {% else %}
+                                                    <div class="text-muted small">Actual: In Progress</div>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <div class="fw-semibold small"><i class="far fa-file-pdf text-danger me-1"></i> {{ mf.source_doc_type }}</div>
+                                                <div class="extra-small text-muted">Page {{ mf.page_number }}</div>
+                                            </td>
+                                            <td>
+                                                {% if mf.comparison %}
+                                                    {% if mf.comparison.status == 'achieved' %}
+                                                        <span class="badge bg-success-subtle text-success fw-bold px-2 py-1"><i class="fas fa-check-circle me-1"></i> Achieved</span>
+                                                    {% elif mf.comparison.status == 'partially_achieved' %}
+                                                        <span class="badge bg-warning-subtle text-warning fw-bold px-2 py-1"><i class="fas fa-adjust me-1"></i> Partially</span>
+                                                    {% elif mf.comparison.status == 'delayed' %}
+                                                        <span class="badge bg-danger-subtle text-danger fw-bold px-2 py-1"><i class="fas fa-clock me-1"></i> Delayed</span>
+                                                    {% else %}
+                                                        <span class="badge bg-secondary-subtle text-secondary fw-bold px-2 py-1"><i class="fas fa-spinner me-1"></i> Pending</span>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <span class="badge bg-light text-muted border">Pending</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if mf.document %}
+                                                    <a href="{% url 'screener:serve_local_document' mf.document.id %}" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill">
+                                                        <i class="fas fa-external-link-alt me-1"></i> View PDF
+                                                    </a>
+                                                {% else %}
+                                                    <span class="text-muted extra-small">N/A</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="6" class="text-center text-muted py-4">No management forecasts synced for this company.</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Local File Repository -->
+                        <div class="mt-4 pt-3 border-top">
+                            <h5 class="fw-bold mb-3"><i class="fas fa-hdd me-2 text-info"></i>Local Filing Document Archive</h5>
+                            <span class="local-path-tag d-inline-block mb-3">G:\My Drive\NETPROFIT\FOLIUX\screener\result\{{ company.nse_symbol }}\</span>
+
+                            <div class="row g-2">
+                                {% for md in management_documents %}
+                                <div class="col-md-6">
+                                    <div class="p-3 border rounded-3 d-flex justify-content-between align-items-center bg-light-subtle">
+                                        <div>
+                                            <div class="fw-bold text-dark small"><i class="far fa-file-pdf text-danger me-2"></i> {{ md.title }}</div>
+                                            <div class="extra-small text-muted">{{ md.financial_year }} | {{ md.file_size_bytes }} bytes | Checksum: {{ md.checksum|truncatechars:12 }}</div>
+                                        </div>
+                                        <a href="{% url 'screener:serve_local_document' md.id %}" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill ms-2">
+                                            Open
+                                        </a>
+                                    </div>
+                                </div>
+                                {% empty %}
+                                <div class="col-12 text-muted small">No local archived documents found.</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 

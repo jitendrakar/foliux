@@ -278,29 +278,43 @@
 <div class="container">
     <!-- Hero Block -->
     <div class="screener-hero animate-in">
-        <h1 class="screener-title">FOLIUX Stock Screener</h1>
-        <p class="screener-sub text-muted">Analyze financial statements, track key metrics, compare peers, and unlock AI-driven insights for Indian equities.</p>
+        <h1 class="screener-title">FOLIUX AI Stock Screener</h1>
+        <p class="screener-sub text-muted">Type plain English queries to screen stocks by ratios, fundamentals, technicals, and Management Guidance Track Records.</p>
         
         <!-- Search Card -->
         <div class="search-card">
-            <div class="search-group">
-                <i class="fas fa-search text-muted me-3" style="font-size: 1.1rem;"></i>
-                <input type="text" class="search-input" id="screenerSearchInput" placeholder="Search by Company Name, NSE or BSE Symbol..." autocomplete="off">
-                <button class="btn-search-screener" id="screenerSearchBtn">Search</button>
-                
-                <!-- Autocomplete Popover -->
-                <div class="autocomplete-popover" id="screenerSuggestPopover">
-                    <ul class="suggest-list" id="screenerSuggestList"></ul>
+            <form action="{% url 'screener:nl_search' %}" method="get" id="screenerNLSearchForm">
+                <div class="search-group">
+                    <i class="fas fa-sparkles text-primary me-3" style="font-size: 1.1rem;"></i>
+                    <input type="text" class="search-input" name="q" id="screenerSearchInput" placeholder="Try e.g. PE Ratio below 50, ROE above 20%, Management Reliability Score above 80%..." autocomplete="off">
+                    <button type="submit" class="btn-search-screener" id="screenerSearchBtn">
+                        <i class="fas fa-magic me-1"></i> Screen
+                    </button>
+                    
+                    <!-- Autocomplete Popover -->
+                    <div class="autocomplete-popover" id="screenerSuggestPopover">
+                        <ul class="suggest-list" id="screenerSuggestList"></ul>
+                    </div>
                 </div>
-            </div>
+            </form>
             
-            <!-- Popular Presets -->
+            <!-- Popular Presets & AI Query Examples -->
+            <div class="popular-title"><i class="fas fa-lightbulb text-warning me-1"></i> Try AI Natural Language Queries</div>
+            <div class="popular-grid mb-3">
+                <a href="{% url 'screener:nl_search' %}?q=PE+Ratio+below+50" class="popular-chip">PE Ratio < 50</a>
+                <a href="{% url 'screener:nl_search' %}?q=ROE+greater+than+20%25" class="popular-chip">ROE > 20%</a>
+                <a href="{% url 'screener:nl_search' %}?q=Management+Reliability+Score+above+80%25" class="popular-chip">Management Score > 80%</a>
+                <a href="{% url 'screener:nl_search' %}?q=Low+Debt+Companies" class="popular-chip">Low Debt Companies</a>
+                <a href="{% url 'screener:nl_search' %}?q=PE+below+25%2C+Debt+below+0.5%2C+and+Forecast+Achievement+above+75%25" class="popular-chip">Triple Compounder Filter</a>
+            </div>
+
             <div class="popular-title">Popular Stock Profiles</div>
             <div class="popular-grid">
                 <a href="{% url 'screener:company_detail' 'RELIANCE' %}" class="popular-chip">RELIANCE</a>
                 <a href="{% url 'screener:company_detail' 'TCS' %}" class="popular-chip">TCS</a>
                 <a href="{% url 'screener:company_detail' 'INFY' %}" class="popular-chip">INFY</a>
                 <a href="{% url 'screener:company_detail' 'HDFCBANK' %}" class="popular-chip">HDFC BANK</a>
+                <a href="{% url 'screener:management_credibility' %}" class="popular-chip text-primary"><i class="fas fa-award me-1"></i> Credibility Dashboard</a>
             </div>
         </div>
     </div>

@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Natural Language Query Screener Results | FOLIUX Screener{% endblock %}
+
+{% block extra_css %}
+<style>
+  .nl-search-hero {
+    padding: 2.5rem 2rem;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(16, 185, 129, 0.08) 100%);
+    border-radius: 20px;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(37, 99, 235, 0.15);
+  }
+
+  html[data-theme="dark"] .nl-search-hero {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.7) 0%, rgba(30, 41, 59, 0.7) 100%);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .nl-input-group {
+    background: var(--bs-card-bg, #ffffff);
+    border: 2px solid #2563eb;
+    border-radius: 50px;
+    padding: 6px 8px 6px 20px;
+    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.12);
+  }
+
+  .condition-tag {
+    background: rgba(37, 99, 235, 0.1);
+    color: #2563eb;
+    border: 1px solid rgba(37, 99, 235, 0.25);
+    border-radius: 20px;
+    padding: 0.35rem 0.85rem;
+    font-size: 0.88rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  html[data-theme="dark"] .condition-tag {
+    background: rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+    border-color: rgba(147, 197, 253, 0.3);
+  }
+
+  .example-pill {
+    background: #f1f5f9;
+    color: #475569;
+    border-radius: 20px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+  .example-pill:hover {
+    background: #2563eb;
+    color: #fff;
+  }
+
+  html[data-theme="dark"] .example-pill {
+    background: rgba(255,255,255,0.08);
+    color: #cbd5e1;
+  }
+
+  .score-badge {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 0.92rem;
+  }
+  .score-high { background: rgba(16, 185, 129, 0.15); color: #059669; border: 2px solid #10b981; }
+  .score-mid { background: rgba(245, 158, 11, 0.15); color: #d97706; border: 2px solid #f59e0b; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-4 py-4">
+
+  <!-- Natural Language Query Search Bar Hero -->
+  <div class="nl-search-hero">
+    <div class="max-w-900 mx-auto">
+      <div class="d-flex align-items-center gap-2 mb-2">
+        <span class="badge bg-primary text-white fw-bold px-3 py-1 rounded-pill">
+          <i class="fas fa-sparkles me-1"></i> AI Natural Language Stock Search
+        </span>
+        <a href="{% url 'screener:management_credibility' %}" class="text-decoration-none extra-small text-muted fw-bold">
+          <i class="fas fa-award text-warning me-1"></i> Management Credibility Engine
+        </a>
+      </div>
+
+      <!-- Main NL Input Form -->
+      <form action="{% url 'screener:nl_search' %}" method="get" class="mb-3">
+        <div class="nl-input-group d-flex align-items-center">
+          <i class="fas fa-search text-primary fs-5 me-2"></i>
+          <input type="text" name="q" value="{{ query_text }}" class="form-control border-0 bg-transparent fs-5 fw-semibold text-dark shadow-none" placeholder="Type query e.g. PE Ratio below 50, ROE above 20%, Management Reliability Score above 80%...">
+          <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold shadow-sm">
+            <i class="fas fa-magic me-1"></i> Screen Stocks
+          </button>
+        </div>
+      </form>
+
+      <!-- Quick Example Query Pills -->
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <span class="text-muted extra-small fw-bold text-uppercase me-1"><i class="fas fa-lightbulb text-warning me-1"></i> Try Examples:</span>
+        {% for example in sample_queries|slice:":6" %}
+          <a href="{% url 'screener:nl_search' %}?q={{ example|urlencode }}" class="example-pill">
+            {{ example }}
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Applied Filter Condition Tags Bar -->
+  <div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <span class="fw-bold text-dark me-2"><i class="fas fa-filter text-primary me-1"></i> Active Filters ({{ tags|length }}):</span>
+        {% for tag in tags %}
+          <span class="condition-tag">
+            <i class="fas fa-check-circle text-success"></i> {{ tag.label }}
+          </span>
+        {% empty %}
+          <span class="text-muted small">No restrictive filters detected. Showing matching stocks.</span>
+        {% endfor %}
+      </div>
+
+      <!-- Action & Export Controls -->
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-secondary-subtle text-secondary fw-bold px-3 py-2 fs-6">
+          {{ total_count }} Companies Found
+        </span>
+        <div class="dropdown">
+          <button class="btn btn-outline-secondary btn-sm rounded-pill dropdown-toggle fw-bold" type="button" data-bs-toggle="dropdown">
+            <i class="fas fa-download me-1"></i> Export Results
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="#" onclick="exportNL('CSV')"><i class="far fa-file-alt me-2 text-primary"></i> Export to CSV</a></li>
+            <li><a class="dropdown-item" href="#" onclick="exportNL('Excel')"><i class="far fa-file-excel me-2 text-success"></i> Export to Excel</a></li>
+            <li><a class="dropdown-item" href="#" onclick="exportNL('PDF')"><i class="far fa-file-pdf me-2 text-danger"></i> Export to PDF</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results Table Card -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 mb-5">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>Company</th>
+            <th>Sector</th>
+            <th class="text-end">Market Cap (Cr.)</th>
+            <th class="text-center">PE</th>
+            <th class="text-center">ROE %</th>
+            <th class="text-center">ROCE %</th>
+            <th class="text-center">Debt/Eq</th>
+            <th class="text-center">Sales 5Y</th>
+            <th class="text-center">Profit 5Y</th>
+            <th class="text-center">Mgmt Score</th>
+            <th class="text-center">Forecast Achieved</th>
+            <th class="text-center">Forecasts</th>
+            <th class="text-end">FOLIUX Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for res in results %}
+          <tr>
+            <td>
+              <a href="{% url 'screener:company_detail' res.nse_symbol %}" class="fw-bold text-decoration-none text-dark fs-6">
+                {{ res.name }}
+              </a>
+              <span class="badge bg-light text-primary border ms-1">{{ res.nse_symbol }}</span>
+            </td>
+            <td>
+              <div class="fw-semibold text-secondary small">{{ res.industry }}</div>
+              <div class="extra-small text-muted">{{ res.sector }}</div>
+            </td>
+            <td class="text-end fw-bold">₹{{ res.market_cap|floatformat:0 }} Cr.</td>
+            <td class="text-center fw-semibold">{{ res.pe_ratio }}</td>
+            <td class="text-center fw-bold text-success">{{ res.roe }}%</td>
+            <td class="text-center fw-bold text-primary">{{ res.roce }}%</td>
+            <td class="text-center fw-semibold">{{ res.debt_to_equity }}</td>
+            <td class="text-center fw-semibold text-success">+{{ res.sales_growth }}%</td>
+            <td class="text-center fw-semibold text-success">+{{ res.profit_growth }}%</td>
+            <td class="text-center">
+              <span class="badge {% if res.reliability_score >= 80 %}bg-success{% elif res.reliability_score >= 60 %}bg-warning text-dark{% else %}bg-danger{% endif %} px-2 py-1">
+                {{ res.reliability_score }}/100
+              </span>
+            </td>
+            <td class="text-center fw-bold text-primary">
+              {{ res.forecast_achievement_pct }}%
+            </td>
+            <td class="text-center">
+              <span class="badge bg-light text-dark border" title="{{ res.achieved_count }} Achieved, {{ res.delayed_count }} Delayed">
+                {{ res.total_forecasts }} item(s)
+              </span>
+            </td>
+            <td class="text-end">
+              <div class="d-inline-flex align-items-center justify-content-end gap-2">
+                <div class="score-badge {% if res.foliux_score >= 80 %}score-high{% else %}score-mid{% endif %}">
+                  {{ res.foliux_score }}
+                </div>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="13" class="text-center text-muted py-5">
+              <i class="fas fa-search-minus fa-2x mb-3 text-secondary d-block"></i>
+              No companies matched your query criteria. Try broadening your parameters or select an example above.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function exportNL(format) {
+    alert("Exporting query results to " + format + " file... Download starting.");
+  }
+</script>
+{% endblock %}

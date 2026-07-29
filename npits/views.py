@@ -98,6 +98,11 @@ def category_detail_view(request, slug):
     available_brands = NPITSProduct.objects.filter(category_id__in=cat_ids, is_active=True).values_list('brand', flat=True).distinct()
     available_capacities = NPITSProduct.objects.filter(category_id__in=cat_ids, is_active=True).exclude(capacity='').values_list('capacity', flat=True).distinct()
 
+    # Best Product (Highest Rating / Featured) & Best Price (Lowest Price)
+    all_cat_products = NPITSProduct.objects.filter(category_id__in=cat_ids, is_active=True)
+    best_product = all_cat_products.order_by('-is_featured', '-rating', '-review_count').first()
+    best_price_product = all_cat_products.order_by('price').first()
+
     paginator = Paginator(products_qs, 12)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -106,6 +111,8 @@ def category_detail_view(request, slug):
         'category': category,
         'subcategories': subcats,
         'products': page_obj,
+        'best_product': best_product,
+        'best_price_product': best_price_product,
         'available_brands': available_brands,
         'available_capacities': available_capacities,
         'meta_title': f"Best {category.name} in India - Reviews & Lowest Prices | Nehru Place IT Services",
@@ -124,6 +131,7 @@ def product_detail_view(request, slug):
     
     # Related Products in same category
     related_products = NPITSProduct.objects.filter(category=product.category, is_active=True).exclude(id=product.id)[:4]
+    affiliate_links = product.affiliate_links.filter(in_stock=True)
 
     # Schema.org Product JSON-LD structured data
     schema_markup = {
@@ -158,6 +166,7 @@ def product_detail_view(request, slug):
     context.update({
         'product': product,
         'amazon_buy_url': amazon_buy_url,
+        'affiliate_links': affiliate_links,
         'related_products': related_products,
         'schema_markup_json': json.dumps(schema_markup),
         'meta_title': product.meta_title or f"{product.title} - Price, Specs & Review | Nehru Place IT Services",
@@ -303,9 +312,35 @@ def sitemap_view(request):
     for art in NPITSArticle.objects.filter(is_published=True):
         urls.append(f"{domain}/npits/blog/{art.slug}/")
 
-    xml_lines = ['<?xml version="1.0" encoding="UTF-8"?>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
+    xml_content = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     for u in urls:
-        xml_lines.append(f'  <url><loc>{u}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>')
-    xml_lines.append('</urlset>')
+        xml_content += f'  <url><loc>{u}</loc><changefreq>weekly</changefreq></url>\n'
+    xml_content += '</urlset>'
 
-    return HttpResponse("\n".join(xml_lines), content_type="application/xml")
+    return HttpResponse(xml_content, content_type="application/xml")
+
+
+def autocomplete_view(request):
+    """JSON API Endpoint for Real-Time Search Suggestions as User Types."""
+    query = request.GET.get('q', '').strip()
+    if len(query) < 2:
+        return JsonResponse({'results': []})
+
+    products = NPITSProduct.objects.filter(
+        Q(title__icontains=query) | Q(brand__icontains=query) | Q(category__name__icontains=query),
+        is_active=True
+    ).select_related('category')[:8]
+
+    results = []
+    for p in products:
+        results.append({
+            'title': p.title,
+            'slug': p.slug,
+            'url': f"/npits/p/{p.slug}/",
+            'price': f"₹{p.price:,.0f}",
+            'brand': p.brand,
+            'category': p.category.name,
+            'image': p.image_url
+        })
+
+    return JsonResponse({'results': results})

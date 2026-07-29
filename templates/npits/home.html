@@ -12,14 +12,21 @@
       Compare SSDs, Hard Disks, Monitors, Laptops, Keyboards, and PC Components with real-time specs and direct Amazon Associate discounts.
     </p>
 
-    <!-- Search Input Bar -->
-    <form action="{% url 'npits:search' %}" method="get" class="max-w-xl mx-auto npits-search-bar d-flex align-items-center">
-      <i class="fas fa-search text-muted me-2"></i>
-      <input type="text" name="q" class="form-control" placeholder="Search by Product Name, Brand (e.g. Seagate, Samsung, Crucial, ASUS), or Capacity..." required>
-      <button type="submit" class="btn btn-primary rounded-pill px-4 ms-2 fw-bold">
-        Search
-      </button>
-    </form>
+    <!-- Search Input Bar with Real-Time Autocomplete -->
+    <div class="position-relative max-w-xl mx-auto">
+      <form action="{% url 'npits:search' %}" method="get" class="npits-search-bar d-flex align-items-center">
+        <i class="fas fa-search text-muted me-2"></i>
+        <input type="text" name="q" id="npitsSearchInput" class="form-control" placeholder="Search by Product Name, Brand (e.g. Seagate, Samsung, Crucial, ASUS)..." autocomplete="off" required>
+        <button type="submit" class="btn btn-primary rounded-pill px-4 ms-2 fw-bold">
+          Search
+        </button>
+      </form>
+
+      <!-- Autocomplete Suggestions Dropdown -->
+      <div id="npitsAutocompleteBox" class="card shadow-lg border-0 rounded-3 overflow-hidden position-absolute w-100 mt-2 z-3 text-start" style="display: none; max-height: 420px; overflow-y: auto; top: 100%; left: 0;">
+        <div id="npitsAutocompleteList" class="list-group list-group-flush"></div>
+      </div>
+    </div>
 
     <!-- Popular Searches -->
     <div class="d-flex flex-wrap justify-content-center gap-2 mt-3 small opacity-80">
@@ -30,6 +37,71 @@
       <a href="{% url 'npits:seo_landing' 'best-gaming-mouse' %}" class="badge bg-secondary text-decoration-none">Gaming Mouse</a>
       <a href="{% url 'npits:seo_landing' 'best-laptop-under-50000' %}" class="badge bg-secondary text-decoration-none">Laptop under ₹50k</a>
     </div>
+  </div>
+</div>
+
+<!-- Top Featured Products Grid (Placed at the Top of Website) -->
+<div class="mb-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h3 class="fw-bold mb-1"><i class="fas fa-fire text-danger me-2"></i>Featured IT Deals & Recommendations</h3>
+      <p class="text-muted mb-0">Handpicked top-rated products with verified Amazon Associate links.</p>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    {% for prod in featured_products %}
+    <div class="col-md-6 col-lg-3">
+      <div class="card npits-card h-100 shadow-sm position-relative">
+        {% if prod.discount_percent > 0 %}
+          <div class="position-absolute top-0 start-0 m-2 z-1">
+            <span class="discount-badge">-{{ prod.discount_percent }}% OFF</span>
+          </div>
+        {% endif %}
+        
+        <div class="npits-card-img-container position-relative">
+          <img src="{{ prod.image_url }}" alt="{{ prod.title }}" class="npits-card-img" loading="lazy" onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'200\' height=\'200\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%230d6efd\' stroke-width=\'1.5\'><rect x=\'2\' y=\'3\' width=\'20\' height=\'14\' rx=\'2\'/><line x1=\'8\' y1=\'21\' x2=\'16\' y2=\'21\'/><line x1=\'12\' y1=\'17\' x2=\'12\' y2=\'21\'/></svg>';">
+        </div>
+
+        <div class="card-body d-flex flex-column p-3">
+          <span class="text-muted small fw-bold text-uppercase mb-1" style="letter-spacing: 0.5px; font-size: 0.75rem;">
+            {{ prod.brand }} • {{ prod.category.name }}
+          </span>
+          <h6 class="fw-bold mb-2 line-clamp-2">
+            <a href="{% url 'npits:product_detail' prod.slug %}" class="text-decoration-none text-dark">{{ prod.title }}</a>
+          </h6>
+
+          <!-- Rating & Reviews -->
+          <div class="d-flex align-items-center gap-1 mb-3">
+            <div class="rating-stars">
+              <i class="fas fa-star"></i>
+              <span class="fw-bold text-dark me-1">{{ prod.rating }}</span>
+            </div>
+            <span class="text-muted small">({{ prod.review_count }})</span>
+          </div>
+
+          <!-- Price & CTA -->
+          <div class="mt-auto">
+            <div class="d-flex align-items-baseline gap-2 mb-3">
+              <span class="fs-4 fw-extrabold text-primary">₹{{ prod.price|floatformat:0 }}</span>
+              {% if prod.original_price and prod.original_price > prod.price %}
+                <span class="text-muted text-decoration-line-through small">₹{{ prod.original_price|floatformat:0 }}</span>
+              {% endif %}
+            </div>
+
+            <div class="d-grid gap-2">
+              <a href="{{ prod.get_tracked_amazon_url }}" target="_blank" rel="nofollow sponsored" class="btn btn-amazon w-100 text-center">
+                <i class="fab fa-amazon me-1"></i> Buy on Amazon
+              </a>
+              <a href="{% url 'npits:product_detail' prod.slug %}" class="btn btn-outline-secondary btn-sm rounded-pill fw-semibold">
+                <i class="fas fa-info-circle me-1"></i> View Full Specs
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
   </div>
 </div>
 
@@ -85,69 +157,6 @@
   </div>
 </div>
 
-<!-- Top Featured Products Grid -->
-<div class="mb-5">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-      <h3 class="fw-bold mb-1">Featured IT Deals & Recommendations</h3>
-      <p class="text-muted mb-0">Handpicked top-rated products with verified Amazon Associate links.</p>
-    </div>
-  </div>
-
-  <div class="row g-4">
-    {% for prod in featured_products %}
-    <div class="col-md-6 col-lg-3">
-      <div class="card npits-card h-100">
-        {% if prod.discount_percent > 0 %}
-          <div class="position-absolute top-0 start-0 m-2 z-1">
-            <span class="discount-badge">-{{ prod.discount_percent }}% OFF</span>
-          </div>
-        {% endif %}
-        
-        <div class="npits-card-img-container">
-          <img src="{{ prod.image_url }}" alt="{{ prod.title }}" class="npits-card-img" loading="lazy">
-        </div>
-
-        <div class="card-body d-flex flex-column p-3">
-          <span class="text-muted small fw-semibold text-uppercase mb-1">{{ prod.brand }} • {{ prod.category.name }}</span>
-          <h6 class="fw-bold mb-2 line-clamp-2">
-            <a href="{% url 'npits:product_detail' prod.slug %}" class="text-decoration-none text-dark">{{ prod.title }}</a>
-          </h6>
-
-          <!-- Rating -->
-          <div class="d-flex align-items-center gap-1 mb-3">
-            <div class="rating-stars">
-              <i class="fas fa-star"></i>
-              <span class="fw-bold dark-text">{{ prod.rating }}</span>
-            </div>
-            <span class="text-muted small">({{ prod.review_count }})</span>
-          </div>
-
-          <!-- Price & CTA -->
-          <div class="mt-auto">
-            <div class="d-flex align-items-baseline gap-2 mb-3">
-              <span class="fs-4 fw-extrabold text-primary">₹{{ prod.price|floatformat:0 }}</span>
-              {% if prod.original_price and prod.original_price > prod.price %}
-                <span class="text-muted text-decoration-line-through small">₹{{ prod.original_price|floatformat:0 }}</span>
-              {% endif %}
-            </div>
-
-            <div class="d-grid gap-2">
-              <a href="{{ prod.get_tracked_amazon_url }}" target="_blank" rel="nofollow sponsored" class="btn btn-amazon w-100 text-center">
-                <i class="fab fa-amazon me-1"></i> Buy on Amazon
-              </a>
-              <a href="{% url 'npits:product_detail' prod.slug %}" class="btn btn-outline-secondary btn-sm rounded-pill fw-semibold">
-                <i class="fas fa-info-circle me-1"></i> View Full Specs
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    {% endfor %}
-  </div>
-</div>
-
 <!-- Buying Guides / Blog Articles Section -->
 {% if latest_articles %}
 <div class="mb-5">
@@ -177,4 +186,73 @@
   </div>
 </div>
 {% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const searchInput = document.getElementById('npitsSearchInput');
+  const autocompleteBox = document.getElementById('npitsAutocompleteBox');
+  const autocompleteList = document.getElementById('npitsAutocompleteList');
+  let timer = null;
+
+  if (searchInput && autocompleteBox && autocompleteList) {
+    searchInput.addEventListener('input', function() {
+      const q = this.value.trim();
+      clearTimeout(timer);
+
+      if (q.length < 2) {
+        autocompleteBox.style.display = 'none';
+        autocompleteList.innerHTML = '';
+        return;
+      }
+
+      timer = setTimeout(() => {
+        fetch("{% url 'npits:autocomplete' %}?q=" + encodeURIComponent(q))
+          .then(res => res.json())
+          .then(data => {
+            if (data.results && data.results.length > 0) {
+              let html = '';
+              data.results.forEach(prod => {
+                html += `
+                  <a href="${prod.url}" class="list-group-item list-group-item-action d-flex align-items-center gap-3 p-2 border-bottom text-decoration-none">
+                    <img src="${prod.image}" alt="${prod.title}" style="width: 44px; height: 44px; object-fit: contain;" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=100';">
+                    <div class="flex-grow-1 overflow-hidden text-start">
+                      <div class="fw-bold text-dark text-truncate small">${prod.title}</div>
+                      <span class="badge bg-secondary-subtle text-secondary me-2" style="font-size: 0.7rem;">${prod.brand} • ${prod.category}</span>
+                    </div>
+                    <div class="fw-extrabold text-primary small pe-2">${prod.price}</div>
+                  </a>
+                `;
+              });
+              autocompleteList.innerHTML = html;
+              autocompleteBox.style.display = 'block';
+            } else {
+              autocompleteList.innerHTML = `
+                <div class="p-3 text-muted text-center small">
+                  <i class="fas fa-search me-1"></i> No matching products found for "<strong>${q}</strong>"
+                </div>
+              `;
+              autocompleteBox.style.display = 'block';
+            }
+          })
+          .catch(err => {
+            console.error(err);
+            autocompleteBox.style.display = 'none';
+          });
+      }, 150);
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!searchInput.contains(e.target) && !autocompleteBox.contains(e.target)) {
+        autocompleteBox.style.display = 'none';
+      }
+    });
+
+    searchInput.addEventListener('focus', function() {
+      if (this.value.trim().length >= 2 && autocompleteList.children.length > 0) {
+        autocompleteBox.style.display = 'block';
+      }
+    });
+  }
+});
+</script>
 {% endblock %}

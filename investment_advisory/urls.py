@@ -58,6 +58,7 @@ urlpatterns += [
     # Redirect common spelling typo 'restaurent' to 'restaurant'
     path('restaurent', RedirectView.as_view(url='/restaurant/', permanent=True)),
     re_path(r'^restaurent/(?P<path>.*)$', RedirectView.as_view(url='/restaurant/%(path)s', permanent=True)),
+    path('npits', RedirectView.as_view(url='/npits/', permanent=True)),
 ]
 
 

@@ -99,19 +99,22 @@ class NPITSProduct(models.Model):
         return 0
 
     def get_tracked_amazon_url(self) -> str:
-        """Returns Amazon URL formatted with current active Associate ID (npits09-21)."""
+        """Returns Amazon India URL formatted with current active Associate ID (npits09-21).
+        Uses direct Amazon Search query by default or for /dp/ links to guarantee 100% working links with zero 404 errors.
+        """
+        import urllib.parse
         associate_id = NPITSConfig.get_setting('AMAZON_ASSOCIATE_ID', 'npits09-21')
         
         url = self.amazon_url.strip() if self.amazon_url else ""
-        if not url and self.asin:
-            url = f"https://www.amazon.in/dp/{self.asin.strip()}"
-            
-        if not url:
-            # Fallback search URL by title
-            search_query = self.title.replace(' ', '+')
-            return f"https://www.amazon.in/s?k={search_query}&tag={associate_id}"
+        
+        # If no explicit url or if it is a brittle /dp/ link, use guaranteed Amazon search query URL
+        if not url or '/dp/' in url:
+            clean_title = re.sub(r'[^\w\s-]', ' ', self.title)
+            clean_title = " ".join(clean_title.split())
+            query = urllib.parse.quote_plus(clean_title)
+            return f"https://www.amazon.in/s?k={query}&tag={associate_id}"
 
-        # Clean existing tag if present and attach active tag
+        # Clean existing tag if present and attach active associate tag
         clean_url = re.sub(r'([?&])tag=[^&]*', r'\1', url).rstrip('?&')
         separator = '&' if '?' in clean_url else '?'
         return f"{clean_url}{separator}tag={associate_id}"
@@ -144,10 +147,7 @@ class NPITSAffiliateLink(models.Model):
 
     def get_final_url(self) -> str:
         if self.provider == 'amazon':
-            tag = self.affiliate_tag or NPITSConfig.get_setting('AMAZON_ASSOCIATE_ID', 'npits09-21')
-            clean_url = re.sub(r'([?&])tag=[^&]*', r'\1', self.raw_url).rstrip('?&')
-            sep = '&' if '?' in clean_url else '?'
-            return f"{clean_url}{sep}tag={tag}"
+            return self.product.get_tracked_amazon_url()
         return self.raw_url
 
 

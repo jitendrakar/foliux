@@ -1,5 +1,99 @@
 {% extends 'base.html' %}
 
+{% block navbar %}
+<nav class="navbar navbar-expand-lg navbar-dark mb-0" style="background-color: #0f172a !important;">
+  <div class="container">
+    <!-- Brand: Text-only (No Logo Image) -->
+    <a class="navbar-brand d-flex align-items-center text-decoration-none" href="{% url 'npits:home' %}">
+      <span style="font-size: 1.4rem; font-weight: 800; color: #ffffff; letter-spacing: -0.02em;">Nehru Place IT Services</span>
+    </a>
+
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#npitsNavbar" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="npitsNavbar">
+      <ul class="navbar-nav ms-auto align-items-center gap-1">
+        <!-- Home Link -->
+        <li class="nav-item">
+          <a class="nav-link text-white fw-semibold px-2" href="{% url 'npits:home' %}"><i class="fas fa-home me-1"></i> Home</a>
+        </li>
+
+        <!-- Laptops & PCs Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle text-white fw-semibold px-2" href="#" id="dropLaptops" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-laptop me-1"></i> Laptops & PCs
+          </a>
+          <ul class="dropdown-menu shadow border-0" aria-labelledby="dropLaptops">
+            <li><a class="dropdown-item" href="{% url 'npits:category_detail' 'laptop' %}"><i class="fas fa-laptop me-2 text-primary"></i> Laptop</a></li>
+            <li><a class="dropdown-item" href="{% url 'npits:category_detail' 'desktop-pc' %}"><i class="fas fa-desktop me-2 text-primary"></i> Desktop PC</a></li>
+          </ul>
+        </li>
+
+        <!-- Storage & RAM Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle text-white fw-semibold px-2" href="#" id="dropStorage" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-hdd me-1"></i> Storage & RAM
+          </a>
+          <ul class="dropdown-menu shadow border-0" aria-labelledby="dropStorage">
+            <li><a class="dropdown-item" href="{% url 'npits:category_detail' 'nvme-ssd' %}"><i class="fas fa-bolt me-2 text-warning"></i> NVMe SSD</a></li>
+            <li><a class="dropdown-item" href="{% url 'npits:category_detail' 'ssd' %}"><i class="fas fa-memory me-2 text-info"></i> SSD (256GB, 512GB, 1TB, 2TB)</a></li>
+            <li><a class="dropdown-item" href="{% url 'npits:category_detail' 'internal-hard-disk-hdd' %}"><i class="fas fa-hdd me-2 text-secondary"></i> Internal Hard Disk (HDD)</a></li>
+            <li><a class="dropdown-item" href="{% url 'npits:category_detail' 'external-hard-disk' %}"><i class="fas fa-database me-2 text-success"></i> External Hard Disk</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="{% url 'npits:category_detail' 'ram' %}"><i class="fas fa-microchip me-2 text-primary"></i> RAM</a></li>
+            <li><a class="dropdown-item" href="{% url 'npits:category_detail' 'pendrive' %}"><i class="fas fa-usb me-2 text-danger"></i> Pendrive</a></li>
+            <li><a class="dropdown-item" href="{% url 'npits:category_detail' 'memory-card' %}"><i class="fas fa-sd-card me-2 text-warning"></i> Memory Card</a></li>
+          </ul>
+        </li>
+
+        <!-- Components Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle text-white fw-semibold px-2" href="#" id="dropComponents" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-microchip me-1"></i> Components
+          </a>
+          <ul class="dropdown-menu shadow border-0" aria-labelledby="dropComponents">
+            <li><a class="dropdown-item" href="{% url 'npits:category_detail' 'processor' %}"><i class="fas fa-microchip me-2 text-primary"></i> Processor</a></li>
+            <li><a class="dropdown-item" href="{% url 'npits:category_detail' 'motherboard' %}"><i class="fas fa-chess-board me-2 text-info"></i> Motherboard</a></li>
+            <li><a class="dropdown-item" href="{% url 'npits:category_detail' 'graphics-card' %}"><i class="fas fa-tv me-2 text-success"></i> Graphics Card</a></li>
+            <li><a class="dropdown-item" href="{% url 'npits:category_detail' 'ups' %}"><i class="fas fa-car-battery me-2 text-warning"></i> UPS</a></li>
+            <li><a class="dropdown-item" href="{% url 'npits:category_detail' 'wi-fi-adapter' %}"><i class="fas fa-wifi me-2 text-danger"></i> Wi-Fi Adapter</a></li>
+            <li><a class="dropdown-item" href="{% url 'npits:category_detail' 'computer-accessories' %}"><i class="fas fa-plug me-2 text-secondary"></i> Computer Accessories</a></li>
+          </ul>
+        </li>
+
+        <!-- Peripherals Dropdown -->
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle text-white fw-semibold px-2" href="#" id="dropPeripherals" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-keyboard me-1"></i> Peripherals
+          </a>
+          <ul class="dropdown-menu shadow border-0" aria-labelledby="dropPeripherals">
+            <li><a class="dropdown-item" href="{% url 'npits:category_detail' 'monitor' %}"><i class="fas fa-desktop me-2 text-primary"></i> Monitor</a></li>
+            <li><a class="dropdown-item" href="{% url 'npits:category_detail' 'keyboard' %}"><i class="fas fa-keyboard me-2 text-info"></i> Keyboard</a></li>
+            <li><a class="dropdown-item" href="{% url 'npits:category_detail' 'mouse' %}"><i class="fas fa-mouse me-2 text-success"></i> Mouse</a></li>
+            <li><a class="dropdown-item" href="{% url 'npits:category_detail' 'webcam' %}"><i class="fas fa-video me-2 text-danger"></i> Webcam</a></li>
+            <li><a class="dropdown-item" href="{% url 'npits:category_detail' 'printer' %}"><i class="fas fa-print me-2 text-warning"></i> Printer</a></li>
+            <li><a class="dropdown-item" href="{% url 'npits:category_detail' 'router' %}"><i class="fas fa-network-wired me-2 text-primary"></i> Router</a></li>
+          </ul>
+        </li>
+
+        <!-- Buying Guides Link -->
+        <li class="nav-item">
+          <a class="nav-link text-white fw-semibold px-2" href="{% url 'npits:blog_list' %}"><i class="fas fa-book-open me-1"></i> Buying Guides</a>
+        </li>
+
+        <!-- Theme Toggle -->
+        <li class="nav-item d-flex align-items-center ms-lg-2">
+          <button id="globalThemeToggle" class="btn btn-link nav-link p-0 m-0 d-flex align-items-center justify-content-center text-white" style="font-size: 1.1rem; border: none; background: none; width: 32px; height: 32px;" aria-label="Toggle Theme">
+              <i class="fas fa-moon"></i>
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+{% endblock navbar %}
+
 {% block meta_tags %}
 <title>{% block title %}{{ meta_title|default:"Nehru Place IT Services - Best Computer Hardware & IT Accessories Comparison" }}{% endblock %}</title>
 <meta name="description" content="{{ meta_description|default:'Compare best computer hardware, SSD, HDD, Laptops, Monitors, and Accessories with live Amazon India price comparison on Nehru Place IT Services.' }}">
@@ -178,10 +272,10 @@
 <div class="npits-cat-ribbon shadow-sm mb-4">
   <div class="container-fluid px-3 d-flex align-items-center">
     <a href="{% url 'npits:home' %}" class="npits-cat-link fw-bold text-primary pe-3 me-2 border-end fs-6">
-      <i class="fas fa-microchip me-1"></i> Nehru Place IT Services
+      Nehru Place IT Services
     </a>
     <a href="{% url 'npits:home' %}" class="npits-cat-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
-      <i class="fas fa-home"></i> Home
+      <i class="fas fa-home me-1"></i> Home
     </a>
     {% for cat in nav_categories %}
       <a href="{% url 'npits:category_detail' cat.slug %}" class="npits-cat-link {% if category and category.slug == cat.slug %}active{% endif %}">
@@ -189,7 +283,7 @@
       </a>
     {% endfor %}
     <a href="{% url 'npits:blog_list' %}" class="npits-cat-link ms-auto fw-bold text-secondary">
-      <i class="fas fa-newspaper"></i> Buying Guides
+      <i class="fas fa-newspaper me-1"></i> Buying Guides
     </a>
   </div>
 </div>
@@ -208,3 +302,23 @@
   </div>
 </div>
 {% endblock %}
+
+{% block footer %}
+<footer class="py-5 bg-white border-top mt-5">
+  <div class="container text-center">
+    <h4 class="fw-bold mb-2" style="color: var(--primary-color, #0d6efd);">Nehru Place IT Services</h4>
+    <p class="text-muted mb-3 mx-auto" style="max-width: 650px;">
+      Your trusted destination for genuine computer hardware, laptops, custom PC builds, storage upgrades (SSD/HDD), components, and IT support services in Nehru Place, New Delhi.
+    </p>
+    <div class="mb-4">
+      <span class="small text-muted fw-semibold">For any help, please mail <a href="mailto:jitendra.kar@gmail.com" class="text-decoration-none fw-bold text-primary">jitendra.kar@gmail.com</a> or call <a href="tel:+919871808718" class="text-decoration-none fw-bold text-primary">9871808718</a></span>
+    </div>
+    <div class="d-flex justify-content-center gap-4 mb-4 flex-wrap">
+      <a href="{% url 'npits:home' %}" class="text-decoration-none text-muted small fw-bold text-uppercase">Home</a>
+      <a href="{% url 'npits:blog_list' %}" class="text-decoration-none text-muted small fw-bold text-uppercase">Buying Guides</a>
+    </div>
+    <hr class="my-4 opacity-25" style="max-width: 800px; margin: 0 auto;">
+    <p class="mb-0 text-muted small">© 2026 Nehru Place IT Services. All rights reserved.</p>
+  </div>
+</footer>
+{% endblock footer %}

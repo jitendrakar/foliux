@@ -55,13 +55,25 @@
         <p class="text-secondary mb-4">{{ product.short_description }}</p>
       {% endif %}
 
-      <!-- Primary Affiliate CTA Button -->
+      <!-- Primary Affiliate CTA Button & Deals -->
       <div class="mt-auto">
         <a href="{{ amazon_buy_url }}" target="_blank" rel="nofollow sponsored" class="btn btn-amazon btn-lg w-100 py-3 mb-2 shadow">
-          <i class="fab fa-amazon me-2 fa-lg"></i> View Deal on Amazon India
+          <i class="fab fa-amazon me-2 fa-lg"></i> View Deal on Amazon India (₹{{ product.price|floatformat:0 }})
         </a>
-        <p class="text-muted text-center extra-small mb-0">
-          <i class="fas fa-shield-alt text-success me-1"></i> Tracked & Verified Associate Link (ID: {{ associate_id }})
+        {% if affiliate_links %}
+          <div class="d-flex flex-column gap-2 mt-2">
+            {% for link in affiliate_links %}
+              {% if link.provider != 'amazon' %}
+                <a href="{{ link.get_final_url }}" target="_blank" rel="nofollow sponsored" class="btn btn-outline-dark btn-md w-100 py-2 d-flex justify-content-between align-items-center">
+                  <span><i class="fas fa-shopping-bag me-2 text-primary"></i> Compare Deal on {{ link.get_provider_display }}</span>
+                  <span class="fw-bold text-success">₹{{ link.price|floatformat:0 }}</span>
+                </a>
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% endif %}
+        <p class="text-muted text-center extra-small mt-2 mb-0">
+          <i class="fas fa-shield-alt text-success me-1"></i> Tracked & Verified Affiliate Links (ID: {{ associate_id }})
         </p>
       </div>
     </div>
