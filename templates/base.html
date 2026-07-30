@@ -710,15 +710,16 @@
           <li class="nav-item">
               <a class="nav-link" href="{% url 'cashflow_dashboard' %}{% if is_family_view %}?user_id={{ target_user.id }}{% elif is_consolidated %}?user_id=consolidated{% endif %}">Cashflow</a>
           </li>
-<li class="nav-item d-flex align-items-center ms-lg-2">
-    <button id="globalThemeToggle" class="btn btn-link nav-link p-0 m-0 d-flex align-items-center justify-content-center" style="font-size: 1.1rem; border: none; background: none; width: 32px; height: 32px;" aria-label="Toggle Theme">
-        <i class="fas fa-moon"></i>
-    </button>
-</li>
+          <li class="nav-item">
+              <a class="nav-link" href="{% url 'screener:screener_home' %}{% if is_family_view %}?user_id={{ target_user.id }}{% elif is_consolidated %}?user_id=consolidated{% endif %}">Screener</a>
+          </li>
 
 <!-- Stabilized Auth/Profile Section -->
-<li class="nav-item nav-user-stabilizer ms-lg-2">
+<li class="nav-item nav-user-stabilizer ms-lg-3">
     <div class="nav-user-content">
+        <button id="globalThemeToggle" class="btn btn-link nav-link p-0 m-0 d-flex align-items-center justify-content-center me-1" style="font-size: 1.1rem; border: none; background: none; width: 32px; height: 32px;" aria-label="Toggle Theme" title="Toggle Theme">
+            <i class="fas fa-moon"></i>
+        </button>
         {% if user.is_authenticated %}
             <a class="nav-link nav-item-dashboard" href="{% url 'portfolio' %}{% if is_family_view %}?user_id={{ target_user.id }}{% elif is_consolidated %}?user_id=consolidated{% endif %}">
                 Foliux
