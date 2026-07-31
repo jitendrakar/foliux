@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0F2B48;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1E50A2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#10B981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="600" rx="24" fill="url(#grad1)"/>
+
+  <!-- HVAC Duct Pipes Illustration -->
+  <path d="M 50 150 L 350 150 L 350 300 L 750 300" stroke="#0066CC" stroke-width="28" fill="none" stroke-linecap="round"/>
+  <path d="M 50 150 L 350 150 L 350 300 L 750 300" stroke="#60A5FA" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="15,10"/>
+
+  <path d="M 100 450 L 450 450 L 450 200 L 750 200" stroke="url(#accentGrad)" stroke-width="24" fill="none" stroke-linecap="round"/>
+  <path d="M 100 450 L 450 450 L 450 200 L 750 200" stroke="#A7F3D0" stroke-width="6" fill="none" stroke-linecap="round" stroke-dasharray="12,8"/>
+
+  <!-- AHU Fan / Blower circle -->
+  <g transform="translate(350, 300)">
+    <circle r="65" fill="#0A1C30" stroke="#10B981" stroke-width="6"/>
+    <circle r="40" fill="none" stroke="#60A5FA" stroke-width="4"/>
+    <path d="M -30 -30 L 30 30 M -30 30 L 30 -30" stroke="#10B981" stroke-width="6" stroke-linecap="round"/>
+  </g>
+
+  <!-- Cooling Tower Icon Box -->
+  <g transform="translate(450, 200)">
+    <rect x="-40" y="-40" width="80" height="80" rx="16" fill="#1E50A2" stroke="#ffffff" stroke-width="3"/>
+    <circle r="20" fill="url(#accentGrad)"/>
+    <text x="0" y="6" font-family="sans-serif" font-weight="bold" font-size="16" fill="#ffffff" text-anchor="middle">HVAC</text>
+  </g>
+
+  <!-- Energy Wave Graphics -->
+  <path d="M 50 500 Q 200 420 350 500 T 650 500 T 750 450" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="4"/>
+</svg>

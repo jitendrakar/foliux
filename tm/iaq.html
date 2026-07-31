@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Indoor Air Quality (IAQ) & Cleanroom Solutions - ThinkMech</title>
+  <meta name="description" content="ThinkMech Indoor Air Quality (IAQ) solutions. Interactive air quality gauge meter, UVGI, HEPA filtration, CO2 monitoring, ionization, and cleanroom sterilizers.">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="container">
+      <div class="top-bar-info">
+        <a href="tel:+919876543210"><i class="fa-solid fa-phone"></i> +91 98765 43210</a>
+        <a href="mailto:info@thinkmech.com"><i class="fa-solid fa-envelope"></i> info@thinkmech.com</a>
+        <span><i class="fa-solid fa-location-dot"></i> Single Point of Contact (SPOC) for HVAC Solutions</span>
+      </div>
+      <div>
+        <a href="#" class="open-quote-modal text-accent" style="font-weight:600;"><i class="fa-solid fa-paper-plane"></i> Get Free Consultation</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="container">
+      <nav class="navbar">
+        <a href="index.html" class="logo-link">
+          <img src="tmlogo.png" alt="ThinkMech Solutions Logo" class="logo-img">
+        </a>
+        <ul class="nav-menu">
+          <li><a href="index.html" class="nav-link">Home</a></li>
+          <li><a href="about.html" class="nav-link">About Us</a></li>
+          <li><a href="solutions.html" class="nav-link">Our Solutions</a></li>
+          <li><a href="maintenance.html" class="nav-link">Maintenance</a></li>
+          <li><a href="energy-audit.html" class="nav-link">Energy & Audit</a></li>
+          <li><a href="iaq.html" class="nav-link active">Indoor Air Quality</a></li>
+          <li><a href="team.html" class="nav-link">Team</a></li>
+          <li><a href="contact.html" class="nav-link">Contact</a></li>
+          <li><a href="#" class="btn btn-accent open-quote-modal"><i class="fa-solid fa-calculator"></i> Get Quote</a></li>
+        </ul>
+        <button class="mobile-toggle" aria-label="Toggle Navigation Menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Breadcrumb Banner -->
+  <div class="breadcrumb-banner">
+    <div class="container">
+      <h1>Indoor Air Quality (IAQ) Engineering</h1>
+      <div class="breadcrumb-links">
+        <a href="index.html">Home</a> <i class="fa-solid fa-chevron-right" style="font-size:0.75rem;"></i> <span>Indoor Air Quality</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Air Quality Meter Gauge Section -->
+  <section class="section-padding">
+    <div class="container">
+      <div class="text-center">
+        <span class="section-tag">Interactive Simulation</span>
+        <h2 class="section-title">Indoor Air Quality Index Gauge</h2>
+        <p class="section-subtitle">Click between states to visualize how ThinkMech filtration &amp; UVGI technologies restore hazardous air to medical grade safety.</p>
+      </div>
+
+      <div class="iaq-meter-wrapper">
+        <div class="gauge-display">
+          <div class="gauge-arc"></div>
+          <div class="gauge-needle" id="iaqNeedle"></div>
+        </div>
+
+        <div id="iaqStatusBadge" class="iaq-status-badge status-safe">SAFE (AQI 0 - 50)</div>
+        <h3 id="iaqLevelTitle" style="margin-top:1.25rem; font-size:1.5rem;">Optimal &amp; Clean Indoor Air Quality</h3>
+        <p id="iaqLevelDesc" style="color:var(--light-slate); max-width:550px; margin:0.5rem auto 2rem auto;">CO₂ levels &lt; 600 ppm, zero pathogens, HEPA filtration active. Maximum workplace productivity &amp; hygiene.</p>
+
+        <div style="display:flex; justify-content:center; gap:1rem; flex-wrap:wrap;">
+          <button class="btn btn-primary iaq-btn" data-state="safe"><i class="fa-solid fa-shield-halved"></i> Safe State</button>
+          <button class="btn btn-outline iaq-btn" data-state="risky"><i class="fa-solid fa-triangle-exclamation"></i> Risky State</button>
+          <button class="btn btn-outline iaq-btn" data-state="danger"><i class="fa-solid fa-radiation"></i> Danger State</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- IAQ Solutions Grid -->
+  <section class="section-padding" style="background:#F1F5F9;">
+    <div class="container">
+      <div class="text-center">
+        <span class="section-tag">Sanitization Technologies</span>
+        <h2 class="section-title">Turnkey IAQ &amp; Sterilization Technologies</h2>
+        <p class="section-subtitle">Advanced filtration, germicidal irradiation, and gas phase absorption for occupant safety.</p>
+      </div>
+
+      <div class="cards-grid">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa-solid fa-gauge"></i></div>
+          <h3>CO₂ Monitoring &amp; Demand Ventilation</h3>
+          <p>Automated fresh air dampers tied to NDIR CO₂ sensors to maintain levels below 800 ppm without overcooling energy loss.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa-solid fa-sun"></i></div>
+          <h3>UVGI Germicidal Irradiation</h3>
+          <p>C-band UV lamps installed in AHUs destroying 99.9% of airborne viruses, bacteria, and fungal mold spores on cooling coils.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa-solid fa-filter"></i></div>
+          <h3>HEPA H14 &amp; ULPA Filtration</h3>
+          <p>Medical grade absolute filters arresting 99.995% of micro-particles down to 0.12 microns for operating theaters and ISO clean rooms.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa-solid fa-droplet-slash"></i></div>
+          <h3>Precision Humidity Control</h3>
+          <p>Desiccant dehumidifiers and steam humidifiers holding RH strictly within 45%-55% to prevent bacterial growth.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa-solid fa-atom"></i></div>
+          <h3>Bipolar Ionization</h3>
+          <p>Plasma ionizers neutralizing volatile organic compounds (VOCs), odor molecules, and static charges across building ductwork.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa-solid fa-smog"></i></div>
+          <h3>Gas Phase Filtration</h3>
+          <p>Activated carbon and potassium permanganate beds absorbing hazardous gases, chemical fumes, and diesel exhaust.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa-solid fa-compress"></i></div>
+          <h3>Pressure Monitoring</h3>
+          <p>Positive pressure cascades for sterile clean rooms and negative pressure isolation chambers for infection control.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa-solid fa-wind"></i></div>
+          <h3>Ozonisation Systems</h3>
+          <p>Controlled ozone generators for organic odor breakdown in commercial kitchens and central return air plenums.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon"><i class="fa-solid fa-air-purifier"></i></div>
+          <h3>Standalone Air Purifiers</h3>
+          <p>Heavy duty ceiling-mounted and portable HEPA + Carbon purifiers for executive conference rooms &amp; ICU wards.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Applications Grid -->
+  <section class="section-padding">
+    <div class="container">
+      <div class="text-center">
+        <span class="section-tag">Where Implemented</span>
+        <h2 class="section-title">Critical IAQ Application Environments</h2>
+      </div>
+
+      <div class="industries-grid" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="industry-card" style="padding:2.5rem;">
+          <div class="industry-icon" style="width:70px; height:70px; font-size:2rem;"><i class="fa-solid fa-hospital"></i></div>
+          <h4 style="font-size:1.25rem;">Hospitals &amp; ICUs</h4>
+          <p style="font-size:0.9rem; color:var(--light-slate); margin-top:0.5rem;">Preventing hospital-acquired infections (HAI) with sterile laminar airflow.</p>
+        </div>
+
+        <div class="industry-card" style="padding:2.5rem;">
+          <div class="industry-icon" style="width:70px; height:70px; font-size:2rem;"><i class="fa-solid fa-vials"></i></div>
+          <h4 style="font-size:1.25rem;">Clean Rooms</h4>
+          <p style="font-size:0.9rem; color:var(--light-slate); margin-top:0.5rem;">ISO Class 5-8 compliance for pharma manufacturing &amp; biotech labs.</p>
+        </div>
+
+        <div class="industry-card" style="padding:2.5rem;">
+          <div class="industry-icon" style="width:70px; height:70px; font-size:2rem;"><i class="fa-solid fa-flask"></i></div>
+          <h4 style="font-size:1.25rem;">Laboratories</h4>
+          <p style="font-size:0.9rem; color:var(--light-slate); margin-top:0.5rem;">Exhaust scrubbers &amp; fume hood containment ventilation.</p>
+        </div>
+
+        <div class="industry-card" style="padding:2.5rem;">
+          <div class="industry-icon" style="width:70px; height:70px; font-size:2rem;"><i class="fa-solid fa-industry"></i></div>
+          <h4 style="font-size:1.25rem;">Factories</h4>
+          <p style="font-size:0.9rem; color:var(--light-slate); margin-top:0.5rem;">Dust extraction, mist collectors, and workplace fume containment.</p>
+        </div>
+
+        <div class="industry-card" style="padding:2.5rem;">
+          <div class="industry-icon" style="width:70px; height:70px; font-size:2rem;"><i class="fa-solid fa-server"></i></div>
+          <h4 style="font-size:1.25rem;">Data Centers</h4>
+          <p style="font-size:0.9rem; color:var(--light-slate); margin-top:0.5rem;">Gaseous corrosion prevention &amp; precision temperature hold.</p>
+        </div>
+
+        <div class="industry-card" style="padding:2.5rem;">
+          <div class="industry-icon" style="width:70px; height:70px; font-size:2rem;"><i class="fa-solid fa-building"></i></div>
+          <h4 style="font-size:1.25rem;">Corporate Offices</h4>
+          <p style="font-size:0.9rem; color:var(--light-slate); margin-top:0.5rem;">WELL Building Standard air hygiene and sick building syndrome cure.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Banner -->
+  <section class="container" style="margin-bottom: 5rem;">
+    <div class="cta-banner">
+      <h2>Test &amp; Upgrade Your Facility's Air Hygiene</h2>
+      <p>Book an IAQ particle &amp; bio-burden audit with our certified environmental engineers.</p>
+      <a href="contact.html" class="btn btn-accent" style="font-size:1.1rem; padding:1rem 2.5rem;"><i class="fa-solid fa-mask-ventilator"></i> Request IAQ Assessment</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <img src="tmlogo.png" alt="ThinkMech Solutions" style="height:48px; margin-bottom:1.25rem; background:#fff; padding:6px; border-radius:8px;">
+          <p>ThinkMech Solutions is a Single Point of Contact (SPOC) for turnkey HVAC Engineering, Energy Optimization, Indoor Air Quality, and 24x7 AMC Services.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="solutions.html">Our Solutions</a></li>
+            <li><a href="maintenance.html">Maintenance &amp; Blueace</a></li>
+            <li><a href="energy-audit.html">Energy &amp; Audit</a></li>
+            <li><a href="iaq.html">Indoor Air Quality</a></li>
+            <li><a href="team.html">Leadership &amp; Team</a></li>
+            <li><a href="contact.html">Contact Us</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Solutions</h4>
+          <ul class="footer-links">
+            <li><a href="solutions.html#retrofitting">HVAC Retrofitting</a></li>
+            <li><a href="solutions.html#ahu">AHU &amp; Ducting</a></li>
+            <li><a href="maintenance.html">AMC Plans</a></li>
+            <li><a href="energy-audit.html">DQ/IQ/OQ/PQ Qualifications</a></li>
+            <li><a href="iaq.html">HEPA &amp; UVGI IAQ</a></li>
+            <li><a href="solutions.html#electrical">Electrical Control Panels</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Contact Details</h4>
+          <p style="margin-bottom:0.5rem;"><i class="fa-solid fa-location-dot text-accent"></i> ThinkMech Tech Park, Industrial Sector, Bengaluru 560001</p>
+          <p style="margin-bottom:0.5rem;"><i class="fa-solid fa-phone text-accent"></i> +91 98765 43210</p>
+          <p style="margin-bottom:0.5rem;"><i class="fa-solid fa-envelope text-accent"></i> info@thinkmech.com</p>
+          <p><i class="fa-solid fa-clock text-accent"></i> 24x7 Emergency Support</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 ThinkMech Solutions. All Rights Reserved. Single Point of Contact for Complete HVAC Engineering.</p>
+      </div>
+    </div>
+  </footer>
+
+  <a href="https://wa.me/919876543210" class="floating-whatsapp" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>
+
+  <script src="js/main.js"></script>
+  <script src="js/schema.js"></script>
+</body>
+</html>

@@ -48,17 +48,27 @@ urlpatterns = [
 
 from django.urls import re_path
 from django.views.static import serve
-
 from django.views.generic import TemplateView, RedirectView
+import os
+
+def serve_tm(request, path=''):
+    if not path or path == '/':
+        path = 'index.html'
+    tm_root = os.path.join(settings.BASE_DIR, 'tm')
+    return serve(request, path, document_root=tm_root)
 
 urlpatterns += [
     path('robots.txt', TemplateView.as_view(template_name="robots.txt", content_type="text/plain")),
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
     re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
+    path('tm', RedirectView.as_view(url='/tm/', permanent=True)),
+    path('tm/', serve_tm, {'path': ''}, name='tm_home'),
+    re_path(r'^tm/(?P<path>.*)$', serve_tm, name='tm_static'),
     # Redirect common spelling typo 'restaurent' to 'restaurant'
     path('restaurent', RedirectView.as_view(url='/restaurant/', permanent=True)),
     re_path(r'^restaurent/(?P<path>.*)$', RedirectView.as_view(url='/restaurant/%(path)s', permanent=True)),
     path('npits', RedirectView.as_view(url='/npits/', permanent=True)),
 ]
+
 
 

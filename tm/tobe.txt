@@ -1,0 +1,725 @@
+---
+
+# ThinkMech Solutions Website Development Document
+
+## Objective
+
+Develop a modern, responsive, SEO-friendly corporate website for **ThinkMech Solutions**, an HVAC engineering company. The design should be premium, fast, and professional, similar to leading engineering companies.
+
+The website should communicate that ThinkMech is a **Single Point of Contact (SPOC)** for complete HVAC engineering solutions, from design to maintenance.
+
+---
+
+# Technology
+
+* Responsive Design
+* Mobile First
+* SEO Optimized
+* Fast Loading
+* Smooth Animations
+* Modern UI
+* Accessible
+* Optimized Images
+* Contact Form
+* WhatsApp Integration
+* Google Maps
+* Google Analytics
+* Schema.org SEO
+
+---
+
+# Website Pages
+
+1. Home
+2. About Us
+3. Our Solutions
+4. Maintenance
+5. Energy & Audit
+6. Indoor Air Quality
+7. Team
+8. Contact
+
+Each page should have:
+
+* Hero Banner
+* Breadcrumb
+* CTA
+* Related Services
+* Contact Banner
+* Footer
+
+---
+
+# Global Header
+
+Sticky Navigation
+
+Logo
+
+Menus
+
+* Home
+* About
+* Solutions
+* Maintenance
+* Energy & Audit
+* Indoor Air Quality
+* Team
+* Contact
+
+Top Bar
+
+Phone
+
+Email
+
+Get Quote Button
+
+---
+
+# Homepage
+
+## Hero Section
+
+Large background video/image
+
+Headline
+
+> Smart HVAC Engineering Solutions for Efficient Buildings
+
+Sub Heading
+
+Delivering complete HVAC Engineering, Retrofitting, Energy Optimization, Indoor Air Quality and Maintenance Solutions for Commercial, Industrial, Healthcare and Pharmaceutical Facilities.
+
+Buttons
+
+* Get Quote
+* Book Free Audit
+
+Background Animation
+
+Moving HVAC lines
+
+Parallax
+
+---
+
+## Company Highlights
+
+Cards
+
+16+
+
+Years Experience
+
+200+
+
+Experts
+
+500+
+
+Projects
+
+50 Lakh KW
+
+Energy Saving Target
+
+---
+
+## Why ThinkMech
+
+6 Cards
+
+* 16+ Years Experience
+* ROI Driven Solutions
+* Genuine OEM Products
+* 24×7 Maintenance
+* Green Building Focus
+* Certified Engineers
+
+Hover animation
+
+---
+
+## Core Services
+
+Grid Layout
+
+HVAC Retrofitting
+
+AHU Solutions
+
+Maintenance
+
+Energy Audit
+
+Indoor Air Quality
+
+Electrical Works
+
+Each card should contain
+
+Image
+
+Short Description
+
+Read More
+
+---
+
+## Industries Served
+
+Icons
+
+Commercial
+
+Industrial
+
+Pharmaceutical
+
+Hospitals
+
+Hotels
+
+Manufacturing
+
+Data Centers
+
+Government
+
+---
+
+## Process Section
+
+Timeline
+
+Consultation
+
+↓
+
+Site Survey
+
+↓
+
+Design
+
+↓
+
+Execution
+
+↓
+
+Testing
+
+↓
+
+Maintenance
+
+---
+
+## Client Logos
+
+Slider
+
+Radisson
+
+Cadbury
+
+P&G
+
+Columbia Asia
+
+etc.
+
+---
+
+## Testimonials
+
+Carousel
+
+---
+
+## CTA
+
+Need Energy Efficient HVAC Solutions?
+
+Book Free Audit
+
+---
+
+# About Page
+
+## Company Overview
+
+Large Company Image
+
+Professional Content
+
+Mission
+
+Vision
+
+Values
+
+---
+
+## Statistics
+
+16+
+
+Years
+
+200+
+
+Employees
+
+500+
+
+Projects
+
+100%
+
+Commitment
+
+---
+
+## Mission
+
+Display as highlighted section
+
+---
+
+## Vision
+
+Display separately
+
+---
+
+## Core Values
+
+Cards
+
+Technical Excellence
+
+Customer First
+
+Innovation
+
+Quality
+
+Integrity
+
+Sustainability
+
+---
+
+## Why Choose Us
+
+Timeline
+
+Experience
+
+Knowledge
+
+Technology
+
+Execution
+
+Support
+
+---
+
+# Our Solutions
+
+Each service should have its own section with icons and images.
+
+---
+
+## HVAC Retrofitting
+
+Services
+
+Chiller Replacement
+
+Compressor Overhaul
+
+Heat Exchanger
+
+PLC Upgrade
+
+Cooling Tower Retrofit
+
+VFD Upgrade
+
+Plant Room Optimization
+
+Benefits
+
+Reduce Energy Cost
+
+Increase Equipment Life
+
+Improve Performance
+
+Lower Maintenance Cost
+
+---
+
+## AHU & Ducting
+
+Services
+
+Coil Replacement
+
+Fan Upgrade
+
+EC Fan
+
+Filter Upgrade
+
+Leak Proofing
+
+Duct Insulation
+
+Benefits
+
+Better Airflow
+
+Less Noise
+
+Energy Saving
+
+Improved IAQ
+
+---
+
+## Electrical & Mechanical
+
+Electrical Panels
+
+HT/LT Wiring
+
+Mechanical Fabrication
+
+Green Building
+
+Water Treatment
+
+Heat Pumps
+
+OEM Spare Parts
+
+---
+
+# Maintenance Page
+
+AMC Plans
+
+Cards
+
+Elite
+
+Enhanced
+
+Core
+
+Each card
+
+Features
+
+Price Placeholder
+
+Button
+
+Get Quote
+
+---
+
+## Blueace Platform
+
+Show Mobile App
+
+Play Store
+
+App Store
+
+Features
+
+Real-time Monitoring
+
+Digital Work Orders
+
+Reports
+
+Breakdown Calls
+
+Spare Tracking
+
+---
+
+## Maintenance Features
+
+Grid
+
+Preventive Maintenance
+
+Predictive Maintenance
+
+Condition Monitoring
+
+JIT Spare Management
+
+OEM Parts
+
+24×7 Support
+
+---
+
+# Energy & Audit
+
+Separate Sections
+
+Design Qualification
+
+Installation Qualification
+
+Operation Qualification
+
+Performance Qualification
+
+---
+
+## Third Party Audits
+
+Energy Audit
+
+HVAC Audit
+
+Clean Room Audit
+
+EHS Audit
+
+ISO Audit
+
+TAB Commissioning
+
+Air Balancing
+
+Water Balancing
+
+Pressure Balancing
+
+Calibration
+
+---
+
+## Energy Saving Solutions
+
+Auto Tube Cleaning
+
+Adiabatic Cooling
+
+EC Fan Upgrade
+
+Compressor Upgrade
+
+Predictive Maintenance
+
+---
+
+# Indoor Air Quality
+
+Air Quality Meter
+
+Safe
+
+Risky
+
+Danger
+
+Gauge Design
+
+---
+
+## Solutions
+
+CO₂ Monitoring
+
+UVGI
+
+HEPA Filters
+
+Humidity Control
+
+Ionization
+
+Gas Phase Filtration
+
+Pressure Monitoring
+
+Ozonisation
+
+Air Purifiers
+
+---
+
+## Applications
+
+Grid
+
+Hospitals
+
+Clean Rooms
+
+Laboratories
+
+Factories
+
+Data Centers
+
+Offices
+
+---
+
+# Team
+
+Leadership
+
+Director Cards
+
+Photo
+
+Name
+
+Designation
+
+Experience
+
+---
+
+## Team Structure
+
+Engineers
+
+Design Team
+
+Supervisors
+
+Technicians
+
+Operators
+
+HR
+
+Use Infographic
+
+---
+
+## Why Our Team
+
+Technical Precision
+
+Innovation
+
+Execution
+
+On-time Delivery
+
+---
+
+# Contact
+
+Contact Form
+
+Fields
+
+Name
+
+Company
+
+Phone
+
+Email
+
+Subject
+
+Message
+
+---
+
+Google Map
+
+Office Details
+
+Working Hours
+
+Emergency Number
+
+WhatsApp Button
+
+---
+
+# Footer
+
+Company Description
+
+Quick Links
+
+Services
+
+Contact
+
+Social Media
+
+Newsletter
+
+Copyright
+
+---
+
+# Design Guidelines
+
+Theme
+
+Blue + White
+
+Accent
+
+Green
+
+Icons
+
+Line Icons
+
+Fonts
+
+Poppins
+
+Inter
+
+Animations
+
+AOS Scroll Animation
+
+Hover Effects
+
+Counter Animation
+
+Image Lazy Loading
+
+Smooth Scroll
+
+---
+
+# Developer Notes
+
+1. Avoid duplicate sections currently present in the provided content.
+2. Create reusable components for Hero, CTA, Footer, Contact Banner, and Service Cards.
+3. Make every service page SEO optimized with unique H1, meta title, and meta description.
+4. Use image optimization (WebP), lazy loading, and responsive layouts.
+5. Add schema markup for Organization, Local Business, Services, and FAQs.
+6. Optimize for Core Web Vitals (LCP, CLS, INP).
+7. Include floating WhatsApp and "Get a Quote" buttons.
+8. Ensure all contact forms send inquiries via email and store submissions in the admin panel or database.
+9. Make the CMS modular so future services, projects, clients, testimonials, and blogs can be added without code changes.
+10. Preserve the technical HVAC content from the provided document while rewriting it into concise, professional website copy and eliminating repeated sections. 
