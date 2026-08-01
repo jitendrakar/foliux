@@ -89,13 +89,29 @@ CATEGORY_IMAGE_REPO = {
 
 
 class Command(BaseCommand):
-    help = "Syncs and updates NPITS Amazon deals, hardware prices, and high-res images every 1 hour."
+    help = "Syncs and updates NPITS Amazon & Flipkart deals, hardware prices, and high-res images."
 
     def handle(self, *args, **options):
-        self.stdout.write("Starting 1-Hour NPITS Amazon Deals Sync...")
+        import urllib.request
+        import urllib.parse
+        import ssl
+        import json
+        from npits.affiliates import FlipkartAffiliateProvider
+        from npits.models import NPITSAffiliateLink
+
+        self.stdout.write("Starting NPITS Deals & Flipkart API Live Sync...")
         
+        provider = FlipkartAffiliateProvider()
+        headers = provider.get_api_headers()
+        aff_id = headers.get("Fk-Affiliate-Id", "jitendrak")
+
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+
         products = NPITSProduct.objects.filter(is_active=True)
         updated_count = 0
+        fk_synced = 0
 
         for p in products:
             slug = p.category.slug
@@ -105,10 +121,54 @@ class Command(BaseCommand):
                 if p.image_url not in images:
                     p.image_url = images[0]
 
-            # Clear any direct broken ASIN URLs so tracked search links work 100%
+            # Clear broken ASIN URLs so tracked search links work 100%
             p.amazon_url = ''
             p.updated_at = timezone.now()
             p.save()
             updated_count += 1
 
-        self.stdout.write(self.style.SUCCESS(f"Successfully synced {updated_count} NPITS products at {timezone.now()}."))
+            # Fetch live Flipkart deal via Flipkart Search API
+            try:
+                clean_query = p.title[:50]
+                search_url = f"https://affiliate-api.flipkart.net/affiliate/1.0/search.json?query={urllib.parse.quote(clean_query)}&resultCount=3"
+                req = urllib.request.Request(search_url, headers=headers)
+                
+                with urllib.request.urlopen(req, context=ctx, timeout=8) as res:
+                    if res.getcode() == 200:
+                        data = json.loads(res.read().decode('utf-8'))
+                        fk_prods = data.get("products", [])
+                        if fk_prods:
+                            top_prod = fk_prods[0].get("productBaseInfoV1", {})
+                            fk_url = top_prod.get("productUrl", "")
+                            fk_price = top_prod.get("flipkartSellingPrice", {}).get("amount", float(p.price))
+                            in_stock = top_prod.get("inStock", True)
+
+                            if fk_url:
+                                aff_link, created = NPITSAffiliateLink.objects.update_or_create(
+                                    product=p,
+                                    provider='flipkart',
+                                    defaults={
+                                        'raw_url': fk_url,
+                                        'price': fk_price if fk_price > 0 else p.price,
+                                        'in_stock': in_stock,
+                                        'is_primary': False
+                                    }
+                                )
+                                fk_synced += 1
+            except Exception as e:
+                # Fallback to search query link if API timeout/error occurs
+                search_query = urllib.parse.quote_plus(p.title)
+                fallback_url = f"https://www.flipkart.com/search?q={search_query}&affid={aff_id}"
+                NPITSAffiliateLink.objects.get_or_create(
+                    product=p,
+                    provider='flipkart',
+                    defaults={
+                        'raw_url': fallback_url,
+                        'price': p.price,
+                        'in_stock': True,
+                        'is_primary': False
+                    }
+                )
+
+        self.stdout.write(self.style.SUCCESS(f"Successfully synced {updated_count} products and {fk_synced} live Flipkart API deals at {timezone.now()}."))
+
