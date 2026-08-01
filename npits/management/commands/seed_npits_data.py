@@ -263,29 +263,35 @@ class Command(BaseCommand):
         ]
 
         for pdata in products_data:
-            prod, created = NPITSProduct.objects.get_or_create(
-                asin=pdata["asin"],
-                defaults={
-                    "title": pdata["title"],
-                    "slug": slugify(pdata["title"]),
-                    "category": pdata["category"],
-                    "brand": pdata["brand"],
-                    "price": pdata["price"],
-                    "original_price": pdata["original_price"],
-                    "rating": pdata["rating"],
-                    "review_count": pdata["review_count"],
-                    "capacity": pdata.get("capacity", ""),
-                    "image_url": pdata["image_url"],
-                    "amazon_url": pdata["amazon_url"],
-                    "short_description": pdata["short_description"],
-                    "features": pdata["features"],
-                    "specifications": pdata["specifications"],
-                    "pros": pdata["pros"],
-                    "cons": pdata["cons"],
-                    "is_featured": pdata["is_featured"],
-                    "is_active": True
-                }
-            )
+            target_slug = slugify(pdata["title"])
+            prod = NPITSProduct.objects.filter(asin=pdata["asin"]).first() or NPITSProduct.objects.filter(slug=target_slug).first()
+            if not prod:
+                prod = NPITSProduct.objects.create(
+                    asin=pdata["asin"],
+                    title=pdata["title"],
+                    slug=target_slug,
+                    category=pdata["category"],
+                    brand=pdata["brand"],
+                    price=pdata["price"],
+                    original_price=pdata["original_price"],
+                    rating=pdata["rating"],
+                    review_count=pdata["review_count"],
+                    capacity=pdata.get("capacity", ""),
+                    image_url=pdata["image_url"],
+                    amazon_url=pdata["amazon_url"],
+                    short_description=pdata["short_description"],
+                    features=pdata["features"],
+                    specifications=pdata["specifications"],
+                    pros=pdata["pros"],
+                    cons=pdata["cons"],
+                    is_featured=pdata["is_featured"],
+                    is_active=True
+                )
+            else:
+                prod.amazon_url = pdata["amazon_url"]
+                prod.price = pdata["price"]
+                prod.save()
+
 
             # Create primary affiliate link record
             NPITSAffiliateLink.objects.get_or_create(

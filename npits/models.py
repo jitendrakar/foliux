@@ -99,25 +99,32 @@ class NPITSProduct(models.Model):
         return 0
 
     def get_tracked_amazon_url(self) -> str:
-        """Returns Amazon India URL formatted with current active Associate ID (npits09-21).
-        Uses direct Amazon Search query by default or for /dp/ links to guarantee 100% working links with zero 404 errors.
+        """Returns Amazon India direct product URL formatted with active Associate ID.
+        If a direct amazon_url or ASIN exists, links directly to the product with tag.
+        Falls back to search query URL only if no direct link or ASIN is present.
         """
         import urllib.parse
         associate_id = NPITSConfig.get_setting('AMAZON_ASSOCIATE_ID', 'npits09-21')
         
         url = self.amazon_url.strip() if self.amazon_url else ""
         
-        # If no explicit url or if it is a brittle /dp/ link, use guaranteed Amazon search query URL
-        if not url or '/dp/' in url:
-            clean_title = re.sub(r'[^\w\s-]', ' ', self.title)
-            clean_title = " ".join(clean_title.split())
-            query = urllib.parse.quote_plus(clean_title)
-            return f"https://www.amazon.in/s?k={query}&tag={associate_id}"
+        # 1. If explicit amazon_url is provided, append/replace associate tag
+        if url:
+            clean_url = re.sub(r'([?&])tag=[^&]*', r'\1', url).rstrip('?&')
+            separator = '&' if '?' in clean_url else '?'
+            return f"{clean_url}{separator}tag={associate_id}"
+            
+        # 2. If ASIN is provided, construct direct product page URL
+        if self.asin and self.asin.strip():
+            asin_clean = self.asin.strip()
+            return f"https://www.amazon.in/dp/{asin_clean}?tag={associate_id}"
 
-        # Clean existing tag if present and attach active associate tag
-        clean_url = re.sub(r'([?&])tag=[^&]*', r'\1', url).rstrip('?&')
-        separator = '&' if '?' in clean_url else '?'
-        return f"{clean_url}{separator}tag={associate_id}"
+        # 3. Fallback: Amazon search query by product title
+        clean_title = re.sub(r'[^\w\s-]', ' ', self.title)
+        clean_title = " ".join(clean_title.split())
+        query = urllib.parse.quote_plus(clean_title)
+        return f"https://www.amazon.in/s?k={query}&tag={associate_id}"
+
 
 
 class NPITSAffiliateLink(models.Model):
