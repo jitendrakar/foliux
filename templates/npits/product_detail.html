@@ -15,7 +15,7 @@
   <div class="row g-4">
     <!-- Product Image Gallery -->
     <div class="col-md-5 d-flex align-items-center justify-content-center bg-light-subtle rounded-3 p-4">
-      <img src="{{ product.image_url }}" alt="{{ product.title }}" class="img-fluid max-h-350 object-fit-contain" style="max-height:350px;">
+      <img src="{{ product.get_image_url }}" alt="{{ product.title }}" class="img-fluid max-h-350 object-fit-contain" style="max-height:350px;">
     </div>
 
     <!-- Product Info & Buying Box -->

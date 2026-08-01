@@ -40,7 +40,7 @@
           <td class="fw-bold">#{{ forloop.counter }}</td>
           <td>
             <div class="d-flex align-items-center gap-3">
-              <img src="{{ prod.image_url }}" alt="{{ prod.title }}" style="width:45px; height:45px; object-fit:contain;">
+              <img src="{{ prod.get_image_url }}" alt="{{ prod.title }}" style="width:45px; height:45px; object-fit:contain;">
               <a href="{% url 'npits:product_detail' prod.slug %}" class="text-decoration-none fw-semibold text-dark">{{ prod.title|truncatechars:50 }}</a>
             </div>
           </td>

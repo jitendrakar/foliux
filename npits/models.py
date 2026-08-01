@@ -58,7 +58,8 @@ class NPITSProduct(models.Model):
     brand = models.CharField(max_length=100, db_index=True)
     category = models.ForeignKey(NPITSCategory, on_delete=models.CASCADE, related_name='products')
     asin = models.CharField(max_length=20, blank=True, help_text="Amazon ASIN (e.g. B087NYAF9N)")
-    image_url = models.URLField(max_length=500, blank=True, help_text="Main product image URL")
+    image = models.ImageField(upload_to='npits/products/', blank=True, null=True, help_text="Upload local product image file (overrides external URL)")
+    image_url = models.URLField(max_length=500, blank=True, help_text="Main product external image URL")
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     original_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, blank=True, null=True)
     rating = models.DecimalField(max_digits=3, decimal_places=1, default=4.5)
@@ -89,6 +90,16 @@ class NPITSProduct(models.Model):
         if not self.slug:
             self.slug = slugify(self.title)
         super().save(*args, **kwargs)
+
+    @property
+    def get_image_url(self) -> str:
+        """Returns uploaded image URL if available, else external image_url, else default SVG placeholder."""
+        if self.image and hasattr(self.image, 'url'):
+            return self.image.url
+        if self.image_url and self.image_url.strip():
+            return self.image_url.strip()
+        return "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 24 24' fill='none' stroke='%230d6efd' stroke-width='1.5'><rect x='2' y='3' width='20' height='14' rx='2'/><line x1='8' y1='21' x2='16' y2='21'/><line x1='12' y1='17' x2='12' y2='21'/></svg>"
+
 
     @property
     def discount_percent(self):

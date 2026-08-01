@@ -18,7 +18,7 @@
         {% endif %}
         
         <div class="npits-card-img-container">
-          <img src="{{ prod.image_url }}" alt="{{ prod.title }}" class="npits-card-img" loading="lazy">
+          <img src="{{ prod.get_image_url }}" alt="{{ prod.title }}" class="npits-card-img" loading="lazy">
         </div>
 
         <div class="card-body d-flex flex-column p-3">
