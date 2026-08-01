@@ -63,14 +63,31 @@ class FlipkartAffiliateProvider(BaseAffiliateProvider):
     def provider_name(self) -> str:
         return "Flipkart"
 
+    def get_api_credentials(self) -> Dict[str, str]:
+        from .models import NPITSConfig
+        aff_id = NPITSConfig.get_setting("FLIPKART_AFFILIATE_ID", "jitendrak")
+        api_token = NPITSConfig.get_setting("FLIPKART_API_TOKEN", "a79d042d8cb5434bb917c24b40d614a9")
+        return {
+            "affiliate_id": aff_id,
+            "api_token": api_token
+        }
+
+    def get_api_headers(self) -> Dict[str, str]:
+        creds = self.get_api_credentials()
+        return {
+            "Fk-Affiliate-Id": creds["affiliate_id"],
+            "Fk-Affiliate-Token": creds["api_token"],
+            "Accept": "application/json"
+        }
+
     def build_affiliate_url(self, raw_url: str, tracking_tag: str = "") -> str:
         if not tracking_tag:
             from .models import NPITSConfig
-            tracking_tag = NPITSConfig.get_setting("FLIPKART_AFFILIATE_ID", "")
+            tracking_tag = NPITSConfig.get_setting("FLIPKART_AFFILIATE_ID", "jitendrak")
         
         url = raw_url.strip() if raw_url else ""
-        if not url or not tracking_tag:
-            return url
+        if not url:
+            return ""
 
         clean_url = re.sub(r'([?&])affid=[^&]*', r'\1', url).rstrip('?&')
         sep = '&' if '?' in clean_url else '?'
@@ -101,3 +118,4 @@ AFFILIATE_PROVIDERS: Dict[str, BaseAffiliateProvider] = {
 
 def get_affiliate_provider(code: str) -> BaseAffiliateProvider:
     return AFFILIATE_PROVIDERS.get(code.lower(), GenericAffiliateProvider())
+

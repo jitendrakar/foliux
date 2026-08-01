@@ -166,6 +166,11 @@ class NPITSAffiliateLink(models.Model):
     def get_final_url(self) -> str:
         if self.provider == 'amazon':
             return self.product.get_tracked_amazon_url()
+        elif self.provider == 'flipkart':
+            from .affiliates import get_affiliate_provider
+            provider_obj = get_affiliate_provider('flipkart')
+            tag = self.affiliate_tag if self.affiliate_tag else NPITSConfig.get_setting("FLIPKART_AFFILIATE_ID", "jitendrak")
+            return provider_obj.build_affiliate_url(self.raw_url, tag)
         return self.raw_url
 
 
