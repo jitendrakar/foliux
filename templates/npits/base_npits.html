@@ -96,8 +96,8 @@
 
 {% block meta_tags %}
 <title>{% block title %}{{ meta_title|default:"Nehru Place IT Services - Best Computer Hardware & IT Accessories Comparison" }}{% endblock %}</title>
-<meta name="description" content="{{ meta_description|default:'Compare best computer hardware, SSD, HDD, Laptops, Monitors, and Accessories with live Amazon India price comparison on Nehru Place IT Services.' }}">
-<meta name="keywords" content="Nehru Place IT Services, IT Hardware, Amazon Affiliate, SSD, HDD, NVMe, Laptops, Monitors, Keyboards, Mouse, RAM, Pendrive">
+<meta name="description" content="{{ meta_description|default:'Compare best computer hardware, SSD, HDD, Laptops, Monitors, and Accessories with live Amazon & Flipkart price comparison on Nehru Place IT Services.' }}">
+<meta name="keywords" content="Nehru Place IT Services, IT Hardware, Amazon Affiliate, Flipkart Affiliate, SSD, HDD, NVMe, Laptops, Monitors, Keyboards, Mouse, RAM, Pendrive">
 <meta property="og:title" content="{{ meta_title|default:'Nehru Place IT Services - Best Computer Hardware & IT Accessories' }}">
 <meta property="og:description" content="{{ meta_description|default:'Compare prices and features on top computer hardware and accessories on Nehru Place IT Services.' }}">
 <meta property="og:type" content="website">
@@ -308,12 +308,15 @@
 <div class="container pb-5">
   {% block npits_content %}{% endblock %}
 
-  <!-- Amazon Affiliate Disclosure Footer Banner -->
+  <!-- Amazon & Flipkart Affiliate Disclosure Footer Banner -->
   <div class="affiliate-disclaimer-banner mt-5">
     <div class="d-flex align-items-center gap-3">
-      <i class="fab fa-amazon fa-2x text-warning"></i>
+      <div class="d-flex align-items-center gap-2">
+        <i class="fab fa-amazon fa-2x text-warning"></i>
+        <i class="fas fa-shopping-cart fa-2x text-primary"></i>
+      </div>
       <div>
-        <strong>Amazon Associate Disclosure:</strong> Nehru Place IT Services (NPITS) is a participant in the Amazon Services LLC Associates Program, an affiliate advertising program designed to provide a means for sites to earn advertising fees by advertising and linking to Amazon.in. Product prices and availability are accurate as of the date/time indicated and are subject to change.
+        <strong>Affiliate Disclosure:</strong> Nehru Place IT Services (NPITS) is a participant in affiliate advertising programs with Amazon India and Flipkart, designed to provide a means for sites to earn advertising fees by linking to Amazon.in and Flipkart.com. Product prices and availability are updated regularly and are subject to change.
       </div>
     </div>
   </div>
