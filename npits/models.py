@@ -70,7 +70,9 @@ class NPITSProduct(models.Model):
     pros = models.JSONField(default=list, blank=True, help_text="List of Pros")
     cons = models.JSONField(default=list, blank=True, help_text="List of Cons")
     capacity = models.CharField(max_length=50, blank=True, help_text="e.g., 256GB, 512GB, 1TB, 2TB")
+    meesho_url = models.URLField(max_length=500, blank=True, help_text="Direct Meesho Product URL (NPITS Official Store - Preferred)")
     amazon_url = models.URLField(max_length=500, blank=True, help_text="Direct Amazon Product URL")
+    flipkart_url = models.URLField(max_length=500, blank=True, help_text="Direct Flipkart Product URL")
     is_featured = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     meta_title = models.CharField(max_length=255, blank=True)
@@ -109,6 +111,19 @@ class NPITSProduct(models.Model):
             return int(round(pct))
         return 0
 
+    def get_tracked_meesho_url(self) -> str:
+        """Returns direct Meesho product URL for NPITS store."""
+        return self.meesho_url.strip() if self.meesho_url else ""
+
+    def get_tracked_flipkart_url(self) -> str:
+        """Returns tracked Flipkart product URL."""
+        if not self.flipkart_url:
+            return ""
+        from .affiliates import get_affiliate_provider
+        provider_obj = get_affiliate_provider('flipkart')
+        tag = NPITSConfig.get_setting("FLIPKART_AFFILIATE_ID", "jitendrak")
+        return provider_obj.build_affiliate_url(self.flipkart_url, tag)
+
     def get_tracked_amazon_url(self) -> str:
         """Returns Amazon India direct product URL formatted with active Associate ID.
         If a direct amazon_url or ASIN exists, links directly to the product with tag.
@@ -136,11 +151,38 @@ class NPITSProduct(models.Model):
         query = urllib.parse.quote_plus(clean_title)
         return f"https://www.amazon.in/s?k={query}&tag={associate_id}"
 
+    def get_primary_buy_url(self) -> str:
+        """Returns the primary buy URL for the product.
+        Prefers Meesho (NPITS direct sales), falling back to Amazon or Flipkart.
+        """
+        if self.meesho_url and self.meesho_url.strip():
+            return self.meesho_url.strip()
+        meesho_link = self.affiliate_links.filter(provider='meesho', in_stock=True).first()
+        if meesho_link:
+            return meesho_link.get_final_url()
+        if self.amazon_url or self.asin:
+            return self.get_tracked_amazon_url()
+        if self.flipkart_url and self.flipkart_url.strip():
+            return self.get_tracked_flipkart_url()
+        return self.get_tracked_amazon_url()
+
+    def get_primary_provider(self) -> str:
+        """Returns provider code for the primary buy URL ('meesho', 'amazon', 'flipkart')."""
+        if self.meesho_url and self.meesho_url.strip():
+            return 'meesho'
+        if self.affiliate_links.filter(provider='meesho', in_stock=True).exists():
+            return 'meesho'
+        if self.amazon_url or self.asin:
+            return 'amazon'
+        if self.flipkart_url and self.flipkart_url.strip():
+            return 'flipkart'
+        return 'amazon'
 
 
 class NPITSAffiliateLink(models.Model):
-    """Affiliate Links for Products across Stores (Amazon, Flipkart, Croma, etc.)."""
+    """Affiliate Links for Products across Stores (Meesho, Amazon, Flipkart, Croma, etc.)."""
     PROVIDER_CHOICES = [
+        ('meesho', 'Meesho (NPITS Official Store)'),
         ('amazon', 'Amazon India'),
         ('flipkart', 'Flipkart'),
         ('croma', 'Croma'),
@@ -149,7 +191,7 @@ class NPITSAffiliateLink(models.Model):
     ]
 
     product = models.ForeignKey(NPITSProduct, on_delete=models.CASCADE, related_name='affiliate_links')
-    provider = models.CharField(max_length=50, choices=PROVIDER_CHOICES, default='amazon')
+    provider = models.CharField(max_length=50, choices=PROVIDER_CHOICES, default='meesho')
     raw_url = models.URLField(max_length=500)
     affiliate_tag = models.CharField(max_length=100, blank=True, help_text="Custom associate tag override")
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
@@ -164,7 +206,9 @@ class NPITSAffiliateLink(models.Model):
         return f"{self.product.title} - {self.get_provider_display()}"
 
     def get_final_url(self) -> str:
-        if self.provider == 'amazon':
+        if self.provider == 'meesho':
+            return self.raw_url.strip() if self.raw_url else ""
+        elif self.provider == 'amazon':
             return self.product.get_tracked_amazon_url()
         elif self.provider == 'flipkart':
             from .affiliates import get_affiliate_provider

@@ -69,6 +69,18 @@ class NPITSAppTests(TestCase):
         url = provider.build_affiliate_url("https://www.amazon.in/dp/123456", "npits09-21")
         self.assertIn("tag=npits09-21", url)
 
+    def test_meesho_provider_and_primary_url(self):
+        """Test Meesho provider implementation and primary buy URL selection."""
+        from npits.affiliates import MeeshoAffiliateProvider
+        provider = get_affiliate_provider("meesho")
+        self.assertIsInstance(provider, MeeshoAffiliateProvider)
+
+        self.product.meesho_url = "https://www.meesho.com/s/p/12345"
+        self.product.save()
+
+        self.assertEqual(self.product.get_primary_provider(), 'meesho')
+        self.assertEqual(self.product.get_primary_buy_url(), "https://www.meesho.com/s/p/12345")
+
     def test_home_view(self):
         """Test NPITS home view rendering."""
         url = reverse('npits:home')

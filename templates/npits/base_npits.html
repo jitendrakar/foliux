@@ -229,6 +229,23 @@
     transform: scale(1.02);
   }
 
+  .btn-meesho {
+    background-color: #9f208c;
+    color: #ffffff;
+    font-weight: 700;
+    border: none;
+    border-radius: 50rem;
+    padding: 0.5rem 1.25rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 10px rgba(159, 32, 140, 0.25);
+  }
+
+  .btn-meesho:hover {
+    background-color: #821772;
+    color: #ffffff;
+    transform: scale(1.02);
+  }
+
   .btn-flipkart {
     background-color: #2874f0;
     color: #ffffff;
@@ -308,15 +325,16 @@
 <div class="container pb-5">
   {% block npits_content %}{% endblock %}
 
-  <!-- Amazon & Flipkart Affiliate Disclosure Footer Banner -->
+  <!-- Meesho, Amazon & Flipkart Store & Affiliate Disclosure Footer Banner -->
   <div class="affiliate-disclaimer-banner mt-5">
     <div class="d-flex align-items-center gap-3">
       <div class="d-flex align-items-center gap-2">
+        <span class="badge text-white px-2 py-1 rounded fw-bold" style="background-color: #9f208c; font-size: 0.85rem;">Meesho</span>
         <i class="fab fa-amazon fa-2x text-warning"></i>
         <i class="fas fa-shopping-cart fa-2x text-primary"></i>
       </div>
       <div>
-        <strong>Affiliate Disclosure:</strong> Nehru Place IT Services (NPITS) is a participant in affiliate advertising programs with Amazon India and Flipkart, designed to provide a means for sites to earn advertising fees by linking to Amazon.in and Flipkart.com. Product prices and availability are updated regularly and are subject to change.
+        <strong>Store & Affiliate Disclosure:</strong> Nehru Place IT Services (NPITS) sells products directly on Meesho as an official seller, and participates in affiliate advertising programs with Amazon India and Flipkart. Product prices and availability are updated regularly.
       </div>
     </div>
   </div>

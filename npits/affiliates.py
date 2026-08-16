@@ -109,8 +109,24 @@ class GenericAffiliateProvider(BaseAffiliateProvider):
         return raw_url.strip() if raw_url else ""
 
 
+class MeeshoAffiliateProvider(BaseAffiliateProvider):
+    """Meesho Provider Implementation for NPITS Direct Sales & Store."""
+
+    @property
+    def provider_code(self) -> str:
+        return "meesho"
+
+    @property
+    def provider_name(self) -> str:
+        return "Meesho (NPITS Official Store)"
+
+    def build_affiliate_url(self, raw_url: str, tracking_tag: str = "") -> str:
+        return raw_url.strip() if raw_url else ""
+
+
 # Provider Registry
 AFFILIATE_PROVIDERS: Dict[str, BaseAffiliateProvider] = {
+    "meesho": MeeshoAffiliateProvider(),
     "amazon": AmazonAffiliateProvider(),
     "flipkart": FlipkartAffiliateProvider(),
     "generic": GenericAffiliateProvider()

@@ -23,7 +23,7 @@ class NPITSCategoryAdmin(admin.ModelAdmin):
 
 @admin.register(NPITSProduct)
 class NPITSProductAdmin(admin.ModelAdmin):
-    list_display = ('image_preview', 'title', 'brand', 'category', 'price', 'is_featured', 'test_affiliate_link', 'is_active')
+    list_display = ('image_preview', 'title', 'brand', 'category', 'price', 'is_featured', 'test_meesho_link', 'test_affiliate_link', 'is_active')
     list_filter = ('is_featured', 'category', 'brand', 'capacity', 'is_active')
     search_fields = ('title', 'brand', 'asin', 'short_description')
     prepopulated_fields = {'slug': ('title',)}
@@ -40,9 +40,9 @@ class NPITSProductAdmin(admin.ModelAdmin):
             'fields': ('image', 'image_url'),
             'description': 'Upload a local image file directly from your computer, or paste an external image URL.'
         }),
-        ('Amazon Affiliate Settings', {
-            'fields': ('asin', 'amazon_url'),
-            'description': 'Specify direct Amazon URL or ASIN. NPITS will automatically append your Amazon Associate tag.'
+        ('Store Links (Meesho, Amazon, Flipkart)', {
+            'fields': ('meesho_url', 'amazon_url', 'flipkart_url', 'asin'),
+            'description': 'Specify direct Meesho Product URL (NPITS Official Store - Preferred), Amazon URL/ASIN, or Flipkart URL.'
         }),
         ('Details & Specifications', {
             'classes': ('collapse',),
@@ -55,13 +55,23 @@ class NPITSProductAdmin(admin.ModelAdmin):
         return format_html('<img src="{}" style="width: 50px; height: 50px; object-fit: contain; border-radius: 4px; border: 1px solid #ccc; background: #fff;" onerror="this.src=\'data:image/svg+xml;utf8,<svg xmlns=\\\'http://www.w3.org/2000/svg\\\' width=\\\'50\\\' height=\\\'50\\\'><rect width=\\\'100%\\\' height=\\\'100%\\\' fill=\\\'%23eee\\\'/><text x=\\\'50%\\\' y=\\\'50%\\\' dominant-baseline=\\\'middle\\\' text-anchor=\\\'middle\\\' fill=\\\'%23aaa\\\'>No Img</text></svg>\';" />', url)
     image_preview.short_description = "Image"
 
+    def test_meesho_link(self, obj):
+        url = obj.get_tracked_meesho_url()
+        if not url:
+            return format_html('<span style="color: #999; font-size: 11px;">No Meesho Link</span>')
+        return format_html(
+            '<a href="{}" target="_blank" style="background-color: #9f208c; color: #ffffff; font-weight: bold; border-radius: 4px; padding: 4px 10px; text-decoration: none; display: inline-block; font-size: 11px;">🛍️ Meesho (NPITS)</a>',
+            url
+        )
+    test_meesho_link.short_description = "Meesho Link"
+
     def test_affiliate_link(self, obj):
         url = obj.get_tracked_amazon_url()
         return format_html(
-            '<a href="{}" target="_blank" style="background-color: #ff9900; color: #ffffff; font-weight: bold; border-radius: 4px; padding: 4px 10px; text-decoration: none; display: inline-block; font-size: 11px;">🛒 Test Amazon Link</a>',
+            '<a href="{}" target="_blank" style="background-color: #ff9900; color: #ffffff; font-weight: bold; border-radius: 4px; padding: 4px 10px; text-decoration: none; display: inline-block; font-size: 11px;">🛒 Amazon Link</a>',
             url
         )
-    test_affiliate_link.short_description = "Cross-Check Link"
+    test_affiliate_link.short_description = "Amazon Link"
 
 @admin.register(NPITSAffiliateLink)
 class NPITSAffiliateLinkAdmin(admin.ModelAdmin):

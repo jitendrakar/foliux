@@ -41,9 +41,15 @@
             </div>
 
             <div class="d-grid gap-2">
-              <a href="{{ prod.get_tracked_amazon_url }}" target="_blank" rel="nofollow sponsored" class="btn btn-amazon text-center">
-                <i class="fab fa-amazon me-1"></i> Buy on Amazon
-              </a>
+              {% if prod.get_primary_provider == 'meesho' %}
+                <a href="{{ prod.get_primary_buy_url }}" target="_blank" rel="nofollow sponsored" class="btn btn-meesho text-center">
+                  <i class="fas fa-shopping-bag me-1"></i> Buy on Meesho (NPITS)
+                </a>
+              {% else %}
+                <a href="{{ prod.get_primary_buy_url }}" target="_blank" rel="nofollow sponsored" class="btn btn-amazon text-center">
+                  <i class="fab fa-amazon me-1"></i> Buy on Amazon
+                </a>
+              {% endif %}
               <a href="{% url 'npits:product_detail' prod.slug %}" class="btn btn-outline-secondary btn-sm rounded-pill fw-semibold">
                 Specs & Review
               </a>
