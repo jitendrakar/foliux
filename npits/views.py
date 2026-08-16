@@ -2,6 +2,7 @@ import json
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse, Http404
 from django.db.models import Q
+from django.db.models import Q, Case, When, Value, IntegerField
 from django.core.paginator import Paginator
 from django.utils import timezone
 from .models import (
@@ -27,12 +28,31 @@ def home_view(request):
     """NPITS Home Page with Hero Banner, Featured Categories, Curated Deals, & Buying Guides."""
     context = _get_common_context()
     
-    # Featured Products & Deals
-    featured_products = NPITSProduct.objects.filter(is_active=True, is_featured=True)[:8]
-    if not featured_products.exists():
-        featured_products = NPITSProduct.objects.filter(is_active=True)[:8]
+    # Featured Products & Deals (Prioritize Meesho products 1st)
+    featured_qs = NPITSProduct.objects.filter(is_active=True).annotate(
+        has_meesho=Case(
+            When(Q(meesho_url__gt='') | Q(affiliate_links__provider='meesho', affiliate_links__in_stock=True), then=Value(1)),
+            default=Value(0),
+            output_field=IntegerField(),
+        )
+    ).distinct().order_by('-has_meesho', '-is_featured', '-rating', '-price')
 
-    top_deals = NPITSProduct.objects.filter(is_active=True).order_by('-rating', 'price')[:6]
+    meesho_products = list(featured_qs.filter(has_meesho=1))
+    standard_featured = list(featured_qs.filter(is_featured=True))
+    if not standard_featured:
+        standard_featured = list(featured_qs)
+
+    # Place Meesho products 1st, then append remaining featured products
+    seen_ids = set()
+    combined_featured = []
+    for p in meesho_products + standard_featured:
+        if p.id not in seen_ids:
+            seen_ids.add(p.id)
+            combined_featured.append(p)
+
+    featured_products = combined_featured[:8]
+
+    top_deals = featured_qs.order_by('-has_meesho', '-rating', 'price')[:6]
     latest_articles = NPITSArticle.objects.filter(is_published=True)[:4]
     
     # Static list of top curated buying guides for quick access
@@ -49,7 +69,7 @@ def home_view(request):
 
     context.update({
         'meta_title': 'Nehru Place IT Services - Best Computer Hardware, SSD, HDD, Laptops & Accessories Comparison',
-        'meta_description': 'Find the best deals on Computer Accessories, SSDs, HDDs, Monitors, Laptops, Keyboards, and PC Hardware with live Amazon price comparison on Nehru Place IT Services.',
+        'meta_description': 'Find the best deals on Computer Accessories, SSDs, HDDs, Monitors, Laptops, Keyboards, and PC Hardware with live Amazon & Meesho price comparison on Nehru Place IT Services.',
         'featured_products': featured_products,
         'top_deals': top_deals,
         'latest_articles': latest_articles,
