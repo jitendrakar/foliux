@@ -1624,12 +1624,14 @@
         }
 
         const estReturns = totalValue - totalInvested;
+        const inflationAdjusted = totalValue / Math.pow(1 + 0.06, t);
 
         return {
           metrics: [
             { label: 'Total Invested', value: totalInvested, type: 'currency' },
             { label: 'Est. Returns', value: estReturns, type: 'currency', class: 'success' },
-            { label: 'Total Wealth Corpus', value: totalValue, type: 'currency' }
+            { label: 'Total Wealth Corpus', value: totalValue, type: 'currency' },
+            { label: 'Inflation Adjusted Value (6%)', value: inflationAdjusted, type: 'currency' }
           ],
           chart: {
             type: 'doughnut',
