@@ -1571,12 +1571,14 @@
         const maturity = P * ((Math.pow(1 + i, n) - 1) / i) * (1 + i);
         const invested = P * n;
         const returns = maturity - invested;
+        const inflationAdjusted = maturity / Math.pow(1 + 0.06, t);
 
         return {
           metrics: [
             { label: 'Invested Amount', value: invested, type: 'currency' },
             { label: 'Est. Returns', value: returns, type: 'currency', class: 'success' },
-            { label: 'Total Value', value: maturity, type: 'currency' }
+            { label: 'Total Value', value: maturity, type: 'currency' },
+            { label: 'Inflation Adjusted Value (6%)', value: inflationAdjusted, type: 'currency' }
           ],
           chart: {
             type: 'doughnut',
@@ -1646,9 +1648,9 @@
       description: 'Calculate wealth growth for upfront investments under compound interest.',
       category: 'investment',
       inputs: [
-        { key: 'amount', label: 'Total Investment', min: 5000, max: 50000000, step: 5000, default: 500000, type: 'currency' },
+        { key: 'amount', label: 'Total Investment', min: 5000, max: 50000000, step: 5000, default: 4500000, type: 'currency' },
         { key: 'rate', label: 'Expected Return Rate (% p.a.)', min: 1, max: 30, step: 0.5, default: 12, type: 'percent' },
-        { key: 'tenure', label: 'Duration (Years)', min: 1, max: 40, step: 1, default: 10, type: 'number' }
+        { key: 'tenure', label: 'Duration (Years)', min: 1, max: 40, step: 1, default: 15, type: 'number' }
       ],
       calculate: function(state) {
         const P = state.amount;
@@ -1657,12 +1659,14 @@
 
         const totalValue = P * Math.pow(1 + r, t);
         const estReturns = totalValue - P;
+        const inflationAdjusted = totalValue / Math.pow(1 + 0.06, t);
 
         return {
           metrics: [
             { label: 'Invested Capital', value: P, type: 'currency' },
             { label: 'Est. Returns', value: estReturns, type: 'currency', class: 'success' },
-            { label: 'Future Value', value: totalValue, type: 'currency' }
+            { label: 'Total Value', value: totalValue, type: 'currency' },
+            { label: 'Inflation Adjusted Value (6%)', value: inflationAdjusted, type: 'currency' }
           ],
           chart: {
             type: 'doughnut',
@@ -2940,9 +2944,13 @@
     const metricsContainer = document.getElementById('dynamicMetricsContainer');
     metricsContainer.innerHTML = '';
 
+    const colClass = output.metrics.length === 4 
+      ? 'col-6 col-sm-3 mb-3 mb-sm-0' 
+      : (output.metrics.length === 2 ? 'col-12 col-sm-6 mb-3 mb-sm-0' : 'col-12 col-sm-4 mb-3 mb-sm-0');
+
     output.metrics.forEach(metric => {
       const col = document.createElement('div');
-      col.className = 'col-12 col-sm-4 mb-3 mb-sm-0';
+      col.className = colClass;
       
       let valStr = '';
       if (metric.type === 'currency') {
@@ -3389,6 +3397,7 @@
       doc.setFontSize(10);
       doc.setTextColor(15, 23, 42);
       yPos = yStart + 18;
+      const resSpacing = results.length > 3 ? 13 : 16;
       results.forEach(res => {
         doc.setFont("helvetica", "bold");
         doc.text(res.label, 116, yPos);
@@ -3396,7 +3405,7 @@
         doc.setTextColor(22, 101, 52);
         doc.text(res.value, 116, yPos + 6);
         doc.setTextColor(15, 23, 42);
-        yPos += 16;
+        yPos += resSpacing;
       });
       
       // Disclaimer Summary
