@@ -1,9 +1,10 @@
 import random
+from datetime import datetime, timedelta
 from django.db import transaction
 from django.core.management.base import BaseCommand
 from screener.models import (
     Company, QuarterlyResult, ProfitLoss, BalanceSheet, CashFlow,
-    ShareholdingPattern, ManagementReliabilityScore, ManagementForecast, ForecastComparison
+    ShareholdingPattern, ManagementReliabilityScore, ManagementForecast, ForecastComparison, HistoricalPrice
 )
 
 # Raw CSV Data provided by the user (500 Companies)
@@ -636,6 +637,44 @@ class Command(BaseCommand):
                             'eps': round(cur_price / pe / 4, 2),
                         }
                     )
+
+                # Seed Daily Historical Prices for the last 300 days (for Candlestick & Volume Chart)
+                if not company.historical_prices.exists():
+                    base_price = float(company.current_price)
+                    current_date = datetime.now() - timedelta(days=300)
+                    close_price = base_price * 0.85
+
+                    historical_price_list = []
+                    for day in range(300):
+                        current_date += timedelta(days=1)
+                        if current_date.weekday() in (5, 6):
+                            continue
+
+                        open_p = close_price
+                        change = open_p * rnd.uniform(-0.018, 0.02)
+                        close_p = open_p + change
+
+                        high_p = max(open_p, close_p) * rnd.uniform(1.001, 1.015)
+                        low_p = min(open_p, close_p) * rnd.uniform(0.985, 0.999)
+                        vol = rnd.randint(500000, 4500000)
+
+                        if high_p < low_p:
+                            high_p, low_p = low_p, high_p
+
+                        historical_price_list.append(
+                            HistoricalPrice(
+                                company=company,
+                                date=current_date.date(),
+                                open_price=round(open_p, 2),
+                                high_price=round(high_p, 2),
+                                low_price=round(low_p, 2),
+                                close_price=round(close_p, 2),
+                                volume=vol
+                            )
+                        )
+                        close_price = close_p
+
+                    HistoricalPrice.objects.bulk_create(historical_price_list)
 
                 imported_count += 1
 

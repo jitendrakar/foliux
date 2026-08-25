@@ -1,4 +1,5 @@
 import os
+import json
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, FileResponse, Http404
 from django.db.models import Q, Avg, Sum, Count
@@ -81,6 +82,7 @@ def company_detail(request, symbol):
         'documents': documents,
         'peers': peers,
         'historical_data': historical_data,
+        'historical_data_json': json.dumps(historical_data),
         'reliability_score': reliability_score,
         'management_forecasts': management_forecasts,
         'management_documents': management_documents,

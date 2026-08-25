@@ -1199,12 +1199,12 @@
     }
 
     // Parse historical price records from Django views
-    const rawHistory = {{ historical_data|safe }};
+    const rawHistory = {{ historical_data_json|safe }};
     
     // Setup lightweight charts
     function initLightweightChart() {
         const chartEl = document.getElementById('lightweightChart');
-        if (!chartEl || rawHistory.length === 0) return;
+        if (!chartEl || !rawHistory || rawHistory.length === 0) return;
 
         const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
         
@@ -1239,6 +1239,18 @@
             wickUpColor: '#10b981',
         });
 
+        const volumeSeries = chart.addHistogramSeries({
+            color: '#26a69a',
+            priceFormat: {
+                type: 'volume',
+            },
+            priceScaleId: '',
+            scaleMargins: {
+                top: 0.8,
+                bottom: 0,
+            },
+        });
+
         // Format data for lightweight chart
         const candleData = rawHistory.map(d => ({
             time: d.time,
@@ -1248,7 +1260,14 @@
             close: d.close
         }));
 
+        const volumeData = rawHistory.map(d => ({
+            time: d.time,
+            value: d.volume,
+            color: d.close >= d.open ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)'
+        }));
+
         candlestickSeries.setData(candleData);
+        volumeSeries.setData(volumeData);
 
         window.addEventListener('resize', () => {
             chart.resize(chartEl.clientWidth, 450);
@@ -1278,11 +1297,14 @@
                 const days = this.dataset.period;
                 if (days === 'max') {
                     candlestickSeries.setData(candleData);
+                    volumeSeries.setData(volumeData);
                 } else {
                     const cutoff = new Date();
                     cutoff.setDate(cutoff.getDate() - parseInt(days));
-                    const filtered = candleData.filter(d => new Date(d.time) >= cutoff);
-                    candlestickSeries.setData(filtered);
+                    const filteredCandles = candleData.filter(d => new Date(d.time) >= cutoff);
+                    const filteredVolume = volumeData.filter(d => new Date(d.time) >= cutoff);
+                    candlestickSeries.setData(filteredCandles);
+                    volumeSeries.setData(filteredVolume);
                 }
                 chart.timeScale().fitContent();
             });
