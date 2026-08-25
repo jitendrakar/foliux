@@ -1327,51 +1327,177 @@
             }
         }
 
-        // Option B: Fallback using Chart.js if LightweightCharts library is offline/blocked
-        renderChartJSFallback(chartEl, sortedHistory);
+        // Fallback: Render via Zero-Dependency Native HTML5 Canvas Engine (Works 100% offline & locally)
+        renderNativeCanvasChart(chartEl, sortedHistory);
     }
 
-    function renderChartJSFallback(chartEl, sortedHistory) {
-        chartEl.innerHTML = '<div style="height:450px; width:100%; position:relative;"><canvas id="fallbackPriceCanvas"></canvas></div>';
-        const canvas = document.getElementById('fallbackPriceCanvas');
-        if (!canvas || typeof Chart === 'undefined') return;
+    function renderNativeCanvasChart(container, historyData) {
+        container.innerHTML = `
+            <div style="position:relative; width:100%; height:450px;">
+                <canvas id="nativeCandleCanvas" style="width:100%; height:450px; display:block;"></canvas>
+            </div>
+        `;
 
-        const labels = sortedHistory.map(d => d.time);
-        const prices = sortedHistory.map(d => parseFloat(d.close));
-        const volumes = sortedHistory.map(d => parseInt(d.volume || 0));
+        const canvas = document.getElementById('nativeCandleCanvas');
+        if (!canvas) return;
 
-        new Chart(canvas, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                        label: 'Close Price (₹)',
-                        data: prices,
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.08)',
-                        fill: true,
-                        tension: 0.1,
-                        yAxisID: 'y'
-                    },
-                    {
-                        type: 'bar',
-                        label: 'Volume',
-                        data: volumes,
-                        backgroundColor: 'rgba(59, 130, 246, 0.3)',
-                        yAxisID: 'y1'
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    x: { ticks: { color: '#94a3b8' }, grid: { display: false } },
-                    y: { type: 'linear', position: 'right', ticks: { color: '#94a3b8' } },
-                    y1: { type: 'linear', position: 'left', display: false, grid: { display: false } }
-                }
+        let activeData = [...historyData];
+
+        function draw() {
+            const dpr = window.devicePixelRatio || 1;
+            const width = container.clientWidth || container.parentElement.clientWidth || 800;
+            const height = 450;
+
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+            ctx.clearRect(0, 0, width, height);
+
+            if (activeData.length === 0) return;
+
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            const bgColor = isDark ? '#1e293b' : '#ffffff';
+            const textColor = isDark ? '#94a3b8' : '#64748b';
+            const gridColor = isDark ? 'rgba(51, 65, 85, 0.3)' : 'rgba(226, 232, 240, 0.7)';
+
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(0, 0, width, height);
+
+            const paddingRight = 75;
+            const paddingBottom = 30;
+            const paddingTop = 20;
+            const paddingLeft = 10;
+
+            const chartWidth = width - paddingLeft - paddingRight;
+            const chartHeight = height - paddingTop - paddingBottom;
+            const candleAreaHeight = chartHeight * 0.78;
+            const volumeAreaTop = paddingTop + candleAreaHeight + 10;
+            const volumeAreaHeight = chartHeight * 0.20;
+
+            let minPrice = Infinity, maxPrice = -Infinity;
+            let maxVol = 0;
+            activeData.forEach(d => {
+                const openVal = parseFloat(d.open);
+                const highVal = parseFloat(d.high);
+                const lowVal = parseFloat(d.low);
+                const closeVal = parseFloat(d.close);
+                const volVal = parseInt(d.volume || 0);
+
+                if (lowVal < minPrice) minPrice = lowVal;
+                if (highVal > maxPrice) maxPrice = highVal;
+                if (volVal > maxVol) maxVol = volVal;
+            });
+
+            if (minPrice === maxPrice || !isFinite(minPrice)) { minPrice = 100; maxPrice = 200; }
+            const priceRange = maxPrice - minPrice;
+
+            // Grid lines & Y Axis Price Scale
+            ctx.strokeStyle = gridColor;
+            ctx.lineWidth = 1;
+            ctx.fillStyle = textColor;
+            ctx.font = '11px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+
+            const gridSteps = 5;
+            for (let i = 0; i <= gridSteps; i++) {
+                const priceVal = maxPrice - (priceRange * (i / gridSteps));
+                const y = paddingTop + (candleAreaHeight * (i / gridSteps));
+
+                ctx.beginPath();
+                ctx.moveTo(paddingLeft, y);
+                ctx.lineTo(width - paddingRight, y);
+                ctx.stroke();
+
+                ctx.fillText('₹' + priceVal.toFixed(2), width - paddingRight + 8, y);
             }
+
+            // Candlesticks & Volume Bars
+            const n = activeData.length;
+            const stepX = chartWidth / n;
+            const candleWidth = Math.max(1, Math.min(stepX * 0.7, 12));
+
+            activeData.forEach((d, idx) => {
+                const openVal = parseFloat(d.open);
+                const highVal = parseFloat(d.high);
+                const lowVal = parseFloat(d.low);
+                const closeVal = parseFloat(d.close);
+                const volVal = parseInt(d.volume || 0);
+
+                const x = paddingLeft + (idx + 0.5) * stepX;
+                const isGreen = closeVal >= openVal;
+                const color = isGreen ? '#10b981' : '#ef4444';
+                const volColor = isGreen ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)';
+
+                const priceToY = p => paddingTop + candleAreaHeight * (1 - (p - minPrice) / priceRange);
+
+                const openY = priceToY(openVal);
+                const closeY = priceToY(closeVal);
+                const highY = priceToY(highVal);
+                const lowY = priceToY(lowVal);
+
+                // Wick
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.moveTo(x, highY);
+                ctx.lineTo(x, lowY);
+                ctx.stroke();
+
+                // Body
+                const bodyTop = Math.min(openY, closeY);
+                const bodyHeight = Math.max(1.5, Math.abs(openY - closeY));
+                ctx.fillStyle = color;
+                ctx.fillRect(x - candleWidth / 2, bodyTop, candleWidth, bodyHeight);
+
+                // Volume Bar
+                if (maxVol > 0) {
+                    const volH = (volVal / maxVol) * volumeAreaHeight;
+                    const volY = volumeAreaTop + (volumeAreaHeight - volH);
+                    ctx.fillStyle = volColor;
+                    ctx.fillRect(x - candleWidth / 2, volY, candleWidth, volH);
+                }
+            });
+
+            // Date X-Axis
+            ctx.fillStyle = textColor;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            const labelInterval = Math.max(1, Math.floor(n / 6));
+            for (let idx = 0; idx < n; idx += labelInterval) {
+                const x = paddingLeft + (idx + 0.5) * stepX;
+                ctx.fillText(activeData[idx].time, x, height - paddingBottom + 8);
+            }
+        }
+
+        draw();
+
+        window.addEventListener('resize', draw);
+
+        const chartTabBtn = document.getElementById('chart-tab');
+        if (chartTabBtn) {
+            chartTabBtn.addEventListener('shown.bs.tab', draw);
+        }
+
+        document.querySelectorAll('.chart-timeframe-btn').forEach(btn => {
+            btn.onclick = function() {
+                document.querySelectorAll('.chart-timeframe-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                const days = this.dataset.period;
+
+                if (days === 'max') {
+                    activeData = [...historyData];
+                } else {
+                    const cutoff = new Date();
+                    cutoff.setDate(cutoff.getDate() - parseInt(days));
+                    activeData = historyData.filter(d => new Date(d.time) >= cutoff);
+                }
+                draw();
+            };
         });
     }
 
