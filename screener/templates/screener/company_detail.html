@@ -1201,202 +1201,273 @@
     // Parse historical price records from Django views
     const rawHistory = {{ historical_data_json|safe }};
     
-    // Setup lightweight charts
+    // Setup lightweight charts with Chart.js fallback
     function initLightweightChart() {
         const chartEl = document.getElementById('lightweightChart');
-        if (!chartEl || !rawHistory || rawHistory.length === 0) return;
+        if (!chartEl) return;
 
-        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        
-        const chart = LightweightCharts.createChart(chartEl, {
-            width: chartEl.clientWidth || 800,
-            height: 450,
-            layout: {
-                backgroundColor: isDark ? '#1e293b' : '#ffffff',
-                textColor: isDark ? '#94a3b8' : '#334155',
-            },
-            grid: {
-                vertLines: { color: isDark ? 'rgba(51, 65, 85, 0.3)' : 'rgba(226, 232, 240, 0.5)' },
-                horzLines: { color: isDark ? 'rgba(51, 65, 85, 0.3)' : 'rgba(226, 232, 240, 0.5)' },
-            },
-            crosshair: {
-                mode: LightweightCharts.CrosshairMode.Normal,
-            },
-            rightPriceScale: {
-                borderColor: isDark ? 'rgba(51, 65, 85, 0.5)' : 'rgba(226, 232, 240, 0.8)',
-            },
-            timeScale: {
-                borderColor: isDark ? 'rgba(51, 65, 85, 0.5)' : 'rgba(226, 232, 240, 0.8)',
-            },
-        });
+        if (!rawHistory || rawHistory.length === 0) {
+            chartEl.innerHTML = `
+                <div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted py-5">
+                    <i class="fas fa-chart-line fs-1 mb-3 text-secondary opacity-50"></i>
+                    <h6 class="fw-bold">No Historical Chart Data Available</h6>
+                    <p class="small text-muted mb-0">Daily price history will populate automatically as market data syncs.</p>
+                </div>
+            `;
+            return;
+        }
 
-        const candlestickSeries = chart.addCandlestickSeries({
-            upColor: '#10b981',
-            downColor: '#ef4444',
-            borderDownColor: '#ef4444',
-            borderUpColor: '#10b981',
-            wickDownColor: '#ef4444',
-            wickUpColor: '#10b981',
-        });
-
-        const volumeSeries = chart.addHistogramSeries({
-            color: '#26a69a',
-            priceFormat: {
-                type: 'volume',
-            },
-            priceScaleId: '',
-            scaleMargins: {
-                top: 0.8,
-                bottom: 0,
-            },
-        });
-
-        // Format data for lightweight chart
-        const candleData = rawHistory.map(d => ({
-            time: d.time,
-            open: d.open,
-            high: d.high,
-            low: d.low,
-            close: d.close
-        }));
-
-        const volumeData = rawHistory.map(d => ({
-            time: d.time,
-            value: d.volume,
-            color: d.close >= d.open ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)'
-        }));
-
-        candlestickSeries.setData(candleData);
-        volumeSeries.setData(volumeData);
-
-        window.addEventListener('resize', () => {
-            chart.resize(chartEl.clientWidth, 450);
-        });
-
-        // Adjust chart on theme changes
-        document.addEventListener('themeChanged', function () {
-            const isDarkNow = document.documentElement.getAttribute('data-theme') === 'dark';
-            chart.applyOptions({
-                layout: {
-                    backgroundColor: isDarkNow ? '#1e293b' : '#ffffff',
-                    textColor: isDarkNow ? '#94a3b8' : '#334155',
-                },
-                grid: {
-                    vertLines: { color: isDarkNow ? 'rgba(51, 65, 85, 0.3)' : 'rgba(226, 232, 240, 0.5)' },
-                    horzLines: { color: isDarkNow ? 'rgba(51, 65, 85, 0.3)' : 'rgba(226, 232, 240, 0.5)' },
-                }
-            });
-        });
-
-        // Timeframe selector click handlers
-        document.querySelectorAll('.chart-timeframe-btn').forEach(btn => {
-            btn.addEventListener('click', function () {
-                document.querySelectorAll('.chart-timeframe-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                
-                const days = this.dataset.period;
-                if (days === 'max') {
-                    candlestickSeries.setData(candleData);
-                    volumeSeries.setData(volumeData);
-                } else {
-                    const cutoff = new Date();
-                    cutoff.setDate(cutoff.getDate() - parseInt(days));
-                    const filteredCandles = candleData.filter(d => new Date(d.time) >= cutoff);
-                    const filteredVolume = volumeData.filter(d => new Date(d.time) >= cutoff);
-                    candlestickSeries.setData(filteredCandles);
-                    volumeSeries.setData(filteredVolume);
-                }
-                chart.timeScale().fitContent();
-            });
-        });
-
-        chart.timeScale().fitContent();
-    }
-
-    if (document.readyState === "complete" || document.readyState === "interactive") {
-        initLightweightChart();
-    } else {
-        document.addEventListener("DOMContentLoaded", initLightweightChart);
-    }
-
-        // --- Render Extra Trends Charts in Tabs ---
-        // 1. Quarterly Results (Sales vs Profit)
-        const qLabels = [{% for q in quarterly_results %}"{{ q.quarter }}",{% endfor %}];
-        const qSales = [{% for q in quarterly_results %}{{ q.sales }},{% endfor %}];
-        const qProfits = [{% for q in quarterly_results %}{{ q.net_profit }},{% endfor %}];
-        
-        new Chart(document.getElementById('quarterlyChart'), {
-            type: 'bar',
-            data: {
-                labels: qLabels,
-                datasets: [
-                    { label: 'Sales (₹ Cr.)', data: qSales, backgroundColor: 'rgba(59, 130, 246, 0.65)', borderColor: '#2563eb', borderWidth: 1 },
-                    { label: 'Net Profit (₹ Cr.)', data: qProfits, backgroundColor: 'rgba(16, 185, 129, 0.65)', borderColor: '#10b981', borderWidth: 1 }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148,163,184,0.1)' } },
-                    x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
-                }
+        // Deduplicate & sort by time ascending defensively for LightweightCharts
+        const timeMap = new Map();
+        rawHistory.forEach(d => {
+            if (d.time && !timeMap.has(d.time)) {
+                timeMap.set(d.time, d);
             }
         });
+        const sortedHistory = Array.from(timeMap.values()).sort((a, b) => a.time.localeCompare(b.time));
 
-        // 2. Yearly P&L Trends (Sales vs Profit)
-        const yLabels = [{% for yr in yearly_financials %}"{{ yr.year }}",{% endfor %}];
-        const ySales = [{% for yr in yearly_financials %}{{ yr.sales }},{% endfor %}];
-        const yProfits = [{% for yr in yearly_financials %}{{ yr.net_profit }},{% endfor %}];
-        
-        new Chart(document.getElementById('yearlyChart'), {
+        const candleData = sortedHistory.map(d => ({
+            time: d.time,
+            open: parseFloat(d.open),
+            high: parseFloat(d.high),
+            low: parseFloat(d.low),
+            close: parseFloat(d.close)
+        }));
+
+        const volumeData = sortedHistory.map(d => ({
+            time: d.time,
+            value: parseInt(d.volume || 0),
+            color: parseFloat(d.close) >= parseFloat(d.open) ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)'
+        }));
+
+        // Option A: Render via LightweightCharts if library is loaded
+        if (typeof LightweightCharts !== 'undefined' && LightweightCharts.createChart) {
+            try {
+                chartEl.innerHTML = '';
+                const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+                const chartWidth = chartEl.clientWidth || chartEl.parentElement.clientWidth || 800;
+
+                const chart = LightweightCharts.createChart(chartEl, {
+                    width: chartWidth,
+                    height: 450,
+                    layout: {
+                        backgroundColor: isDark ? '#1e293b' : '#ffffff',
+                        textColor: isDark ? '#94a3b8' : '#334155',
+                    },
+                    grid: {
+                        vertLines: { color: isDark ? 'rgba(51, 65, 85, 0.3)' : 'rgba(226, 232, 240, 0.5)' },
+                        horzLines: { color: isDark ? 'rgba(51, 65, 85, 0.3)' : 'rgba(226, 232, 240, 0.5)' },
+                    },
+                    crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+                    rightPriceScale: { borderColor: isDark ? 'rgba(51, 65, 85, 0.5)' : 'rgba(226, 232, 240, 0.8)' },
+                    timeScale: { borderColor: isDark ? 'rgba(51, 65, 85, 0.5)' : 'rgba(226, 232, 240, 0.8)' },
+                });
+
+                const candlestickSeries = chart.addCandlestickSeries({
+                    upColor: '#10b981',
+                    downColor: '#ef4444',
+                    borderDownColor: '#ef4444',
+                    borderUpColor: '#10b981',
+                    wickDownColor: '#ef4444',
+                    wickUpColor: '#10b981',
+                });
+
+                const volumeSeries = chart.addHistogramSeries({
+                    color: '#26a69a',
+                    priceFormat: { type: 'volume' },
+                    priceScaleId: '',
+                    scaleMargins: { top: 0.8, bottom: 0 },
+                });
+
+                candlestickSeries.setData(candleData);
+                volumeSeries.setData(volumeData);
+
+                const resizeChart = () => {
+                    const w = chartEl.clientWidth || chartEl.parentElement.clientWidth || 800;
+                    chart.resize(w, 450);
+                };
+
+                window.addEventListener('resize', resizeChart);
+
+                // Re-fit chart when switching back to Chart tab
+                const chartTabBtn = document.getElementById('chart-tab');
+                if (chartTabBtn) {
+                    chartTabBtn.addEventListener('shown.bs.tab', () => {
+                        resizeChart();
+                        chart.timeScale().fitContent();
+                    });
+                }
+
+                // Timeframe selector click handlers
+                document.querySelectorAll('.chart-timeframe-btn').forEach(btn => {
+                    btn.addEventListener('click', function () {
+                        document.querySelectorAll('.chart-timeframe-btn').forEach(b => b.classList.remove('active'));
+                        this.classList.add('active');
+                        
+                        const days = this.dataset.period;
+                        if (days === 'max') {
+                            candlestickSeries.setData(candleData);
+                            volumeSeries.setData(volumeData);
+                        } else {
+                            const cutoff = new Date();
+                            cutoff.setDate(cutoff.getDate() - parseInt(days));
+                            const filteredCandles = candleData.filter(d => new Date(d.time) >= cutoff);
+                            const filteredVolume = volumeData.filter(d => new Date(d.time) >= cutoff);
+                            candlestickSeries.setData(filteredCandles);
+                            volumeSeries.setData(filteredVolume);
+                        }
+                        chart.timeScale().fitContent();
+                    });
+                });
+
+                chart.timeScale().fitContent();
+                return;
+            } catch (err) {
+                console.error("Error creating LightweightChart:", err);
+            }
+        }
+
+        // Option B: Fallback using Chart.js if LightweightCharts library is offline/blocked
+        renderChartJSFallback(chartEl, sortedHistory);
+    }
+
+    function renderChartJSFallback(chartEl, sortedHistory) {
+        chartEl.innerHTML = '<div style="height:450px; width:100%; position:relative;"><canvas id="fallbackPriceCanvas"></canvas></div>';
+        const canvas = document.getElementById('fallbackPriceCanvas');
+        if (!canvas || typeof Chart === 'undefined') return;
+
+        const labels = sortedHistory.map(d => d.time);
+        const prices = sortedHistory.map(d => parseFloat(d.close));
+        const volumes = sortedHistory.map(d => parseInt(d.volume || 0));
+
+        new Chart(canvas, {
             type: 'line',
             data: {
-                labels: yLabels,
+                labels: labels,
                 datasets: [
-                    { label: 'Sales (₹ Cr.)', data: ySales, borderColor: '#2563eb', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.3 },
-                    { label: 'Net Profit (₹ Cr.)', data: yProfits, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.3 }
+                    {
+                        label: 'Close Price (₹)',
+                        data: prices,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.08)',
+                        fill: true,
+                        tension: 0.1,
+                        yAxisID: 'y'
+                    },
+                    {
+                        type: 'bar',
+                        label: 'Volume',
+                        data: volumes,
+                        backgroundColor: 'rgba(59, 130, 246, 0.3)',
+                        yAxisID: 'y1'
+                    }
                 ]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
-                    y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148,163,184,0.1)' } },
-                    x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
+                    x: { ticks: { color: '#94a3b8' }, grid: { display: false } },
+                    y: { type: 'linear', position: 'right', ticks: { color: '#94a3b8' } },
+                    y1: { type: 'linear', position: 'left', display: false, grid: { display: false } }
                 }
             }
         });
+    }
 
-        // 3. Shareholding Distribution Chart
-        const shLabels = [{% for sh in shareholdings %}"{{ sh.period }}",{% endfor %}];
-        const shPromoters = [{% for sh in shareholdings %}{{ sh.promoters }},{% endfor %}];
-        const shFIIs = [{% for sh in shareholdings %}{{ sh.fiis }},{% endfor %}];
-        const shDIIs = [{% for sh in shareholdings %}{{ sh.diis }},{% endfor %}];
-        const shPublic = [{% for sh in shareholdings %}{{ sh.public }},{% endfor %}];
-        const shGovt = [{% for sh in shareholdings %}{{ sh.government }},{% endfor %}];
+    document.addEventListener("DOMContentLoaded", function() {
+        initLightweightChart();
 
-        new Chart(document.getElementById('shareholdingChart'), {
-            type: 'bar',
-            data: {
-                labels: shLabels,
-                datasets: [
-                    { label: 'Promoters', data: shPromoters, backgroundColor: '#2563eb' },
-                    { label: 'FIIs', data: shFIIs, backgroundColor: '#10b981' },
-                    { label: 'DIIs', data: shDIIs, backgroundColor: '#f59e0b' },
-                    { label: 'Public', data: shPublic, backgroundColor: '#8b5cf6' },
-                    { label: 'Govt', data: shGovt, backgroundColor: '#64748b' }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: { stacked: true, max: 100, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148,163,184,0.1)' } },
-                    x: { stacked: true, ticks: { color: '#94a3b8' }, grid: { display: false } }
-                }
+        // --- Render Extra Trends Charts in Tabs securely ---
+        try {
+            const qCanvas = document.getElementById('quarterlyChart');
+            if (qCanvas) {
+                const qLabels = [{% for q in quarterly_results %}"{{ q.quarter }}",{% endfor %}];
+                const qSales = [{% for q in quarterly_results %}{{ q.sales }},{% endfor %}];
+                const qProfits = [{% for q in quarterly_results %}{{ q.net_profit }},{% endfor %}];
+                
+                new Chart(qCanvas, {
+                    type: 'bar',
+                    data: {
+                        labels: qLabels,
+                        datasets: [
+                            { label: 'Sales (₹ Cr.)', data: qSales, backgroundColor: 'rgba(59, 130, 246, 0.65)', borderColor: '#2563eb', borderWidth: 1 },
+                            { label: 'Net Profit (₹ Cr.)', data: qProfits, backgroundColor: 'rgba(16, 185, 129, 0.65)', borderColor: '#10b981', borderWidth: 1 }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148,163,184,0.1)' } },
+                            x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
+                        }
+                    }
+                });
             }
-        });
+        } catch (e) { console.error("Error rendering quarterly chart:", e); }
+
+        try {
+            const yCanvas = document.getElementById('yearlyChart');
+            if (yCanvas) {
+                const yLabels = [{% for yr in yearly_financials %}"{{ yr.year }}",{% endfor %}];
+                const ySales = [{% for yr in yearly_financials %}{{ yr.sales }},{% endfor %}];
+                const yProfits = [{% for yr in yearly_financials %}{{ yr.net_profit }},{% endfor %}];
+                
+                new Chart(yCanvas, {
+                    type: 'line',
+                    data: {
+                        labels: yLabels,
+                        datasets: [
+                            { label: 'Sales (₹ Cr.)', data: ySales, borderColor: '#2563eb', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true, tension: 0.3 },
+                            { label: 'Net Profit (₹ Cr.)', data: yProfits, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.3 }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148,163,184,0.1)' } },
+                            x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
+                        }
+                    }
+                });
+            }
+        } catch (e) { console.error("Error rendering yearly chart:", e); }
+
+        try {
+            const shCanvas = document.getElementById('shareholdingChart');
+            if (shCanvas) {
+                const shLabels = [{% for sh in shareholdings %}"{{ sh.period }}",{% endfor %}];
+                const shPromoters = [{% for sh in shareholdings %}{{ sh.promoters }},{% endfor %}];
+                const shFIIs = [{% for sh in shareholdings %}{{ sh.fiis }},{% endfor %}];
+                const shDIIs = [{% for sh in shareholdings %}{{ sh.diis }},{% endfor %}];
+                const shPublic = [{% for sh in shareholdings %}{{ sh.public }},{% endfor %}];
+                const shGovt = [{% for sh in shareholdings %}{{ sh.government }},{% endfor %}];
+
+                new Chart(shCanvas, {
+                    type: 'bar',
+                    data: {
+                        labels: shLabels,
+                        datasets: [
+                            { label: 'Promoters', data: shPromoters, backgroundColor: '#2563eb' },
+                            { label: 'FIIs', data: shFIIs, backgroundColor: '#10b981' },
+                            { label: 'DIIs', data: shDIIs, backgroundColor: '#f59e0b' },
+                            { label: 'Public', data: shPublic, backgroundColor: '#8b5cf6' },
+                            { label: 'Govt', data: shGovt, backgroundColor: '#64748b' }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { stacked: true, max: 100, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148,163,184,0.1)' } },
+                            x: { stacked: true, ticks: { color: '#94a3b8' }, grid: { display: false } }
+                        }
+                    }
+                });
+            }
+        } catch (e) { console.error("Error rendering shareholding chart:", e); }
     });
 </script>
 {% endblock %}
