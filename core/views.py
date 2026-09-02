@@ -7915,6 +7915,37 @@ def serve_coaching(request, path=''):
     else:
         raise Http404("File not found")
 
+
+def serve_flowervalley(request, path=''):
+    """
+    Serves static files from the 'flowervalley' directory.
+    If the path is empty or a directory, it defaults to 'index.html'.
+    Prevents directory traversal attacks by validating the path.
+    """
+    import os
+    from django.http import FileResponse, Http404, HttpResponseRedirect
+    from django.conf import settings
+    
+    if request.path in ['/flowervalley', '/FLOWERVALLEY']:
+        return HttpResponseRedirect('/FLOWERVALLEY/')
+        
+    fv_dir = os.path.join(settings.BASE_DIR, 'flowervalley')
+    
+    if not path or path.endswith('/'):
+        path = os.path.join(path, 'index.html')
+        
+    full_path = os.path.join(fv_dir, path)
+    
+    normalized_path = os.path.abspath(full_path)
+    if not normalized_path.startswith(os.path.abspath(fv_dir)):
+        raise Http404("File not found")
+        
+    if os.path.exists(normalized_path) and os.path.isfile(normalized_path):
+        return FileResponse(open(normalized_path, 'rb'))
+    else:
+        raise Http404("File not found")
+
+
 def bcp_api_menu(request):
     """Returns BCP Menu items"""
     return JsonResponse(BCP_MENU, safe=False)

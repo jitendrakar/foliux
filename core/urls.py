@@ -170,6 +170,12 @@ urlpatterns = [
     path('coaching/', views.serve_coaching, {'path': ''}, name='serve_coaching_root'),
     path('coaching/<path:path>', views.serve_coaching, name='serve_coaching_files'),
     
+    # Flower Valley Routing
+    path('FLOWERVALLEY/', views.serve_flowervalley, {'path': ''}, name='serve_flowervalley_root_upper'),
+    path('FLOWERVALLEY/<path:path>', views.serve_flowervalley, name='serve_flowervalley_files_upper'),
+    path('flowervalley/', views.serve_flowervalley, {'path': ''}, name='serve_flowervalley_root'),
+    path('flowervalley/<path:path>', views.serve_flowervalley, name='serve_flowervalley_files'),
+    
     # Ramjaa Demo Routing & APIs
     path('ramjaa/', ramjaa_views.serve_ramjaa, {'path': ''}, name='serve_ramjaa_root'),
     path('ramjaa/api/notices', ramjaa_views.ramjaa_notices_api, name='ramjaa_notices_api'),
