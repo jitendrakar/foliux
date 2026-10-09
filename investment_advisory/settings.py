@@ -108,6 +108,7 @@ INSTALLED_APPS = [
     'screener',
     'restaurant',
     'npits',
+    # 'partner',
 ]
 
 SITE_ID = 1
@@ -348,7 +349,7 @@ LOGOUT_REDIRECT_URL = 'landing'
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': os.path.join(BASE_DIR, 'django_cache'),
+        'LOCATION': os.path.join(BASE_DIR, 'cache'),
     }
 }
 

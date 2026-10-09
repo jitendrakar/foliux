@@ -278,14 +278,30 @@ class NPSTransactionAdmin(admin.ModelAdmin):
 
 @admin.register(IPO)
 class IPOAdmin(admin.ModelAdmin):
-    list_display = ('name', 'symbol', 'start_date', 'end_date', 'advise', 'get_status')
-    list_filter = ('advise', 'start_date', 'end_date')
-    search_fields = ('name', 'symbol', 'company_work')
+    list_display = ('name', 'symbol', 'start_date', 'end_date', 'advise', 'registrar_slug', 'is_synced_from_registrar', 'is_active', 'get_status')
+    list_filter = ('advise', 'is_active', 'is_synced_from_registrar', 'registrar_slug', 'start_date', 'end_date')
+    search_fields = ('name', 'symbol', 'company_work', 'registrar_slug')
     ordering = ('-start_date',)
+    actions = ['trigger_chittorgarh_sync']
+
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('name', 'symbol', 'start_date', 'end_date', 'company_work', 'notes', 'advise')
+        }),
+        ('Registrar Integration', {
+            'fields': ('registrar_slug', 'registrar_company_id', 'is_synced_from_registrar', 'is_active')
+        }),
+    )
 
     def get_status(self, obj):
         return obj.status
     get_status.short_description = 'Status'
+
+    def trigger_chittorgarh_sync(self, request, queryset):
+        from core.ipo_sync import auto_sync_foliux_ipos
+        res = auto_sync_foliux_ipos()
+        self.message_user(request, f"Auto-Sync completed! Added: {res.get('added')}, Updated: {res.get('updated')}, Registrar Linked: {res.get('registrar_linked')}")
+    trigger_chittorgarh_sync.short_description = "Sync Chittorgarh IPOs & Registrars Now"
 
 @admin.register(ChatbotKnowledge)
 class ChatbotKnowledgeAdmin(admin.ModelAdmin):

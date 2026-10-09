@@ -1117,6 +1117,9 @@ class IPO(models.Model):
     advise = models.CharField(max_length=20, choices=ADVISE_CHOICES, default='WAITING')
     registrar_slug = models.CharField(max_length=50, default='mufg', blank=True, help_text="Registrar slug (e.g. mufg, kfintech)")
     registrar_company_id = models.CharField(max_length=50, blank=True, null=True, help_text="Registrar internal company ID")
+    subscription_times = models.DecimalField(max_digits=7, decimal_places=2, null=True, blank=True, help_text="Total subscription multiplier (e.g. 3.50 for 3.5x)")
+    gmp_percent = models.DecimalField(max_digits=6, decimal_places=2, null=True, blank=True, help_text="GMP percentage (e.g. 35.00 for 35%)")
+    gmp_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="GMP price in INR per share")
     is_synced_from_registrar = models.BooleanField(default=False, help_text="True if dynamically synced from registrar")
     is_active = models.BooleanField(default=True, help_text="True if IPO is active on registrar portal")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -1124,6 +1127,23 @@ class IPO(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def subscription_display(self):
+        if self.subscription_times is not None:
+            return f"{self.subscription_times}x"
+        return "N/A"
+
+    @property
+    def gmp_display(self):
+        parts = []
+        if self.gmp_amount is not None:
+            parts.append(f"₹{self.gmp_amount}")
+        if self.gmp_percent is not None:
+            parts.append(f"({self.gmp_percent}%)")
+        if parts:
+            return " ".join(parts)
+        return "N/A"
 
     @property
     def cmp(self):
@@ -1142,22 +1162,6 @@ class IPO(models.Model):
             inst = Instrument.objects.filter(symbol=clean_sym).first()
             if inst and inst.last_price > 0:
                 return inst.last_price
-                
-            # Try yfinance fallback (using clean symbol)
-            import yfinance as yf
-            ticker = yf.Ticker(f"{clean_sym}.NS")
-            hist = ticker.history(period="1d")
-            if not hist.empty:
-                price = hist['Close'].iloc[-1]
-                if price and price > 0:
-                    return Decimal(str(round(price, 2)))
-                    
-            ticker_bo = yf.Ticker(f"{clean_sym}.BO")
-            hist_bo = ticker_bo.history(period="1d")
-            if not hist_bo.empty:
-                price_bo = hist_bo['Close'].iloc[-1]
-                if price_bo and price_bo > 0:
-                    return Decimal(str(round(price_bo, 2)))
         except Exception:
             pass
         return None
@@ -1214,6 +1218,20 @@ class IPO(models.Model):
         ordering = ['-start_date']
         verbose_name = "IPO"
         verbose_name_plural = "IPOs"
+
+    def save(self, *args, **kwargs):
+        # Automatically clean raw source attributions (e.g. "Source: Chittorgarh...")
+        for attr in ['notes', 'company_work', 'advise']:
+            val = getattr(self, attr, '')
+            if val:
+                lines = str(val).splitlines()
+                cleaned_lines = [
+                    line for line in lines 
+                    if not ('chittorgarh' in line.lower() or line.strip().startswith('Source:'))
+                ]
+                setattr(self, attr, "\n".join(cleaned_lines).strip())
+        super().save(*args, **kwargs)
+
 
 class ChatbotKnowledge(models.Model):
     question = models.TextField(help_text="Expected matching words/phrases")

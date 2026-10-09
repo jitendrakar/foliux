@@ -2402,27 +2402,17 @@
             const introModal = new bootstrap.Modal(introModalEl);
             introModal.show();
 
-            let isWatchingIntro = false;
-
-            // Clicking anywhere on or inside the modal (except WATCH INTRO) redirects to Dashboard
             introModalEl.addEventListener('click', function (e) {
                 const watchLink = e.target.closest('.watch-intro-target');
                 if (watchLink) {
-                    isWatchingIntro = true;
                     sessionStorage.setItem('introVideoSkipped', 'true');
                     introModal.hide();
                     return; // Allow YouTube link to open in new tab
                 }
-
-                sessionStorage.setItem('introVideoSkipped', 'true');
-                window.location.href = "{% url 'dashboard' %}";
             });
 
             introModalEl.addEventListener('hidden.bs.modal', function () {
                 sessionStorage.setItem('introVideoSkipped', 'true');
-                if (!isWatchingIntro) {
-                    window.location.href = "{% url 'dashboard' %}";
-                }
             });
         }
         // --- Review Marquee Logic ---
@@ -2498,7 +2488,7 @@
                       <a href="https://youtu.be/2ldU89bOIn4" target="_blank" class="watch-intro-target btn btn-primary btn-sm rounded-pill py-2 fw-black shadow-sm transform-hover w-100" style="font-size: 0.85rem; letter-spacing: 0.8px; background: linear-gradient(135deg, #003d7c, #0056b3); border: none;">
                           <i class="fas fa-play-circle me-1"></i> WATCH INTRO
                       </a>
-                      <button type="button" class="btn btn-link text-muted btn-sm text-decoration-none fw-bold x-small opacity-75" data-bs-dismiss="modal">Skip to Dashboard</button>
+                      <button type="button" class="btn btn-link text-muted btn-sm text-decoration-none fw-bold x-small opacity-75" data-bs-dismiss="modal">Close</button>
                   </div>
               </div>
           </div>

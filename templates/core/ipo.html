@@ -462,7 +462,7 @@
                     {{ ipo.company_work }}
                 </div>
 
-                <div class="row g-2 mb-4">
+                <div class="row g-2 mb-3">
                     <div class="col-6">
                         <div class="ipo-date-box">
                             <div class="ipo-date-label">Open Date</div>
@@ -475,6 +475,28 @@
                             <div class="ipo-date-value">{{ ipo.end_date|date:"d M Y" }}</div>
                         </div>
                     </div>
+                </div>
+
+                <div class="row g-2 mb-3 text-center">
+                    <div class="col-6">
+                        <div class="p-2 rounded-3 bg-light border">
+                            <div class="ipo-date-label text-primary"><i class="fas fa-layer-group me-1"></i>Subscription</div>
+                            <div class="fw-bold text-dark" style="font-size: 0.95rem;">{{ ipo.subscription_display }}</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-2 rounded-3 bg-light border">
+                            <div class="ipo-date-label text-success"><i class="fas fa-chart-line me-1"></i>GMP</div>
+                            <div class="fw-bold text-dark" style="font-size: 0.95rem;">{{ ipo.gmp_display }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3 text-muted small d-flex align-items-center justify-content-between">
+                    <span><i class="fas fa-university me-1 text-secondary"></i> Registrar: <strong class="text-dark">{{ ipo.registrar_slug|upper }}</strong></span>
+                    {% if ipo.is_synced_from_registrar %}
+                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2 py-1"><i class="fas fa-sync me-1"></i>Synced</span>
+                    {% endif %}
                 </div>
 
                 <div class="analysis-preview">
@@ -502,7 +524,7 @@
             <i class="fas fa-search fa-4x text-muted opacity-25"></i>
         </div>
         <h3 class="fw-bold text-muted">No IPOs Found</h3>
-        <p class="text-muted">There are currently no IPOs matching your filter.</p>
+        <p class="text-muted">There are currently no IPOs matching your filter in the Foliux project.</p>
     </div>
     {% endfor %}
 </div>
@@ -528,7 +550,7 @@
                         </span>
                         {% endif %}
                     </div>
-                    <div class="text-muted small">Updated on {{ ipo.updated_at|date:"d M Y, h:i A" }}</div>
+                    <div class="text-muted small">Foliux Project System Update: {{ ipo.updated_at|date:"d M Y, h:i A" }}</div>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -539,7 +561,7 @@
                         <p class="mb-0">{{ ipo.company_work }}</p>
                     </div>
                     <div class="col-md-4">
-                        <h6 class="fw-bold text-uppercase text-muted mb-2 small">Expert Advice</h6>
+                        <h6 class="fw-bold text-uppercase text-muted mb-2 small">Foliux Advise Status</h6>
                         <div class="advise-badge w-100 text-center py-2 mb-0
                             {% if ipo.advise == 'APPLY' %}advise-apply
                             {% elif ipo.advise == 'NON_APPLY' %}advise-non-apply
@@ -552,17 +574,46 @@
                 <hr class="opacity-10 mb-4">
 
                 <div class="row g-3 mb-4 text-center">
-                    <div class="col-6">
+                    <div class="col-3">
                         <div class="p-3 rounded-4 bg-light">
-                            <div class="small text-muted mb-1">Bidding Starts</div>
-                            <div class="fw-bold h5 mb-0">{{ ipo.start_date|date:"F d, Y" }}</div>
+                            <div class="small text-muted mb-1">Open Date</div>
+                            <div class="fw-bold h6 mb-0">{{ ipo.start_date|date:"d M Y" }}</div>
                         </div>
                     </div>
-                    <div class="col-6">
+                    <div class="col-3">
                         <div class="p-3 rounded-4 bg-light">
-                            <div class="small text-muted mb-1">Bidding Ends</div>
-                            <div class="fw-bold h5 mb-0">{{ ipo.end_date|date:"F d, Y" }}</div>
+                            <div class="small text-muted mb-1">Close Date</div>
+                            <div class="fw-bold h6 mb-0">{{ ipo.end_date|date:"d M Y" }}</div>
                         </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="p-3 rounded-4 bg-light">
+                            <div class="small text-muted mb-1">Subscription</div>
+                            <div class="fw-bold h6 text-primary mb-0">{{ ipo.subscription_display }}</div>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        <div class="p-3 rounded-4 bg-light">
+                            <div class="small text-muted mb-1">GMP</div>
+                            <div class="fw-bold h6 text-success mb-0">{{ ipo.gmp_display }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4 p-3 rounded-4 bg-light d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="fw-bold me-2"><i class="fas fa-university text-primary me-1"></i> Registrar Integration:</span>
+                        <span class="badge bg-secondary text-uppercase">{{ ipo.registrar_slug }}</span>
+                        {% if ipo.registrar_company_id %}
+                            <span class="small text-muted ms-2">(ID: {{ ipo.registrar_company_id }})</span>
+                        {% endif %}
+                    </div>
+                    <div>
+                        {% if ipo.is_synced_from_registrar %}
+                            <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i> Dynamically Synced</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i> Pending Sync</span>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -816,7 +867,15 @@ document.addEventListener('DOMContentLoaded', function() {
         refreshIcon.classList.add('fa-spin');
         btnRefreshIPOs.disabled = true;
 
-        fetch('{% url "ipo_companies_api" %}')
+        fetch('{% url "sync_ipos_api" %}')
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                return fetch('{% url "ipo_companies_api" %}');
+            } else {
+                throw new Error(data.message || 'Sync failed');
+            }
+        })
         .then(res => res.json())
         .then(data => {
             refreshIcon.classList.remove('fa-spin');
@@ -827,13 +886,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     html += `<option value="${comp.id}" data-registrar="${comp.registrar}">${comp.name}</option>`;
                 });
                 companySelect.innerHTML = html;
-                showAlert(`Successfully synchronized ${data.companies.length} IPOs from registrar!`, 'success');
+                showAlert('Successfully synchronized Chittorgarh IPOs & Registrars!', 'success');
+                setTimeout(() => window.location.reload(), 1200);
             }
         })
         .catch(err => {
             refreshIcon.classList.remove('fa-spin');
             btnRefreshIPOs.disabled = false;
-            showAlert('Failed to refresh IPO list from server.', 'warning');
+            showAlert('IPO Sync: ' + (err.message || 'Failed to refresh IPO list from server.'), 'warning');
         });
     });
 

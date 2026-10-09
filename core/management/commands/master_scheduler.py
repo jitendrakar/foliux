@@ -5,7 +5,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 class Command(BaseCommand):
-    help = 'Master scheduler for Foliux daily and periodic tasks.'
+    help = 'Master scheduler for NPITS daily and periodic tasks.'
 
     def handle(self, *args, **options):
         scheduler = BlockingScheduler(timezone=pytz.timezone('Asia/Kolkata'))
@@ -86,6 +86,20 @@ class Command(BaseCommand):
             except Exception as e:
                 self.stderr.write(f"Error running management guidance sync: {e}")
 
+        def run_ipo_sync():
+            self.stdout.write("Running scheduled IPO auto-sync from Chittorgarh & Registrars (10:00 AM IST)...")
+            try:
+                management.call_command('sync_ipos')
+            except Exception as e:
+                self.stderr.write(f"Error running sync_ipos: {e}")
+
+        def run_ipo_evaluation():
+            self.stdout.write("Running scheduled closing day IPO evaluation (10:00 AM IST)...")
+            try:
+                management.call_command('evaluate_ipo_rules')
+            except Exception as e:
+                self.stderr.write(f"Error running evaluate_ipo_rules: {e}")
+
         import datetime
         kolkata_tz = pytz.timezone('Asia/Kolkata')
         run_now = datetime.datetime.now(kolkata_tz)
@@ -98,11 +112,14 @@ class Command(BaseCommand):
         scheduler.add_job(scheduled_mf, 'interval', minutes=30, id='auto_update_mf')
         scheduler.add_job(scheduled_coin, 'interval', minutes=30, id='auto_update_coin')
         scheduler.add_job(scheduled_nps, 'interval', minutes=30, id='auto_update_nps')
+        scheduler.add_job(run_ipo_evaluation, 'interval', minutes=30, id='auto_evaluate_ipo_rules')
         
         # Daily cron jobs (2:00 AM, 9:00 AM, 10:00 AM, & 4:00 PM IST)
         scheduler.add_job(run_management_guidance, CronTrigger(hour=2, minute=0), id='daily_management_guidance_job', misfire_grace_time=3600)
         scheduler.add_job(run_stock_news, CronTrigger(hour=9, minute=0), id='daily_stock_news_job', misfire_grace_time=3600)
         scheduler.add_job(run_daily_summary, CronTrigger(hour=10, minute=0), id='daily_portfolio_summary_job', misfire_grace_time=3600)
+        scheduler.add_job(run_ipo_sync, CronTrigger(hour=10, minute=0), id='daily_ipo_sync_10am', misfire_grace_time=3600)
+        scheduler.add_job(run_ipo_evaluation, CronTrigger(hour=10, minute=0), id='daily_ipo_evaluation_10am', misfire_grace_time=3600)
         scheduler.add_job(run_alerts, CronTrigger(hour=16, minute=0), id='send_signal_alerts', misfire_grace_time=3600)
         
         self.stdout.write("Starting BlockingScheduler (timezone: Asia/Kolkata)...")

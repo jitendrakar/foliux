@@ -1,8 +1,12 @@
 import json
+from decimal import Decimal
+from unittest.mock import patch
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.utils import timezone
 from core.models import IPO
+from core.chittorgarh import parse_chittorgarh_dates
+from core.ipo_sync import auto_sync_foliux_ipos
 from core.registrars import get_registrar, registrar_registry
 from core.registrars.mufg import MUFGRegistrar
 from core.registrars.kfintech import KFintechRegistrar
@@ -13,13 +17,26 @@ class IPOAllotmentIntegrationTests(TestCase):
         self.client = Client()
         self.mufg = get_registrar('mufg')
         self.kfintech = get_registrar('kfintech')
+        
+        # Patch external registrar network calls
+        self.patcher_mufg = patch('core.registrars.mufg.MUFGRegistrar.get_active_ipos', return_value=[{'id': '11913', 'name': 'Laser Power & Infra Limited', 'registrar': 'mufg'}])
+        self.patcher_kfin = patch('core.registrars.kfintech.KFintechRegistrar.get_active_ipos', return_value=[])
+        self.mock_mufg_ipos = self.patcher_mufg.start()
+        self.mock_kfin_ipos = self.patcher_kfin.start()
+        self.addCleanup(self.patcher_mufg.stop)
+        self.addCleanup(self.patcher_kfin.stop)
+
         self.sample_ipo = IPO.objects.create(
             name="Laser Power & Infra Limited - IPO",
+            symbol="",
             start_date=timezone.localdate(),
             end_date=timezone.localdate() + timezone.timedelta(days=5),
             company_work="Manufacturer of electric cables and conductor wires.",
             notes="Strong order book and growth trajectory.",
             advise="APPLY",
+            subscription_times=Decimal('4.50'),
+            gmp_percent=Decimal('35.00'),
+            gmp_amount=Decimal('50.00'),
             registrar_slug="mufg",
             registrar_company_id="11913",
             is_synced_from_registrar=True,
@@ -93,8 +110,11 @@ class IPOAllotmentIntegrationTests(TestCase):
         }), content_type="application/json")
         self.assertEqual(res3.status_code, 400)
 
-    def test_kfintech_allotment_status_api_call(self):
+    @patch('core.registrars.kfintech.requests.post')
+    def test_kfintech_allotment_status_api_call(self, mock_post):
         """Test calling allotment API with registrar=kfintech."""
+        mock_post.return_value.status_code = 200
+        mock_post.return_value.json.return_value = [{'STATUS': 'ALLOTTED', 'SHARES': 100}]
         url = reverse('ipo_allotment_status_api')
         res = self.client.post(url, data=json.dumps({
             "company_id": "35015605280",
@@ -105,10 +125,136 @@ class IPOAllotmentIntegrationTests(TestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.json()['status'], 'success')
 
-    def test_ipo_list_view_rendering(self):
-        """Test /ipo/ page renders 200 OK with allotment status module."""
+    @patch('core.views._auto_update_ipos')
+    def test_ipo_list_view_rendering(self, mock_auto_update):
+        """Test /ipo/ page renders 200 OK with subscription, GMP, and advise badges."""
+        mock_auto_update.return_value = [{'id': '11913', 'name': 'Laser Power & Infra Limited', 'registrar': 'mufg'}]
         url = reverse('ipo')
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Check Live IPO Allotment Status")
-        self.assertContains(response, "Select IPO / Issue")
+        self.assertContains(response, "Subscription")
+        self.assertContains(response, "GMP")
+        self.assertContains(response, "Laser Power")
+
+    def test_chittorgarh_date_parsing(self):
+        """Test parsing various Chittorgarh date string formats."""
+        s1, e1 = parse_chittorgarh_dates("11 to 16 Sep, 2026")
+        self.assertEqual(s1, timezone.datetime(2026, 9, 11).date())
+        self.assertEqual(e1, timezone.datetime(2026, 9, 16).date())
+
+        s2, e2 = parse_chittorgarh_dates("Friday, September 11, 2026")
+        self.assertEqual(s2, timezone.datetime(2026, 9, 11).date())
+        self.assertEqual(e2, timezone.datetime(2026, 9, 11).date())
+
+    @patch('core.ipo_sync.fetch_chittorgarh_ipos')
+    def test_auto_sync_foliux_ipos_start_date_today(self, mock_fetch):
+        """Test IPO starting TODAY is auto-added with advise=WAITING."""
+        today = timezone.localdate()
+        mock_fetch.return_value = [{
+            'name': 'Future Mobility India IPO',
+            'symbol': 'MOBILITY',
+            'start_date': today,
+            'end_date': today + timezone.timedelta(days=3),
+            'company_work': 'EV component manufacturer.',
+            'notes': 'High growth potential.',
+            'registrar_slug': 'kfintech',
+            'subscription_times': Decimal('1.20'),
+            'gmp_percent': Decimal('15.00'),
+            'gmp_amount': Decimal('20.00'),
+        }]
+
+        stats = auto_sync_foliux_ipos()
+        self.assertEqual(stats['added'], 1)
+        
+        created = IPO.objects.get(name='Future Mobility India')
+        self.assertEqual(created.advise, 'WAITING')
+        self.assertEqual(created.start_date, today)
+        self.assertTrue(created.is_active)
+
+    @patch('core.ipo_sync.fetch_chittorgarh_ipos')
+    def test_auto_sync_foliux_ipos_skip_future_and_closed(self, mock_fetch):
+        """Test upcoming IPO is added for tracking and old closed IPO (>30d) is skipped."""
+        today = timezone.localdate()
+        mock_fetch.return_value = [
+            {
+                'name': 'Upcoming Next Month Tech IPO',
+                'start_date': today + timezone.timedelta(days=10),
+                'end_date': today + timezone.timedelta(days=13),
+                'company_work': 'AI software provider.',
+            },
+            {
+                'name': 'Very Old Closed Heritage IPO',
+                'start_date': today - timezone.timedelta(days=45),
+                'end_date': today - timezone.timedelta(days=40),
+                'company_work': 'Textile manufacturer.',
+            }
+        ]
+
+        stats = auto_sync_foliux_ipos()
+        self.assertEqual(stats['added'], 1)
+        self.assertTrue(IPO.objects.filter(name='Upcoming Next Month Tech').exists())
+        self.assertFalse(IPO.objects.filter(name='Very Old Closed Heritage').exists())
+
+    @patch('core.ipo_sync.fetch_chittorgarh_ipos')
+    def test_auto_sync_foliux_ipos_2nd_day_apply_logic(self, mock_fetch):
+        """Test on 2nd day, advise becomes APPLY only when subscription >= 3x AND GMP > 30%."""
+        today = timezone.localdate()
+        yesterday = today - timezone.timedelta(days=1)  # Today is Day 2!
+
+        existing = IPO.objects.create(
+            name="SuperTech Solar Solutions Limited",
+            start_date=yesterday,
+            end_date=yesterday + timezone.timedelta(days=3),
+            company_work="Solar panels manufacturer.",
+            notes="Solar boom",
+            advise="WAITING",
+            subscription_times=Decimal('1.00'),
+            gmp_percent=Decimal('10.00'),
+            is_active=True
+        )
+
+        mock_fetch.return_value = [{
+            'name': 'SuperTech Solar Solutions Limited',
+            'start_date': yesterday,
+            'end_date': yesterday + timezone.timedelta(days=3),
+            'subscription_times': Decimal('4.20'),  # >= 3x
+            'gmp_percent': Decimal('45.00'),        # > 30%
+            'gmp_amount': Decimal('60.00'),
+        }]
+
+        stats = auto_sync_foliux_ipos()
+        self.assertEqual(stats['updated'], 1)
+
+        existing.refresh_from_db()
+        self.assertEqual(existing.advise, 'APPLY')
+
+    @patch('core.ipo_sync.fetch_chittorgarh_ipos')
+    def test_auto_sync_foliux_ipos_2nd_day_waiting_fallback(self, mock_fetch):
+        """Test on 2nd day, advise stays WAITING if either subscription < 3x OR GMP <= 30%."""
+        today = timezone.localdate()
+        yesterday = today - timezone.timedelta(days=1)  # Today is Day 2
+
+        existing = IPO.objects.create(
+            name="Moderate Retailers Limited",
+            start_date=yesterday,
+            end_date=yesterday + timezone.timedelta(days=3),
+            company_work="Retail chain.",
+            notes="Retail chain review.",
+            advise="WAITING",
+            subscription_times=Decimal('5.00'),  # >= 3x
+            gmp_percent=Decimal('20.00'),        # <= 30% (Fails condition)
+            is_active=True
+        )
+
+        mock_fetch.return_value = [{
+            'name': 'Moderate Retailers Limited',
+            'start_date': yesterday,
+            'end_date': yesterday + timezone.timedelta(days=3),
+            'subscription_times': Decimal('5.00'),
+            'gmp_percent': Decimal('20.00'),
+        }]
+
+        auto_sync_foliux_ipos()
+        existing.refresh_from_db()
+        self.assertEqual(existing.advise, 'WAITING')

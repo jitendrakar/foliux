@@ -1201,6 +1201,36 @@
     // Parse historical price records from Django views
     const rawHistory = {{ historical_data_json|safe }};
     
+    // Robust timeframe data filtering relative to the latest available trading date in dataset
+    function filterHistoryByPeriod(dataList, period) {
+        if (!dataList || dataList.length === 0) return [];
+        if (period === 'max') return [...dataList];
+
+        const days = parseInt(period);
+        if (isNaN(days)) return [...dataList];
+
+        // Anchor cutoff calculation to the latest available date in dataList
+        const lastItem = dataList[dataList.length - 1];
+        if (!lastItem || !lastItem.time) return [...dataList];
+
+        const dateParts = lastItem.time.split('-');
+        if (dateParts.length !== 3) return [...dataList];
+
+        const lastYear = parseInt(dateParts[0]);
+        const lastMonth = parseInt(dateParts[1]) - 1;
+        const lastDay = parseInt(dateParts[2]);
+
+        const refDate = new Date(Date.UTC(lastYear, lastMonth, lastDay));
+        const cutoffDate = new Date(refDate.getTime() - (days * 24 * 60 * 60 * 1000));
+
+        const cYear = cutoffDate.getUTCFullYear();
+        const cMonth = String(cutoffDate.getUTCMonth() + 1).padStart(2, '0');
+        const cDay = String(cutoffDate.getUTCDate()).padStart(2, '0');
+        const cutoffStr = `${cYear}-${cMonth}-${cDay}`;
+
+        return dataList.filter(item => item.time >= cutoffStr);
+    }
+
     // Setup lightweight charts with Chart.js fallback
     function initLightweightChart() {
         const chartEl = document.getElementById('lightweightChart');
@@ -1225,20 +1255,6 @@
             }
         });
         const sortedHistory = Array.from(timeMap.values()).sort((a, b) => a.time.localeCompare(b.time));
-
-        const candleData = sortedHistory.map(d => ({
-            time: d.time,
-            open: parseFloat(d.open),
-            high: parseFloat(d.high),
-            low: parseFloat(d.low),
-            close: parseFloat(d.close)
-        }));
-
-        const volumeData = sortedHistory.map(d => ({
-            time: d.time,
-            value: parseInt(d.volume || 0),
-            color: parseFloat(d.close) >= parseFloat(d.open) ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)'
-        }));
 
         // Option A: Render via LightweightCharts if library is loaded
         if (typeof LightweightCharts !== 'undefined' && LightweightCharts.createChart) {
@@ -1279,8 +1295,30 @@
                     scaleMargins: { top: 0.8, bottom: 0 },
                 });
 
-                candlestickSeries.setData(candleData);
-                volumeSeries.setData(volumeData);
+                function updateLightweightChartData(period) {
+                    const filtered = filterHistoryByPeriod(sortedHistory, period);
+                    const fCandles = filtered.map(d => ({
+                        time: d.time,
+                        open: parseFloat(d.open),
+                        high: parseFloat(d.high),
+                        low: parseFloat(d.low),
+                        close: parseFloat(d.close)
+                    }));
+                    const fVolume = filtered.map(d => ({
+                        time: d.time,
+                        value: parseInt(d.volume || 0),
+                        color: parseFloat(d.close) >= parseFloat(d.open) ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)'
+                    }));
+
+                    candlestickSeries.setData(fCandles);
+                    volumeSeries.setData(fVolume);
+                    chart.timeScale().fitContent();
+                }
+
+                // Initial load using active button period
+                const activeBtn = document.querySelector('.chart-timeframe-btn.active');
+                const initialPeriod = activeBtn ? activeBtn.dataset.period : '365';
+                updateLightweightChartData(initialPeriod);
 
                 const resizeChart = () => {
                     const w = chartEl.clientWidth || chartEl.parentElement.clientWidth || 800;
@@ -1303,20 +1341,7 @@
                     btn.addEventListener('click', function () {
                         document.querySelectorAll('.chart-timeframe-btn').forEach(b => b.classList.remove('active'));
                         this.classList.add('active');
-                        
-                        const days = this.dataset.period;
-                        if (days === 'max') {
-                            candlestickSeries.setData(candleData);
-                            volumeSeries.setData(volumeData);
-                        } else {
-                            const cutoff = new Date();
-                            cutoff.setDate(cutoff.getDate() - parseInt(days));
-                            const filteredCandles = candleData.filter(d => new Date(d.time) >= cutoff);
-                            const filteredVolume = volumeData.filter(d => new Date(d.time) >= cutoff);
-                            candlestickSeries.setData(filteredCandles);
-                            volumeSeries.setData(filteredVolume);
-                        }
-                        chart.timeScale().fitContent();
+                        updateLightweightChartData(this.dataset.period);
                     });
                 });
 
@@ -1341,7 +1366,9 @@
         const canvas = document.getElementById('nativeCandleCanvas');
         if (!canvas) return;
 
-        let activeData = [...historyData];
+        const activeBtn = document.querySelector('.chart-timeframe-btn.active');
+        const initialPeriod = activeBtn ? activeBtn.dataset.period : '365';
+        let activeData = filterHistoryByPeriod(historyData, initialPeriod);
 
         function draw() {
             const dpr = window.devicePixelRatio || 1;
@@ -1487,15 +1514,7 @@
             btn.onclick = function() {
                 document.querySelectorAll('.chart-timeframe-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
-                const days = this.dataset.period;
-
-                if (days === 'max') {
-                    activeData = [...historyData];
-                } else {
-                    const cutoff = new Date();
-                    cutoff.setDate(cutoff.getDate() - parseInt(days));
-                    activeData = historyData.filter(d => new Date(d.time) >= cutoff);
-                }
+                activeData = filterHistoryByPeriod(historyData, this.dataset.period);
                 draw();
             };
         });

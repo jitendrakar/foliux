@@ -480,13 +480,13 @@ class Command(BaseCommand):
                 date=datetime.now().date() - timedelta(days=12)
             )
 
-            # 7. Seed Daily Historical Prices for the last 300 days (for Candlestick Chart)
+            # 7. Seed Daily Historical Prices for the last 5 years / 1825 days (for Candlestick Chart)
             base_price = float(company.current_price)
-            current_date = datetime.now() - timedelta(days=300)
-            close_price = base_price * 0.85  # Start lower and walk up
+            current_date = datetime.now() - timedelta(days=1825)
+            close_price = base_price * 0.50  # Start lower 5 years ago and walk up
 
             historical_price_list = []
-            for day in range(300):
+            for day in range(1825):
                 current_date += timedelta(days=1)
                 # Skip weekends
                 if current_date.weekday() in (5, 6):
@@ -494,13 +494,12 @@ class Command(BaseCommand):
                 
                 open_p = close_price
                 change = open_p * random.uniform(-0.018, 0.02)
-                close_p = open_p + change
+                close_p = max(1.0, open_p + change)
                 
                 high_p = max(open_p, close_p) * random.uniform(1.001, 1.015)
                 low_p = min(open_p, close_p) * random.uniform(0.985, 0.999)
                 vol = random.randint(500000, 4500000)
                 
-                # Check for extreme swings
                 if high_p < low_p:
                     high_p, low_p = low_p, high_p
                 
@@ -515,9 +514,9 @@ class Command(BaseCommand):
                         volume=vol
                     )
                 )
-                close_price = close_p  # Next open is this close
+                close_price = close_p
 
             HistoricalPrice.objects.bulk_create(historical_price_list)
-            self.stdout.write(f"Seeded 300 historical price points for {company.nse_symbol}")
+            self.stdout.write(f"Seeded 1825 days of historical price points for {company.nse_symbol}")
 
         self.stdout.write(self.style.SUCCESS("Screener database seeding complete!"))

@@ -1807,21 +1807,28 @@ def stock_news_list(request):
 
 def _auto_update_ipos():
     """
-    Pre-warms active registrar companies in cache for allotment status dropdown.
-    Does NOT auto-create database records for main IPO cards (Admin-only).
+    Returns active registrar companies from cache or database for page rendering.
+    Does NOT trigger background fetch threads on page clicks.
+    IPO data is automatically updated every morning at 10:00 AM IST by the scheduler.
     """
     try:
         from django.core.cache import cache
         cache_key = "ipo_registrar_companies_cache"
         companies = cache.get(cache_key)
         if not companies:
-            from core.registrars import registrar_registry
-            companies = registrar_registry.get_all_active_ipos()
-            if companies:
-                cache.set(cache_key, companies, 1800)
+            from .models import IPO
+            companies = [
+                {
+                    "id": ipo.registrar_company_id or str(ipo.id),
+                    "name": ipo.name,
+                    "registrar": ipo.registrar_slug or "mufg",
+                    "registrar_name": "MUFG Intime" if (ipo.registrar_slug == "mufg") else (ipo.registrar_slug or "mufg").upper()
+                }
+                for ipo in IPO.objects.filter(is_active=True).order_by('-id')
+            ]
         return companies or []
     except Exception as e:
-        logger.error(f"Auto update IPOs failed: {e}")
+        logger.error(f"Error loading cached IPO registrar companies: {e}")
         return []
 
 def ipo_list(request):
@@ -1831,10 +1838,21 @@ def ipo_list(request):
 
     allotment_companies = _auto_update_ipos()
     if not allotment_companies:
-        from core.registrars import registrar_registry
-        allotment_companies = registrar_registry.get_all_active_ipos()
+        allotment_companies = [
+            {
+                "id": ipo.registrar_company_id or str(ipo.id),
+                "name": ipo.name,
+                "registrar": ipo.registrar_slug or "mufg",
+                "registrar_name": "MUFG Intime" if (ipo.registrar_slug == "mufg") else (ipo.registrar_slug or "mufg").upper()
+            }
+            for ipo in IPO.objects.filter(is_active=True).order_by('-id')
+        ]
 
-    target_user, is_family_view, is_consolidated = get_target_user(request) if request.user.is_authenticated else (None, False, False)
+    target_user, is_family_view, is_consolidated = (
+        get_target_user(request)
+        if hasattr(request, 'user') and request.user and request.user.is_authenticated
+        else (None, False, False)
+    )
     
     # Only show Admin-created / Admin-managed IPO cards
     ipos = IPO.objects.all().order_by('-start_date', '-created_at')
@@ -1843,20 +1861,6 @@ def ipo_list(request):
     advise_filter = request.GET.get('advise')
     if advise_filter:
         ipos = ipos.filter(advise=advise_filter)
-
-    # Fetch active allotment companies from registrars
-    from core.registrars import registrar_registry
-    allotment_companies = registrar_registry.get_all_active_ipos()
-    if not allotment_companies:
-        allotment_companies = [
-            {
-                "id": ipo.registrar_company_id or str(ipo.id),
-                "name": ipo.name,
-                "registrar": ipo.registrar_slug or "mufg",
-                "registrar_name": "MUFG Intime" if (ipo.registrar_slug == "mufg") else ipo.registrar_slug.upper()
-            }
-            for ipo in IPO.objects.filter(is_active=True).order_by('-id')
-        ]
 
     # Fetch latest active or most recently added IPO for dynamic header & SEO
     today = timezone.localdate()
@@ -1990,12 +1994,13 @@ def ipo_companies_api(request):
 
 def sync_ipos_api(request):
     """
-    API endpoint to trigger on-demand sync of IPOs from registrars.
+    API endpoint to trigger on-demand sync of IPOs from registrars & Chittorgarh.
     """
     try:
-        from django.core.management import call_command
-        call_command('sync_ipos')
-        return JsonResponse({'status': 'success', 'message': 'IPO synchronization completed successfully.'})
+        import threading
+        from core.ipo_sync import auto_sync_foliux_ipos
+        threading.Thread(target=auto_sync_foliux_ipos, daemon=True).start()
+        return JsonResponse({'status': 'success', 'message': 'IPO synchronization started in background.'})
     except Exception as e:
         logger.error(f"Error in sync_ipos_api: {e}", exc_info=True)
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)

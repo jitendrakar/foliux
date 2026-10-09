@@ -14,7 +14,6 @@ REMOTE_CONFIG = {
     'host': '158.220.101.59',
     'database': 'FOLIUX',
     'port': 3306,
-    'ssl_disabled': True
 }
 
 # Local Configuration (from .env)

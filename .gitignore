@@ -171,6 +171,9 @@ db_backup.json
 
 # Cache
 django_cache/
+cache/
+desktop.ini
+**/desktop.ini
 
 # Node.js
 node_modules/

@@ -638,21 +638,21 @@ class Command(BaseCommand):
                         }
                     )
 
-                # Seed Daily Historical Prices for the last 300 days (for Candlestick & Volume Chart)
+                # Seed Daily Historical Prices for the last 5 years / 1825 days (for Candlestick & Volume Chart)
                 if not company.historical_prices.exists():
                     base_price = float(company.current_price)
-                    current_date = datetime.now() - timedelta(days=300)
-                    close_price = base_price * 0.85
+                    current_date = datetime.now() - timedelta(days=1825)
+                    close_price = base_price * 0.50
 
                     historical_price_list = []
-                    for day in range(300):
+                    for day in range(1825):
                         current_date += timedelta(days=1)
                         if current_date.weekday() in (5, 6):
                             continue
 
                         open_p = close_price
                         change = open_p * rnd.uniform(-0.018, 0.02)
-                        close_p = open_p + change
+                        close_p = max(1.0, open_p + change)
 
                         high_p = max(open_p, close_p) * rnd.uniform(1.001, 1.015)
                         low_p = min(open_p, close_p) * rnd.uniform(0.985, 0.999)

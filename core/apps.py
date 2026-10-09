@@ -32,6 +32,20 @@ class CoreConfig(AppConfig):
             except Exception as e:
                 print(f"Error running daily summary: {e}")
 
+        def run_ipo_sync():
+            try:
+                from .ipo_sync import auto_sync_foliux_ipos
+                from .registrars import registrar_registry
+                from django.core.cache import cache
+                print("Running 10:00 AM IST IPO Auto-Sync from Chittorgarh & Registrars...")
+                stats = auto_sync_foliux_ipos()
+                comps = registrar_registry.get_all_active_ipos()
+                if comps:
+                    cache.set("ipo_registrar_companies_cache", comps, 86400)
+                print(f"10:00 AM IST IPO Auto-Sync completed: {stats}")
+            except Exception as e:
+                print(f"Error running 10:00 AM IST IPO sync: {e}")
+
         # Helper to avoid heavy imports at startup
         def scheduled_sync():
             from .utils import perform_sync
@@ -82,11 +96,19 @@ class CoreConfig(AppConfig):
                 misfire_grace_time=3600  # Fire up to 1 hour late if process was restarting
             )
 
-            # 10:00 AM IST — Daily Portfolio Summary
+            # 10:00 AM IST — Daily Portfolio Summary & IPO Auto-Sync
             scheduler.add_job(
                 run_daily_summary,
                 CronTrigger(hour=10, minute=0, timezone='Asia/Kolkata'),
                 id='daily_portfolio_summary_job',
+                replace_existing=True,
+                misfire_grace_time=3600
+            )
+
+            scheduler.add_job(
+                run_ipo_sync,
+                CronTrigger(hour=10, minute=0, timezone='Asia/Kolkata'),
+                id='daily_ipo_sync_10am_job',
                 replace_existing=True,
                 misfire_grace_time=3600
             )
