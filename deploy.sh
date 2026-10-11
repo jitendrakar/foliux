@@ -52,14 +52,12 @@ git remote set-url origin $REPO_URL
 git checkout main
 
 # Pull latest changes
-echo -e "${YELLOW}Pulling latest changes from GitHub...${NC}"
-PULL_OUTPUT=$(git pull origin main 2>&1)
+echo -e "${YELLOW}Fetching latest changes from GitHub...${NC}"
+git fetch origin main
+check_status "Git fetch"
 
-if [[ "$PULL_OUTPUT" == *"Authentication failed"* ]]; then
-    echo -e "${RED}AUTH ERROR: Use your Personal Access Token as the password.${NC}"
-    exit 1
-fi
-check_status "Git pull" "$PULL_OUTPUT"
+git reset --hard origin/main
+check_status "Git reset to origin/main"
 NEW_VERSION=$(git rev-parse HEAD)
 
 # --- SAFETY CHECK ---
