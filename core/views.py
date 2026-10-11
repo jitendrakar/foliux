@@ -5408,6 +5408,82 @@ def verify_reset_otp(request):
     
     return render(request, 'core/verify_reset_otp.html')
 
+@login_required
+def request_delete_account_otp(request):
+    user = request.user
+    if not user.email:
+        messages.error(request, "No email address found for your account. Please update your profile first.")
+        return redirect('edit_profile')
+    
+    # Generate 6-digit OTP
+    code = str(random.randint(100000, 999999))
+    
+    # Save OTP
+    OTP.objects.filter(user=user).delete()
+    OTP.objects.create(user=user, code=code)
+    
+    # Send Email
+    try:
+        subject = "Account Deletion Verification Code - FOLIUX"
+        message = (
+            f"You have requested to permanently delete your FOLIUX account ({user.email}).\n\n"
+            f"Your 6-digit verification code is: {code}\n\n"
+            f"This code is valid for 20 minutes. If you did not request to delete your account, "
+            f"please ignore this email and secure your account."
+        )
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email])
+        
+        request.session['deleting_user_id'] = user.id
+        messages.success(request, f"A 6-digit verification code has been sent to {user.email}")
+        return redirect('verify_delete_account_otp')
+    except Exception as e:
+        logger.error(f"Error sending delete account OTP: {e}")
+        messages.error(request, "Failed to send verification code. Please try again later.")
+        return redirect('edit_profile')
+
+@login_required
+def verify_delete_account_otp(request):
+    user_id = request.session.get('deleting_user_id')
+    if not user_id or user_id != request.user.id:
+        return redirect('edit_profile')
+        
+    if request.method == 'POST':
+        otp_code = request.POST.get('otp', '').strip()
+        otp_obj = OTP.objects.filter(user=request.user).order_by('-created_at').first()
+        
+        if otp_obj and str(otp_obj.code) == str(otp_code) and otp_obj.is_valid():
+            user = request.user
+            user_email = user.email
+            username = user.username
+            
+            # Clean up user-related records across all models
+            reset_account_data(user)
+            
+            # Delete social accounts if allauth is present
+            try:
+                from allauth.socialaccount.models import SocialAccount
+                SocialAccount.objects.filter(user=user).delete()
+            except Exception:
+                pass
+
+            # Logout user before deletion
+            from django.contrib.auth import logout
+            logout(request)
+            
+            # Flush session
+            request.session.flush()
+            
+            # Permanently delete user object
+            User.objects.filter(id=user_id).delete()
+            
+            logger.info(f"User account {username} ({user_email}) permanently deleted.")
+            messages.success(request, "Your Foliux account and all associated data have been permanently deleted.")
+            return redirect('login')
+        else:
+            messages.error(request, "Invalid or expired verification code.")
+    
+    return render(request, 'core/verify_delete_account_otp.html')
+
 def reset_account_data(user):
     """Helper to delete all user-related data and reset profile to defaults."""
     from .models import (

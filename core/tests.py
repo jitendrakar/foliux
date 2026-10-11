@@ -504,6 +504,37 @@ class AccountResetTestCase(TestCase):
         self.assertEqual(SavedCalculation.objects.filter(user=user).count(), 0)
         self.assertEqual(CashFlowEntry.objects.filter(user=user).count(), 0)
 
+class AccountDeletionTestCase(TestCase):
+    def test_request_and_verify_delete_account_otp(self):
+        from core.models import OTP, Profile
+        from django.urls import reverse
+        
+        user = User.objects.create_user(username='deluser', email='deluser@example.com', password='password123')
+        Profile.objects.get_or_create(user=user)
+        
+        self.client.login(username='deluser', password='password123')
+        
+        # 1. Request deletion OTP
+        res_req = self.client.get(reverse('request_delete_account_otp'))
+        self.assertRedirects(res_req, reverse('verify_delete_account_otp'))
+        
+        # Check OTP created
+        otp_obj = OTP.objects.filter(user=user).last()
+        self.assertIsNotNone(otp_obj)
+        otp_code = otp_obj.code
+        
+        # 2. Verify with wrong OTP
+        res_fail = self.client.post(reverse('verify_delete_account_otp'), {'otp': '000000'})
+        self.assertEqual(res_fail.status_code, 200)
+        self.assertTrue(User.objects.filter(id=user.id).exists())
+        
+        # 3. Verify with correct OTP
+        res_success = self.client.post(reverse('verify_delete_account_otp'), {'otp': otp_code})
+        self.assertRedirects(res_success, reverse('login'))
+        
+        # Check user deleted
+        self.assertFalse(User.objects.filter(id=user.id).exists())
+
 
 class RamjaaTestCase(TestCase):
     def test_ramjaa_index(self):
