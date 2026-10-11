@@ -15,6 +15,7 @@ FOLIUX is a rule-based investment tracking system designed for disciplined wealt
 - **Family Portfolio**: Consolidated view of linked family accounts.
 - **Real-time Market Data**: Live tracking of Indian and Global indices.
 - **Strategy Management**: Portfolio rebalancing and strategy sheets.
+- **Security & Privacy**: OTP-based verification for account reset and permanent account deletion.
 
 ## Tech Stack
 - **Backend**: Django (Python)
