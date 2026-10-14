@@ -11,6 +11,8 @@ FOLIUX is a rule-based investment tracking system designed for disciplined wealt
 
 ## Features
 - **Automated Signals**: Rule-based BUY/SELL/HOLD recommendations.
+- **AI Voice & Audio Investment Adviser**: Voice-enabled intelligent advisory on the landing page with Speech-to-Text (STT), Text-to-Speech (TTS), and disciplined portfolio allocation logic.
+- **Live IPO Tracker & Auto-Sync**: Automated scraping and enrichment of active/upcoming IPOs from Chittorgarh (subscription rate multipliers) and Investorgain (live Grey Market Premium / GMP), integrated with registrar allotment portals.
 - **Multi-Asset Support**: Stocks, ETFs, Mutual Funds, NPS, and Coins.
 - **Family Portfolio**: Consolidated view of linked family accounts.
 - **Real-time Market Data**: Live tracking of Indian and Global indices.
@@ -20,7 +22,7 @@ FOLIUX is a rule-based investment tracking system designed for disciplined wealt
 ## Tech Stack
 - **Backend**: Django (Python)
 - **Database**: MySQL / SQLite
-- **Frontend**: Bootstrap 5, Chart.js, FontAwesome
+- **Frontend**: Bootstrap 5, Chart.js, FontAwesome, Web Speech API
 - **Deployment**: IIS / Linux (sh scripts included)
 
 ## Deployment

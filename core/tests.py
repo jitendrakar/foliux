@@ -318,10 +318,10 @@ class DrDemoTestCase(TestCase):
         self.assertTrue(response.url.endswith('/dr/'))
 
     def test_dr_static_file(self):
-        # Accessing /dr/clinic1.webp should return 200 OK and be an image
-        response = self.client.get('/dr/clinic1.webp')
+        # Accessing /dr/clinic1.png should return 200 OK and be an image
+        response = self.client.get('/dr/clinic1.png')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.headers.get('Content-Type'), 'image/webp')
+        self.assertEqual(response.headers.get('Content-Type'), 'image/png')
 
     def test_dr_directory_traversal_protection(self):
         # Attempting directory traversal should return 404 Not Found
