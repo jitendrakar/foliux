@@ -5332,6 +5332,56 @@ def chatbot_response(request):
             
     return JsonResponse({'error': 'POST required'}, status=405)
 
+@csrf_exempt
+def audio_adviser_api(request):
+    """
+    API endpoint for the FOLIUX Front Page AI Voice & Audio Investment Adviser.
+    Accepts natural language voice or text queries and returns structured advice
+    with both rich text display data and clean speech synthesis text.
+    """
+    if request.method == 'POST':
+        try:
+            import json as _json
+            data = {}
+            if request.body:
+                try:
+                    data = _json.loads(request.body)
+                except Exception:
+                    data = request.POST.dict()
+            else:
+                data = request.POST.dict()
+            
+            user_query = data.get('query', '').strip()
+            if not user_query:
+                return JsonResponse({'status': 'error', 'message': 'Query cannot be empty'}, status=400)
+            
+            # Fetch live Nifty 50 market context if available
+            market_context = {}
+            try:
+                nifty = MarketTicker.objects.filter(name__icontains='NIFTY 50').first()
+                if nifty:
+                    sign = "+" if nifty.change >= 0 else ""
+                    market_context['nifty_price'] = f"{nifty.price:,.2f}"
+                    market_context['nifty_change'] = f"{sign}{nifty.change:,.2f} ({sign}{nifty.percent_change:,.2f}%)"
+            except Exception as e:
+                logger.warning(f"Audio adviser failed to fetch market context: {e}")
+            
+            from core.audio_adviser import generate_investment_advice
+            advice = generate_investment_advice(user_query, market_context=market_context)
+            return JsonResponse(advice)
+        except Exception as e:
+            logger.exception("Audio adviser API error:")
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    elif request.method == 'GET':
+        query = request.GET.get('q', '').strip()
+        if not query:
+            return JsonResponse({'status': 'error', 'message': 'Missing query parameter "q"'}, status=400)
+        from core.audio_adviser import generate_investment_advice
+        advice = generate_investment_advice(query)
+        return JsonResponse(advice)
+    
+    return JsonResponse({'status': 'error', 'message': 'GET or POST required'}, status=405)
+
 @login_required
 @csrf_exempt
 def toggle_hidden_signal(request):

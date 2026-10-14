@@ -1232,6 +1232,636 @@
     html[data-theme="dark"] .btn-period:hover {
         background: rgba(255, 255, 255, 0.05);
     }
+
+    /* ========================================================= */
+    /* ===== FOLIUX AI VOICE & AUDIO INVESTMENT ADVISER CSS ===== */
+    /* ========================================================= */
+    .audio-adviser-card {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(240, 247, 255, 0.94) 100%);
+        border: 1px solid rgba(37, 99, 235, 0.16);
+        border-radius: 28px;
+        padding: 36px;
+        box-shadow: 0 16px 48px rgba(0, 61, 124, 0.08);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .adviser-glow-1 {
+        position: absolute;
+        top: -100px;
+        right: -80px;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(37, 99, 235, 0.14) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .adviser-glow-2 {
+        position: absolute;
+        bottom: -100px;
+        left: -80px;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .adviser-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(37, 99, 235, 0.08);
+        color: #003d7c;
+        font-size: 0.76rem;
+        font-weight: 800;
+        padding: 6px 14px;
+        border-radius: 999px;
+        letter-spacing: 0.06em;
+    }
+
+    .adviser-pulse-dot {
+        width: 8px;
+        height: 8px;
+        background: #10b981;
+        border-radius: 50%;
+        display: inline-block;
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        animation: adviserPulseDot 1.8s infinite;
+    }
+
+    @keyframes adviserPulseDot {
+        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+        70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    .adviser-title {
+        font-weight: 900;
+        font-size: 2.1rem;
+        letter-spacing: -0.03em;
+        color: #0f172a;
+    }
+
+    .adviser-subtitle {
+        color: #64748b;
+        font-size: 1.02rem;
+        line-height: 1.55;
+    }
+
+    .adviser-stats-chip {
+        background: #ffffff;
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        border-radius: 18px;
+        padding: 12px 20px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+        display: inline-block;
+    }
+
+    .stat-number {
+        font-weight: 800;
+        font-size: 1rem;
+        color: #0f172a;
+        line-height: 1.2;
+    }
+
+    .stat-label {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .stat-divider {
+        width: 1px;
+        height: 32px;
+        background: #e2e8f0;
+    }
+
+    /* Input Box */
+    .adviser-input-wrapper {
+        position: relative;
+    }
+
+    .adviser-input-box {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: #ffffff;
+        border: 2px solid rgba(37, 99, 235, 0.22);
+        border-radius: 60px;
+        padding: 8px 10px 8px 10px;
+        box-shadow: 0 8px 28px rgba(37, 99, 235, 0.08);
+        transition: all 0.25s ease;
+    }
+
+    .adviser-input-box:focus-within {
+        border-color: #2563eb;
+        box-shadow: 0 10px 32px rgba(37, 99, 235, 0.18);
+    }
+
+    .btn-adviser-mic {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #003d7c, #2563eb);
+        color: white;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        cursor: pointer;
+        position: relative;
+        flex-shrink: 0;
+        transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+    }
+
+    .btn-adviser-mic:hover {
+        transform: scale(1.08);
+        box-shadow: 0 6px 18px rgba(37, 99, 235, 0.4);
+    }
+
+    .btn-adviser-mic.recording {
+        background: linear-gradient(135deg, #dc2626, #ef4444);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+        animation: micActivePulse 1.4s infinite;
+    }
+
+    @keyframes micActivePulse {
+        0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+        70% { transform: scale(1.06); box-shadow: 0 0 0 14px rgba(239, 68, 68, 0); }
+        100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
+    .adviser-text-group {
+        display: flex;
+        align-items: center;
+        position: relative;
+    }
+
+    .adviser-text-input {
+        border: none;
+        background: transparent;
+        width: 100%;
+        font-size: 1.05rem;
+        font-weight: 500;
+        color: #1e293b;
+        outline: none;
+        padding: 8px 8px;
+    }
+
+    .adviser-text-input::placeholder {
+        color: #94a3b8;
+        font-weight: 400;
+    }
+
+    .btn-clear-query {
+        background: transparent;
+        border: none;
+        color: #94a3b8;
+        font-size: 0.95rem;
+        padding: 4px 10px;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    .btn-clear-query:hover {
+        color: #ef4444;
+    }
+
+    .btn-adviser-submit {
+        background: linear-gradient(135deg, #003d7c, #2563eb);
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 12px 24px;
+        font-weight: 700;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: transform 0.2s ease, box-shadow 0.2s;
+    }
+
+    .btn-adviser-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
+    }
+
+    /* Live Voice Status */
+    .voice-status-bar {
+        background: rgba(239, 68, 68, 0.08);
+        border: 1px solid rgba(239, 68, 68, 0.25);
+        border-radius: 14px;
+        padding: 10px 18px;
+        margin-top: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        animation: fadeInDown 0.3s ease;
+    }
+
+    .voice-live-waves {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        height: 20px;
+    }
+
+    .voice-live-waves span {
+        width: 3px;
+        background: #ef4444;
+        border-radius: 3px;
+        animation: voiceWave 1s infinite ease-in-out;
+    }
+
+    .voice-live-waves span:nth-child(1) { height: 6px; animation-delay: 0.1s; }
+    .voice-live-waves span:nth-child(2) { height: 16px; animation-delay: 0.2s; }
+    .voice-live-waves span:nth-child(3) { height: 22px; animation-delay: 0.3s; }
+    .voice-live-waves span:nth-child(4) { height: 14px; animation-delay: 0.4s; }
+    .voice-live-waves span:nth-child(5) { height: 8px; animation-delay: 0.5s; }
+
+    @keyframes voiceWave {
+        0%, 100% { transform: scaleY(0.4); }
+        50% { transform: scaleY(1.4); }
+    }
+
+    .voice-status-text {
+        font-weight: 700;
+        font-size: 0.88rem;
+        color: #b91c1c;
+    }
+
+    /* Presets Chips */
+    .adviser-presets {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        margin-top: 14px;
+    }
+
+    .preset-title {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #475569;
+    }
+
+    .preset-chips-scroll {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .adviser-chip {
+        background: #ffffff;
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        color: #334155;
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        transition: all 0.2s ease;
+    }
+
+    .adviser-chip:hover {
+        background: rgba(37, 99, 235, 0.08);
+        border-color: #2563eb;
+        color: #003d7c;
+        transform: translateY(-1px);
+    }
+
+    /* Audio Player Bar */
+    .adviser-audio-player {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 18px;
+        padding: 16px 22px;
+        color: #ffffff;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .audio-equalizer-wrap {
+        display: flex;
+        align-items: flex-end;
+        gap: 3px;
+        height: 24px;
+    }
+
+    .eq-bar {
+        width: 4px;
+        height: 6px;
+        background: #38bdf8;
+        border-radius: 2px;
+        transition: height 0.2s ease;
+    }
+
+    .audio-equalizer-wrap.playing .eq-bar {
+        animation: eqBounce 0.8s infinite ease-in-out;
+    }
+
+    .audio-equalizer-wrap.playing .eq-bar:nth-child(1) { animation-delay: 0.1s; }
+    .audio-equalizer-wrap.playing .eq-bar:nth-child(2) { animation-delay: 0.3s; }
+    .audio-equalizer-wrap.playing .eq-bar:nth-child(3) { animation-delay: 0.2s; }
+    .audio-equalizer-wrap.playing .eq-bar:nth-child(4) { animation-delay: 0.4s; }
+
+    @keyframes eqBounce {
+        0%, 100% { height: 4px; }
+        50% { height: 22px; }
+    }
+
+    .audio-status-label {
+        font-weight: 800;
+        font-size: 0.95rem;
+        letter-spacing: -0.01em;
+    }
+
+    .audio-status-sub {
+        font-size: 0.72rem;
+        color: #94a3b8;
+    }
+
+    .btn-audio-ctrl {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        color: #ffffff;
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-audio-ctrl:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+    }
+
+    .btn-audio-ctrl.active {
+        background: #2563eb;
+        border-color: #2563eb;
+    }
+
+    /* Strategy Card */
+    .strategy-summary-card {
+        background: #ffffff;
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        border-radius: 20px;
+        padding: 24px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+    }
+
+    .strategy-title {
+        font-weight: 900;
+        font-size: 1.45rem;
+        letter-spacing: -0.02em;
+        color: #0f172a;
+        margin-bottom: 8px;
+    }
+
+    .strategy-text {
+        font-size: 1.05rem;
+        color: #334155;
+        line-height: 1.6;
+    }
+
+    .section-subheading {
+        font-weight: 800;
+        font-size: 1.08rem;
+        letter-spacing: -0.01em;
+        color: #0f172a;
+    }
+
+    /* Allocation Progress Bar */
+    .allocation-stacked-bar {
+        display: flex;
+        height: 16px;
+        border-radius: 999px;
+        overflow: hidden;
+        background: #e2e8f0;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    .stacked-segment {
+        height: 100%;
+        transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        position: relative;
+    }
+
+    /* Allocation Grid Card */
+    .alloc-card {
+        background: #ffffff;
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        border-radius: 18px;
+        padding: 20px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+        transition: transform 0.2s, box-shadow 0.2s;
+        border-top: 4px solid var(--alloc-color, #2563eb);
+    }
+
+    .alloc-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .alloc-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+    }
+
+    .alloc-pct-badge {
+        font-weight: 900;
+        font-size: 0.95rem;
+        padding: 4px 10px;
+        border-radius: 999px;
+        color: white;
+        background: var(--alloc-color, #2563eb);
+    }
+
+    .alloc-amount {
+        font-weight: 800;
+        font-size: 1.25rem;
+        color: #0f172a;
+        margin-bottom: 4px;
+    }
+
+    .alloc-name {
+        font-weight: 700;
+        font-size: 0.92rem;
+        color: #334155;
+        margin-bottom: 8px;
+    }
+
+    .alloc-instruments {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-bottom: 10px;
+    }
+
+    .inst-pill {
+        background: rgba(37, 99, 235, 0.08);
+        color: #003d7c;
+        border-radius: 6px;
+        padding: 2px 8px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .alloc-rationale {
+        font-size: 0.8rem;
+        color: #64748b;
+        line-height: 1.45;
+    }
+
+    /* Execution Step Card */
+    .step-card {
+        background: #ffffff;
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        border-radius: 18px;
+        padding: 20px;
+        height: 100%;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+        display: flex;
+        gap: 14px;
+    }
+
+    .step-number-box {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #003d7c, #2563eb);
+        color: white;
+        font-weight: 900;
+        font-size: 0.95rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .step-title {
+        font-weight: 800;
+        font-size: 0.95rem;
+        color: #0f172a;
+        margin-bottom: 4px;
+    }
+
+    .step-detail {
+        font-size: 0.83rem;
+        color: #64748b;
+        line-height: 1.45;
+        margin-bottom: 0;
+    }
+
+    /* Explore Bar */
+    .adviser-explore-bar {
+        background: #ffffff;
+        border: 1px solid rgba(226, 232, 240, 0.8);
+        border-radius: 16px;
+        padding: 14px 20px;
+    }
+
+    .btn-explore-pill {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        color: #334155;
+        border-radius: 999px;
+        padding: 6px 14px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        text-decoration: none !important;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s;
+    }
+
+    .btn-explore-pill:hover {
+        background: #2563eb;
+        border-color: #2563eb;
+        color: #ffffff;
+        transform: translateY(-1px);
+    }
+
+    .adviser-disclaimer {
+        font-size: 0.74rem;
+        color: #94a3b8;
+        line-height: 1.5;
+        padding: 4px 8px;
+    }
+
+    /* Dark Mode Overrides for Audio Adviser */
+    html[data-theme="dark"] .audio-adviser-card {
+        background: var(--global-dark-card);
+        border-color: var(--global-dark-border);
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+    }
+
+    html[data-theme="dark"] .adviser-title,
+    html[data-theme="dark"] .section-subheading,
+    html[data-theme="dark"] .strategy-title,
+    html[data-theme="dark"] .stat-number,
+    html[data-theme="dark"] .alloc-amount,
+    html[data-theme="dark"] .step-title {
+        color: var(--global-dark-text) !important;
+    }
+
+    html[data-theme="dark"] .adviser-subtitle,
+    html[data-theme="dark"] .strategy-text,
+    html[data-theme="dark"] .alloc-name,
+    html[data-theme="dark"] .alloc-rationale,
+    html[data-theme="dark"] .step-detail,
+    html[data-theme="dark"] .preset-title {
+        color: var(--global-dark-muted) !important;
+    }
+
+    html[data-theme="dark"] .adviser-stats-chip,
+    html[data-theme="dark"] .adviser-input-box,
+    html[data-theme="dark"] .strategy-summary-card,
+    html[data-theme="dark"] .alloc-card,
+    html[data-theme="dark"] .step-card,
+    html[data-theme="dark"] .adviser-explore-bar,
+    html[data-theme="dark"] .adviser-chip,
+    html[data-theme="dark"] .btn-explore-pill {
+        background: var(--global-dark-bg) !important;
+        border-color: var(--global-dark-border) !important;
+        color: var(--global-dark-text) !important;
+    }
+
+    html[data-theme="dark"] .adviser-text-input {
+        color: var(--global-dark-text) !important;
+    }
+
+    html[data-theme="dark"] .inst-pill {
+        background: rgba(37, 99, 235, 0.2) !important;
+        color: #93c5fd !important;
+    }
+
+    html[data-theme="dark"] .adviser-badge {
+        background: rgba(37, 99, 235, 0.15);
+        color: #93c5fd;
+    }
+
+    html[data-theme="dark"] .stat-divider {
+        background: var(--global-dark-border);
+    }
 </style>
 {% endblock %}
 
@@ -1386,6 +2016,229 @@
 </div>
 
 <div class="container-fluid px-4 landing-grid">
+
+    <!-- ========================================== -->
+    <!-- FOLIUX AI VOICE & AUDIO INVESTMENT ADVISER -->
+    <!-- ========================================== -->
+    <div class="row mb-5 animate-in" id="audioAdviserSection">
+        <div class="col-12">
+            <div class="audio-adviser-card">
+                <!-- Glowing decorative backdrop accents -->
+                <div class="adviser-glow-1"></div>
+                <div class="adviser-glow-2"></div>
+
+                <div class="row align-items-center mb-4 position-relative" style="z-index: 2;">
+                    <div class="col-lg-8">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="adviser-badge">
+                                <span class="adviser-pulse-dot"></span>
+                                <i class="fas fa-microphone-lines me-1"></i> FOLIUX AI AUDIO ADVISER
+                            </span>
+                            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 small fw-bold">Voice & Speech Enabled</span>
+                        </div>
+                        <h2 class="adviser-title mb-2">
+                            Where & How Should You Invest?
+                        </h2>
+                        <p class="adviser-subtitle mb-0">
+                            Speak naturally or type your budget, horizon, or goals. Our algorithmic advisor calculates your asset allocation and execution rules — spoken back in crystal-clear audio with detailed text steps.
+                        </p>
+                    </div>
+                    <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                        <div class="adviser-stats-chip">
+                            <div class="d-flex align-items-center justify-content-lg-end gap-3">
+                                <div class="text-start">
+                                    <div class="stat-number">4-Tier</div>
+                                    <div class="stat-label">Asset Allocation</div>
+                                </div>
+                                <div class="stat-divider"></div>
+                                <div class="text-start">
+                                    <div class="stat-number">Rule-Based</div>
+                                    <div class="stat-label">Pyramiding & Harvesting</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Interface: Mic + Search Bar -->
+                <div class="adviser-input-wrapper mb-3 position-relative" style="z-index: 2;">
+                    <div class="adviser-input-box">
+                        <!-- Mic Trigger Button -->
+                        <button type="button" class="btn-adviser-mic" id="btnAdviserMic" title="Click to speak your question" aria-label="Voice input">
+                            <i class="fas fa-microphone" id="micIcon"></i>
+                            <span class="mic-wave-ring"></span>
+                        </button>
+
+                        <div class="adviser-text-group flex-grow-1">
+                            <input type="text" id="adviserQueryInput" class="adviser-text-input"
+                                placeholder="Speak or type: 'Where should I invest ₹10,000 monthly for retirement?'..."
+                                aria-label="Investment question">
+                            <button type="button" class="btn-clear-query d-none" id="btnClearAdviserQuery" aria-label="Clear input">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+
+                        <button type="button" class="btn-adviser-submit" id="btnAdviserSubmit">
+                            <span class="d-none d-sm-inline me-1">Ask Adviser</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+
+                    <!-- Live Voice Status Indicator -->
+                    <div class="voice-status-bar d-none" id="voiceStatusBar">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="voice-live-waves">
+                                <span></span><span></span><span></span><span></span><span></span>
+                            </div>
+                            <span class="voice-status-text" id="voiceStatusText">Listening... Please speak your investment query now</span>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-0" id="btnStopListening">
+                            <i class="fas fa-stop me-1"></i>Stop
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quick Prompt Chips -->
+                <div class="adviser-presets mb-2 position-relative" style="z-index: 2;">
+                    <span class="preset-title"><i class="fas fa-wand-magic-sparkles text-warning me-1"></i> Quick Voice Questions:</span>
+                    <div class="preset-chips-scroll">
+                        <button type="button" class="adviser-chip" data-prompt="Where should I invest 10000 monthly for long term?">
+                            <i class="fas fa-microphone-alt me-1 text-primary"></i> Invest ₹10,000 / month
+                        </button>
+                        <button type="button" class="adviser-chip" data-prompt="How should I invest a lump sum of 1 Lakh rupees?">
+                            <i class="fas fa-microphone-alt me-1 text-primary"></i> ₹1 Lakh Lump Sum
+                        </button>
+                        <button type="button" class="adviser-chip" data-prompt="I am a beginner, where and how should I start investing?">
+                            <i class="fas fa-microphone-alt me-1 text-primary"></i> Beginner Strategy
+                        </button>
+                        <button type="button" class="adviser-chip" data-prompt="Where to invest for retirement with low risk and NPS?">
+                            <i class="fas fa-microphone-alt me-1 text-primary"></i> Retirement & NPS
+                        </button>
+                        <button type="button" class="adviser-chip" data-prompt="How to invest safely for 1 year with capital protection?">
+                            <i class="fas fa-microphone-alt me-1 text-primary"></i> Safe Capital (1 Year)
+                        </button>
+                        <button type="button" class="adviser-chip" data-prompt="Explain Foliux 22% profit rule and pyramiding">
+                            <i class="fas fa-microphone-alt me-1 text-primary"></i> 22% Harvest Rule
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Skeleton Loading State -->
+                <div class="adviser-loader d-none position-relative" id="adviserLoader" style="z-index: 2;">
+                    <div class="text-center py-5">
+                        <div class="spinner-grow text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+                        <h5 class="fw-bold text-dark mb-1">Synthesizing Investment Blueprint...</h5>
+                        <p class="text-muted small mb-0">Analyzing asset classes, market data, and preparing audio narration...</p>
+                    </div>
+                </div>
+
+                <!-- Audio Adviser Output Container (Populated dynamically) -->
+                <div class="adviser-result-card d-none position-relative mt-4" id="adviserResult" style="z-index: 2;">
+                    <!-- Audio Player Toolbar -->
+                    <div class="adviser-audio-player mb-4">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="audio-equalizer-wrap" id="audioEqualizer">
+                                    <span class="eq-bar"></span>
+                                    <span class="eq-bar"></span>
+                                    <span class="eq-bar"></span>
+                                    <span class="eq-bar"></span>
+                                </div>
+                                <div>
+                                    <div class="audio-status-label" id="audioStatusLabel">Audio Adviser Ready</div>
+                                    <div class="audio-status-sub" id="audioStatusSub">Voice narration generated by FOLIUX Speech Engine</div>
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <button type="button" class="btn btn-audio-ctrl active" id="btnVoicePlayPause" title="Play or Pause Voice">
+                                    <i class="fas fa-pause me-1" id="voicePlayIcon"></i> <span id="voicePlayText">Pause</span>
+                                </button>
+                                <button type="button" class="btn btn-audio-ctrl" id="btnVoiceReplay" title="Replay Audio From Beginning">
+                                    <i class="fas fa-rotate-right me-1"></i> Replay
+                                </button>
+                                <button type="button" class="btn btn-audio-ctrl text-danger" id="btnVoiceStop" title="Stop Audio">
+                                    <i class="fas fa-stop me-1"></i> Stop
+                                </button>
+                                <div class="dropdown">
+                                    <button class="btn btn-audio-ctrl dropdown-toggle" type="button" id="voiceSpeedDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-gauge-high me-1"></i> <span id="voiceSpeedText">1x</span>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="voiceSpeedDropdown">
+                                        <li><a class="dropdown-item voice-speed-opt" href="#" data-speed="0.85">0.85x (Slower)</a></li>
+                                        <li><a class="dropdown-item voice-speed-opt active" href="#" data-speed="1.0">1.0x (Normal)</a></li>
+                                        <li><a class="dropdown-item voice-speed-opt" href="#" data-speed="1.2">1.2x (Fast)</a></li>
+                                        <li><a class="dropdown-item voice-speed-opt" href="#" data-speed="1.35">1.35x (Brisk)</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Strategy Title & Summary -->
+                    <div class="strategy-summary-card mb-4">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-success rounded-pill px-3 py-1 fw-bold">
+                                <i class="fas fa-check-circle me-1"></i> Recommended Plan
+                            </span>
+                            <span class="text-muted small" id="adviserQueryEcho"></span>
+                        </div>
+                        <h3 class="strategy-title" id="adviserResultTitle">Strategy Blueprint</h3>
+                        <p class="strategy-text lead mb-0" id="adviserResultSummary"></p>
+                    </div>
+
+                    <!-- Where to Invest: Asset Allocation Grid -->
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h4 class="section-subheading mb-0">
+                                <i class="fas fa-pie-chart text-primary me-2"></i>WHERE TO INVEST: Asset Allocation
+                            </h4>
+                            <span class="badge bg-light text-dark border px-3 py-1 rounded-pill small fw-bold">Multi-Asset Architecture</span>
+                        </div>
+
+                        <!-- Progress Bar Visualizer -->
+                        <div class="allocation-stacked-bar mb-4" id="allocationProgressBar">
+                            <!-- Injected dynamically -->
+                        </div>
+
+                        <!-- Cards Grid -->
+                        <div class="row g-3" id="allocationCardsGrid">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- How to Invest: Execution Steps -->
+                    <div class="mb-4">
+                        <h4 class="section-subheading mb-3">
+                            <i class="fas fa-list-check text-success me-2"></i>HOW TO INVEST: Disciplined Execution Rules
+                        </h4>
+                        <div class="row g-3" id="executionStepsGrid">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Quick Exploration Links -->
+                    <div class="adviser-explore-bar mb-3">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                            <div class="fw-bold text-dark small">
+                                <i class="fas fa-compass text-primary me-1"></i> Deep-Dive with FOLIUX Tools:
+                            </div>
+                            <div class="d-flex flex-wrap gap-2" id="adviserExploreLinks">
+                                <!-- Links injected dynamically -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Disclaimer -->
+                    <div class="adviser-disclaimer">
+                        <i class="fas fa-circle-info text-warning me-1"></i>
+                        <span id="adviserDisclaimerText">
+                            Educational & rule-based decision support. Past performance does not guarantee future results. Please evaluate your personal risk tolerance.
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Market Hub Section -->
     <div class="row mb-5 market-hub-section">
@@ -2444,6 +3297,467 @@
         }
 
         initReviewMarquee();
+
+        // ========================================================
+        // ===== FOLIUX AI VOICE & AUDIO INVESTMENT ADVISER JS =====
+        // ========================================================
+        (function initAudioAdviser() {
+            const micBtn = document.getElementById('btnAdviserMic');
+            const micIcon = document.getElementById('micIcon');
+            const queryInput = document.getElementById('adviserQueryInput');
+            const clearBtn = document.getElementById('btnClearAdviserQuery');
+            const submitBtn = document.getElementById('btnAdviserSubmit');
+            const voiceStatusBar = document.getElementById('voiceStatusBar');
+            const voiceStatusText = document.getElementById('voiceStatusText');
+            const stopListeningBtn = document.getElementById('btnStopListening');
+            const loader = document.getElementById('adviserLoader');
+            const resultCard = document.getElementById('adviserResult');
+
+            // Audio Player Controls
+            const btnVoicePlayPause = document.getElementById('btnVoicePlayPause');
+            const voicePlayIcon = document.getElementById('voicePlayIcon');
+            const voicePlayText = document.getElementById('voicePlayText');
+            const btnVoiceReplay = document.getElementById('btnVoiceReplay');
+            const btnVoiceStop = document.getElementById('btnVoiceStop');
+            const audioEqualizer = document.getElementById('audioEqualizer');
+            const audioStatusLabel = document.getElementById('audioStatusLabel');
+            const audioStatusSub = document.getElementById('audioStatusSub');
+            const voiceSpeedText = document.getElementById('voiceSpeedText');
+
+            let currentSpeechText = "";
+            let currentUtterance = null;
+            let currentSpeechRate = 1.0;
+            let isSpeakingActive = false;
+            let recognition = null;
+            let isRecognizing = false;
+
+            // 1. Initialize Speech Recognition (Web Speech API)
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SpeechRecognition) {
+                recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.interimResults = true;
+                recognition.lang = 'en-IN'; // Default to Indian English, falls back gracefully
+
+                recognition.onstart = function () {
+                    isRecognizing = true;
+                    if (micBtn) micBtn.classList.add('recording');
+                    if (voiceStatusBar) voiceStatusBar.classList.remove('d-none');
+                    if (voiceStatusText) voiceStatusText.textContent = "Listening... Speak your investment question now";
+                };
+
+                recognition.onresult = function (event) {
+                    let interimTranscript = '';
+                    let finalTranscript = '';
+                    for (let i = event.resultIndex; i < event.results.length; ++i) {
+                        if (event.results[i].isFinal) {
+                            finalTranscript += event.results[i][0].transcript;
+                        } else {
+                            interimTranscript += event.results[i][0].transcript;
+                        }
+                    }
+
+                    const spokenText = finalTranscript || interimTranscript;
+                    if (queryInput && spokenText) {
+                        queryInput.value = spokenText;
+                        toggleClearButton();
+                    }
+
+                    if (finalTranscript.trim().length > 0) {
+                        // User finished speaking a full sentence
+                        if (voiceStatusText) voiceStatusText.textContent = `Captured: "${finalTranscript.trim()}"`;
+                        setTimeout(() => {
+                            stopRecognition();
+                            executeAdviserQuery(finalTranscript.trim());
+                        }, 500);
+                    }
+                };
+
+                recognition.onerror = function (event) {
+                    console.warn("Speech recognition error:", event.error);
+                    stopRecognition();
+                    if (voiceStatusBar) {
+                        voiceStatusBar.classList.remove('d-none');
+                        if (event.error === 'not-allowed') {
+                            voiceStatusText.textContent = "Microphone access denied. Please type your question in the box.";
+                        } else if (event.error === 'no-speech') {
+                            voiceStatusText.textContent = "No voice heard. Click the mic again or type your question.";
+                        } else {
+                            voiceStatusText.textContent = `Microphone notice: ${event.error}. You can also type below.`;
+                        }
+                        setTimeout(() => voiceStatusBar.classList.add('d-none'), 4000);
+                    }
+                };
+
+                recognition.onend = function () {
+                    stopRecognition();
+                };
+            } else {
+                console.info("SpeechRecognition API not natively available in this browser.");
+            }
+
+            function startRecognition() {
+                if (!recognition) {
+                    alert("Voice recording is not supported in this browser. Please type your query in the box!");
+                    if (queryInput) queryInput.focus();
+                    return;
+                }
+                // Stop any audio playing
+                stopSpeech();
+                try {
+                    recognition.start();
+                } catch (e) {
+                    console.warn("Error starting speech recognition:", e);
+                }
+            }
+
+            function stopRecognition() {
+                isRecognizing = false;
+                if (micBtn) micBtn.classList.remove('recording');
+                if (voiceStatusBar) voiceStatusBar.classList.add('d-none');
+                if (recognition) {
+                    try { recognition.stop(); } catch (e) { }
+                }
+            }
+
+            if (micBtn) {
+                micBtn.addEventListener('click', function () {
+                    if (isRecognizing) {
+                        stopRecognition();
+                    } else {
+                        startRecognition();
+                    }
+                });
+            }
+
+            if (stopListeningBtn) {
+                stopListeningBtn.addEventListener('click', function () {
+                    stopRecognition();
+                });
+            }
+
+            // Input Clear button toggle
+            function toggleClearButton() {
+                if (!clearBtn || !queryInput) return;
+                if (queryInput.value.trim().length > 0) {
+                    clearBtn.classList.remove('d-none');
+                } else {
+                    clearBtn.classList.add('d-none');
+                }
+            }
+
+            if (queryInput) {
+                queryInput.addEventListener('input', toggleClearButton);
+                queryInput.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const q = queryInput.value.trim();
+                        if (q) executeAdviserQuery(q);
+                    }
+                });
+            }
+
+            if (clearBtn) {
+                clearBtn.addEventListener('click', function () {
+                    if (queryInput) {
+                        queryInput.value = '';
+                        toggleClearButton();
+                        queryInput.focus();
+                    }
+                });
+            }
+
+            if (submitBtn) {
+                submitBtn.addEventListener('click', function () {
+                    const q = queryInput ? queryInput.value.trim() : '';
+                    if (q) {
+                        executeAdviserQuery(q);
+                    } else {
+                        if (queryInput) queryInput.focus();
+                    }
+                });
+            }
+
+            // Preset Chip triggers
+            document.querySelectorAll('.adviser-chip').forEach(chip => {
+                chip.addEventListener('click', function () {
+                    const prompt = this.getAttribute('data-prompt');
+                    if (prompt) {
+                        if (queryInput) {
+                            queryInput.value = prompt;
+                            toggleClearButton();
+                        }
+                        executeAdviserQuery(prompt);
+                    }
+                });
+            });
+
+            // 2. Fetch Advice from Backend API
+            async function executeAdviserQuery(queryText) {
+                if (!queryText || queryText.trim().length === 0) return;
+
+                // Stop any previous speech
+                stopSpeech();
+                stopRecognition();
+
+                // UI loading state
+                if (loader) loader.classList.remove('d-none');
+                if (resultCard) resultCard.classList.add('d-none');
+
+                try {
+                    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]') ?
+                        document.querySelector('[name=csrfmiddlewaretoken]').value : '';
+
+                    const response = await fetch('/api/audio-adviser/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': csrfToken
+                        },
+                        body: JSON.stringify({ query: queryText })
+                    });
+
+                    const data = await response.json();
+                    if (data.status === 'success') {
+                        renderAdviserResults(data);
+                    } else {
+                        alert(data.message || "Failed to generate investment advice. Please try again.");
+                    }
+                } catch (err) {
+                    console.error("Adviser query error:", err);
+                    alert("Network error communicating with FOLIUX Adviser. Please try again.");
+                } finally {
+                    if (loader) loader.classList.add('d-none');
+                }
+            }
+
+            // 3. Render Structured Visual Advice
+            function renderAdviserResults(data) {
+                if (!resultCard) return;
+
+                // Set Titles & Summary
+                const echoEl = document.getElementById('adviserQueryEcho');
+                if (echoEl) echoEl.textContent = `Query: "${data.query}"`;
+
+                const titleEl = document.getElementById('adviserResultTitle');
+                if (titleEl) titleEl.textContent = data.title;
+
+                const summaryEl = document.getElementById('adviserResultSummary');
+                if (summaryEl) summaryEl.innerHTML = (data.summary || '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+                // Render Allocation Stacked Bar
+                const progBar = document.getElementById('allocationProgressBar');
+                if (progBar && data.allocations) {
+                    progBar.innerHTML = data.allocations.map(a => `
+                        <div class="stacked-segment" style="width: ${a.percentage}%; background-color: ${a.color};" 
+                             title="${a.category}: ${a.percentage}% (${a.amount_formatted || ''})"></div>
+                    `).join('');
+                }
+
+                // Render Allocation Cards
+                const cardsGrid = document.getElementById('allocationCardsGrid');
+                if (cardsGrid && data.allocations) {
+                    cardsGrid.innerHTML = data.allocations.map(a => `
+                        <div class="col-md-6 col-xl-3">
+                            <div class="alloc-card" style="--alloc-color: ${a.color};">
+                                <div>
+                                    <div class="alloc-header">
+                                        <div style="width: 38px; height: 38px; border-radius: 10px; background: ${a.color}15; color: ${a.color}; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                                            <i class="${a.icon || 'fas fa-chart-pie'}"></i>
+                                        </div>
+                                        <span class="alloc-pct-badge">${a.percentage}%</span>
+                                    </div>
+                                    <div class="alloc-amount">${a.amount_formatted || a.percentage + '%'}</div>
+                                    <div class="alloc-name">${a.category}</div>
+                                    <div class="alloc-instruments">
+                                        ${(a.instruments || []).map(inst => `<span class="inst-pill">${inst}</span>`).join('')}
+                                    </div>
+                                </div>
+                                <div class="alloc-rationale">${a.rationale || ''}</div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+                // Render Execution Steps
+                const stepsGrid = document.getElementById('executionStepsGrid');
+                if (stepsGrid && data.execution_steps) {
+                    stepsGrid.innerHTML = data.execution_steps.map(s => `
+                        <div class="col-md-6 col-lg-3">
+                            <div class="step-card">
+                                <div class="step-number-box">${s.step_num}</div>
+                                <div>
+                                    <div class="step-title">${s.title}</div>
+                                    <p class="step-detail">${s.detail}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+                // Render Exploration Links
+                const linksWrap = document.getElementById('adviserExploreLinks');
+                if (linksWrap && data.suggested_links) {
+                    linksWrap.innerHTML = data.suggested_links.map(l => `
+                        <a href="${l.url}" class="btn-explore-pill">
+                            <i class="${l.icon || 'fas fa-arrow-right'} text-primary"></i> ${l.title}
+                            ${l.badge ? `<span class="badge bg-primary text-white rounded-pill px-2 py-0" style="font-size: 0.65rem;">${l.badge}</span>` : ''}
+                        </a>
+                    `).join('');
+                }
+
+                // Disclaimer
+                const discEl = document.getElementById('adviserDisclaimerText');
+                if (discEl && data.disclaimer) discEl.textContent = data.disclaimer;
+
+                // Show result container
+                resultCard.classList.remove('d-none');
+                resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+                // Play Audio Speech
+                currentSpeechText = data.spoken_text || "";
+                if (currentSpeechText) {
+                    speakAdvice(currentSpeechText);
+                }
+            }
+
+            // 4. Text-to-Speech (Web Speech Synthesis)
+            function speakAdvice(textToSpeak) {
+                if (!window.speechSynthesis) {
+                    if (audioStatusLabel) audioStatusLabel.textContent = "Audio narration unavailable in browser";
+                    if (audioStatusSub) audioStatusSub.textContent = "Please read the text advice above";
+                    return;
+                }
+
+                window.speechSynthesis.cancel(); // Cancel any ongoing speech
+
+                currentUtterance = new SpeechSynthesisUtterance(textToSpeak);
+                currentUtterance.rate = currentSpeechRate;
+                currentUtterance.pitch = 1.0;
+
+                // Select voice: Prefer English (India) or natural English voices
+                const voices = window.speechSynthesis.getVoices();
+                if (voices && voices.length > 0) {
+                    const preferredVoice = voices.find(v => v.lang.includes('en-IN')) ||
+                                           voices.find(v => v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Online')) ||
+                                           voices.find(v => v.lang.startsWith('en'));
+                    if (preferredVoice) {
+                        currentUtterance.voice = preferredVoice;
+                    }
+                }
+
+                currentUtterance.onstart = function () {
+                    isSpeakingActive = true;
+                    if (audioEqualizer) audioEqualizer.classList.add('playing');
+                    if (audioStatusLabel) audioStatusLabel.textContent = "Speaking FOLIUX Advice...";
+                    if (audioStatusSub) audioStatusSub.textContent = "Listen to rule-based allocation & execution steps";
+                    if (voicePlayIcon) voicePlayIcon.className = "fas fa-pause me-1";
+                    if (voicePlayText) voicePlayText.textContent = "Pause";
+                    if (btnVoicePlayPause) btnVoicePlayPause.classList.add('active');
+                };
+
+                currentUtterance.onpause = function () {
+                    if (audioEqualizer) audioEqualizer.classList.remove('playing');
+                    if (audioStatusLabel) audioStatusLabel.textContent = "Audio Paused";
+                    if (voicePlayIcon) voicePlayIcon.className = "fas fa-play me-1";
+                    if (voicePlayText) voicePlayText.textContent = "Resume";
+                    if (btnVoicePlayPause) btnVoicePlayPause.classList.remove('active');
+                };
+
+                currentUtterance.onresume = function () {
+                    if (audioEqualizer) audioEqualizer.classList.add('playing');
+                    if (audioStatusLabel) audioStatusLabel.textContent = "Speaking FOLIUX Advice...";
+                    if (voicePlayIcon) voicePlayIcon.className = "fas fa-pause me-1";
+                    if (voicePlayText) voicePlayText.textContent = "Pause";
+                    if (btnVoicePlayPause) btnVoicePlayPause.classList.add('active');
+                };
+
+                currentUtterance.onend = function () {
+                    isSpeakingActive = false;
+                    if (audioEqualizer) audioEqualizer.classList.remove('playing');
+                    if (audioStatusLabel) audioStatusLabel.textContent = "Audio Finished";
+                    if (audioStatusSub) audioStatusSub.textContent = "Click Replay to listen again";
+                    if (voicePlayIcon) voicePlayIcon.className = "fas fa-play me-1";
+                    if (voicePlayText) voicePlayText.textContent = "Play";
+                    if (btnVoicePlayPause) btnVoicePlayPause.classList.remove('active');
+                };
+
+                currentUtterance.onerror = function (err) {
+                    console.warn("Speech synthesis notice:", err);
+                    isSpeakingActive = false;
+                    if (audioEqualizer) audioEqualizer.classList.remove('playing');
+                    if (audioStatusLabel) audioStatusLabel.textContent = "Audio Ready";
+                };
+
+                window.speechSynthesis.speak(currentUtterance);
+            }
+
+            function stopSpeech() {
+                if (window.speechSynthesis) {
+                    window.speechSynthesis.cancel();
+                }
+                isSpeakingActive = false;
+                if (audioEqualizer) audioEqualizer.classList.remove('playing');
+                if (audioStatusLabel) audioStatusLabel.textContent = "Audio Stopped";
+                if (voicePlayIcon) voicePlayIcon.className = "fas fa-play me-1";
+                if (voicePlayText) voicePlayText.textContent = "Play";
+                if (btnVoicePlayPause) btnVoicePlayPause.classList.remove('active');
+            }
+
+            if (btnVoicePlayPause) {
+                btnVoicePlayPause.addEventListener('click', function () {
+                    if (!window.speechSynthesis) return;
+
+                    if (window.speechSynthesis.speaking) {
+                        if (window.speechSynthesis.paused) {
+                            window.speechSynthesis.resume();
+                        } else {
+                            window.speechSynthesis.pause();
+                        }
+                    } else if (currentSpeechText) {
+                        speakAdvice(currentSpeechText);
+                    }
+                });
+            }
+
+            if (btnVoiceReplay) {
+                btnVoiceReplay.addEventListener('click', function () {
+                    if (currentSpeechText) {
+                        speakAdvice(currentSpeechText);
+                    }
+                });
+            }
+
+            if (btnVoiceStop) {
+                btnVoiceStop.addEventListener('click', function () {
+                    stopSpeech();
+                });
+            }
+
+            // Voice Speed Options
+            document.querySelectorAll('.voice-speed-opt').forEach(opt => {
+                opt.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelectorAll('.voice-speed-opt').forEach(o => o.classList.remove('active'));
+                    this.classList.add('active');
+                    const speed = parseFloat(this.getAttribute('data-speed')) || 1.0;
+                    currentSpeechRate = speed;
+                    if (voiceSpeedText) voiceSpeedText.textContent = `${speed}x`;
+
+                    // If currently speaking, restart with new speed
+                    if (window.speechSynthesis && window.speechSynthesis.speaking && currentSpeechText) {
+                        speakAdvice(currentSpeechText);
+                    }
+                });
+            });
+
+            // Pre-load voices in background
+            if (window.speechSynthesis) {
+                window.speechSynthesis.onvoiceschanged = function () {
+                    window.speechSynthesis.getVoices();
+                };
+            }
+        })();
     }); // End of DOMContentLoaded
 </script>
 

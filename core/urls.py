@@ -136,6 +136,7 @@ urlpatterns = [
     
     path('.well-known/assetlinks.json', views.assetlinks_json, name='assetlinks_json'),
     path('chatbot-response/', views.chatbot_response, name='chatbot_response'),
+    path('api/audio-adviser/', views.audio_adviser_api, name='audio_adviser_api'),
     path('api/toggle-hidden-signal/', views.toggle_hidden_signal, name='toggle_hidden_signal'),
     path('api/report-missing-instrument/', views.report_missing_instrument, name='report_missing_instrument'),
     path('feedback/', views.submit_review, name='feedback'),
