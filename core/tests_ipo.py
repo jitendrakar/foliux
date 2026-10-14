@@ -258,3 +258,71 @@ class IPOAllotmentIntegrationTests(TestCase):
         auto_sync_foliux_ipos()
         existing.refresh_from_db()
         self.assertEqual(existing.advise, 'WAITING')
+
+    def test_scrape_chittorgarh_subscription_parsing(self):
+        """Test Chittorgarh subscription multiplier table extraction."""
+        from core.chittorgarh import scrape_chittorgarh_subscription
+        sample_html = """
+        <html><body>
+        <table>
+            <tr><th>Category</th><th>Shares Offered</th><th>Amt (Cr)</th></tr>
+            <tr><td>Total</td><td>2,62,84,500</td><td>712.31</td></tr>
+        </table>
+        <table>
+            <tr><th>Investor Category</th><th>Subscription (times)</th></tr>
+            <tr><td>Qualified Institutional</td><td>1.43x</td></tr>
+            <tr><td>Non Institutional</td><td>36.96x</td></tr>
+            <tr><td>Retail Individual</td><td>9.43x</td></tr>
+            <tr><td>Total Subscription</td><td>13.02x</td></tr>
+        </table>
+        </body></html>
+        """
+        with patch('core.chittorgarh.fetch_url_soup') as mock_soup:
+            from bs4 import BeautifulSoup
+            mock_soup.return_value = BeautifulSoup(sample_html, 'html.parser')
+            sub = scrape_chittorgarh_subscription('https://www.chittorgarh.com/ipo_subscription/test-ipo/123/')
+            self.assertEqual(sub, Decimal('13.02'))
+
+    def test_scrape_investorgain_gmp_detail_parsing(self):
+        """Test Investorgain individual review page scraper for GMP and subscription."""
+        from core.investorgain import scrape_investorgain_gmp_detail
+        sample_html = """
+        <html><body>
+        <h1>Fusion CX IPO GMP Today & History</h1>
+        <table>
+            <tr><th>GMP Date</th><th>GMP</th><th>Est. Listing Priceon upper price-₹289.00</th><th>Est. Profit</th></tr>
+            <tr><td>14-Oct 15:02Sub: 0.32xO</td><td>₹33(11.42%)</td><td>₹322</td><td>₹1,683</td></tr>
+        </table>
+        </body></html>
+        """
+        with patch('urllib.request.urlopen') as mock_urlopen:
+            import io
+            mock_resp = io.BytesIO(sample_html.encode('utf-8'))
+            mock_resp.status = 200
+            mock_resp.geturl = lambda: 'https://www.investorgain.com/gmp/fusion-cx-ipo-gmp/1792/'
+            mock_urlopen.return_value.__enter__.return_value = mock_resp
+
+            detail = scrape_investorgain_gmp_detail('https://www.investorgain.com/gmp/fusion-cx-ipo-gmp/1792/')
+            self.assertIsNotNone(detail)
+            self.assertEqual(detail['name'], 'Fusion CX')
+            self.assertEqual(detail['gmp_amount'], Decimal('33'))
+            self.assertEqual(detail['gmp_percent'], Decimal('11.42'))
+            self.assertEqual(detail['price'], Decimal('289.00'))
+            self.assertEqual(detail['subscription_times'], Decimal('0.32'))
+
+    def test_investorgain_matching_and_enrichment(self):
+        """Test matching between database IPOs and Investorgain records."""
+        from core.investorgain import match_investorgain_record
+        records = {
+            'fusion cx': {'name': 'Fusion CX', 'gmp_amount': Decimal('33'), 'gmp_percent': Decimal('11.42'), 'url': 'https://www.investorgain.com/gmp/fusion-cx-ipo/1792/', 'slug': 'fusion-cx-ipo'},
+            'zetwerk': {'name': 'Zetwerk', 'gmp_amount': Decimal('18'), 'gmp_percent': Decimal('11.92'), 'url': 'https://www.investorgain.com/gmp/zetwerk-ipo/2279/', 'slug': 'zetwerk-ipo'},
+        }
+
+        m1 = match_investorgain_record('Fusion CX', records)
+        self.assertIsNotNone(m1)
+        self.assertEqual(m1['name'], 'Fusion CX')
+
+        m2 = match_investorgain_record('Zetwerk Manufacturing Business Limited IPO', records)
+        self.assertIsNotNone(m2)
+        self.assertEqual(m2['name'], 'Zetwerk')
+

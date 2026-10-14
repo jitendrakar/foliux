@@ -2,11 +2,11 @@ import re
 import logging
 from datetime import timedelta
 from decimal import Decimal
-from typing import Dict, Any, Tuple
+from typing import Dict, Any, Optional
 from django.utils import timezone
 from core.models import IPO
-from core.chittorgarh import fetch_chittorgarh_ipos
-from core.investorgain import fetch_investorgain_gmp
+from core.chittorgarh import fetch_chittorgarh_ipos, scrape_chittorgarh_subscription
+from core.investorgain import fetch_investorgain_gmp, scrape_investorgain_gmp_detail, match_investorgain_record
 from core.registrars import registrar_registry
 
 logger = logging.getLogger(__name__)
@@ -18,21 +18,87 @@ def clean_company_name(name: str) -> str:
         return ""
     clean = name.strip()
     clean = clean.replace(" IPO", "").replace(" SME", "").replace(" Limited", "").replace(" Ltd.", "").strip()
-    clean = re.sub(r'\[.*?\]', '', clean).strip()
+    clean = re.sub(r'\[.*?\]|\(.*?\)', '', clean).strip()
     return clean.lower()
 
 
-def auto_sync_foliux_ipos() -> Dict[str, Any]:
+def sync_single_ipo(
+    ipo_obj_or_name: Any,
+    chittorgarh_url: Optional[str] = None,
+    investorgain_url: Optional[str] = None
+) -> Optional[IPO]:
+    """
+    Directly updates a single IPO in Foliux with live Chittorgarh subscription data
+    and/or Investorgain GMP review data from specified URLs.
+    """
+    if isinstance(ipo_obj_or_name, IPO):
+        ipo = ipo_obj_or_name
+    else:
+        c_name = clean_company_name(str(ipo_obj_or_name))
+        ipo = IPO.objects.filter(name__icontains=c_name).first()
+        if not ipo:
+            s_name = re.sub(r'[^a-z0-9]', '', c_name)
+            for cand in IPO.objects.filter(is_active=True):
+                if s_name and s_name in re.sub(r'[^a-z0-9]', '', cand.name.lower()):
+                    ipo = cand
+                    break
+
+    if not ipo:
+        logger.warning(f"Could not find IPO matching: '{ipo_obj_or_name}'")
+        return None
+
+    updated = False
+
+    # 1. Update from Chittorgarh subscription URL
+    if chittorgarh_url:
+        sub_url = chittorgarh_url.strip()
+        if '/ipo/' in sub_url and '/ipo_subscription/' not in sub_url:
+            sub_url = re.sub(r'/ipo/', '/ipo_subscription/', sub_url)
+        try:
+            sub_val = scrape_chittorgarh_subscription(sub_url)
+            if sub_val is not None:
+                ipo.subscription_times = sub_val
+                updated = True
+                logger.info(f"Updated '{ipo.name}' subscription from Chittorgarh: {sub_val}x")
+        except Exception as e:
+            logger.warning(f"Error scraping Chittorgarh subscription for '{ipo.name}': {e}")
+
+    # 2. Update from Investorgain GMP review URL
+    if investorgain_url:
+        try:
+            detail = scrape_investorgain_gmp_detail(investorgain_url.strip())
+            if detail:
+                if detail.get('gmp_amount') is not None:
+                    ipo.gmp_amount = detail['gmp_amount']
+                    updated = True
+                if detail.get('gmp_percent') is not None:
+                    ipo.gmp_percent = detail['gmp_percent']
+                    updated = True
+                if detail.get('subscription_times') is not None and (ipo.subscription_times is None or ipo.subscription_times == 0):
+                    ipo.subscription_times = detail['subscription_times']
+                    updated = True
+                logger.info(f"Updated '{ipo.name}' GMP from Investorgain: {ipo.gmp_display}")
+        except Exception as e:
+            logger.warning(f"Error scraping Investorgain GMP for '{ipo.name}': {e}")
+
+    if updated:
+        ipo.save()
+
+    return ipo
+
+
+def auto_sync_foliux_ipos(
+    target_ipo_name: Optional[str] = None,
+    one_by_one: bool = True
+) -> Dict[str, Any]:
     """
     Complete Foliux IPO Workflow Engine:
-    1. Scrapes Upcoming & Ongoing IPOs from Chittorgarh & Investorgain (Live GMP).
-    2. Auto-adds upcoming/current IPOs to Foliux Admin with live GMP and metrics.
-    3. Prevents duplicates and retains historical data permanently in database.
-    4. Sets initial advise = 'WAITING'.
-    5. On 2nd day of subscription (today == start_date + 1 day), sets advise = 'APPLY'
-       only when Subscription >= 3x AND GMP > 30%. Otherwise advise = 'WAITING'.
-    6. Updates ongoing IPO subscription & GMP metrics.
-    7. Synchronizes dynamic registrar data (MUFG, KFintech, etc.).
+    1. Scrapes Upcoming & Ongoing IPOs from Chittorgarh (including individual live subscription).
+    2. Fetches live Grey Market Premium (GMP) data from Investorgain.
+    3. Auto-adds upcoming/current IPOs to Foliux with live GMP, subscription multipliers, and dates.
+    4. Enriches active database IPOs with live GMP and subscription metrics one-by-one.
+    5. Evaluates 2nd day advice: sets advise = 'APPLY' if Subscription >= 3x AND GMP > 30%, else 'WAITING'.
+    6. Synchronizes dynamic registrar data (MUFG, KFintech, etc.).
     """
     today = timezone.localdate()
     logger.info(f"Starting Foliux IPO Auto-Sync Workflow for date: {today}")
@@ -45,6 +111,7 @@ def auto_sync_foliux_ipos() -> Dict[str, Any]:
         'skipped_duplicate': 0,
         'registrar_linked': 0,
         'gmp_enriched': 0,
+        'subscription_enriched': 0,
     }
 
     try:
@@ -58,6 +125,7 @@ def auto_sync_foliux_ipos() -> Dict[str, Any]:
             logger.warning(f"Could not fetch Investorgain GMP: {ex}")
             investorgain_gmp = {}
 
+        # 1. Process scraped Chittorgarh IPOs
         for item in scraped_ipos:
             name = item.get('name', '').strip()
             start_date = item.get('start_date')
@@ -67,15 +135,16 @@ def auto_sync_foliux_ipos() -> Dict[str, Any]:
                 continue
 
             clean_name = clean_company_name(name)
-            simple_name = re.sub(r'[^a-z0-9]', '', clean_name)
 
-            # Check if Investorgain has live GMP for this IPO
-            ig_data = investorgain_gmp.get(clean_name) or investorgain_gmp.get(simple_name)
-            if ig_data:
-                if item.get('gmp_amount') is None and ig_data.get('gmp_amount') is not None:
-                    item['gmp_amount'] = ig_data['gmp_amount']
-                if item.get('gmp_percent') is None and ig_data.get('gmp_percent') is not None:
-                    item['gmp_percent'] = ig_data['gmp_percent']
+            # Match with Investorgain
+            ig_match = match_investorgain_record(name, investorgain_gmp)
+            if ig_match:
+                if item.get('gmp_amount') is None and ig_match.get('gmp_amount') is not None:
+                    item['gmp_amount'] = ig_match['gmp_amount']
+                if item.get('gmp_percent') is None and ig_match.get('gmp_percent') is not None:
+                    item['gmp_percent'] = ig_match['gmp_percent']
+                if item.get('subscription_times') is None and ig_match.get('subscription_times') is not None:
+                    item['subscription_times'] = ig_match['subscription_times']
 
             # Skip only IPOs closed more than 30 days ago
             cutoff_closed = today - timedelta(days=30)
@@ -89,7 +158,6 @@ def auto_sync_foliux_ipos() -> Dict[str, Any]:
                 existing_ipo = IPO.objects.filter(symbol__iexact=item['symbol'].strip()).first()
 
             if not existing_ipo:
-                # Auto-add upcoming and current active IPOs to Foliux
                 calculated_end_date = end_date or (start_date + timedelta(days=3))
                 display_name = re.sub(r'\s+IPO$', '', name, flags=re.I).strip()
                 new_ipo = IPO.objects.create(
@@ -99,7 +167,7 @@ def auto_sync_foliux_ipos() -> Dict[str, Any]:
                     end_date=calculated_end_date,
                     company_work=item.get('company_work') or f"{name} Initial Public Offering.",
                     notes=item.get('notes') or "Source: Chittorgarh & Investorgain",
-                    advise='WAITING',  # Initial Advise = Waiting
+                    advise='WAITING',
                     registrar_slug=item.get('registrar_slug') or 'mufg',
                     subscription_times=item.get('subscription_times'),
                     gmp_percent=item.get('gmp_percent'),
@@ -107,44 +175,45 @@ def auto_sync_foliux_ipos() -> Dict[str, Any]:
                     is_active=True
                 )
                 stats['added'] += 1
-                logger.info(f"Added new IPO to Foliux Admin: '{new_ipo.name}' (Start: {start_date})")
+                logger.info(f"Added new IPO to Foliux Admin: '{new_ipo.name}' (Start: {start_date}, Sub: {new_ipo.subscription_display}, GMP: {new_ipo.gmp_display})")
             else:
-                # Update existing IPO metrics (upcoming, current, or recent)
                 updated_fields = False
-                
-                if item.get('subscription_times') is not None:
+
+                if item.get('subscription_times') is not None and existing_ipo.subscription_times != item['subscription_times']:
                     existing_ipo.subscription_times = item['subscription_times']
                     updated_fields = True
-                if item.get('gmp_percent') is not None:
+                    stats['subscription_enriched'] += 1
+
+                if item.get('gmp_percent') is not None and existing_ipo.gmp_percent != item['gmp_percent']:
                     existing_ipo.gmp_percent = item['gmp_percent']
                     updated_fields = True
-                if item.get('gmp_amount') is not None:
+
+                if item.get('gmp_amount') is not None and existing_ipo.gmp_amount != item['gmp_amount']:
                     existing_ipo.gmp_amount = item['gmp_amount']
                     updated_fields = True
-                # If database existing_ipo still lacks GMP, enrich from Investorgain
-                if (existing_ipo.gmp_amount is None or existing_ipo.gmp_percent is None) and ig_data:
-                    if existing_ipo.gmp_amount is None and ig_data.get('gmp_amount') is not None:
-                        existing_ipo.gmp_amount = ig_data['gmp_amount']
+
+                if (existing_ipo.gmp_amount is None or existing_ipo.gmp_percent is None) and ig_match:
+                    if existing_ipo.gmp_amount is None and ig_match.get('gmp_amount') is not None:
+                        existing_ipo.gmp_amount = ig_match['gmp_amount']
                         updated_fields = True
-                    if existing_ipo.gmp_percent is None and ig_data.get('gmp_percent') is not None:
-                        existing_ipo.gmp_percent = ig_data['gmp_percent']
+                    if existing_ipo.gmp_percent is None and ig_match.get('gmp_percent') is not None:
+                        existing_ipo.gmp_percent = ig_match['gmp_percent']
                         updated_fields = True
 
                 if item.get('notes') and (not existing_ipo.notes or len(existing_ipo.notes) < 50):
                     existing_ipo.notes = item['notes']
                     updated_fields = True
+
                 if item.get('company_work') and (not existing_ipo.company_work or existing_ipo.company_work.endswith("Initial Public Offering.")):
                     existing_ipo.company_work = item['company_work']
                     updated_fields = True
+
                 if end_date and existing_ipo.end_date != end_date:
                     existing_ipo.end_date = end_date
                     updated_fields = True
 
-                # Rule: 2nd Day Status Update Rule
-                # On the 2nd day of subscription (today == start_date + 1 day):
-                # Set Advise = APPLY only if Subscription >= 3x AND GMP > 30%. Otherwise WAITING.
+                # 2nd Day Advice Rule
                 is_second_day = (today == (existing_ipo.start_date + timedelta(days=1)))
-                
                 sub = float(existing_ipo.subscription_times or 0)
                 gmp = float(existing_ipo.gmp_percent or 0)
 
@@ -164,28 +233,82 @@ def auto_sync_foliux_ipos() -> Dict[str, Any]:
                     existing_ipo.save()
                     stats['updated'] += 1
 
-        # Enrich any active database IPOs with missing GMP from Investorgain
-        if investorgain_gmp:
-            db_ipos = IPO.objects.filter(is_active=True)
-            for db_ipo in db_ipos:
-                if db_ipo.gmp_amount is None or db_ipo.gmp_percent is None:
-                    c_name = clean_company_name(db_ipo.name)
-                    s_name = re.sub(r'[^a-z0-9]', '', c_name)
-                    match = investorgain_gmp.get(c_name) or investorgain_gmp.get(s_name)
-                    if match:
-                        save_req = False
-                        if db_ipo.gmp_amount is None and match.get('gmp_amount') is not None:
-                            db_ipo.gmp_amount = match['gmp_amount']
-                            save_req = True
-                        if db_ipo.gmp_percent is None and match.get('gmp_percent') is not None:
-                            db_ipo.gmp_percent = match['gmp_percent']
-                            save_req = True
-                        if save_req:
-                            db_ipo.save()
-                            stats['gmp_enriched'] += 1
-                            logger.info(f"Enriched database IPO '{db_ipo.name}' with Investorgain GMP: {db_ipo.gmp_display}")
+        # 2. Enrich active database IPOs one by one
+        active_ipos_qs = IPO.objects.filter(is_active=True)
+        if target_ipo_name:
+            active_ipos_qs = active_ipos_qs.filter(name__icontains=clean_company_name(target_ipo_name))
 
-        # Registrar Dynamic Synchronization
+        for db_ipo in active_ipos_qs:
+            db_updated = False
+            ig_match = match_investorgain_record(db_ipo.name, investorgain_gmp)
+
+            if ig_match:
+                # One-by-one detail review scrape for high accuracy
+                detail_data = None
+                if one_by_one and ig_match.get('url'):
+                    try:
+                        detail_data = scrape_investorgain_gmp_detail(ig_match['url'])
+                    except Exception as e:
+                        logger.warning(f"Error scraping individual Investorgain review for '{db_ipo.name}': {e}")
+
+                source_data = detail_data if detail_data else ig_match
+
+                # Update GMP amount & percent
+                if source_data.get('gmp_amount') is not None and db_ipo.gmp_amount != source_data['gmp_amount']:
+                    db_ipo.gmp_amount = source_data['gmp_amount']
+                    db_updated = True
+                    stats['gmp_enriched'] += 1
+
+                if source_data.get('gmp_percent') is not None and db_ipo.gmp_percent != source_data['gmp_percent']:
+                    db_ipo.gmp_percent = source_data['gmp_percent']
+                    db_updated = True
+
+                # Update subscription from Investorgain if missing in DB
+                if (db_ipo.subscription_times is None or db_ipo.subscription_times == 0) and source_data.get('subscription_times') is not None:
+                    db_ipo.subscription_times = source_data['subscription_times']
+                    db_updated = True
+                    stats['subscription_enriched'] += 1
+
+            # If subscription is still missing, try to fetch from Chittorgarh
+            if db_ipo.subscription_times is None or db_ipo.subscription_times == 0:
+                # Look for matching Chittorgarh item
+                for ch_item in scraped_ipos:
+                    if clean_company_name(ch_item.get('name', '')) in clean_company_name(db_ipo.name) or clean_company_name(db_ipo.name) in clean_company_name(ch_item.get('name', '')):
+                        if ch_item.get('subscription_times'):
+                            db_ipo.subscription_times = ch_item['subscription_times']
+                            db_updated = True
+                            stats['subscription_enriched'] += 1
+                            break
+                        elif ch_item.get('url'):
+                            sub_url = ch_item['url'].replace('/ipo/', '/ipo_subscription/')
+                            try:
+                                sub_val = scrape_chittorgarh_subscription(sub_url)
+                                if sub_val is not None:
+                                    db_ipo.subscription_times = sub_val
+                                    db_updated = True
+                                    stats['subscription_enriched'] += 1
+                                    break
+                            except Exception:
+                                pass
+
+            # Re-evaluate 2nd day advice
+            is_second_day = (today == (db_ipo.start_date + timedelta(days=1)))
+            sub = float(db_ipo.subscription_times or 0)
+            gmp = float(db_ipo.gmp_percent or 0)
+            if is_second_day:
+                if sub >= 3.0 and gmp > 30.0 and db_ipo.advise != 'APPLY':
+                    db_ipo.advise = 'APPLY'
+                    db_updated = True
+                elif (sub < 3.0 or gmp <= 30.0) and db_ipo.advise == 'APPLY':
+                    db_ipo.advise = 'WAITING'
+                    db_updated = True
+
+            if db_updated:
+                db_ipo.save()
+                stats['updated'] += 1
+                logger.info(f"Updated database IPO '{db_ipo.name}' (Sub: {db_ipo.subscription_display}, GMP: {db_ipo.gmp_display})")
+
+        # 3. Registrar Dynamic Synchronization
         try:
             active_registrar_ipos = registrar_registry.get_all_active_ipos()
             for reg_item in active_registrar_ipos:

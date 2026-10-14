@@ -255,6 +255,21 @@ def scrape_chittorgarh_ipo_detail(url: str, default_name: str, row_text: str = "
         if gmp_pct_str:
             gmp_percent = parse_decimal_value(gmp_pct_str)
 
+    # Live IPO Subscription from Chittorgarh subscription page
+    sub_url = None
+    sub_link = soup.find('a', href=re.compile(r'/ipo_subscription/', re.I))
+    if sub_link and sub_link.get('href'):
+        href = sub_link['href']
+        sub_url = href if href.startswith('http') else f"https://www.chittorgarh.com{href}"
+    elif '/ipo/' in url:
+        sub_url = re.sub(r'/ipo/', '/ipo_subscription/', url)
+
+    if sub_url:
+        try:
+            subscription_times = scrape_chittorgarh_subscription(sub_url)
+        except Exception as e:
+            logger.warning(f"Error scraping subscription from {sub_url}: {e}")
+
     return {
         'name': clean_name,
         'symbol': symbol or "",
@@ -277,12 +292,39 @@ def scrape_chittorgarh_subscription(sub_url: str) -> Optional[Decimal]:
     if not soup:
         return None
 
-    tables = soup.find_all('table')
-    for table in tables:
+    # Search through tables containing 'subscription'
+    for table in soup.find_all('table'):
+        t_text = table.get_text()
+        if 'subscription' not in t_text.lower():
+            continue
+
         for tr in table.find_all('tr'):
             tds = [td.get_text(strip=True) for td in tr.find_all(['th', 'td'])]
-            if len(tds) >= 2:
-                cat_name = tds[0].lower()
-                if 'total subscription' in cat_name or 'total' in cat_name:
-                    return parse_decimal_value(tds[1])
+            if len(tds) < 2:
+                continue
+
+            cat_name = tds[0].strip().lower()
+
+            # Exact or prefix match for 'Total Subscription'
+            if 'total subscription' in cat_name:
+                for cell in tds[1:]:
+                    val = parse_decimal_value(cell)
+                    if val is not None:
+                        return val
+
+            # Or 'Total' within a table specifically tracking 'Subscription (times)'
+            elif cat_name == 'total' and ('times' in t_text.lower() or any('times' in c.lower() for c in tds)):
+                for cell in tds[1:]:
+                    m = re.search(r'(\d+(?:\.\d+)?)\s*x', cell, re.I)
+                    if m:
+                        return Decimal(m.group(1))
+                    val = parse_decimal_value(cell)
+                    if val is not None and val < 10000:
+                        return val
+
+    # Fallback: search regex directly in the text of the page
+    m_sub = re.search(r'Total\s+Subscription\s*[:\-|]?\s*(\d+(?:\.\d+)?)\s*x?', soup.get_text(), re.I)
+    if m_sub:
+        return parse_decimal_value(m_sub.group(1))
+
     return None
