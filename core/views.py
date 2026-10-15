@@ -5352,6 +5352,7 @@ def audio_adviser_api(request):
                 data = request.POST.dict()
             
             user_query = data.get('query', '').strip()
+            requested_lang = data.get('language') or data.get('lang')
             if not user_query:
                 return JsonResponse({'status': 'error', 'message': 'Query cannot be empty'}, status=400)
             
@@ -5367,17 +5368,18 @@ def audio_adviser_api(request):
                 logger.warning(f"Audio adviser failed to fetch market context: {e}")
             
             from core.audio_adviser import generate_investment_advice
-            advice = generate_investment_advice(user_query, market_context=market_context)
+            advice = generate_investment_advice(user_query, market_context=market_context, requested_lang=requested_lang)
             return JsonResponse(advice)
         except Exception as e:
             logger.exception("Audio adviser API error:")
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     elif request.method == 'GET':
         query = request.GET.get('q', '').strip()
+        requested_lang = request.GET.get('lang') or request.GET.get('language')
         if not query:
             return JsonResponse({'status': 'error', 'message': 'Missing query parameter "q"'}, status=400)
         from core.audio_adviser import generate_investment_advice
-        advice = generate_investment_advice(query)
+        advice = generate_investment_advice(query, requested_lang=requested_lang)
         return JsonResponse(advice)
     
     return JsonResponse({'status': 'error', 'message': 'GET or POST required'}, status=405)

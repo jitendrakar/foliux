@@ -1,6 +1,11 @@
 import json
 from django.test import TestCase, Client
-from core.audio_adviser import parse_advisory_query, generate_investment_advice
+from core.audio_adviser import (
+    parse_advisory_query,
+    generate_investment_advice,
+    CLOSING_NOTICE_EN,
+    CLOSING_NOTICE_HI
+)
 
 class AudioAdviserEngineTests(TestCase):
     def test_parse_amount_sip(self):
@@ -27,6 +32,10 @@ class AudioAdviserEngineTests(TestCase):
         self.assertTrue(len(advice['allocations']) >= 3)
         self.assertTrue(len(advice['execution_steps']) >= 3)
         self.assertTrue(len(advice['suggested_links']) >= 3)
+        self.assertEqual(advice['language'], 'en')
+        self.assertIn('login_cta', advice)
+        # Check closing login notification in spoken audio
+        self.assertTrue(advice['spoken_text'].strip().endswith(CLOSING_NOTICE_EN))
         
         # Verify allocation percentages sum to 100%
         total_pct = sum(a['percentage'] for a in advice['allocations'])
@@ -37,11 +46,39 @@ class AudioAdviserEngineTests(TestCase):
         self.assertEqual(advice['status'], 'success')
         self.assertIn("Beginner", advice['title'])
         self.assertIn("50", str(advice['allocations'][0]['percentage']))
+        self.assertTrue(advice['spoken_text'].strip().endswith(CLOSING_NOTICE_EN))
 
     def test_generate_advice_short_term_safe(self):
         advice = generate_investment_advice("Safe investment for 6 months no loss")
         self.assertEqual(advice['status'], 'success')
         self.assertIn("Capital Preservation", advice['title'])
+        self.assertTrue(advice['spoken_text'].strip().endswith(CLOSING_NOTICE_EN))
+
+    def test_hindi_devanagari_query_detection_and_advice(self):
+        advice = generate_investment_advice("मुझे 10000 रुपये हर महीने निवेश करने हैं")
+        self.assertEqual(advice['status'], 'success')
+        self.assertEqual(advice['language'], 'hi')
+        self.assertEqual(advice['parsed_query']['amount'], 10000)
+        self.assertTrue(advice['parsed_query']['is_sip'])
+        # Spoken audio must be in Hindi and end with the login and profile notice
+        self.assertTrue(advice['spoken_text'].strip().endswith(CLOSING_NOTICE_HI))
+        self.assertIn("FOLIUX", advice['spoken_text'])
+        self.assertIn("लॉगिन", advice['spoken_text'])
+        self.assertIn("प्रोफ़ाइल", advice['spoken_text'])
+        self.assertEqual(advice['login_cta']['button_text'], 'लॉगिन करें और प्रोफ़ाइल सेट करें')
+
+    def test_hindi_hinglish_query_detection_and_advice(self):
+        advice = generate_investment_advice("mujhe 50000 invest karna hai safe tarike se")
+        self.assertEqual(advice['status'], 'success')
+        self.assertEqual(advice['language'], 'hi')
+        self.assertEqual(advice['parsed_query']['amount'], 50000)
+        self.assertEqual(advice['parsed_query']['risk'], 'conservative')
+        self.assertTrue(advice['spoken_text'].strip().endswith(CLOSING_NOTICE_HI))
+
+    def test_explicit_hindi_language_flag(self):
+        advice = generate_investment_advice("invest 15000 monthly", requested_lang="hi")
+        self.assertEqual(advice['language'], 'hi')
+        self.assertTrue(advice['spoken_text'].strip().endswith(CLOSING_NOTICE_HI))
 
 
 class AudioAdviserAPITests(TestCase):
@@ -60,6 +97,22 @@ class AudioAdviserAPITests(TestCase):
         self.assertIn('spoken_text', data)
         self.assertIn('allocations', data)
         self.assertIn('execution_steps', data)
+        self.assertIn('login_cta', data)
+        self.assertEqual(data['language'], 'en')
+        self.assertTrue(data['spoken_text'].strip().endswith(CLOSING_NOTICE_EN))
+
+    def test_api_post_hindi_query(self):
+        response = self.client.post(
+            '/api/audio-adviser/',
+            data=json.dumps({'query': 'रिटायरमेंट के लिए पैसे कहाँ लगाएं?'}),
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['status'], 'success')
+        self.assertEqual(data['language'], 'hi')
+        self.assertTrue(data['spoken_text'].strip().endswith(CLOSING_NOTICE_HI))
+        self.assertIn('लॉगिन करें', data['login_cta']['button_text'])
 
     def test_api_post_empty_query(self):
         response = self.client.post(
@@ -74,3 +127,12 @@ class AudioAdviserAPITests(TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data['status'], 'success')
+        self.assertEqual(data['language'], 'en')
+
+    def test_api_get_hindi_query(self):
+        response = self.client.get('/api/audio-adviser/?q=kaha+invest+kare+safely')
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data['status'], 'success')
+        self.assertEqual(data['language'], 'hi')
+        self.assertTrue(data['spoken_text'].strip().endswith(CLOSING_NOTICE_HI))

@@ -1397,6 +1397,40 @@
         100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
     }
 
+    .voice-lang-pill-group {
+        display: inline-flex;
+        align-items: center;
+        background: #f1f5f9;
+        border-radius: 20px;
+        padding: 2px;
+        border: 1px solid #e2e8f0;
+        margin-right: 4px;
+        flex-shrink: 0;
+    }
+
+    .btn-voice-lang {
+        border: none;
+        background: transparent;
+        font-size: 0.72rem;
+        font-weight: 600;
+        padding: 4px 9px;
+        border-radius: 14px;
+        color: #64748b;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        line-height: 1;
+    }
+
+    .btn-voice-lang:hover {
+        color: #0f172a;
+    }
+
+    .btn-voice-lang.active {
+        background: #ffffff;
+        color: #2563eb;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    }
+
     .adviser-text-group {
         display: flex;
         align-items: center;
@@ -2069,6 +2103,13 @@
                             <span class="mic-wave-ring"></span>
                         </button>
 
+                        <!-- Language Selector -->
+                        <div class="voice-lang-pill-group" title="Select audio input language (Auto / हिन्दी / English)">
+                            <button type="button" class="btn-voice-lang active" data-lang="auto" id="btnVoiceLangAuto">Auto</button>
+                            <button type="button" class="btn-voice-lang" data-lang="hi" id="btnVoiceLangHi">हिन्दी</button>
+                            <button type="button" class="btn-voice-lang" data-lang="en" id="btnVoiceLangEn">EN</button>
+                        </div>
+
                         <div class="adviser-text-group flex-grow-1">
                             <input type="text" id="adviserQueryInput" class="adviser-text-input"
                                 placeholder="Speak or type: 'Where should I invest ₹10,000 monthly for retirement?'..."
@@ -2105,14 +2146,23 @@
                         <button type="button" class="adviser-chip" data-prompt="Where should I invest 10000 monthly for long term?">
                             <i class="fas fa-microphone-alt me-1 text-primary"></i> Invest ₹10,000 / month
                         </button>
+                        <button type="button" class="adviser-chip" data-prompt="मुझे हर महीने ₹10,000 कहाँ निवेश करने चाहिए?">
+                            <i class="fas fa-microphone-alt me-1 text-success"></i> हर महीने ₹10,000 (हिन्दी)
+                        </button>
                         <button type="button" class="adviser-chip" data-prompt="How should I invest a lump sum of 1 Lakh rupees?">
                             <i class="fas fa-microphone-alt me-1 text-primary"></i> ₹1 Lakh Lump Sum
+                        </button>
+                        <button type="button" class="adviser-chip" data-prompt="1 लाख रुपये एकमुश्त कहाँ लगाना सुरक्षित रहेगा?">
+                            <i class="fas fa-microphone-alt me-1 text-success"></i> ₹1 लाख एकमुश्त (हिन्दी)
                         </button>
                         <button type="button" class="adviser-chip" data-prompt="I am a beginner, where and how should I start investing?">
                             <i class="fas fa-microphone-alt me-1 text-primary"></i> Beginner Strategy
                         </button>
                         <button type="button" class="adviser-chip" data-prompt="Where to invest for retirement with low risk and NPS?">
                             <i class="fas fa-microphone-alt me-1 text-primary"></i> Retirement & NPS
+                        </button>
+                        <button type="button" class="adviser-chip" data-prompt="रिटायरमेंट के लिए सुरक्षित निवेश कैसे करें?">
+                            <i class="fas fa-microphone-alt me-1 text-success"></i> रिटायरमेंट और NPS (हिन्दी)
                         </button>
                         <button type="button" class="adviser-chip" data-prompt="How to invest safely for 1 year with capital protection?">
                             <i class="fas fa-microphone-alt me-1 text-primary"></i> Safe Capital (1 Year)
@@ -2224,6 +2274,36 @@
                             </div>
                             <div class="d-flex flex-wrap gap-2" id="adviserExploreLinks">
                                 <!-- Links injected dynamically -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Login & Profile Setup Call To Action Banner -->
+                    <div class="adviser-cta-banner p-3 mb-3 rounded-3" id="adviserCtaCard" style="background: linear-gradient(135deg, rgba(37,99,235,0.07) 0%, rgba(16,185,129,0.07) 100%); border: 1.5px solid rgba(37,99,235,0.25);">
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <div style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; box-shadow: 0 4px 12px rgba(37,99,235,0.25); flex-shrink: 0;">
+                                    <i class="fas fa-user-gear"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-bold text-dark fs-6" id="adviserCtaTitle">
+                                        Personalize Your FOLIUX Strategy
+                                    </div>
+                                    <div class="text-muted small" id="adviserCtaDesc">
+                                        For more details or personalized portfolio insights, please log in and set up your investment profile accordingly.
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                {% if user.is_authenticated %}
+                                    <a href="{% url 'edit_profile' %}" class="btn btn-primary btn-sm px-3 py-2 fw-bold rounded-pill shadow-sm" id="adviserCtaBtn">
+                                        <i class="fas fa-sliders me-1"></i> Update Profile
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'login' %}?next={% url 'edit_profile' %}" class="btn btn-primary btn-sm px-3 py-2 fw-bold rounded-pill shadow-sm" id="adviserCtaBtn">
+                                        <i class="fas fa-sign-in-alt me-1"></i> Log In & Setup Profile
+                                    </a>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -3324,6 +3404,38 @@
             const audioStatusSub = document.getElementById('audioStatusSub');
             const voiceSpeedText = document.getElementById('voiceSpeedText');
 
+            // Language Selector Buttons
+            const btnVoiceLangAuto = document.getElementById('btnVoiceLangAuto');
+            const btnVoiceLangHi = document.getElementById('btnVoiceLangHi');
+            const btnVoiceLangEn = document.getElementById('btnVoiceLangEn');
+            let selectedAudioLang = 'auto'; // 'auto', 'hi', or 'en'
+            let currentAdviceLang = 'en';
+
+            function setAudioLanguage(lang) {
+                selectedAudioLang = lang;
+                [btnVoiceLangAuto, btnVoiceLangHi, btnVoiceLangEn].forEach(btn => {
+                    if (btn) btn.classList.remove('active');
+                });
+
+                if (lang === 'hi') {
+                    if (btnVoiceLangHi) btnVoiceLangHi.classList.add('active');
+                    if (queryInput) queryInput.placeholder = "बोलें या लिखें: 'मुझे हर महीने ₹10,000 कहाँ निवेश करने चाहिए?'...";
+                    if (voiceStatusText) voiceStatusText.textContent = "सुन रहा हूँ... कृपया अपना निवेश प्रश्न बोलें";
+                } else if (lang === 'en') {
+                    if (btnVoiceLangEn) btnVoiceLangEn.classList.add('active');
+                    if (queryInput) queryInput.placeholder = "Speak or type: 'Where should I invest ₹10,000 monthly for retirement?'...";
+                    if (voiceStatusText) voiceStatusText.textContent = "Listening... Speak your investment question now";
+                } else {
+                    if (btnVoiceLangAuto) btnVoiceLangAuto.classList.add('active');
+                    if (queryInput) queryInput.placeholder = "Speak or type: 'Where should I invest ₹10,000 monthly for retirement?'...";
+                    if (voiceStatusText) voiceStatusText.textContent = "Listening... Speak your investment question now";
+                }
+            }
+
+            if (btnVoiceLangAuto) btnVoiceLangAuto.addEventListener('click', () => setAudioLanguage('auto'));
+            if (btnVoiceLangHi) btnVoiceLangHi.addEventListener('click', () => setAudioLanguage('hi'));
+            if (btnVoiceLangEn) btnVoiceLangEn.addEventListener('click', () => setAudioLanguage('en'));
+
             let currentSpeechText = "";
             let currentUtterance = null;
             let currentSpeechRate = 1.0;
@@ -3343,7 +3455,11 @@
                     isRecognizing = true;
                     if (micBtn) micBtn.classList.add('recording');
                     if (voiceStatusBar) voiceStatusBar.classList.remove('d-none');
-                    if (voiceStatusText) voiceStatusText.textContent = "Listening... Speak your investment question now";
+                    if (voiceStatusText) {
+                        voiceStatusText.textContent = (selectedAudioLang === 'hi') ?
+                            "सुन रहा हूँ... अपना निवेश संबंधी प्रश्न बोलें" :
+                            "Listening... Speak your investment question now";
+                    }
                 };
 
                 recognition.onresult = function (event) {
@@ -3365,7 +3481,11 @@
 
                     if (finalTranscript.trim().length > 0) {
                         // User finished speaking a full sentence
-                        if (voiceStatusText) voiceStatusText.textContent = `Captured: "${finalTranscript.trim()}"`;
+                        if (voiceStatusText) {
+                            voiceStatusText.textContent = (selectedAudioLang === 'hi') ?
+                                `पहचाना गया: "${finalTranscript.trim()}"` :
+                                `Captured: "${finalTranscript.trim()}"`;
+                        }
                         setTimeout(() => {
                             stopRecognition();
                             executeAdviserQuery(finalTranscript.trim());
@@ -3379,9 +3499,13 @@
                     if (voiceStatusBar) {
                         voiceStatusBar.classList.remove('d-none');
                         if (event.error === 'not-allowed') {
-                            voiceStatusText.textContent = "Microphone access denied. Please type your question in the box.";
+                            voiceStatusText.textContent = (selectedAudioLang === 'hi') ?
+                                "माइक्रोफ़ोन की अनुमति नहीं मिली। कृपया नीचे लिखकर पूछें।" :
+                                "Microphone access denied. Please type your question in the box.";
                         } else if (event.error === 'no-speech') {
-                            voiceStatusText.textContent = "No voice heard. Click the mic again or type your question.";
+                            voiceStatusText.textContent = (selectedAudioLang === 'hi') ?
+                                "कोई आवाज़ नहीं सुनी गई। माइक पर दोबारा क्लिक करें या टाइप करें।" :
+                                "No voice heard. Click the mic again or type your question.";
                         } else {
                             voiceStatusText.textContent = `Microphone notice: ${event.error}. You can also type below.`;
                         }
@@ -3404,6 +3528,16 @@
                 }
                 // Stop any audio playing
                 stopSpeech();
+
+                // Set recognition language based on selected button
+                if (selectedAudioLang === 'hi') {
+                    recognition.lang = 'hi-IN';
+                    if (voiceStatusText) voiceStatusText.textContent = "सुन रहा हूँ... अपना निवेश प्रश्न बोलें";
+                } else {
+                    recognition.lang = 'en-IN';
+                    if (voiceStatusText) voiceStatusText.textContent = "Listening... Speak your investment question now";
+                }
+
                 try {
                     recognition.start();
                 } catch (e) {
@@ -3514,7 +3648,10 @@
                             'Content-Type': 'application/json',
                             'X-CSRFToken': csrfToken
                         },
-                        body: JSON.stringify({ query: queryText })
+                        body: JSON.stringify({
+                            query: queryText,
+                            language: selectedAudioLang
+                        })
                     });
 
                     const data = await response.json();
@@ -3606,6 +3743,18 @@
                     `).join('');
                 }
 
+                // Render Personalized Profile CTA Card
+                if (data.login_cta) {
+                    const ctaTitle = document.getElementById('adviserCtaTitle');
+                    const ctaDesc = document.getElementById('adviserCtaDesc');
+                    const ctaBtn = document.getElementById('adviserCtaBtn');
+                    if (ctaTitle && data.login_cta.title) ctaTitle.textContent = data.login_cta.title;
+                    if (ctaDesc && data.login_cta.message) ctaDesc.textContent = data.login_cta.message;
+                    if (ctaBtn && data.login_cta.button_text) {
+                        ctaBtn.innerHTML = `<i class="fas fa-user-check me-1"></i> ${data.login_cta.button_text}`;
+                    }
+                }
+
                 // Disclaimer
                 const discEl = document.getElementById('adviserDisclaimerText');
                 if (discEl && data.disclaimer) discEl.textContent = data.disclaimer;
@@ -3616,13 +3765,14 @@
 
                 // Play Audio Speech
                 currentSpeechText = data.spoken_text || "";
+                currentAdviceLang = data.language || "en";
                 if (currentSpeechText) {
-                    speakAdvice(currentSpeechText);
+                    speakAdvice(currentSpeechText, currentAdviceLang);
                 }
             }
 
             // 4. Text-to-Speech (Web Speech Synthesis)
-            function speakAdvice(textToSpeak) {
+            function speakAdvice(textToSpeak, lang) {
                 if (!window.speechSynthesis) {
                     if (audioStatusLabel) audioStatusLabel.textContent = "Audio narration unavailable in browser";
                     if (audioStatusSub) audioStatusSub.textContent = "Please read the text advice above";
@@ -3635,50 +3785,61 @@
                 currentUtterance.rate = currentSpeechRate;
                 currentUtterance.pitch = 1.0;
 
-                // Select voice: Prefer English (India) or natural English voices
+                const isHindi = (lang === 'hi') || /[\u0900-\u097F]/.test(textToSpeak);
+                currentUtterance.lang = isHindi ? 'hi-IN' : 'en-IN';
+
+                // Select voice: Prefer Hindi voice when isHindi is true
                 const voices = window.speechSynthesis.getVoices();
                 if (voices && voices.length > 0) {
-                    const preferredVoice = voices.find(v => v.lang.includes('en-IN')) ||
-                                           voices.find(v => v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Online')) ||
-                                           voices.find(v => v.lang.startsWith('en'));
-                    if (preferredVoice) {
-                        currentUtterance.voice = preferredVoice;
+                    if (isHindi) {
+                        const hindiVoice = voices.find(v => (v.lang && (v.lang.toLowerCase().includes('hi-in') || v.lang.toLowerCase().startsWith('hi'))) ||
+                                                            (v.name && (v.name.includes('Hindi') || v.name.includes('हिन्दी') || v.name.includes('Swara') || v.name.includes('Madhur') || v.name.includes('Kalpana'))));
+                        if (hindiVoice) {
+                            currentUtterance.voice = hindiVoice;
+                        }
+                    } else {
+                        const preferredVoice = voices.find(v => v.lang.includes('en-IN')) ||
+                                               voices.find(v => v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Online')) ||
+                                               voices.find(v => v.lang.startsWith('en'));
+                        if (preferredVoice) {
+                            currentUtterance.voice = preferredVoice;
+                        }
                     }
                 }
 
                 currentUtterance.onstart = function () {
                     isSpeakingActive = true;
                     if (audioEqualizer) audioEqualizer.classList.add('playing');
-                    if (audioStatusLabel) audioStatusLabel.textContent = "Speaking FOLIUX Advice...";
-                    if (audioStatusSub) audioStatusSub.textContent = "Listen to rule-based allocation & execution steps";
+                    if (audioStatusLabel) audioStatusLabel.textContent = isHindi ? "FOLIUX सलाह बोली जा रही है..." : "Speaking FOLIUX Advice...";
+                    if (audioStatusSub) audioStatusSub.textContent = isHindi ? "अनुशासित आवंटन और नियमों को सुनें" : "Listen to rule-based allocation & execution steps";
                     if (voicePlayIcon) voicePlayIcon.className = "fas fa-pause me-1";
-                    if (voicePlayText) voicePlayText.textContent = "Pause";
+                    if (voicePlayText) voicePlayText.textContent = isHindi ? "रोकें" : "Pause";
                     if (btnVoicePlayPause) btnVoicePlayPause.classList.add('active');
                 };
 
                 currentUtterance.onpause = function () {
                     if (audioEqualizer) audioEqualizer.classList.remove('playing');
-                    if (audioStatusLabel) audioStatusLabel.textContent = "Audio Paused";
+                    if (audioStatusLabel) audioStatusLabel.textContent = isHindi ? "ऑडियो रुका हुआ है" : "Audio Paused";
                     if (voicePlayIcon) voicePlayIcon.className = "fas fa-play me-1";
-                    if (voicePlayText) voicePlayText.textContent = "Resume";
+                    if (voicePlayText) voicePlayText.textContent = isHindi ? "जारी रखें" : "Resume";
                     if (btnVoicePlayPause) btnVoicePlayPause.classList.remove('active');
                 };
 
                 currentUtterance.onresume = function () {
                     if (audioEqualizer) audioEqualizer.classList.add('playing');
-                    if (audioStatusLabel) audioStatusLabel.textContent = "Speaking FOLIUX Advice...";
+                    if (audioStatusLabel) audioStatusLabel.textContent = isHindi ? "FOLIUX सलाह बोली जा रही है..." : "Speaking FOLIUX Advice...";
                     if (voicePlayIcon) voicePlayIcon.className = "fas fa-pause me-1";
-                    if (voicePlayText) voicePlayText.textContent = "Pause";
+                    if (voicePlayText) voicePlayText.textContent = isHindi ? "रोकें" : "Pause";
                     if (btnVoicePlayPause) btnVoicePlayPause.classList.add('active');
                 };
 
                 currentUtterance.onend = function () {
                     isSpeakingActive = false;
                     if (audioEqualizer) audioEqualizer.classList.remove('playing');
-                    if (audioStatusLabel) audioStatusLabel.textContent = "Audio Finished";
-                    if (audioStatusSub) audioStatusSub.textContent = "Click Replay to listen again";
+                    if (audioStatusLabel) audioStatusLabel.textContent = isHindi ? "ऑडियो समाप्त" : "Audio Finished";
+                    if (audioStatusSub) audioStatusSub.textContent = isHindi ? "दोबारा सुनने के लिए Replay दबाएं" : "Click Replay to listen again";
                     if (voicePlayIcon) voicePlayIcon.className = "fas fa-play me-1";
-                    if (voicePlayText) voicePlayText.textContent = "Play";
+                    if (voicePlayText) voicePlayText.textContent = isHindi ? "चलाएं" : "Play";
                     if (btnVoicePlayPause) btnVoicePlayPause.classList.remove('active');
                 };
 
@@ -3686,7 +3847,7 @@
                     console.warn("Speech synthesis notice:", err);
                     isSpeakingActive = false;
                     if (audioEqualizer) audioEqualizer.classList.remove('playing');
-                    if (audioStatusLabel) audioStatusLabel.textContent = "Audio Ready";
+                    if (audioStatusLabel) audioStatusLabel.textContent = isHindi ? "ऑडियो तैयार" : "Audio Ready";
                 };
 
                 window.speechSynthesis.speak(currentUtterance);
@@ -3698,9 +3859,9 @@
                 }
                 isSpeakingActive = false;
                 if (audioEqualizer) audioEqualizer.classList.remove('playing');
-                if (audioStatusLabel) audioStatusLabel.textContent = "Audio Stopped";
+                if (audioStatusLabel) audioStatusLabel.textContent = (currentAdviceLang === 'hi') ? "ऑडियो रोका गया" : "Audio Stopped";
                 if (voicePlayIcon) voicePlayIcon.className = "fas fa-play me-1";
-                if (voicePlayText) voicePlayText.textContent = "Play";
+                if (voicePlayText) voicePlayText.textContent = (currentAdviceLang === 'hi') ? "चलाएं" : "Play";
                 if (btnVoicePlayPause) btnVoicePlayPause.classList.remove('active');
             }
 
@@ -3715,7 +3876,7 @@
                             window.speechSynthesis.pause();
                         }
                     } else if (currentSpeechText) {
-                        speakAdvice(currentSpeechText);
+                        speakAdvice(currentSpeechText, currentAdviceLang);
                     }
                 });
             }
@@ -3723,7 +3884,7 @@
             if (btnVoiceReplay) {
                 btnVoiceReplay.addEventListener('click', function () {
                     if (currentSpeechText) {
-                        speakAdvice(currentSpeechText);
+                        speakAdvice(currentSpeechText, currentAdviceLang);
                     }
                 });
             }
@@ -3746,7 +3907,7 @@
 
                     // If currently speaking, restart with new speed
                     if (window.speechSynthesis && window.speechSynthesis.speaking && currentSpeechText) {
-                        speakAdvice(currentSpeechText);
+                        speakAdvice(currentSpeechText, currentAdviceLang);
                     }
                 });
             });
