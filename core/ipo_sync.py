@@ -212,22 +212,24 @@ def auto_sync_foliux_ipos(
                     existing_ipo.end_date = end_date
                     updated_fields = True
 
-                # 2nd Day Advice Rule
-                is_second_day = (today == (existing_ipo.start_date + timedelta(days=1)))
+                # Advice evaluation
+                is_after_start = (today > existing_ipo.start_date)
+                is_past_or_closing = (today >= existing_ipo.end_date)
                 sub = float(existing_ipo.subscription_times or 0)
                 gmp = float(existing_ipo.gmp_percent or 0)
+                passed = (sub >= 3.0 and gmp > 30.0)
 
-                if is_second_day:
-                    if sub >= 3.0 and gmp > 30.0:
-                        if existing_ipo.advise != 'APPLY':
-                            existing_ipo.advise = 'APPLY'
-                            updated_fields = True
-                            logger.info(f"IPO '{existing_ipo.name}' updated to APPLY on 2nd day (Sub: {sub}x, GMP: {gmp}%)")
-                    else:
-                        if existing_ipo.advise != 'WAITING':
-                            existing_ipo.advise = 'WAITING'
-                            updated_fields = True
-                            logger.info(f"IPO '{existing_ipo.name}' set to WAITING on 2nd day (Sub: {sub}x, GMP: {gmp}%)")
+                if is_past_or_closing:
+                    target_advise = 'APPLY' if passed else 'NON_APPLY'
+                elif is_after_start:
+                    target_advise = 'APPLY' if passed else 'WAITING'
+                else:
+                    target_advise = existing_ipo.advise or 'WAITING'
+
+                if existing_ipo.advise != target_advise:
+                    existing_ipo.advise = target_advise
+                    updated_fields = True
+                    logger.info(f"IPO '{existing_ipo.name}' updated to {target_advise} (Sub: {sub}x, GMP: {gmp}%)")
 
                 if updated_fields:
                     existing_ipo.save()
@@ -291,17 +293,24 @@ def auto_sync_foliux_ipos(
                             except Exception:
                                 pass
 
-            # Re-evaluate 2nd day advice
-            is_second_day = (today == (db_ipo.start_date + timedelta(days=1)))
+            # Re-evaluate advice based on enriched metrics
+            is_after_start = (today > db_ipo.start_date)
+            is_past_or_closing = (today >= db_ipo.end_date)
             sub = float(db_ipo.subscription_times or 0)
             gmp = float(db_ipo.gmp_percent or 0)
-            if is_second_day:
-                if sub >= 3.0 and gmp > 30.0 and db_ipo.advise != 'APPLY':
-                    db_ipo.advise = 'APPLY'
-                    db_updated = True
-                elif (sub < 3.0 or gmp <= 30.0) and db_ipo.advise == 'APPLY':
-                    db_ipo.advise = 'WAITING'
-                    db_updated = True
+            passed = (sub >= 3.0 and gmp > 30.0)
+
+            if is_past_or_closing:
+                target_advise = 'APPLY' if passed else 'NON_APPLY'
+            elif is_after_start:
+                target_advise = 'APPLY' if passed else 'WAITING'
+            else:
+                target_advise = db_ipo.advise or 'WAITING'
+
+            if db_ipo.advise != target_advise:
+                db_ipo.advise = target_advise
+                db_updated = True
+                logger.info(f"IPO '{db_ipo.name}' advise set to {target_advise} (Sub: {sub}x, GMP: {gmp}%)")
 
             if db_updated:
                 db_ipo.save()

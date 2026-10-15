@@ -326,3 +326,93 @@ class IPOAllotmentIntegrationTests(TestCase):
         self.assertIsNotNone(m2)
         self.assertEqual(m2['name'], 'Zetwerk')
 
+
+class IPORuleEvaluationTests(TestCase):
+
+    def test_extract_ipo_metrics_from_model_fields(self):
+        """Test extract_ipo_metrics extracts directly from Decimal fields on the IPO model."""
+        from core.ipo_rules import extract_ipo_metrics
+        ipo = IPO.objects.create(
+            name="Alpha Solar Power",
+            start_date=timezone.localdate(),
+            end_date=timezone.localdate() + timezone.timedelta(days=2),
+            subscription_times=Decimal('16.56'),
+            gmp_percent=Decimal('32.84'),
+            notes="General company description with no numbers here.",
+            advise="WAITING"
+        )
+        sub, gmp = extract_ipo_metrics(ipo)
+        self.assertEqual(sub, 16.56)
+        self.assertEqual(gmp, 32.84)
+
+    def test_extract_ipo_metrics_text_fallback(self):
+        """Test fallback to regex parsing if model fields are null."""
+        from core.ipo_rules import extract_ipo_metrics
+        ipo = IPO.objects.create(
+            name="Beta Logistics",
+            start_date=timezone.localdate(),
+            end_date=timezone.localdate() + timezone.timedelta(days=2),
+            notes="Subscription: 4.80x. Expected Listing Gain: 35.5% on NSE.",
+            advise="WAITING"
+        )
+        sub, gmp = extract_ipo_metrics(ipo)
+        self.assertEqual(sub, 4.8)
+        self.assertEqual(gmp, 35.5)
+
+    def test_evaluate_closing_day_apply(self):
+        """Test IPO on closing day with sub >= 3x and GMP > 30% gets advise=APPLY."""
+        from core.ipo_rules import evaluate_closing_day_ipo_advice
+        today = timezone.localdate()
+        ipo = IPO.objects.create(
+            name="Gamma Precision",
+            start_date=today - timezone.timedelta(days=2),
+            end_date=today,  # closing today
+            subscription_times=Decimal('10.50'),
+            gmp_percent=Decimal('38.00'),
+            advise="WAITING"
+        )
+        results = evaluate_closing_day_ipo_advice(ipo=ipo, force=True)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]['new_advise'], 'APPLY')
+        ipo.refresh_from_db()
+        self.assertEqual(ipo.advise, 'APPLY')
+        self.assertIn("Automated Closing Day Evaluation", ipo.notes)
+
+    def test_evaluate_closing_day_non_apply(self):
+        """Test IPO on closing day with low GMP gets advise=NON_APPLY."""
+        from core.ipo_rules import evaluate_closing_day_ipo_advice
+        today = timezone.localdate()
+        ipo = IPO.objects.create(
+            name="Delta Retail",
+            start_date=today - timezone.timedelta(days=2),
+            end_date=today,
+            subscription_times=Decimal('25.00'),  # high subscription
+            gmp_percent=Decimal('5.00'),         # low GMP <= 30%
+            advise="WAITING"
+        )
+        results = evaluate_closing_day_ipo_advice(ipo=ipo, force=True)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]['new_advise'], 'NON_APPLY')
+        ipo.refresh_from_db()
+        self.assertEqual(ipo.advise, 'NON_APPLY')
+        self.assertIn("GMP (5.0%) <= 30%", ipo.notes)
+
+    def test_evaluate_past_closed_ipo(self):
+        """Test IPO that already closed in the past gets evaluated instead of staying stuck in WAITING."""
+        from core.ipo_rules import evaluate_closing_day_ipo_advice
+        today = timezone.localdate()
+        ipo = IPO.objects.create(
+            name="Epsilon Past Closed Tech",
+            start_date=today - timezone.timedelta(days=10),
+            end_date=today - timezone.timedelta(days=7),  # closed a week ago
+            subscription_times=Decimal('1.50'),
+            gmp_percent=Decimal('10.00'),
+            advise="WAITING"
+        )
+        results = evaluate_closing_day_ipo_advice(ipo=ipo)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]['new_advise'], 'NON_APPLY')
+        ipo.refresh_from_db()
+        self.assertEqual(ipo.advise, 'NON_APPLY')
+
+
