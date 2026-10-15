@@ -3437,9 +3437,12 @@
             if (btnVoiceLangEn) btnVoiceLangEn.addEventListener('click', () => setAudioLanguage('en'));
 
             let currentSpeechText = "";
+            let currentSpeechPhoneticText = "";
+            let currentAdviceLang = "en";
             let currentUtterance = null;
             let currentSpeechRate = 1.0;
             let isSpeakingActive = false;
+            let speechKeepAliveTimer = null;
             let recognition = null;
             let isRecognizing = false;
 
@@ -3630,6 +3633,12 @@
             async function executeAdviserQuery(queryText) {
                 if (!queryText || queryText.trim().length === 0) return;
 
+                // Prime browser audio context synchronously on user gesture (unblocks Chrome autoplay)
+                if (window.speechSynthesis) {
+                    window.speechSynthesis.cancel();
+                    try { window.speechSynthesis.resume(); } catch (e) { }
+                }
+
                 // Stop any previous speech
                 stopSpeech();
                 stopRecognition();
@@ -3765,50 +3774,111 @@
 
                 // Play Audio Speech
                 currentSpeechText = data.spoken_text || "";
+                currentSpeechPhoneticText = data.spoken_text_phonetic || data.spoken_text || "";
                 currentAdviceLang = data.language || "en";
                 if (currentSpeechText) {
-                    speakAdvice(currentSpeechText, currentAdviceLang);
+                    speakAdvice(currentSpeechText, currentAdviceLang, currentSpeechPhoneticText);
                 }
             }
 
             // 4. Text-to-Speech (Web Speech Synthesis)
-            function speakAdvice(textToSpeak, lang) {
+            function speakAdvice(textToSpeak, lang, phoneticText, isRetry) {
                 if (!window.speechSynthesis) {
                     if (audioStatusLabel) audioStatusLabel.textContent = "Audio narration unavailable in browser";
                     if (audioStatusSub) audioStatusSub.textContent = "Please read the text advice above";
                     return;
                 }
 
+                if (speechKeepAliveTimer) {
+                    clearInterval(speechKeepAliveTimer);
+                    speechKeepAliveTimer = null;
+                }
+
                 window.speechSynthesis.cancel(); // Cancel any ongoing speech
 
-                currentUtterance = new SpeechSynthesisUtterance(textToSpeak);
-                currentUtterance.rate = currentSpeechRate;
-                currentUtterance.pitch = 1.0;
+                // Ensure voices are loaded (Chrome loads them asynchronously)
+                const voices = window.speechSynthesis.getVoices() || [];
+                if (voices.length === 0 && !isRetry) {
+                    setTimeout(() => {
+                        speakAdvice(textToSpeak, lang, phoneticText, true);
+                    }, 150);
+                    return;
+                }
 
                 const isHindi = (lang === 'hi') || /[\u0900-\u097F]/.test(textToSpeak);
-                currentUtterance.lang = isHindi ? 'hi-IN' : 'en-IN';
 
-                // Select voice: Prefer Hindi voice when isHindi is true
-                const voices = window.speechSynthesis.getVoices();
-                if (voices && voices.length > 0) {
-                    if (isHindi) {
-                        const hindiVoice = voices.find(v => (v.lang && (v.lang.toLowerCase().includes('hi-in') || v.lang.toLowerCase().startsWith('hi'))) ||
-                                                            (v.name && (v.name.includes('Hindi') || v.name.includes('हिन्दी') || v.name.includes('Swara') || v.name.includes('Madhur') || v.name.includes('Kalpana'))));
-                        if (hindiVoice) {
-                            currentUtterance.voice = hindiVoice;
-                        }
-                    } else {
-                        const preferredVoice = voices.find(v => v.lang.includes('en-IN')) ||
-                                               voices.find(v => v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('Online')) ||
-                                               voices.find(v => v.lang.startsWith('en'));
-                        if (preferredVoice) {
-                            currentUtterance.voice = preferredVoice;
-                        }
-                    }
+                // Find native Hindi voice on the system if available
+                let hindiVoice = null;
+                if (isHindi && voices.length > 0) {
+                    hindiVoice = voices.find(v => {
+                        const vLang = (v.lang || '').toLowerCase();
+                        const vName = (v.name || '').toLowerCase();
+                        return vLang.includes('hi-in') || vLang.startsWith('hi') ||
+                               vName.includes('hindi') || vName.includes('हिन्दी') ||
+                               vName.includes('swara') || vName.includes('madhur') ||
+                               vName.includes('kalpana') || vName.includes('hemant');
+                    });
                 }
+
+                // Decide whether we can speak native Devanagari or need Romanized Hindi fallback
+                // Most Windows/Linux systems do not install the Hindi TTS voice pack by default.
+                // When an English voice encounters Devanagari Unicode, it fails silently or produces no audio.
+                // Using Romanized Hindi with the best English/Indian English voice produces clear, audible speech!
+                let finalSpeechText = textToSpeak;
+                let targetLang = 'en-IN';
+                let selectedVoice = null;
+
+                if (isHindi) {
+                    if (hindiVoice) {
+                        // Native Hindi voice is installed on user's system!
+                        finalSpeechText = textToSpeak;
+                        targetLang = 'hi-IN';
+                        selectedVoice = hindiVoice;
+                    } else if (phoneticText && phoneticText.trim().length > 0) {
+                        // Fall back to Romanized Hindi with natural Indian English voice
+                        finalSpeechText = phoneticText;
+                        targetLang = 'en-IN';
+                        selectedVoice = voices.find(v => (v.lang || '').toLowerCase().includes('en-in')) ||
+                                        voices.find(v => (v.name || '').toLowerCase().includes('india')) ||
+                                        voices.find(v => (v.name || '').toLowerCase().includes('natural') || (v.name || '').toLowerCase().includes('google')) ||
+                                        voices.find(v => (v.lang || '').toLowerCase().startsWith('en')) ||
+                                        null;
+                    } else {
+                        targetLang = 'hi-IN';
+                    }
+                } else {
+                    targetLang = 'en-IN';
+                    selectedVoice = voices.find(v => (v.lang || '').toLowerCase().includes('en-in')) ||
+                                    voices.find(v => (v.name || '').toLowerCase().includes('natural') || (v.name || '').toLowerCase().includes('google') || (v.name || '').toLowerCase().includes('online')) ||
+                                    voices.find(v => (v.lang || '').toLowerCase().startsWith('en')) ||
+                                    null;
+                }
+
+                currentUtterance = new SpeechSynthesisUtterance(finalSpeechText);
+                currentUtterance.rate = currentSpeechRate;
+                currentUtterance.pitch = 1.0;
+                currentUtterance.lang = targetLang;
+                if (selectedVoice) {
+                    currentUtterance.voice = selectedVoice;
+                }
+
+                let fallbackAttempted = false;
 
                 currentUtterance.onstart = function () {
                     isSpeakingActive = true;
+                    if (speechKeepAliveTimer) clearInterval(speechKeepAliveTimer);
+                    // Chrome 15-second speech synthesis keepalive
+                    speechKeepAliveTimer = setInterval(() => {
+                        if (!window.speechSynthesis || !isSpeakingActive) {
+                            clearInterval(speechKeepAliveTimer);
+                            return;
+                        }
+                        if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+                            window.speechSynthesis.pause();
+                            window.speechSynthesis.resume();
+                        }
+                    }, 10000);
+
                     if (audioEqualizer) audioEqualizer.classList.add('playing');
                     if (audioStatusLabel) audioStatusLabel.textContent = isHindi ? "FOLIUX सलाह बोली जा रही है..." : "Speaking FOLIUX Advice...";
                     if (audioStatusSub) audioStatusSub.textContent = isHindi ? "अनुशासित आवंटन और नियमों को सुनें" : "Listen to rule-based allocation & execution steps";
@@ -3818,6 +3888,10 @@
                 };
 
                 currentUtterance.onpause = function () {
+                    if (speechKeepAliveTimer) {
+                        clearInterval(speechKeepAliveTimer);
+                        speechKeepAliveTimer = null;
+                    }
                     if (audioEqualizer) audioEqualizer.classList.remove('playing');
                     if (audioStatusLabel) audioStatusLabel.textContent = isHindi ? "ऑडियो रुका हुआ है" : "Audio Paused";
                     if (voicePlayIcon) voicePlayIcon.className = "fas fa-play me-1";
@@ -3826,6 +3900,18 @@
                 };
 
                 currentUtterance.onresume = function () {
+                    if (speechKeepAliveTimer) clearInterval(speechKeepAliveTimer);
+                    speechKeepAliveTimer = setInterval(() => {
+                        if (!window.speechSynthesis || !isSpeakingActive) {
+                            clearInterval(speechKeepAliveTimer);
+                            return;
+                        }
+                        if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
+                            window.speechSynthesis.pause();
+                            window.speechSynthesis.resume();
+                        }
+                    }, 10000);
+
                     if (audioEqualizer) audioEqualizer.classList.add('playing');
                     if (audioStatusLabel) audioStatusLabel.textContent = isHindi ? "FOLIUX सलाह बोली जा रही है..." : "Speaking FOLIUX Advice...";
                     if (voicePlayIcon) voicePlayIcon.className = "fas fa-pause me-1";
@@ -3834,6 +3920,10 @@
                 };
 
                 currentUtterance.onend = function () {
+                    if (speechKeepAliveTimer) {
+                        clearInterval(speechKeepAliveTimer);
+                        speechKeepAliveTimer = null;
+                    }
                     isSpeakingActive = false;
                     if (audioEqualizer) audioEqualizer.classList.remove('playing');
                     if (audioStatusLabel) audioStatusLabel.textContent = isHindi ? "ऑडियो समाप्त" : "Audio Finished";
@@ -3845,15 +3935,33 @@
 
                 currentUtterance.onerror = function (err) {
                     console.warn("Speech synthesis notice:", err);
+                    if (speechKeepAliveTimer) {
+                        clearInterval(speechKeepAliveTimer);
+                        speechKeepAliveTimer = null;
+                    }
+                    if (!fallbackAttempted && isHindi && phoneticText && finalSpeechText !== phoneticText) {
+                        // Native Devanagari failed on this platform (e.g. language-unavailable error).
+                        // Fall back immediately to Romanized Hindi with the default/English voice!
+                        fallbackAttempted = true;
+                        speakAdvice(phoneticText, 'en', '', true);
+                        return;
+                    }
                     isSpeakingActive = false;
                     if (audioEqualizer) audioEqualizer.classList.remove('playing');
                     if (audioStatusLabel) audioStatusLabel.textContent = isHindi ? "ऑडियो तैयार" : "Audio Ready";
                 };
 
+                if (window.speechSynthesis.paused) {
+                    try { window.speechSynthesis.resume(); } catch (e) { }
+                }
                 window.speechSynthesis.speak(currentUtterance);
             }
 
             function stopSpeech() {
+                if (speechKeepAliveTimer) {
+                    clearInterval(speechKeepAliveTimer);
+                    speechKeepAliveTimer = null;
+                }
                 if (window.speechSynthesis) {
                     window.speechSynthesis.cancel();
                 }
@@ -3876,7 +3984,7 @@
                             window.speechSynthesis.pause();
                         }
                     } else if (currentSpeechText) {
-                        speakAdvice(currentSpeechText, currentAdviceLang);
+                        speakAdvice(currentSpeechText, currentAdviceLang, currentSpeechPhoneticText);
                     }
                 });
             }
@@ -3884,7 +3992,7 @@
             if (btnVoiceReplay) {
                 btnVoiceReplay.addEventListener('click', function () {
                     if (currentSpeechText) {
-                        speakAdvice(currentSpeechText, currentAdviceLang);
+                        speakAdvice(currentSpeechText, currentAdviceLang, currentSpeechPhoneticText);
                     }
                 });
             }
@@ -3907,7 +4015,7 @@
 
                     // If currently speaking, restart with new speed
                     if (window.speechSynthesis && window.speechSynthesis.speaking && currentSpeechText) {
-                        speakAdvice(currentSpeechText, currentAdviceLang);
+                        speakAdvice(currentSpeechText, currentAdviceLang, currentSpeechPhoneticText);
                     }
                 });
             });

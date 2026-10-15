@@ -2,7 +2,8 @@
 FOLIUX AI Audio & Voice Investment Adviser Engine.
 Provides rule-based portfolio allocation and execution guidance
 with dual output: rich structured text & natural speech synthesis text.
-Supports bilingual output (English and Hindi) with personalized profile CTA.
+Supports bilingual output (English and Hindi) with personalized profile CTA,
+including native Devanagari text and phonetic Romanized Hindi fallback for TTS.
 """
 
 import re
@@ -15,6 +16,7 @@ logger = logging.getLogger(__name__)
 # Mandatory closing notifications informing users to log in and configure their profile
 CLOSING_NOTICE_EN = "For more details or personalized portfolio advice, please log in and set up your investment profile accordingly."
 CLOSING_NOTICE_HI = "अधिक जानकारी और व्यक्तिगत सलाह के लिए, कृपया FOLIUX में लॉगिन करें और अपनी प्रोफ़ाइल सेट करें।"
+CLOSING_NOTICE_HI_PHONETIC = "Adhik jankari aur vyaktigat salah ke liye, kripya FOLIUX mein login karein aur apni profile set karein."
 
 DEVANAGARI_DIGITS = {
     '०': '0', '१': '1', '२': '2', '३': '3', '४': '4',
@@ -116,10 +118,15 @@ def parse_advisory_query(query: str, requested_lang: Optional[str] = None) -> Di
             "दस हजार": 10000,
             "दस हज़ार": 10000,
             "पंद्रह हजार": 15000,
+            "पंद्रह हज़ार": 15000,
             "बीस हजार": 20000,
+            "बीस हज़ार": 20000,
             "पच्चीस हजार": 25000,
+            "पच्चीस हज़ार": 25000,
             "तीस हजार": 30000,
+            "तीस हज़ार": 30000,
             "पचास हजार": 50000,
+            "पचास हज़ार": 50000,
             "एक लाख": 100000,
             "दो लाख": 200000,
             "पांच लाख": 500000,
@@ -254,7 +261,8 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
     """
     Generates rule-based, institutional-grade investment advice tailored for FOLIUX users.
     Returns structured visual data (allocations, execution steps) and clean spoken audio text.
-    Provides complete Hindi responses when query is in Hindi, concluding with profile setup advice.
+    Provides complete Hindi responses (Devanagari text + phonetic Romanized fallback)
+    when query is in Hindi, concluding with profile setup advice.
     """
     parsed = parse_advisory_query(query, requested_lang=requested_lang)
     lang = parsed['language']
@@ -354,7 +362,16 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 "बाजार में भावनाओं के आधार पर कभी फैसला न लें। हर महीने सैलरी आते ही ऑटोमैटिक निवेश करें, "
                 "बाजार 3 से 5 प्रतिशत गिरने पर अतिरिक्त यूनिट्स खरीदें, और 22 प्रतिशत का लाभ मिलने पर मुनाफा वसूलें।"
             )
+            spoken_body_phonetic = (
+                f"FOLIUX mein aapka swagat hai. Shuruati {mode_label_en} nivesh "
+                f"{'hetu ' + amount_str + ' ke liye ' if amount_str else ''}yeh aapka anushasit plan hai. "
+                "Apne nivesh ka 50 percent Nifty Fifty aur Junior Bees jaise majboot index ETF mein lagayein. "
+                "25 percent anushasit Flexi-Cap mutual fund mein, 10 percent Gold ETF mein, aur 15 percent emergency liquid fund mein rakhein. "
+                "Bazaar mein bhavnaon ke aadhar par kabhi faisla na lein. Har mahine salary aate hi automatic nivesh karein, "
+                "bazaar 3 se 5 percent girne par atirikt units kharidein, aur 22 percent ka labh milne par munafa vasulein."
+            )
             spoken_text = f"{spoken_body} {CLOSING_NOTICE_HI}"
+            spoken_text_phonetic = f"{spoken_body_phonetic} {CLOSING_NOTICE_HI_PHONETIC}"
 
             summary_text = (
                 "नए निवेशकों के लिए सबसे सफल रणनीति है: **कम लागत, इंडेक्स डायवर्सिफिकेशन और स्वचालित निवेश**। "
@@ -435,6 +452,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 "and harvest profits when holdings reach a 22 percent target gain."
             )
             spoken_text = f"{spoken_body} {CLOSING_NOTICE_EN}"
+            spoken_text_phonetic = spoken_text
 
             summary_text = (
                 "For first-time investors, the winning formula is **low fees, maximum diversification, and disciplined automation**. "
@@ -517,7 +535,16 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 "अपनी मासिक एसआईपी को हर साल 10 प्रतिशत बढ़ाएं। "
                 "10 से 15 साल धैर्यपूर्वक कंपाउंडिंग होने दें और बाजार के शोर से दूर रहें।"
             )
+            spoken_body_phonetic = (
+                f"Yeh aapki FOLIUX retirement aur wealth compounding ranniti hai{' ' + amount_str + ' ke liye' if amount_str else ''}. "
+                "Lambi avadhi ke retirement ke liye, 30 percent National Pension System yaani NPS mein lagayein, "
+                "jahan aapko Section 80CCD mein vishesh tax chhoot aur nyuntam kharch ka labh milta hai. "
+                "40 percent NiftyBees aur mukhya index ETF mein lagayein, 20 percent flexi-cap mutual fund mein, aur 10 percent gold mein rakhein. "
+                "Apni masik SIP ko har saal 10 percent badhayein. "
+                "10 se 15 saal dhairyapurvak compounding hone dein aur bazaar ke shor se door rahein."
+            )
             spoken_text = f"{spoken_body} {CLOSING_NOTICE_HI}"
+            spoken_text_phonetic = f"{spoken_body_phonetic} {CLOSING_NOTICE_HI_PHONETIC}"
 
             summary_text = (
                 "रिटायरमेंट संपत्ति का निर्माण **टैक्स-लाभ और अनुशासित स्टेप-अप निवेश** से होता है। "
@@ -596,6 +623,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 "By letting compounding work over 10 to 15 years and avoiding emotional withdrawals, you create enduring wealth."
             )
             spoken_text = f"{spoken_body} {CLOSING_NOTICE_EN}"
+            spoken_text_phonetic = spoken_text
 
             summary_text = (
                 "Retirement wealth is built on **tax-advantaged compounding and disciplined step-up investing**. "
@@ -672,7 +700,16 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 "15 प्रतिशत कॉरपोरेट बॉन्ड में और अधिकतम 10 प्रतिशत इंडेक्स ईटीएफ में रखें। "
                 "यह रणनीति आपके मूलधन को सुरक्षित रखते हुए सामान्य बचत खाते से बेहतर रिटर्न देती है।"
             )
+            spoken_body_phonetic = (
+                f"Kam avadhi aur surakshit poonji ke liye{' ' + amount_str + ' hetu' if amount_str else ''}, "
+                "poonji suraksha sabse mahatvapoorna hai. Is paise ko jokhim bhare share bazaar mein bilkul na lagayein. "
+                "40 percent anusoocheet bankon ki surakshit FD mein lagayein jo 7 se 7.5 percent byaj deti hain. "
+                "35 percent arbitrage aur liquid fund mein rakhein jahan tax ki bachat aur turant nikasi milti hai, "
+                "15 percent corporate bond mein aur adhiktam 10 percent index ETF mein rakhein. "
+                "Yeh ranniti aapke mool dhan ko surakshit rakhte hue sadharan bachat khate se behtar return deti hai."
+            )
             spoken_text = f"{spoken_body} {CLOSING_NOTICE_HI}"
+            spoken_text_phonetic = f"{spoken_body_phonetic} {CLOSING_NOTICE_HI_PHONETIC}"
 
             summary_text = (
                 "जब आपका लक्ष्य 1 से 2 साल का हो, तो **पहला नियम पूंजी की सुरक्षा है**। "
@@ -745,6 +782,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 "This protects your principal while beating ordinary savings rates."
             )
             spoken_text = f"{spoken_body} {CLOSING_NOTICE_EN}"
+            spoken_text_phonetic = spoken_text
 
             summary_text = (
                 "When your goal is within 1 to 2 years, **rule number one is capital protection**. "
@@ -827,7 +865,17 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 "15 प्रतिशत गोल्ड ईटीएफ में लगाएं, और 15 प्रतिशत कैश रिजर्व रखें। "
                 "बाजार में 3 से 5 प्रतिशत की गिरावट आने पर अतिरिक्त हिस्सा निवेश करें। यह तरीका मार्केट टॉप पर खरीदने के जोखिम को समाप्त करता है।"
             )
+            spoken_body_phonetic = (
+                f"Aapke {amount_str} ekmusht nivesh ke liye yeh FOLIUX sansthagat yojana hai. "
+                "Atyant mahatvapoorna niyam: ek hi din mein saara paisa bazaar mein na lagayein. "
+                "Pehle poori rakam ko liquid mutual fund mein rakhein aur wahan se 6 mahine ka systematic transfer plan shuru karein. "
+                "45 percent NiftyBees aur mukhya index ETF mein, 25 percent top flexi-cap fund mein, "
+                "15 percent Gold ETF mein lagayein, aur 15 percent cash reserve rakhein. "
+                "Bazaar mein 3 se 5 percent ki girawat aane par atirikt hissa nivesh karein. "
+                "Yeh tareeka market top par khareedne ke risk ko samapt karta hai."
+            )
             spoken_text = f"{spoken_body} {CLOSING_NOTICE_HI}"
+            spoken_text_phonetic = f"{spoken_body_phonetic} {CLOSING_NOTICE_HI_PHONETIC}"
 
             summary_text = (
                 f"जब आपके पास **{amount_str}** की एकमुश्त राशि हो, तो **सिस्टमैटिक ट्रांसफर (STP)** मार्केट टाइमिंग से कहीं बेहतर है। "
@@ -907,6 +955,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 "This dollar cost averaging prevents the regret of buying at the top."
             )
             spoken_text = f"{spoken_body} {CLOSING_NOTICE_EN}"
+            spoken_text_phonetic = spoken_text
 
             summary_text = (
                 f"When managing a lump sum of **{amount_str}**, disciplined **Systematic Transfer (STP)** beats market timing. "
@@ -919,6 +968,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
     else:
         if lang == 'hi':
             amt_disp = amount_str if amount_str else "₹10,000 / महीना"
+            amt_disp_phonetic = amount_str if amount_str else "₹10,000 per month"
             title = f"FOLIUX वेल्थ इंजीनियरिंग आवंटन ({amt_disp})"
 
             allocations = [
@@ -991,7 +1041,16 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 "हमारे दो सुनहरे नियम याद रखें: बाजार 3 से 5 प्रतिशत गिरने पर अतिरिक्त खरीदारी करें, "
                 "और जब भी किसी लॉट में 22 प्रतिशत का लाभ हो, मुनाफा वसूलें। यह आपके निवेश को भावनाओं से दूर रखता है।"
             )
+            spoken_body_phonetic = (
+                f"Aapke {amt_disp_phonetic} ke nivesh ke liye yeh FOLIUX ranniti hai. "
+                "Anushasit tareeke se lambi avadhi ki sampatti banane ke liye apne nivesh ko chaar spasht bhaagon mein baantein: "
+                "45 percent core index ETF jaise NiftyBees aur JuniorBees mein lagayein. 30 percent saabit Flexi-Cap mutual fund mein rakhein. "
+                "15 percent National Pension System mein retirement tax compounding ke liye lagayein, aur 10 percent Gold ETF mein rakhein. "
+                "Humare do sunhare niyam yaad rakhein: bazaar 3 se 5 percent girne par atirikt khareedari karein, "
+                "aur jab bhi kisi lot mein 22 percent ka labh ho, munafa vasulein. Yeh aapke nivesh ko bhavnaon se door rakhta hai."
+            )
             spoken_text = f"{spoken_body} {CLOSING_NOTICE_HI}"
+            spoken_text_phonetic = f"{spoken_body_phonetic} {CLOSING_NOTICE_HI_PHONETIC}"
 
             summary_text = (
                 f"**{amt_disp}** के साथ सबसे प्रमाणित रणनीति **कोर-एंड-सैटेलाइट मॉडल** है: "
@@ -1074,6 +1133,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 "and harvest profits whenever a lot reaches a 22 percent profit. This keeps emotions out of your money."
             )
             spoken_text = f"{spoken_body} {CLOSING_NOTICE_EN}"
+            spoken_text_phonetic = spoken_text
 
             summary_text = (
                 f"With **{amt_disp}**, the proven strategy is a **Core-and-Satellite framework**: "
@@ -1136,6 +1196,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
         'title': title,
         'summary': summary_text,
         'spoken_text': spoken_text,
+        'spoken_text_phonetic': spoken_text_phonetic,
         'allocations': allocations,
         'execution_steps': execution_steps,
         'suggested_links': suggested_links,

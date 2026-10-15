@@ -1,10 +1,12 @@
 import json
+import re
 from django.test import TestCase, Client
 from core.audio_adviser import (
     parse_advisory_query,
     generate_investment_advice,
     CLOSING_NOTICE_EN,
-    CLOSING_NOTICE_HI
+    CLOSING_NOTICE_HI,
+    CLOSING_NOTICE_HI_PHONETIC
 )
 
 class AudioAdviserEngineTests(TestCase):
@@ -66,6 +68,11 @@ class AudioAdviserEngineTests(TestCase):
         self.assertIn("लॉगिन", advice['spoken_text'])
         self.assertIn("प्रोफ़ाइल", advice['spoken_text'])
         self.assertEqual(advice['login_cta']['button_text'], 'लॉगिन करें और प्रोफ़ाइल सेट करें')
+        # Check phonetic Romanized Hindi fallback for devices lacking Hindi TTS pack
+        self.assertIn('spoken_text_phonetic', advice)
+        self.assertTrue(advice['spoken_text_phonetic'].strip().endswith(CLOSING_NOTICE_HI_PHONETIC))
+        # Ensure spoken_text_phonetic contains no Devanagari characters
+        self.assertIsNone(re.search(r'[\u0900-\u097F]', advice['spoken_text_phonetic']))
 
     def test_hindi_hinglish_query_detection_and_advice(self):
         advice = generate_investment_advice("mujhe 50000 invest karna hai safe tarike se")
@@ -74,11 +81,15 @@ class AudioAdviserEngineTests(TestCase):
         self.assertEqual(advice['parsed_query']['amount'], 50000)
         self.assertEqual(advice['parsed_query']['risk'], 'conservative')
         self.assertTrue(advice['spoken_text'].strip().endswith(CLOSING_NOTICE_HI))
+        self.assertTrue(advice['spoken_text_phonetic'].strip().endswith(CLOSING_NOTICE_HI_PHONETIC))
+        self.assertIsNone(re.search(r'[\u0900-\u097F]', advice['spoken_text_phonetic']))
 
     def test_explicit_hindi_language_flag(self):
         advice = generate_investment_advice("invest 15000 monthly", requested_lang="hi")
         self.assertEqual(advice['language'], 'hi')
         self.assertTrue(advice['spoken_text'].strip().endswith(CLOSING_NOTICE_HI))
+        self.assertTrue(advice['spoken_text_phonetic'].strip().endswith(CLOSING_NOTICE_HI_PHONETIC))
+        self.assertIsNone(re.search(r'[\u0900-\u097F]', advice['spoken_text_phonetic']))
 
 
 class AudioAdviserAPITests(TestCase):
@@ -112,6 +123,8 @@ class AudioAdviserAPITests(TestCase):
         self.assertEqual(data['status'], 'success')
         self.assertEqual(data['language'], 'hi')
         self.assertTrue(data['spoken_text'].strip().endswith(CLOSING_NOTICE_HI))
+        self.assertIn('spoken_text_phonetic', data)
+        self.assertTrue(data['spoken_text_phonetic'].strip().endswith(CLOSING_NOTICE_HI_PHONETIC))
         self.assertIn('लॉगिन करें', data['login_cta']['button_text'])
 
     def test_api_post_empty_query(self):
@@ -136,3 +149,5 @@ class AudioAdviserAPITests(TestCase):
         self.assertEqual(data['status'], 'success')
         self.assertEqual(data['language'], 'hi')
         self.assertTrue(data['spoken_text'].strip().endswith(CLOSING_NOTICE_HI))
+        self.assertIn('spoken_text_phonetic', data)
+        self.assertTrue(data['spoken_text_phonetic'].strip().endswith(CLOSING_NOTICE_HI_PHONETIC))
