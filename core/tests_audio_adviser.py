@@ -151,3 +151,64 @@ class AudioAdviserAPITests(TestCase):
         self.assertTrue(data['spoken_text'].strip().endswith(CLOSING_NOTICE_HI))
         self.assertIn('spoken_text_phonetic', data)
         self.assertTrue(data['spoken_text_phonetic'].strip().endswith(CLOSING_NOTICE_HI_PHONETIC))
+
+    def test_api_feedback_loop(self):
+        # 1. Generate an initial query advice
+        res = self.client.post(
+            '/api/audio-adviser/',
+            data=json.dumps({'query': 'Where should I invest 10000 monthly?'}),
+            content_type='application/json'
+        )
+        self.assertEqual(res.status_code, 200)
+        data = res.json()
+        query_id = data.get('query_id')
+        self.assertIsNotNone(query_id)
+        self.assertIn('learning_model', data)
+        self.assertIn('confidence_score', data['learning_model'])
+
+        # 2. Submit positive feedback
+        feedback_res = self.client.post(
+            '/api/audio-adviser/feedback/',
+            data=json.dumps({'query_id': query_id, 'feedback': 1, 'notes': 'Spot-on advice!'}),
+            content_type='application/json'
+        )
+        self.assertEqual(feedback_res.status_code, 200)
+        fb_data = feedback_res.json()
+        self.assertEqual(fb_data['status'], 'success')
+        self.assertIn('model_stats', fb_data)
+        self.assertGreaterEqual(fb_data['model_stats']['queries_analyzed'], 1)
+
+        # 3. Verify in database
+        from core.models import AdviserQueryLog
+        log_entry = AdviserQueryLog.objects.get(id=query_id)
+        self.assertEqual(log_entry.user_feedback, 1)
+        self.assertEqual(log_entry.feedback_notes, 'Spot-on advice!')
+
+
+class AudioAdviserSelfLearningTests(TestCase):
+    def test_market_regime_dip_adaptation(self):
+        market_context = {'raw_pct_change': -2.5, 'nifty_price': '24,200', 'nifty_change': '-600 (-2.5%)'}
+        advice = generate_investment_advice("Where should I invest 10000 monthly?", market_context=market_context)
+        self.assertEqual(advice['market_regime'], 'dip_opportunity')
+        self.assertIn('discount', advice['regime_insight'].lower())
+        # Spoken text should mention discount / pyramiding dip
+        self.assertIn("discount", advice['spoken_text'].lower())
+        total_pct = sum(a['percentage'] for a in advice['allocations'])
+        self.assertEqual(total_pct, 100)
+
+    def test_market_regime_momentum_adaptation(self):
+        market_context = {'raw_pct_change': 1.6, 'nifty_price': '25,100', 'nifty_change': '+400 (+1.6%)'}
+        advice = generate_investment_advice("Best mutual fund investment plan", market_context=market_context)
+        self.assertEqual(advice['market_regime'], 'momentum_bull')
+        self.assertEqual(advice['learning_model']['harvest_target_pct'], 24)
+        total_pct = sum(a['percentage'] for a in advice['allocations'])
+        self.assertEqual(total_pct, 100)
+
+    def test_management_command_train_model(self):
+        from django.core.management import call_command
+        from io import StringIO
+        out = StringIO()
+        call_command('train_adviser_model', '--verbose', stdout=out)
+        output_str = out.getvalue()
+        self.assertIn('[SUCCESS]', output_str)
+        self.assertIn('Strategy Weights Updated: 20', output_str)

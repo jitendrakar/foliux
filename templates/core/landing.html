@@ -2226,13 +2226,36 @@
 
                     <!-- Strategy Title & Summary -->
                     <div class="strategy-summary-card mb-4">
-                        <div class="d-flex align-items-center gap-2 mb-2">
-                            <span class="badge bg-success rounded-pill px-3 py-1 fw-bold">
-                                <i class="fas fa-check-circle me-1"></i> Recommended Plan
-                            </span>
-                            <span class="text-muted small" id="adviserQueryEcho"></span>
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                <span class="badge bg-success rounded-pill px-3 py-1 fw-bold">
+                                    <i class="fas fa-check-circle me-1"></i> Recommended Plan
+                                </span>
+                                <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25 rounded-pill px-2 py-1 small fw-bold" id="adviserModelBadge">
+                                    <i class="fas fa-brain me-1"></i> <span id="adviserModelBadgeText">Adaptive Model v2.2</span>
+                                </span>
+                                <span class="text-muted small" id="adviserQueryEcho"></span>
+                            </div>
+                            <!-- Self-Learning Feedback Loop (👍 Helpful / 👎 Needs Tuning) -->
+                            <div class="adviser-feedback-wrap d-flex align-items-center gap-2" id="adviserFeedbackControls">
+                                <span class="text-muted small d-none d-sm-inline" id="feedbackPromptText">Accurate?</span>
+                                <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-2 py-1" id="btnFeedbackHelpful" title="Helpful — Teaches the self-learning model" style="font-size: 0.78rem;">
+                                    <i class="fas fa-thumbs-up me-1"></i> Helpful
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-2 py-1" id="btnFeedbackUnhelpful" title="Needs tuning — Calibrates weights" style="font-size: 0.78rem;">
+                                    <i class="fas fa-thumbs-down me-1"></i> Needs Tuning
+                                </button>
+                                <span class="badge bg-success text-white d-none rounded-pill px-2 py-1" id="feedbackSuccessBadge" style="font-size: 0.75rem;">
+                                    <i class="fas fa-check me-1"></i> Model Learned!
+                                </span>
+                            </div>
                         </div>
                         <h3 class="strategy-title" id="adviserResultTitle">Strategy Blueprint</h3>
+                        <!-- Adaptive Market Regime Insight Alert -->
+                        <div class="regime-insight-alert p-2 px-3 mb-3 rounded-3 d-none" id="adviserRegimeAlert" style="background: rgba(37,99,235,0.06); border-left: 3px solid #2563eb; font-size: 0.88rem; color: #1e3a8a;">
+                            <i class="fas fa-chart-line text-primary me-2"></i>
+                            <strong id="adviserRegimeName">Market Regime:</strong> <span id="adviserRegimeInsight"></span>
+                        </div>
                         <p class="strategy-text lead mb-0" id="adviserResultSummary"></p>
                     </div>
 
@@ -3404,6 +3427,52 @@
             const audioStatusSub = document.getElementById('audioStatusSub');
             const voiceSpeedText = document.getElementById('voiceSpeedText');
 
+            // Self-Learning & Adaptive Feedback Controls
+            let currentQueryId = null;
+            const btnFeedbackHelpful = document.getElementById('btnFeedbackHelpful');
+            const btnFeedbackUnhelpful = document.getElementById('btnFeedbackUnhelpful');
+            const feedbackSuccessBadge = document.getElementById('feedbackSuccessBadge');
+            const adviserModelBadgeText = document.getElementById('adviserModelBadgeText');
+            const adviserRegimeAlert = document.getElementById('adviserRegimeAlert');
+            const adviserRegimeName = document.getElementById('adviserRegimeName');
+            const adviserRegimeInsight = document.getElementById('adviserRegimeInsight');
+
+            async function submitAdviserFeedback(vote) {
+                if (!currentQueryId) return;
+                try {
+                    if (btnFeedbackHelpful) btnFeedbackHelpful.disabled = true;
+                    if (btnFeedbackUnhelpful) btnFeedbackUnhelpful.disabled = true;
+
+                    const res = await fetch('/api/audio-adviser/feedback/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({
+                            query_id: currentQueryId,
+                            feedback: vote
+                        })
+                    });
+                    const resData = await res.json();
+                    if (resData.status === 'success') {
+                        if (feedbackSuccessBadge) {
+                            feedbackSuccessBadge.classList.remove('d-none');
+                            feedbackSuccessBadge.innerHTML = `<i class="fas fa-check me-1"></i> ${vote > 0 ? 'Model Learned (+1)' : 'Weights Calibrated (-1)'}`;
+                        }
+                    }
+                } catch (err) {
+                    console.error("Feedback submission error:", err);
+                }
+            }
+
+            if (btnFeedbackHelpful) {
+                btnFeedbackHelpful.addEventListener('click', () => submitAdviserFeedback(1));
+            }
+            if (btnFeedbackUnhelpful) {
+                btnFeedbackUnhelpful.addEventListener('click', () => submitAdviserFeedback(-1));
+            }
+
             // Language Selector Buttons
             const btnVoiceLangAuto = document.getElementById('btnVoiceLangAuto');
             const btnVoiceLangHi = document.getElementById('btnVoiceLangHi');
@@ -3681,6 +3750,30 @@
                 if (!resultCard) return;
 
                 // Set Titles & Summary
+                currentQueryId = data.query_id || null;
+
+                // Reset feedback controls
+                if (btnFeedbackHelpful) btnFeedbackHelpful.disabled = false;
+                if (btnFeedbackUnhelpful) btnFeedbackUnhelpful.disabled = false;
+                if (feedbackSuccessBadge) feedbackSuccessBadge.classList.add('d-none');
+
+                // Update Adaptive Model Badge
+                if (adviserModelBadgeText && data.learning_model) {
+                    const confPct = Math.round((data.learning_model.confidence_score || 0.88) * 100);
+                    adviserModelBadgeText.textContent = `Adaptive Model v2.2 (${confPct}% Conf)`;
+                }
+
+                // Market Regime Insight Alert
+                if (adviserRegimeAlert) {
+                    if (data.regime_insight) {
+                        adviserRegimeAlert.classList.remove('d-none');
+                        if (adviserRegimeName) adviserRegimeName.textContent = `${data.regime_name || 'Market Regime'}:`;
+                        if (adviserRegimeInsight) adviserRegimeInsight.textContent = data.regime_insight;
+                    } else {
+                        adviserRegimeAlert.classList.add('d-none');
+                    }
+                }
+
                 const echoEl = document.getElementById('adviserQueryEcho');
                 if (echoEl) echoEl.textContent = `Query: "${data.query}"`;
 

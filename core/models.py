@@ -1626,6 +1626,90 @@ class IncomeTaxOther(IncomeTaxBaseModel):
         db_table = 'income_tax_other'
 
 
+# ====================================================================
+# FOLIUX AI AUDIO ADVISER: SELF-LEARNING & ADAPTIVE MODEL SYSTEM
+# ====================================================================
+
+class AdviserQueryLog(models.Model):
+    """
+    Stores natural language voice and text queries for continuous self-learning.
+    Tracks user intent, language (Hindi/English), assigned strategy, market regime, and user feedback.
+    """
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='adviser_queries')
+    session_key = models.CharField(max_length=64, blank=True, null=True)
+    query_text = models.TextField()
+    detected_language = models.CharField(max_length=10, default='en') # 'en', 'hi', 'mixed'
+    parsed_intent = models.JSONField(default=dict, blank=True)
+    market_regime = models.CharField(max_length=50, default='neutral') # 'neutral', 'overvalued', 'dip_opportunity', 'high_volatility'
+    nifty_price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    strategy_key = models.CharField(max_length=50, default='default_sip')
+    user_feedback = models.IntegerField(default=0) # +1 helpful, -1 unhelpful, 0 neutral
+    feedback_notes = models.CharField(max_length=255, blank=True, null=True)
+    converted_to_profile = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['strategy_key', 'market_regime']),
+            models.Index(fields=['detected_language']),
+            models.Index(fields=['created_at']),
+        ]
+
+    def __str__(self):
+        return f"AdviserQuery [{self.detected_language}]: {self.query_text[:40]}"
+
+
+class AdviserLearnedWeight(models.Model):
+    """
+    Dynamically self-tuning portfolio allocation weights and rules.
+    Continuously updated by the self-learning optimizer based on market conditions,
+    backtest performance, and user feedback.
+    """
+    strategy_key = models.CharField(max_length=50) # 'default_sip', 'retirement', 'capital_preservation', 'lump_sum', 'beginner'
+    regime = models.CharField(max_length=50, default='neutral') # 'neutral', 'overvalued', 'dip_opportunity', 'high_volatility'
+    equity_weight = models.FloatField(default=45.0)
+    flexicap_weight = models.FloatField(default=30.0)
+    debt_weight = models.FloatField(default=15.0)
+    gold_weight = models.FloatField(default=10.0)
+    harvest_target_pct = models.FloatField(default=22.0) # Adaptive profit harvest trigger (e.g. 18-26%)
+    dip_buy_pct = models.FloatField(default=3.5) # Adaptive dip pyramiding trigger (e.g. 3-5%)
+    sample_count = models.IntegerField(default=1) # Iterations / queries supporting this model state
+    confidence_score = models.FloatField(default=0.85)
+    rationale_en = models.TextField(blank=True, default='')
+    rationale_hi = models.TextField(blank=True, default='')
+    rationale_hi_phonetic = models.TextField(blank=True, default='')
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('strategy_key', 'regime')
+        ordering = ['strategy_key', 'regime']
+
+    def __str__(self):
+        return f"LearnedWeight: {self.strategy_key} ({self.regime}) -> Eq:{self.equity_weight}% Harvest:{self.harvest_target_pct}%"
+
+
+class AdviserVocabularySynonym(models.Model):
+    """
+    Self-expanding vocabulary for Hindi, Hinglish, and English investment queries.
+    Captures colloquial terms, regional phrasing, and associates them with canonical financial intents.
+    """
+    term = models.CharField(max_length=150, unique=True)
+    language = models.CharField(max_length=10, default='hi') # 'hi', 'en', 'mixed'
+    maps_to_topic = models.CharField(max_length=50, default='wealth') # 'retirement', 'capital_preservation', 'lump_sum', 'beginner', 'wealth'
+    maps_to_risk = models.CharField(max_length=30, blank=True, null=True) # 'conservative', 'moderate', 'aggressive'
+    hit_count = models.IntegerField(default=1)
+    is_verified = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-hit_count']
+
+    def __str__(self):
+        return f"{self.term} -> {self.maps_to_topic} ({self.language})"
+
+
+
 
 
 

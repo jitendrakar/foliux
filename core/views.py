@@ -5364,11 +5364,20 @@ def audio_adviser_api(request):
                     sign = "+" if nifty.change >= 0 else ""
                     market_context['nifty_price'] = f"{nifty.price:,.2f}"
                     market_context['nifty_change'] = f"{sign}{nifty.change:,.2f} ({sign}{nifty.percent_change:,.2f}%)"
+                    market_context['raw_pct_change'] = float(nifty.percent_change)
             except Exception as e:
                 logger.warning(f"Audio adviser failed to fetch market context: {e}")
             
             from core.audio_adviser import generate_investment_advice
-            advice = generate_investment_advice(user_query, market_context=market_context, requested_lang=requested_lang)
+            user_obj = request.user if getattr(request.user, 'is_authenticated', False) else None
+            sess_key = request.session.session_key if hasattr(request, 'session') else None
+            advice = generate_investment_advice(
+                user_query,
+                market_context=market_context,
+                requested_lang=requested_lang,
+                user=user_obj,
+                session_key=sess_key
+            )
             return JsonResponse(advice)
         except Exception as e:
             logger.exception("Audio adviser API error:")
@@ -5379,10 +5388,77 @@ def audio_adviser_api(request):
         if not query:
             return JsonResponse({'status': 'error', 'message': 'Missing query parameter "q"'}, status=400)
         from core.audio_adviser import generate_investment_advice
-        advice = generate_investment_advice(query, requested_lang=requested_lang)
+        user_obj = request.user if getattr(request.user, 'is_authenticated', False) else None
+        sess_key = request.session.session_key if hasattr(request, 'session') else None
+        advice = generate_investment_advice(
+            query,
+            requested_lang=requested_lang,
+            user=user_obj,
+            session_key=sess_key
+        )
         return JsonResponse(advice)
     
     return JsonResponse({'status': 'error', 'message': 'GET or POST required'}, status=405)
+
+
+@csrf_exempt
+def audio_adviser_feedback_api(request):
+    """
+    API endpoint for recording user feedback (+1 helpful / -1 unhelpful) on AI Audio Adviser responses.
+    Feeds directly into the continuous self-learning model optimizer.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'POST required'}, status=405)
+    
+    try:
+        import json as _json
+        data = {}
+        if request.body:
+            try:
+                data = _json.loads(request.body)
+            except Exception:
+                data = request.POST.dict()
+        else:
+            data = request.POST.dict()
+            
+        query_id = data.get('query_id')
+        feedback = data.get('feedback')
+        notes = data.get('notes', '')
+        
+        if not query_id:
+            return JsonResponse({'status': 'error', 'message': 'Missing query_id'}, status=400)
+            
+        try:
+            feedback_val = int(feedback)
+        except (ValueError, TypeError):
+            feedback_val = 1 if feedback in ['positive', 'up', 'helpful', True] else -1
+
+        from core.models import AdviserQueryLog
+        try:
+            log_entry = AdviserQueryLog.objects.get(id=query_id)
+            log_entry.user_feedback = feedback_val
+            if notes:
+                log_entry.feedback_notes = str(notes)[:250]
+            if getattr(request.user, 'is_authenticated', False) and not log_entry.user:
+                log_entry.user = request.user
+            log_entry.save(update_fields=['user_feedback', 'feedback_notes', 'user'])
+        except AdviserQueryLog.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': f'Query log {query_id} not found'}, status=404)
+            
+        # Trigger continuous self-learning model update
+        from core.audio_adviser import train_and_update_adviser_model
+        stats = train_and_update_adviser_model()
+        
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Feedback successfully learned by FOLIUX Adviser model.',
+            'query_id': query_id,
+            'feedback': feedback_val,
+            'model_stats': stats
+        })
+    except Exception as e:
+        logger.exception("Error in audio_adviser_feedback_api:")
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 @login_required
 @csrf_exempt

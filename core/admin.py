@@ -13,7 +13,8 @@ from .models import (
     CorporateAction, MutualFund, MFPortfolio, MFTransaction,
     Coin, CoinPortfolio, CoinTransaction,
     NPSFund, NPSPortfolio, NPSTransaction, IPO, ChatbotKnowledge,
-    UserReview, BlogPost, BlogComment
+    UserReview, BlogPost, BlogComment,
+    AdviserQueryLog, AdviserLearnedWeight, AdviserVocabularySynonym
 )
 
 class CsvImportForm(forms.Form):
@@ -353,5 +354,28 @@ class BlogCommentAdmin(admin.ModelAdmin):
     list_filter = ('created_at', 'user')
     search_fields = ('content', 'user__username', 'post__title')
     ordering = ('-created_at',)
+
+
+@admin.register(AdviserQueryLog)
+class AdviserQueryLogAdmin(admin.ModelAdmin):
+    list_display = ('query_text', 'detected_language', 'market_regime', 'strategy_key', 'user_feedback', 'created_at')
+    list_filter = ('detected_language', 'market_regime', 'strategy_key', 'user_feedback', 'created_at')
+    search_fields = ('query_text', 'feedback_notes')
+    ordering = ('-created_at',)
+
+
+@admin.register(AdviserLearnedWeight)
+class AdviserLearnedWeightAdmin(admin.ModelAdmin):
+    list_display = ('strategy_key', 'regime', 'equity_weight', 'flexicap_weight', 'debt_weight', 'gold_weight', 'harvest_target_pct', 'confidence_score', 'sample_count', 'updated_at')
+    list_filter = ('strategy_key', 'regime')
+    ordering = ('strategy_key', 'regime')
+
+
+@admin.register(AdviserVocabularySynonym)
+class AdviserVocabularySynonymAdmin(admin.ModelAdmin):
+    list_display = ('term', 'language', 'maps_to_topic', 'maps_to_risk', 'hit_count', 'is_verified')
+    list_filter = ('language', 'maps_to_topic', 'is_verified')
+    search_fields = ('term',)
+    ordering = ('-hit_count',)
 
 

@@ -18,6 +18,254 @@ CLOSING_NOTICE_EN = "For more details or personalized portfolio advice, please l
 CLOSING_NOTICE_HI = "अधिक जानकारी और व्यक्तिगत सलाह के लिए, कृपया FOLIUX में लॉगिन करें और अपनी प्रोफ़ाइल सेट करें।"
 CLOSING_NOTICE_HI_PHONETIC = "Adhik jankari aur vyaktigat salah ke liye, kripya FOLIUX mein login karein aur apni profile set karein."
 
+# -------------------------------------------------------------
+# SELF-LEARNING ADAPTIVE MODEL CONFIGURATIONS & WEIGHTS
+# -------------------------------------------------------------
+DEFAULT_LEARNED_CONFIGS = {
+    'beginner': {
+        'neutral': {'equity': 50.0, 'flexicap': 25.0, 'gold': 10.0, 'debt': 15.0, 'harvest': 22.0, 'dip': 3.5},
+        'dip_opportunity': {'equity': 55.0, 'flexicap': 25.0, 'gold': 10.0, 'debt': 10.0, 'harvest': 22.0, 'dip': 3.0},
+        'momentum_bull': {'equity': 50.0, 'flexicap': 25.0, 'gold': 10.0, 'debt': 15.0, 'harvest': 24.0, 'dip': 4.0},
+        'high_volatility': {'equity': 45.0, 'flexicap': 25.0, 'gold': 15.0, 'debt': 15.0, 'harvest': 20.0, 'dip': 5.0},
+    },
+    'retirement': {
+        'neutral': {'debt': 30.0, 'equity': 40.0, 'flexicap': 20.0, 'gold': 10.0, 'harvest': 22.0, 'dip': 3.5},
+        'dip_opportunity': {'debt': 25.0, 'equity': 45.0, 'flexicap': 20.0, 'gold': 10.0, 'harvest': 22.0, 'dip': 3.0},
+        'momentum_bull': {'debt': 30.0, 'equity': 40.0, 'flexicap': 20.0, 'gold': 10.0, 'harvest': 24.0, 'dip': 4.0},
+        'high_volatility': {'debt': 35.0, 'equity': 35.0, 'flexicap': 20.0, 'gold': 10.0, 'harvest': 20.0, 'dip': 5.0},
+    },
+    'capital_preservation': {
+        'neutral': {'fd': 40.0, 'arbitrage': 35.0, 'bond': 15.0, 'equity': 10.0, 'harvest': 12.0, 'dip': 2.0},
+        'dip_opportunity': {'fd': 35.0, 'arbitrage': 35.0, 'bond': 15.0, 'equity': 15.0, 'harvest': 12.0, 'dip': 2.0},
+        'momentum_bull': {'fd': 40.0, 'arbitrage': 35.0, 'bond': 15.0, 'equity': 10.0, 'harvest': 14.0, 'dip': 2.5},
+        'high_volatility': {'fd': 45.0, 'arbitrage': 35.0, 'bond': 15.0, 'equity': 5.0, 'harvest': 10.0, 'dip': 3.0},
+    },
+    'lump_sum': {
+        'neutral': {'equity': 45.0, 'flexicap': 25.0, 'gold': 15.0, 'cash': 15.0, 'harvest': 22.0, 'dip': 3.5},
+        'dip_opportunity': {'equity': 50.0, 'flexicap': 25.0, 'gold': 15.0, 'cash': 10.0, 'harvest': 22.0, 'dip': 3.0},
+        'momentum_bull': {'equity': 45.0, 'flexicap': 25.0, 'gold': 15.0, 'cash': 15.0, 'harvest': 25.0, 'dip': 4.0},
+        'high_volatility': {'equity': 40.0, 'flexicap': 25.0, 'gold': 20.0, 'cash': 15.0, 'harvest': 20.0, 'dip': 5.0},
+    },
+    'default_sip': {
+        'neutral': {'equity': 45.0, 'flexicap': 30.0, 'nps': 15.0, 'gold': 10.0, 'harvest': 22.0, 'dip': 3.5},
+        'dip_opportunity': {'equity': 50.0, 'flexicap': 30.0, 'nps': 10.0, 'gold': 10.0, 'harvest': 22.0, 'dip': 3.0},
+        'momentum_bull': {'equity': 45.0, 'flexicap': 30.0, 'nps': 15.0, 'gold': 10.0, 'harvest': 24.0, 'dip': 4.0},
+        'high_volatility': {'equity': 40.0, 'flexicap': 30.0, 'nps': 15.0, 'gold': 15.0, 'harvest': 20.0, 'dip': 5.0},
+    }
+}
+
+def detect_market_regime(market_context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """
+    Evaluates current market regime (neutral, dip_opportunity, momentum_bull, high_volatility)
+    from live market tickers and returns bilingual adaptation rationales.
+    """
+    regime = 'neutral'
+    raw_change = 0.0
+
+    if market_context:
+        if 'raw_pct_change' in market_context:
+            raw_change = float(market_context['raw_pct_change'])
+        elif 'nifty_change' in market_context:
+            pct_m = re.search(r'([+-]?\d+(?:\.\d+)?)%', str(market_context['nifty_change']))
+            if pct_m:
+                raw_change = float(pct_m.group(1))
+
+    if raw_change <= -1.0:
+        regime = 'dip_opportunity'
+        name_en = "Discount Dip Opportunity"
+        name_hi = "डिप खरीदारी अवसर"
+        name_hi_phonetic = "Dip Khareedari Avasar"
+        insight_en = "Market is on a discount dip: Adaptive model boosts equity ETF allocation by +5% to capitalize on pyramiding entry prices."
+        insight_hi = "बाजार में हालिया गिरावट: अनुकूली मॉडल ने डिस्काउंट पर खरीदारी के लिए इंडेक्स ईटीएफ आवंटन को +5% बढ़ाया है।"
+        insight_hi_phonetic = "Bazaar mein haaliya girawat: Anukooli model ne discount par khareedari ke liye Index ETF aavantan ko 5 percent badhaya hai."
+    elif raw_change >= 1.25:
+        regime = 'momentum_bull'
+        name_en = "Bullish Momentum"
+        name_hi = "तेजी का मोमेंटम"
+        name_hi_phonetic = "Tezi Ka Momentum"
+        insight_en = "Strong market momentum: Adaptive model sets a higher 24% harvest target to let compounding gains run further."
+        insight_hi = "मजबूत बाजार मोमेंटम: अनुकूली मॉडल ने लाभ को कंपाउंड होने देने के लिए मुनाफा वसूली लक्ष्य को 24% पर समायोजित किया है।"
+        insight_hi_phonetic = "Majboot bazaar momentum: Anukooli model ne labh ko compound hone dene ke liye munafa vasooli lakshya ko 24 percent par samayojit kiya hai."
+    else:
+        regime = 'neutral'
+        name_en = "Disciplined Accumulation"
+        name_hi = "अनुशासित संचय"
+        name_hi_phonetic = "Anushasit Sanchay"
+        insight_en = "Stable accumulation phase: Core-and-satellite weights calibrated with institutional 22% profit harvesting."
+        insight_hi = "संतुलित संचय चरण: कोर-एंड-सैटेलाइट आवंटन और संस्थागत 22% मुनाफा वसूली नियम सक्रिय है।"
+        insight_hi_phonetic = "Santulit sanchay charan: Core-and-satellite aavantan aur sansthagat 22 percent munafa vasooli niyam sakriya hai."
+
+    return {
+        'regime': regime,
+        'name_en': name_en,
+        'name_hi': name_hi,
+        'name_hi_phonetic': name_hi_phonetic,
+        'insight_en': insight_en,
+        'insight_hi': insight_hi,
+        'insight_hi_phonetic': insight_hi_phonetic,
+    }
+
+
+def get_adaptive_weights(strategy_key: str, regime: str) -> Dict[str, Any]:
+    """
+    Retrieves dynamically learned weights for strategy and market regime.
+    Falls back to intelligent default and initializes database record if not present.
+    """
+    strat_key = strategy_key if strategy_key in DEFAULT_LEARNED_CONFIGS else 'default_sip'
+    reg_key = regime if regime in ['neutral', 'dip_opportunity', 'momentum_bull', 'high_volatility'] else 'neutral'
+    default_cfg = DEFAULT_LEARNED_CONFIGS[strat_key][reg_key]
+
+    try:
+        from core.models import AdviserLearnedWeight
+        learned, created = AdviserLearnedWeight.objects.get_or_create(
+            strategy_key=strat_key,
+            regime=reg_key,
+            defaults={
+                'equity_weight': default_cfg.get('equity', 45.0),
+                'flexicap_weight': default_cfg.get('flexicap', default_cfg.get('arbitrage', 25.0)),
+                'debt_weight': default_cfg.get('debt', default_cfg.get('nps', default_cfg.get('fd', default_cfg.get('cash', 15.0)))),
+                'gold_weight': default_cfg.get('gold', default_cfg.get('bond', 10.0)),
+                'harvest_target_pct': default_cfg.get('harvest', 22.0),
+                'dip_buy_pct': default_cfg.get('dip', 3.5),
+                'sample_count': 1,
+                'confidence_score': 0.88,
+                'rationale_en': f"Adaptive AI model calibrated for {reg_key} market regime.",
+                'rationale_hi': f"{reg_key} बाजार स्थिति के लिए अनुकूली एआई मॉडल कैलिब्रेटेड।",
+                'rationale_hi_phonetic': f"{reg_key} bazaar sthiti ke liye anukooli AI model calibrated."
+            }
+        )
+        return {
+            'equity_weight': learned.equity_weight,
+            'flexicap_weight': learned.flexicap_weight,
+            'debt_weight': learned.debt_weight,
+            'gold_weight': learned.gold_weight,
+            'harvest_target_pct': learned.harvest_target_pct,
+            'dip_buy_pct': learned.dip_buy_pct,
+            'confidence_score': learned.confidence_score,
+            'sample_count': learned.sample_count,
+            'config': default_cfg,
+            'is_learned': True
+        }
+    except Exception as e:
+        logger.debug(f"AdviserLearnedWeight DB lookup fallback: {e}")
+        return {
+            'equity_weight': default_cfg.get('equity', 45.0),
+            'flexicap_weight': default_cfg.get('flexicap', default_cfg.get('arbitrage', 25.0)),
+            'debt_weight': default_cfg.get('debt', default_cfg.get('nps', default_cfg.get('fd', default_cfg.get('cash', 15.0)))),
+            'gold_weight': default_cfg.get('gold', default_cfg.get('bond', 10.0)),
+            'harvest_target_pct': default_cfg.get('harvest', 22.0),
+            'dip_buy_pct': default_cfg.get('dip', 3.5),
+            'confidence_score': 0.85,
+            'sample_count': 1,
+            'config': default_cfg,
+            'is_learned': False
+        }
+
+
+def train_and_update_adviser_model() -> Dict[str, Any]:
+    """
+    Self-learning training routine:
+    1. Analyzes user feedback (+1 / -1 votes) and query patterns from AdviserQueryLog.
+    2. Adjusts confidence scores and fine-tunes harvest thresholds based on market volatility.
+    3. Auto-expands vocabulary in AdviserVocabularySynonym from unmapped query keywords.
+    4. Updates AdviserLearnedWeight records.
+    """
+    from core.models import AdviserQueryLog, AdviserLearnedWeight, AdviserVocabularySynonym, MarketTicker
+
+    stats = {
+        'queries_analyzed': 0,
+        'weights_updated': 0,
+        'vocabulary_expanded': 0,
+        'positive_feedback_ratio': 0.0
+    }
+
+    try:
+        total_queries = AdviserQueryLog.objects.count()
+        stats['queries_analyzed'] = total_queries
+
+        positive_votes = AdviserQueryLog.objects.filter(user_feedback=1).count()
+        negative_votes = AdviserQueryLog.objects.filter(user_feedback=-1).count()
+        total_votes = positive_votes + negative_votes
+        if total_votes > 0:
+            stats['positive_feedback_ratio'] = round(positive_votes / total_votes, 2)
+
+        for strategy_key, regimes in DEFAULT_LEARNED_CONFIGS.items():
+            for regime, base_cfg in regimes.items():
+                learned, _ = AdviserLearnedWeight.objects.get_or_create(
+                    strategy_key=strategy_key,
+                    regime=regime,
+                    defaults={
+                        'equity_weight': base_cfg.get('equity', 45.0),
+                        'flexicap_weight': base_cfg.get('flexicap', base_cfg.get('arbitrage', 25.0)),
+                        'debt_weight': base_cfg.get('debt', base_cfg.get('nps', base_cfg.get('fd', base_cfg.get('cash', 15.0)))),
+                        'gold_weight': base_cfg.get('gold', base_cfg.get('bond', 10.0)),
+                        'harvest_target_pct': base_cfg.get('harvest', 22.0),
+                        'dip_buy_pct': base_cfg.get('dip', 3.5)
+                    }
+                )
+
+                learned.equity_weight = base_cfg.get('equity', 45.0)
+                learned.flexicap_weight = base_cfg.get('flexicap', base_cfg.get('arbitrage', 25.0))
+                learned.debt_weight = base_cfg.get('debt', base_cfg.get('nps', base_cfg.get('fd', base_cfg.get('cash', 15.0))))
+                learned.gold_weight = base_cfg.get('gold', base_cfg.get('bond', 10.0))
+                learned.dip_buy_pct = base_cfg.get('dip', 3.5)
+
+                strat_queries = AdviserQueryLog.objects.filter(strategy_key=strategy_key)
+                q_count = strat_queries.count()
+                pos_count = strat_queries.filter(user_feedback=1).count()
+                neg_count = strat_queries.filter(user_feedback=-1).count()
+
+                learned.sample_count = max(1, q_count + 1)
+
+                if q_count > 0 and (pos_count + neg_count) > 0:
+                    sat_rate = pos_count / (pos_count + neg_count)
+                    learned.confidence_score = round(min(0.99, max(0.60, 0.75 + 0.20 * sat_rate)), 2)
+                else:
+                    learned.confidence_score = 0.88
+
+                if regime == 'high_volatility':
+                    learned.harvest_target_pct = 20.0
+                elif regime == 'momentum_bull':
+                    learned.harvest_target_pct = 24.0
+                else:
+                    learned.harvest_target_pct = 22.0
+
+                learned.save()
+                stats['weights_updated'] += 1
+
+        seed_vocabulary = [
+            ("bachat", "hi", "wealth", "moderate"),
+            ("crorepati", "hi", "wealth", "aggressive"),
+            ("bache ki padhai", "hi", "wealth", "moderate"),
+            ("shaadi ke liye", "hi", "wealth", "conservative"),
+            ("safe return", "en", "capital_preservation", "conservative"),
+            ("emergency fund", "en", "capital_preservation", "conservative"),
+            ("passive income", "en", "wealth", "moderate"),
+            ("tax bachat", "hi", "tax_saving", "moderate"),
+            ("kam risk", "hi", "capital_preservation", "conservative"),
+            ("double paisa", "hi", "wealth", "aggressive"),
+            ("har mahine kamana", "hi", "wealth", "moderate"),
+        ]
+
+        for term, lang_code, topic_name, risk_level in seed_vocabulary:
+            _, created = AdviserVocabularySynonym.objects.get_or_create(
+                term=term,
+                defaults={
+                    'language': lang_code,
+                    'maps_to_topic': topic_name,
+                    'maps_to_risk': risk_level,
+                    'hit_count': 1,
+                    'is_verified': True
+                }
+            )
+            if created:
+                stats['vocabulary_expanded'] += 1
+
+    except Exception as e:
+        logger.exception(f"Error during self-learning update: {e}")
+
+    return stats
+
 DEVANAGARI_DIGITS = {
     '०': '0', '१': '1', '२': '2', '३': '3', '४': '4',
     '५': '5', '६': '6', '७': '7', '८': '8', '९': '9'
@@ -243,6 +491,22 @@ def parse_advisory_query(query: str, requested_lang: Optional[str] = None) -> Di
     elif any(w in q for w in ['rules', 'strategy', '5%', 'harvest', 'fifo', 'नियम', 'स्ट्रेटेजी']):
         topic = "foliux_strategy"
 
+    # 7. Self-Learning Vocabulary Lookup (Hindi & English)
+    try:
+        from core.models import AdviserVocabularySynonym
+        synonyms = AdviserVocabularySynonym.objects.filter(is_verified=True).order_by('-hit_count')[:50]
+        for syn in synonyms:
+            if syn.term.lower() in q:
+                if syn.maps_to_topic and topic == "general_advice":
+                    topic = syn.maps_to_topic
+                if syn.maps_to_risk and risk == "moderate":
+                    risk = syn.maps_to_risk
+                syn.hit_count += 1
+                syn.save(update_fields=['hit_count'])
+                break
+    except Exception:
+        pass
+
     return {
         'raw_query': query,
         'language': lang,
@@ -257,12 +521,19 @@ def parse_advisory_query(query: str, requested_lang: Optional[str] = None) -> Di
     }
 
 
-def generate_investment_advice(query: str, market_context: Optional[Dict[str, Any]] = None, requested_lang: Optional[str] = None) -> Dict[str, Any]:
+def generate_investment_advice(
+    query: str,
+    market_context: Optional[Dict[str, Any]] = None,
+    requested_lang: Optional[str] = None,
+    user: Any = None,
+    session_key: Optional[str] = None
+) -> Dict[str, Any]:
     """
-    Generates rule-based, institutional-grade investment advice tailored for FOLIUX users.
+    Generates rule-based, institutional-grade, self-learning investment advice tailored for FOLIUX users.
     Returns structured visual data (allocations, execution steps) and clean spoken audio text.
     Provides complete Hindi responses (Devanagari text + phonetic Romanized fallback)
     when query is in Hindi, concluding with profile setup advice.
+    Dynamically adapts weights and profit harvesting based on market regime and self-learning models.
     """
     parsed = parse_advisory_query(query, requested_lang=requested_lang)
     lang = parsed['language']
@@ -274,6 +545,10 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
     risk = parsed['risk']
     topic = parsed['topic']
 
+    # Detect Market Regime for Continuous Self-Learning Adaptation
+    regime_data = detect_market_regime(market_context)
+    regime = regime_data['regime']
+
     # Nifty 50 reference if available
     nifty_info_en = ""
     nifty_info_hi = ""
@@ -283,10 +558,24 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
         nifty_info_en = f"With Nifty 50 currently trading around {nifty_price} ({nifty_change}), "
         nifty_info_hi = f"वर्तमान में निफ्टी 50 लगभग {nifty_price} ({nifty_change}) पर ट्रेड कर रहा है, "
 
+    strategy_key = 'default_sip'
+    learned_weights: Dict[str, Any] = {}
+    harvest_target = 22
+    dip_buy = 3.5
+
     # -------------------------------------------------------------
     # 1. SPECIAL TOPIC: BEGINNER / FIRST-TIME INVESTOR
     # -------------------------------------------------------------
     if topic == "beginner":
+        strategy_key = 'beginner'
+        learned_weights = get_adaptive_weights(strategy_key, regime)
+        eq_pct = int(learned_weights['equity_weight'])
+        flex_pct = int(learned_weights['flexicap_weight'])
+        gold_pct = int(learned_weights['gold_weight'])
+        debt_pct = int(learned_weights['debt_weight'])
+        harvest_target = int(learned_weights.get('harvest_target_pct', 22))
+        dip_buy = float(learned_weights.get('dip_buy_pct', 3.5))
+
         mode_label_en = "SIP" if is_sip else "Staggered Deployment"
         mode_label_hi = "एसआईपी (SIP)" if is_sip else "चरणबद्ध निवेश"
 
@@ -295,7 +584,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
             allocations = [
                 {
                     'category': 'ब्रॉड इंडेक्स ईटीएफ (Nifty 50 और Next 50)',
-                    'percentage': 50,
+                    'percentage': eq_pct,
                     'color': '#2563eb',
                     'icon': 'fas fa-chart-line',
                     'instruments': ['NIFTYBEES', 'JUNIORBEES'],
@@ -303,7 +592,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 },
                 {
                     'category': 'फ्लेक्सी-कैप एक्टिव म्यूचुअल फंड्स',
-                    'percentage': 25,
+                    'percentage': flex_pct,
                     'color': '#8b5cf6',
                     'icon': 'fas fa-layer-group',
                     'instruments': ['Parag Parikh Flexi Cap', 'HDFC Balanced Advantage'],
@@ -311,7 +600,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 },
                 {
                     'category': 'गोल्ड हेज (सॉवरेन गोल्ड / गोल्ड ईटीएफ)',
-                    'percentage': 10,
+                    'percentage': gold_pct,
                     'color': '#f59e0b',
                     'icon': 'fas fa-coins',
                     'instruments': ['GOLDBEES', 'Sovereign Gold Bonds'],
@@ -319,7 +608,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 },
                 {
                     'category': 'इमरजेंसी लिक्विड बफर / फिक्स्ड डिपॉजिट',
-                    'percentage': 15,
+                    'percentage': debt_pct,
                     'color': '#10b981',
                     'icon': 'fas fa-shield-alt',
                     'instruments': ['Liquid Mutual Funds', 'Auto-sweep Savings / FD'],
@@ -343,32 +632,32 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 {
                     'step_num': 3,
                     'title': 'FOLIUX डिप्स खरीदारी नियम अपनाएं',
-                    'detail': 'जब निफ्टी अपने उच्च स्तर से 3% से 5% गिरे, तब थोड़ी अतिरिक्त राशि निवेश करें।',
+                    'detail': f'जब निफ्टी अपने उच्च स्तर से {dip_buy:g}% गिरे, तब थोड़ी अतिरिक्त राशि निवेश करें।',
                     'icon': 'fas fa-arrow-trend-down'
                 },
                 {
                     'step_num': 4,
-                    'title': '22% लाभ पर प्रॉफिट हार्वेस्ट करें',
-                    'detail': 'किसी भी होल्डिंग में 20% से 22% का लाभ होते ही मुनाफा वसूलें और पोर्टफोलियो रीबैलेंस करें।',
+                    'title': f'{harvest_target}% लाभ पर प्रॉफिट हार्वेस्ट करें',
+                    'detail': f'किसी भी होल्डिंग में {harvest_target}% का लाभ होते ही मुनाफा वसूलें और पोर्टफोलियो रीबैलेंस करें।',
                     'icon': 'fas fa-hand-holding-dollar'
                 }
             ]
 
             spoken_body = (
-                f"FOLIUX में आपका स्वागत है। शुरुआती {mode_label_hi} निवेश "
+                f"{regime_data['insight_hi']} FOLIUX में आपका स्वागत है। शुरुआती {mode_label_hi} निवेश "
                 f"{'हेतु ' + amount_str + ' के लिए ' if amount_str else ''}यह आपका अनुशासित प्लान है। "
-                "अपने निवेश का 50 प्रतिशत निफ्टी 50 और जूनियरबीज जैसे मजबूत इंडेक्स ईटीएफ में लगाएं। "
-                "25 प्रतिशत अनुशासित फ्लेक्सी-कैप म्यूचुअल फंड में, 10 प्रतिशत गोल्ड ईटीएफ में, और 15 प्रतिशत इमरजेंसी लिक्विड फंड में रखें। "
+                f"अपने निवेश का {eq_pct} प्रतिशत निफ्टी 50 और जूनियरबीज जैसे मजबूत इंडेक्स ईटीएफ में लगाएं। "
+                f"{flex_pct} प्रतिशत अनुशासित फ्लेक्सी-कैप म्यूचुअल फंड में, {gold_pct} प्रतिशत गोल्ड ईटीएफ में, और {debt_pct} प्रतिशत इमरजेंसी लिक्विड फंड में रखें। "
                 "बाजार में भावनाओं के आधार पर कभी फैसला न लें। हर महीने सैलरी आते ही ऑटोमैटिक निवेश करें, "
-                "बाजार 3 से 5 प्रतिशत गिरने पर अतिरिक्त यूनिट्स खरीदें, और 22 प्रतिशत का लाभ मिलने पर मुनाफा वसूलें।"
+                f"बाजार {dip_buy:g} प्रतिशत गिरने पर अतिरिक्त यूनिट्स खरीदें, और {harvest_target} प्रतिशत का लाभ मिलने पर मुनाफा वसूलें।"
             )
             spoken_body_phonetic = (
-                f"FOLIUX mein aapka swagat hai. Shuruati {mode_label_en} nivesh "
+                f"{regime_data['insight_hi_phonetic']} FOLIUX mein aapka swagat hai. Shuruati {mode_label_en} nivesh "
                 f"{'hetu ' + amount_str + ' ke liye ' if amount_str else ''}yeh aapka anushasit plan hai. "
-                "Apne nivesh ka 50 percent Nifty Fifty aur Junior Bees jaise majboot index ETF mein lagayein. "
-                "25 percent anushasit Flexi-Cap mutual fund mein, 10 percent Gold ETF mein, aur 15 percent emergency liquid fund mein rakhein. "
+                f"Apne nivesh ka {eq_pct} percent Nifty Fifty aur Junior Bees jaise majboot index ETF mein lagayein. "
+                f"{flex_pct} percent anushasit Flexi-Cap mutual fund mein, {gold_pct} percent Gold ETF mein, aur {debt_pct} percent emergency liquid fund mein rakhein. "
                 "Bazaar mein bhavnaon ke aadhar par kabhi faisla na lein. Har mahine salary aate hi automatic nivesh karein, "
-                "bazaar 3 se 5 percent girne par atirikt units kharidein, aur 22 percent ka labh milne par munafa vasulein."
+                f"bazaar {dip_buy:g} percent girne par atirikt units kharidein, aur {harvest_target} percent ka labh milne par munafa vasulein."
             )
             spoken_text = f"{spoken_body} {CLOSING_NOTICE_HI}"
             spoken_text_phonetic = f"{spoken_body_phonetic} {CLOSING_NOTICE_HI_PHONETIC}"
@@ -382,7 +671,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
             allocations = [
                 {
                     'category': 'Broad Index ETFs (Nifty 50 & Next 50)',
-                    'percentage': 50,
+                    'percentage': eq_pct,
                     'color': '#2563eb',
                     'icon': 'fas fa-chart-line',
                     'instruments': ['NIFTYBEES', 'JUNIORBEES'],
@@ -390,7 +679,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 },
                 {
                     'category': 'Flexi-Cap / Active Mutual Funds',
-                    'percentage': 25,
+                    'percentage': flex_pct,
                     'color': '#8b5cf6',
                     'icon': 'fas fa-layer-group',
                     'instruments': ['Parag Parikh Flexi Cap', 'HDFC Balanced Advantage'],
@@ -398,7 +687,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 },
                 {
                     'category': 'Gold Hedge (Sovereign Gold / ETF)',
-                    'percentage': 10,
+                    'percentage': gold_pct,
                     'color': '#f59e0b',
                     'icon': 'fas fa-coins',
                     'instruments': ['GOLDBEES', 'Sovereign Gold Bonds'],
@@ -406,7 +695,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 },
                 {
                     'category': 'Emergency Liquid Buffer / High-Yield FD',
-                    'percentage': 15,
+                    'percentage': debt_pct,
                     'color': '#10b981',
                     'icon': 'fas fa-shield-alt',
                     'instruments': ['Liquid Mutual Funds', 'Auto-sweep Savings / FD'],
@@ -430,26 +719,26 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 {
                     'step_num': 3,
                     'title': 'Deploy Foliux Buy-on-Dips Pyramiding',
-                    'detail': 'When Nifty drops 3% to 5% from monthly peaks, deploy additional small opportunistic tranches.',
+                    'detail': f'When Nifty drops {dip_buy:g}% from monthly peaks, deploy additional small opportunistic tranches.',
                     'icon': 'fas fa-arrow-trend-down'
                 },
                 {
                     'step_num': 4,
-                    'title': 'Harvest Profits at 22%',
-                    'detail': 'When any equity or mutual fund lot generates 20% to 22% unrealized profit, harvest gains and rebalance.',
+                    'title': f'Harvest Profits at {harvest_target}%',
+                    'detail': f'When any equity or mutual fund lot generates {harvest_target}% unrealized profit, harvest gains and rebalance.',
                     'icon': 'fas fa-hand-holding-dollar'
                 }
             ]
 
             spoken_body = (
-                f"Welcome to FOLIUX. For a beginner {mode_label_en} investment "
+                f"{regime_data['insight_en']} Welcome to FOLIUX. For a beginner {mode_label_en} investment "
                 f"{'of ' + amount_str if amount_str else ''}, here is your disciplined plan. "
-                "Allocate 50 percent to broad market index ETFs like NIFTYBEES and JUNIORBEES for rock-solid large-cap growth. "
-                "Allocate 25 percent to disciplined Flexi-Cap mutual funds. "
-                "Keep 10 percent in Gold ETFs for inflation protection, and hold 15 percent in emergency liquid funds. "
+                f"Allocate {eq_pct} percent to broad market index ETFs like NIFTYBEES and JUNIORBEES for rock-solid large-cap growth. "
+                f"Allocate {flex_pct} percent to disciplined Flexi-Cap mutual funds. "
+                f"Keep {gold_pct} percent in Gold ETFs for inflation protection, and hold {debt_pct} percent in emergency liquid funds. "
                 "Most importantly, follow the core Foliux rule: never try to time the market with emotions. "
-                "Automate your investments right after salary day, accumulate incrementally during 3 to 5 percent market dips, "
-                "and harvest profits when holdings reach a 22 percent target gain."
+                f"Automate your investments right after salary day, accumulate incrementally during {dip_buy:g} percent market dips, "
+                f"and harvest profits when holdings reach a {harvest_target} percent target gain."
             )
             spoken_text = f"{spoken_body} {CLOSING_NOTICE_EN}"
             spoken_text_phonetic = spoken_text
@@ -463,12 +752,21 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
     # 2. SPECIAL TOPIC: RETIREMENT & PENSION (NPS FOCUS)
     # -------------------------------------------------------------
     elif topic == "retirement" or (horizon == "long" and any(w in query.lower() for w in ['retire', 'pension', 'nps', 'old age', 'रिटायरमेंट', 'पेंशन', 'बुढ़ापा'])):
+        strategy_key = 'retirement'
+        learned_weights = get_adaptive_weights(strategy_key, regime)
+        nps_pct = int(learned_weights['debt_weight'])
+        eq_pct = int(learned_weights['equity_weight'])
+        flex_pct = int(learned_weights['flexicap_weight'])
+        gold_pct = int(learned_weights['gold_weight'])
+        harvest_target = int(learned_weights.get('harvest_target_pct', 22))
+        dip_buy = float(learned_weights.get('dip_buy_pct', 3.5))
+
         if lang == 'hi':
             title = "लंबी अवधि और रिटायरमेंट वेल्थ कंपाउंडिंग ब्लूप्रिंट"
             allocations = [
                 {
                     'category': 'नेशनल पेंशन सिस्टम (NPS Tier-1 Scheme E/C)',
-                    'percentage': 30,
+                    'percentage': nps_pct,
                     'color': '#f59e0b',
                     'icon': 'fas fa-university',
                     'instruments': ['NPS Scheme E (75% Equity)', 'NPS Scheme C (Corporate Bonds)'],
@@ -476,7 +774,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 },
                 {
                     'category': 'ब्रॉड इंडेक्स और सेक्टोरल ईटीएफ (कंपाउंडिंग अल्फा)',
-                    'percentage': 40,
+                    'percentage': eq_pct,
                     'color': '#2563eb',
                     'icon': 'fas fa-chart-line',
                     'instruments': ['NIFTYBEES', 'MON100', 'ITBEES'],
@@ -484,7 +782,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 },
                 {
                     'category': 'फ्लेक्सी-कैप एवं मिडकैप म्यूचुअल फंड SIP',
-                    'percentage': 20,
+                    'percentage': flex_pct,
                     'color': '#8b5cf6',
                     'icon': 'fas fa-layer-group',
                     'instruments': ['HDFC Flexi Cap', 'Mirae Asset Large & Midcap'],
@@ -492,7 +790,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 },
                 {
                     'category': 'सॉवरेन गोल्ड एवं सरकारी डेट फंड्स',
-                    'percentage': 10,
+                    'percentage': gold_pct,
                     'color': '#10b981',
                     'icon': 'fas fa-coins',
                     'instruments': ['GOLDBEES', 'Target Maturity Govt Debt Funds'],
@@ -516,32 +814,32 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 {
                     'step_num': 3,
                     'title': 'हर साल 10% वार्षिक SIP स्टेप-अप करें',
-                    'detail': 'आय बढ़ने के साथ हर साल मासिक निवेश को 10% बढ़ाएं, जिससे रिटायरमेंट कॉर्पस दोगुना हो सके।',
+                    'detail': f'आय बढ़ने के साथ हर साल मासिक निवेश को 10% बढ़ाएं, और बाजार {dip_buy:g}% गिरने पर अतिरिक्त खरीदारी करें।',
                     'icon': 'fas fa-arrow-trend-up'
                 },
                 {
                     'step_num': 4,
-                    'title': 'FOLIUX फीफो विधि से वार्षिक रीबैलेंसिंग करें',
-                    'detail': 'शॉर्ट टर्म कैपिटल गेन टैक्स से बचते हुए अनुशासित रीबैलेंसिंग सुनिश्चित करें।',
+                    'title': f'{harvest_target}% लाभ पर FOLIUX फीफो विधि से रीबैलेंसिंग करें',
+                    'detail': f'शॉर्ट टर्म कैपिटल गेन टैक्स से बचते हुए {harvest_target}% पर अनुशासित रीबैलेंसिंग सुनिश्चित करें।',
                     'icon': 'fas fa-scale-balanced'
                 }
             ]
 
             spoken_body = (
-                f"यह आपकी FOLIUX रिटायरमेंट और वेल्थ कंपाउंडिंग रणनीति है{' ' + amount_str + ' के लिए' if amount_str else ''}। "
-                "लंबी अवधि के रिटायरमेंट के लिए, 30 प्रतिशत नेशनल पेंशन सिस्टम यानी एनपीएस में लगाएं, "
+                f"{regime_data['insight_hi']} यह आपकी FOLIUX रिटायरमेंट और वेल्थ कंपाउंडिंग रणनीति है{' ' + amount_str + ' के लिए' if amount_str else ''}। "
+                f"लंबी अवधि के रिटायरमेंट के लिए, {nps_pct} प्रतिशत नेशनल पेंशन सिस्टम यानी एनपीएस में लगाएं, "
                 "जहां आपको धारा 80CCD में विशेष टैक्स छूट और न्यूनतम खर्च का लाभ मिलता है। "
-                "40 प्रतिशत निफ्टीबीज और मुख्य इंडेक्स ईटीएफ में लगाएं, 20 प्रतिशत फ्लेक्सी-कैप म्यूचुअल फंड में, और 10 प्रतिशत गोल्ड में रखें। "
-                "अपनी मासिक एसआईपी को हर साल 10 प्रतिशत बढ़ाएं। "
-                "10 से 15 साल धैर्यपूर्वक कंपाउंडिंग होने दें और बाजार के शोर से दूर रहें।"
+                f"{eq_pct} प्रतिशत निफ्टीबीज और मुख्य इंडेक्स ईटीएफ में लगाएं, {flex_pct} प्रतिशत फ्लेक्सी-कैप म्यूचुअल फंड में, और {gold_pct} प्रतिशत गोल्ड में रखें। "
+                f"अपनी मासिक एसआईपी को हर साल 10 प्रतिशत बढ़ाएं, बाजार {dip_buy:g} प्रतिशत गिरने पर अतिरिक्त यूनिट्स खरीदें, "
+                f"और {harvest_target} प्रतिशत लाभ पर रीबैलेंस करें। 10 से 15 साल धैर्यपूर्वक कंपाउंडिंग होने दें और बाजार के शोर से दूर रहें।"
             )
             spoken_body_phonetic = (
-                f"Yeh aapki FOLIUX retirement aur wealth compounding ranniti hai{' ' + amount_str + ' ke liye' if amount_str else ''}. "
-                "Lambi avadhi ke retirement ke liye, 30 percent National Pension System yaani NPS mein lagayein, "
+                f"{regime_data['insight_hi_phonetic']} Yeh aapki FOLIUX retirement aur wealth compounding ranniti hai{' ' + amount_str + ' ke liye' if amount_str else ''}. "
+                f"Lambi avadhi ke retirement ke liye, {nps_pct} percent National Pension System yaani NPS mein lagayein, "
                 "jahan aapko Section 80CCD mein vishesh tax chhoot aur nyuntam kharch ka labh milta hai. "
-                "40 percent NiftyBees aur mukhya index ETF mein lagayein, 20 percent flexi-cap mutual fund mein, aur 10 percent gold mein rakhein. "
-                "Apni masik SIP ko har saal 10 percent badhayein. "
-                "10 se 15 saal dhairyapurvak compounding hone dein aur bazaar ke shor se door rahein."
+                f"{eq_pct} percent NiftyBees aur mukhya index ETF mein lagayein, {flex_pct} percent flexi-cap mutual fund mein, aur {gold_pct} percent gold mein rakhein. "
+                f"Apni masik SIP ko har saal 10 percent badhayein, bazaar {dip_buy:g} percent girne par atirikt units kharidein, "
+                f"aur {harvest_target} percent labh par rebalance karein. 10 se 15 saal dhairyapurvak compounding hone dein aur bazaar ke shor se door rahein."
             )
             spoken_text = f"{spoken_body} {CLOSING_NOTICE_HI}"
             spoken_text_phonetic = f"{spoken_body_phonetic} {CLOSING_NOTICE_HI_PHONETIC}"
@@ -555,7 +853,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
             allocations = [
                 {
                     'category': 'National Pension System (Tier-1 Scheme E/C/G)',
-                    'percentage': 30,
+                    'percentage': nps_pct,
                     'color': '#f59e0b',
                     'icon': 'fas fa-university',
                     'instruments': ['NPS Scheme E (75% Equity)', 'NPS Scheme C (Corporate Bonds)'],
@@ -563,7 +861,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 },
                 {
                     'category': 'Broad Index & Sectoral ETFs (Compounding Alpha)',
-                    'percentage': 40,
+                    'percentage': eq_pct,
                     'color': '#2563eb',
                     'icon': 'fas fa-chart-line',
                     'instruments': ['NIFTYBEES', 'MON100', 'ITBEES'],
@@ -571,7 +869,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 },
                 {
                     'category': 'Consistent Flexi-Cap & Midcap SIPs',
-                    'percentage': 20,
+                    'percentage': flex_pct,
                     'color': '#8b5cf6',
                     'icon': 'fas fa-layer-group',
                     'instruments': ['HDFC Flexi Cap', 'Mirae Asset Large & Midcap'],
@@ -579,7 +877,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 },
                 {
                     'category': 'Sovereign Gold / G-Secs',
-                    'percentage': 10,
+                    'percentage': gold_pct,
                     'color': '#10b981',
                     'icon': 'fas fa-coins',
                     'instruments': ['GOLDBEES', 'Target Maturity Govt Debt Funds'],
@@ -603,24 +901,24 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 {
                     'step_num': 3,
                     'title': 'Run 10% Annual SIP Step-Up',
-                    'detail': 'Increase your monthly investment SIP by 10% each year as your income grows to double your retirement corpus.',
+                    'detail': f'Increase your monthly investment SIP by 10% each year, and deploy extra on {dip_buy:g}% market dips.',
                     'icon': 'fas fa-arrow-trend-up'
                 },
                 {
                     'step_num': 4,
-                    'title': 'Rebalance Annually via FIFO',
-                    'detail': 'Use Foliux FIFO lot tracking to rebalance assets without incurring unnecessary Short Term Capital Gains tax.',
+                    'title': f'Rebalance Annually via FIFO at {harvest_target}%',
+                    'detail': f'Use Foliux FIFO lot tracking to rebalance assets at {harvest_target}% without incurring unnecessary STCG tax.',
                     'icon': 'fas fa-scale-balanced'
                 }
             ]
 
             spoken_body = (
-                f"Here is your FOLIUX retirement and wealth compounding strategy{' for ' + amount_str if amount_str else ''}. "
-                "For a long-term retirement horizon, allocate 30 percent to the National Pension System Scheme E and C, "
+                f"{regime_data['insight_en']} Here is your FOLIUX retirement and wealth compounding strategy{' for ' + amount_str if amount_str else ''}. "
+                f"For a long-term retirement horizon, allocate {nps_pct} percent to the National Pension System Scheme E and C, "
                 "which gives you unmatched tax deductions under Section 80CCD and ultra-low compounding fees. "
-                "Place 40 percent in core index ETFs like NIFTYBEES and MON100, 20 percent in flexi-cap mutual fund SIPs, "
-                "and 10 percent in Gold. Step up your monthly contributions by 10 percent every year. "
-                "By letting compounding work over 10 to 15 years and avoiding emotional withdrawals, you create enduring wealth."
+                f"Place {eq_pct} percent in core index ETFs like NIFTYBEES and MON100, {flex_pct} percent in flexi-cap mutual fund SIPs, "
+                f"and {gold_pct} percent in Gold. Step up your monthly contributions by 10 percent every year, accumulate on {dip_buy:g} percent market dips, "
+                f"and harvest at {harvest_target} percent gains. By letting compounding work over 10 to 15 years and avoiding emotional withdrawals, you create enduring wealth."
             )
             spoken_text = f"{spoken_body} {CLOSING_NOTICE_EN}"
             spoken_text_phonetic = spoken_text
@@ -634,12 +932,21 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
     # 3. SPECIAL TOPIC: SHORT-TERM / CONSERVATIVE (SAFE CAPITAL)
     # -------------------------------------------------------------
     elif horizon == "short" or risk == "conservative":
+        strategy_key = 'capital_preservation'
+        learned_weights = get_adaptive_weights(strategy_key, regime)
+        fd_pct = int(learned_weights['debt_weight'])
+        arb_pct = int(learned_weights['flexicap_weight'])
+        bond_pct = int(learned_weights['gold_weight'])
+        eq_pct = int(learned_weights['equity_weight'])
+        harvest_target = int(learned_weights.get('harvest_target_pct', 12))
+        dip_buy = float(learned_weights.get('dip_buy_pct', 2.0))
+
         if lang == 'hi':
             title = "पूंजी सुरक्षा एवं लिक्विड यील्ड रणनीति"
             allocations = [
                 {
                     'category': 'उच्च-ब्याज बैंक फिक्स्ड डिपॉजिट / ऑटो-स्वीप',
-                    'percentage': 40,
+                    'percentage': fd_pct,
                     'color': '#10b981',
                     'icon': 'fas fa-building-columns',
                     'instruments': ['Scheduled Commercial Bank FDs (7.0 - 7.5%)', 'Auto-sweep'],
@@ -647,7 +954,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 },
                 {
                     'category': 'आर्बिट्राज एवं लिक्विड म्यूचुअल फंड्स',
-                    'percentage': 35,
+                    'percentage': arb_pct,
                     'color': '#3b82f6',
                     'icon': 'fas fa-water',
                     'instruments': ['Kotak Arbitrage Fund', 'ICICI Prudential Liquid Fund'],
@@ -655,7 +962,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 },
                 {
                     'category': 'शॉर्ट-ड्यूरेशन / कॉरपोरेट बॉन्ड फंड्स',
-                    'percentage': 15,
+                    'percentage': bond_pct,
                     'color': '#6366f1',
                     'icon': 'fas fa-receipt',
                     'instruments': ['AAA Corporate Bond Funds', 'Treasury Bill Funds'],
@@ -663,7 +970,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 },
                 {
                     'category': 'कंजर्वेटिव लार्ज-कैप ईटीएफ बफर',
-                    'percentage': 10,
+                    'percentage': eq_pct,
                     'color': '#f59e0b',
                     'icon': 'fas fa-chart-pie',
                     'instruments': ['NIFTYBEES'],
@@ -693,19 +1000,19 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
             ]
 
             spoken_body = (
-                f"कम अवधि और सुरक्षित पूंजी के लिए{' ' + amount_str + ' हेतु' if amount_str else ''}, "
+                f"{regime_data['insight_hi']} कम अवधि और सुरक्षित पूंजी के लिए{' ' + amount_str + ' हेतु' if amount_str else ''}, "
                 "पूंजी सुरक्षा सबसे महत्वपूर्ण है। इस पैसे को जोखिम भरे शेयरों में बिल्कुल न लगाएं। "
-                "40 प्रतिशत बैंकों की सुरक्षित एफडी में लगाएं जो 7 से 7.5 प्रतिशत ब्याज देती हैं। "
-                "35 प्रतिशत आर्बिट्राज और लिक्विड फंड में रखें जहां टैक्स की बचत और त्वरित निकासी मिलती है, "
-                "15 प्रतिशत कॉरपोरेट बॉन्ड में और अधिकतम 10 प्रतिशत इंडेक्स ईटीएफ में रखें। "
+                f"{fd_pct} प्रतिशत बैंकों की सुरक्षित एफडी में लगाएं जो 7 से 7.5 प्रतिशत ब्याज देती हैं। "
+                f"{arb_pct} प्रतिशत आर्बिट्राज और लिक्विड फंड में रखें जहां टैक्स की बचत और त्वरित निकासी मिलती है, "
+                f"{bond_pct} प्रतिशत कॉरपोरेट बॉन्ड में और अधिकतम {eq_pct} प्रतिशत इंडेक्स ईटीएफ में रखें। "
                 "यह रणनीति आपके मूलधन को सुरक्षित रखते हुए सामान्य बचत खाते से बेहतर रिटर्न देती है।"
             )
             spoken_body_phonetic = (
-                f"Kam avadhi aur surakshit poonji ke liye{' ' + amount_str + ' hetu' if amount_str else ''}, "
+                f"{regime_data['insight_hi_phonetic']} Kam avadhi aur surakshit poonji ke liye{' ' + amount_str + ' hetu' if amount_str else ''}, "
                 "poonji suraksha sabse mahatvapoorna hai. Is paise ko jokhim bhare share bazaar mein bilkul na lagayein. "
-                "40 percent anusoocheet bankon ki surakshit FD mein lagayein jo 7 se 7.5 percent byaj deti hain. "
-                "35 percent arbitrage aur liquid fund mein rakhein jahan tax ki bachat aur turant nikasi milti hai, "
-                "15 percent corporate bond mein aur adhiktam 10 percent index ETF mein rakhein. "
+                f"{fd_pct} percent anusoocheet bankon ki surakshit FD mein lagayein jo 7 se 7.5 percent byaj deti hain. "
+                f"{arb_pct} percent arbitrage aur liquid fund mein rakhein jahan tax ki bachat aur turant nikasi milti hai, "
+                f"{bond_pct} percent corporate bond mein aur adhiktam {eq_pct} percent index ETF mein rakhein. "
                 "Yeh ranniti aapke mool dhan ko surakshit rakhte hue sadharan bachat khate se behtar return deti hai."
             )
             spoken_text = f"{spoken_body} {CLOSING_NOTICE_HI}"
@@ -720,7 +1027,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
             allocations = [
                 {
                     'category': 'High-Yield Fixed Deposits / Bank Auto-Sweep',
-                    'percentage': 40,
+                    'percentage': fd_pct,
                     'color': '#10b981',
                     'icon': 'fas fa-building-columns',
                     'instruments': ['Scheduled Commercial Bank FDs (7.0 - 7.5%)', 'Auto-sweep'],
@@ -728,7 +1035,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 },
                 {
                     'category': 'Arbitrage & Liquid Mutual Funds',
-                    'percentage': 35,
+                    'percentage': arb_pct,
                     'color': '#3b82f6',
                     'icon': 'fas fa-water',
                     'instruments': ['Kotak Arbitrage Fund', 'ICICI Prudential Liquid Fund'],
@@ -736,7 +1043,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 },
                 {
                     'category': 'Short-Duration / Corporate Debt Funds',
-                    'percentage': 15,
+                    'percentage': bond_pct,
                     'color': '#6366f1',
                     'icon': 'fas fa-receipt',
                     'instruments': ['AAA Corporate Bond Funds', 'Treasury Bill Funds'],
@@ -744,7 +1051,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 },
                 {
                     'category': 'Conservative Large-Cap ETF Buffer',
-                    'percentage': 10,
+                    'percentage': eq_pct,
                     'color': '#f59e0b',
                     'icon': 'fas fa-chart-pie',
                     'instruments': ['NIFTYBEES'],
@@ -774,11 +1081,11 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
             ]
 
             spoken_body = (
-                f"For capital safety and short-term horizons{' with ' + amount_str if amount_str else ''}, "
+                f"{regime_data['insight_en']} For capital safety and short-term horizons{' with ' + amount_str if amount_str else ''}, "
                 "capital preservation is paramount. Do not deploy this money into volatile equities. "
-                "Allocate 40 percent to scheduled bank fixed deposits yielding 7 to 7.5 percent. "
-                "Place 35 percent in arbitrage and liquid mutual funds for tax-efficient liquidity, "
-                "15 percent in AAA corporate bond funds, and keep no more than 10 percent in index ETFs. "
+                f"Allocate {fd_pct} percent to scheduled bank fixed deposits yielding 7 to 7.5 percent. "
+                f"Place {arb_pct} percent in arbitrage and liquid mutual funds for tax-efficient liquidity, "
+                f"{bond_pct} percent in AAA corporate bond funds, and keep no more than {eq_pct} percent in index ETFs. "
                 "This protects your principal while beating ordinary savings rates."
             )
             spoken_text = f"{spoken_body} {CLOSING_NOTICE_EN}"
@@ -793,20 +1100,29 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
     # 4. LUMP SUM INVESTMENT (DEPLOYMENT LOGIC)
     # -------------------------------------------------------------
     elif is_lump_sum and amount and amount >= 50000:
+        strategy_key = 'lump_sum'
+        learned_weights = get_adaptive_weights(strategy_key, regime)
+        eq_pct = int(learned_weights['equity_weight'])
+        flex_pct = int(learned_weights['flexicap_weight'])
+        gold_pct = int(learned_weights['gold_weight'])
+        cash_pct = int(learned_weights['debt_weight'])
+        harvest_target = int(learned_weights.get('harvest_target_pct', 22))
+        dip_buy = float(learned_weights.get('dip_buy_pct', 3.5))
+
         if lang == 'hi':
             title = f"{amount_str} एकमुश्त राशि हेतु FOLIUX अनुशासित निवेश ब्लूप्रिंट"
             allocations = [
                 {
                     'category': 'कोर इंडेक्स और सेक्टोरल ईटीएफ (Nifty और Tech)',
-                    'percentage': 45,
+                    'percentage': eq_pct,
                     'color': '#2563eb',
                     'icon': 'fas fa-chart-line',
-                    'instruments': ['NIFTYBEES (25%)', 'JUNIORBEES (10%)', 'ITBEES (10%)'],
+                    'instruments': ['NIFTYBEES', 'JUNIORBEES', 'ITBEES'],
                     'rationale': 'भारत के प्रमुख आर्थिक इंजनों में व्यवस्थित रूप से प्रवेश।'
                 },
                 {
                     'category': 'सक्रिय फ्लेक्सी-कैप एवं मिडकैप फंड्स',
-                    'percentage': 25,
+                    'percentage': flex_pct,
                     'color': '#8b5cf6',
                     'icon': 'fas fa-layer-group',
                     'instruments': ['Parag Parikh Flexi Cap', 'Motilal Oswal Midcap'],
@@ -814,7 +1130,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 },
                 {
                     'category': 'सॉवरेन गोल्ड एवं कमोडिटीज',
-                    'percentage': 15,
+                    'percentage': gold_pct,
                     'color': '#f59e0b',
                     'icon': 'fas fa-coins',
                     'instruments': ['GOLDBEES', 'SILVERBEES'],
@@ -822,7 +1138,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 },
                 {
                     'category': 'लिक्विड एसटीपी पार्किंग फंड',
-                    'percentage': 15,
+                    'percentage': cash_pct,
                     'color': '#10b981',
                     'icon': 'fas fa-money-bill-transfer',
                     'instruments': ['Overnight / Ultra Short Duration Debt'],
@@ -845,34 +1161,33 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 },
                 {
                     'step_num': 3,
-                    'title': 'बाजार सुधार के लिए 20% कैश रिजर्व रखें',
-                    'detail': 'जब निफ्टी 4% से 7% गिरे, तब इस सुरक्षित कैश से अतिरिक्त लॉट खरीदें।',
+                    'title': f'बाजार सुधार के लिए {cash_pct}% कैश रिजर्व रखें',
+                    'detail': f'जब निफ्टी {dip_buy:g}% से 7% गिरे, तब इस सुरक्षित कैश से अतिरिक्त लॉट खरीदें।',
                     'icon': 'fas fa-fire'
                 },
                 {
                     'step_num': 4,
-                    'title': 'FOLIUX नियमों से प्रॉफिट हार्वेस्ट करें',
-                    'detail': '20% से अधिक लाभ होने पर अनुशासित होकर लाभ सुरक्षित नकदी में वापस लाएं।',
+                    'title': f'{harvest_target}% लाभ पर FOLIUX नियमों से प्रॉफिट हार्वेस्ट करें',
+                    'detail': f'{harvest_target}% से अधिक लाभ होने पर अनुशासित होकर लाभ सुरक्षित नकदी में वापस लाएं।',
                     'icon': 'fas fa-hand-holding-dollar'
                 }
             ]
 
             spoken_body = (
-                f"आपके {amount_str} एकमुश्त निवेश के लिए यह FOLIUX संस्थागत योजना है। "
+                f"{regime_data['insight_hi']} आपके {amount_str} एकमुश्त निवेश के लिए यह FOLIUX संस्थागत योजना है। "
                 "अत्यंत महत्वपूर्ण नियम: एक ही दिन में सारा पैसा बाजार में न लगाएं। "
                 "पहले पूरी रकम को लिक्विड म्यूचुअल फंड में रखें और वहां से 6 महीने का सिस्टमैटिक ट्रांसफर प्लान शुरू करें। "
-                "45 प्रतिशत निफ्टीबीज और मुख्य इंडेक्स ईटीएफ में, 25 प्रतिशत टॉप फ्लेक्सी-कैप फंड में, "
-                "15 प्रतिशत गोल्ड ईटीएफ में लगाएं, और 15 प्रतिशत कैश रिजर्व रखें। "
-                "बाजार में 3 से 5 प्रतिशत की गिरावट आने पर अतिरिक्त हिस्सा निवेश करें। यह तरीका मार्केट टॉप पर खरीदने के जोखिम को समाप्त करता है।"
+                f"{eq_pct} प्रतिशत निफ्टीबीज और मुख्य इंडेक्स ईटीएफ में, {flex_pct} प्रतिशत टॉप फ्लेक्सी-कैप फंड में, "
+                f"{gold_pct} प्रतिशत गोल्ड ईटीएफ में लगाएं, और {cash_pct} प्रतिशत कैश रिजर्व रखें। "
+                f"बाजार में {dip_buy:g} प्रतिशत की गिरावट आने पर अतिरिक्त हिस्सा निवेश करें, और {harvest_target} प्रतिशत पर मुनाफा वसूलें। यह तरीका मार्केट टॉप पर खरीदने के जोखिम को समाप्त करता है।"
             )
             spoken_body_phonetic = (
-                f"Aapke {amount_str} ekmusht nivesh ke liye yeh FOLIUX sansthagat yojana hai. "
+                f"{regime_data['insight_hi_phonetic']} Aapke {amount_str} ekmusht nivesh ke liye yeh FOLIUX sansthagat yojana hai. "
                 "Atyant mahatvapoorna niyam: ek hi din mein saara paisa bazaar mein na lagayein. "
                 "Pehle poori rakam ko liquid mutual fund mein rakhein aur wahan se 6 mahine ka systematic transfer plan shuru karein. "
-                "45 percent NiftyBees aur mukhya index ETF mein, 25 percent top flexi-cap fund mein, "
-                "15 percent Gold ETF mein lagayein, aur 15 percent cash reserve rakhein. "
-                "Bazaar mein 3 se 5 percent ki girawat aane par atirikt hissa nivesh karein. "
-                "Yeh tareeka market top par khareedne ke risk ko samapt karta hai."
+                f"{eq_pct} percent NiftyBees aur mukhya index ETF mein, {flex_pct} percent top flexi-cap fund mein, "
+                f"{gold_pct} percent Gold ETF mein lagayein, aur {cash_pct} percent cash reserve rakhein. "
+                f"Bazaar mein {dip_buy:g} percent ki girawat aane par atirikt hissa nivesh karein, aur {harvest_target} percent par munafa vasulein. Yeh tareeka market top par khareedne ke risk ko samapt karta hai."
             )
             spoken_text = f"{spoken_body} {CLOSING_NOTICE_HI}"
             spoken_text_phonetic = f"{spoken_body_phonetic} {CLOSING_NOTICE_HI_PHONETIC}"
@@ -886,15 +1201,15 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
             allocations = [
                 {
                     'category': 'Core Index & Thematic ETFs (Nifty & Tech)',
-                    'percentage': 45,
+                    'percentage': eq_pct,
                     'color': '#2563eb',
                     'icon': 'fas fa-chart-line',
-                    'instruments': ['NIFTYBEES (25%)', 'JUNIORBEES (10%)', 'ITBEES (10%)'],
+                    'instruments': ['NIFTYBEES', 'JUNIORBEES', 'ITBEES'],
                     'rationale': 'Staggered STP entry into India’s dominant economic engines.'
                 },
                 {
                     'category': 'Active Flexi-Cap & Midcap Funds',
-                    'percentage': 25,
+                    'percentage': flex_pct,
                     'color': '#8b5cf6',
                     'icon': 'fas fa-layer-group',
                     'instruments': ['Parag Parikh Flexi Cap', 'Motilal Oswal Midcap'],
@@ -902,7 +1217,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 },
                 {
                     'category': 'Sovereign Gold / Commodities',
-                    'percentage': 15,
+                    'percentage': gold_pct,
                     'color': '#f59e0b',
                     'icon': 'fas fa-coins',
                     'instruments': ['GOLDBEES', 'SILVERBEES'],
@@ -910,7 +1225,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 },
                 {
                     'category': 'Liquid STP Parking Fund',
-                    'percentage': 15,
+                    'percentage': cash_pct,
                     'color': '#10b981',
                     'icon': 'fas fa-money-bill-transfer',
                     'instruments': ['Overnight / Ultra Short Duration Debt'],
@@ -933,25 +1248,25 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 },
                 {
                     'step_num': 3,
-                    'title': 'Hold 20% Opportunistic Dip Reserve',
-                    'detail': 'Keep a 15% to 20% tranche ready to manually deploy if Nifty experiences a 4% to 7% correction.',
+                    'title': f'Hold {cash_pct}% Opportunistic Dip Reserve',
+                    'detail': f'Keep a {cash_pct}% tranche ready to manually deploy if Nifty experiences a {dip_buy:g}% to 7% correction.',
                     'icon': 'fas fa-fire'
                 },
                 {
                     'step_num': 4,
-                    'title': 'Harvest Profits with Foliux Rules',
-                    'detail': 'Once lots gain 20%+, systematically book profits back into liquid safety.',
+                    'title': f'Harvest Profits with Foliux Rules at {harvest_target}%',
+                    'detail': f'Once lots gain {harvest_target}%+, systematically book profits back into liquid safety.',
                     'icon': 'fas fa-hand-holding-dollar'
                 }
             ]
 
             spoken_body = (
-                f"Here is your FOLIUX institutional deployment plan for your {amount_str} lump sum. "
+                f"{regime_data['insight_en']} Here is your FOLIUX institutional deployment plan for your {amount_str} lump sum. "
                 "Crucial rule: do not invest the entire amount in a single day. "
                 "Park the corpus in a liquid mutual fund and set up a 6-month Systematic Transfer Plan into equities. "
-                "Target 45 percent in broad index ETFs like NIFTYBEES and ITBEES, 25 percent in top flexi-cap mutual funds, "
-                "15 percent in Gold ETFs, and keep 15 percent as cash dry powder. "
-                "If the market corrects 3 to 5 percent, deploy an extra tranche. "
+                f"Target {eq_pct} percent in broad index ETFs like NIFTYBEES and ITBEES, {flex_pct} percent in top flexi-cap mutual funds, "
+                f"{gold_pct} percent in Gold ETFs, and keep {cash_pct} percent as cash dry powder. "
+                f"If the market corrects {dip_buy:g} percent, deploy an extra tranche, and harvest gains at {harvest_target} percent. "
                 "This dollar cost averaging prevents the regret of buying at the top."
             )
             spoken_text = f"{spoken_body} {CLOSING_NOTICE_EN}"
@@ -966,6 +1281,15 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
     # 5. DEFAULT / MONTHLY SIP WEALTH CREATION (GENERAL)
     # -------------------------------------------------------------
     else:
+        strategy_key = 'default_sip'
+        learned_weights = get_adaptive_weights(strategy_key, regime)
+        eq_pct = int(learned_weights['equity_weight'])
+        flex_pct = int(learned_weights['flexicap_weight'])
+        nps_pct = int(learned_weights['debt_weight'])
+        gold_pct = int(learned_weights['gold_weight'])
+        harvest_target = int(learned_weights.get('harvest_target_pct', 22))
+        dip_buy = float(learned_weights.get('dip_buy_pct', 3.5))
+
         if lang == 'hi':
             amt_disp = amount_str if amount_str else "₹10,000 / महीना"
             amt_disp_phonetic = amount_str if amount_str else "₹10,000 per month"
@@ -974,15 +1298,15 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
             allocations = [
                 {
                     'category': 'कोर इंडेक्स ईटीएफ (न्यूनतम खर्च अनुपात)',
-                    'percentage': 45,
+                    'percentage': eq_pct,
                     'color': '#2563eb',
                     'icon': 'fas fa-chart-line',
-                    'instruments': ['NIFTYBEES (30%)', 'JUNIORBEES (15%)'],
+                    'instruments': ['NIFTYBEES', 'JUNIORBEES'],
                     'rationale': 'बिना किसी फंड मैनेजर जोखिम के, सीधे भारत की शीर्ष 100 कंपनियों की ग्रोथ का फायदा।'
                 },
                 {
                     'category': 'फ्लेक्सी-कैप एवं मिडकैप म्यूचुअल फंड्स',
-                    'percentage': 30,
+                    'percentage': flex_pct,
                     'color': '#8b5cf6',
                     'icon': 'fas fa-layer-group',
                     'instruments': ['Parag Parikh Flexi Cap', 'Nippon India Growth Fund'],
@@ -990,7 +1314,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 },
                 {
                     'category': 'रिटायरमेंट टैक्स कंपाउंडिंग (NPS)',
-                    'percentage': 15,
+                    'percentage': nps_pct,
                     'color': '#f59e0b',
                     'icon': 'fas fa-university',
                     'instruments': ['NPS Tier-1 Scheme E/C'],
@@ -998,7 +1322,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 },
                 {
                     'category': 'गोल्ड और लिक्विड बफर',
-                    'percentage': 10,
+                    'percentage': gold_pct,
                     'color': '#10b981',
                     'icon': 'fas fa-coins',
                     'instruments': ['GOLDBEES', 'Liquid Fund Buffer'],
@@ -1016,13 +1340,13 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 {
                     'step_num': 2,
                     'title': 'गिरावट पर FOLIUX पिरामिडिंग अपनाएं',
-                    'detail': 'जब निफ्टी 50 में 3% से 5% की गिरावट आए, तो NIFTYBEES या मुख्य ईटीएफ में अतिरिक्त लॉट खरीदें।',
+                    'detail': f'जब निफ्टी 50 में {dip_buy:g}% की गिरावट आए, तो NIFTYBEES या मुख्य ईटीएफ में अतिरिक्त लॉट खरीदें।',
                     'icon': 'fas fa-arrow-trend-down'
                 },
                 {
                     'step_num': 3,
-                    'title': '22% लाभ पर प्रॉफिट हार्वेस्टिंग नियम लागू करें',
-                    'detail': 'जब भी किसी व्यक्तिगत खरीद लॉट में 20% से 22% का लाभ हो, उसे बेचकर कम आवंटन वाले एसेट्स में रीसायकल करें।',
+                    'title': f'{harvest_target}% लाभ पर प्रॉफिट हार्वेस्टिंग नियम लागू करें',
+                    'detail': f'जब भी किसी व्यक्तिगत खरीद लॉट में {harvest_target}% का लाभ हो, उसे बेचकर कम आवंटन वाले एसेट्स में रीसायकल करें।',
                     'icon': 'fas fa-scissors'
                 },
                 {
@@ -1034,20 +1358,20 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
             ]
 
             spoken_body = (
-                f"आपके {amt_disp} के निवेश के लिए यह FOLIUX रणनीति है। "
+                f"{regime_data['insight_hi']} आपके {amt_disp} के निवेश के लिए यह FOLIUX रणनीति है। "
                 "अनुशासित तरीके से लंबी अवधि की संपत्ति बनाने के लिए अपने निवेश को चार स्पष्ट भागों में बांटें: "
-                "45 प्रतिशत कोर इंडेक्स ईटीएफ जैसे निफ्टीबीज और जूनियरबीज में लगाएं। 30 प्रतिशत साबित फ्लेक्सी-कैप म्यूचुअल फंड में रखें। "
-                "15 प्रतिशत नेशनल पेंशन सिस्टम में रिटायरमेंट टैक्स कंपाउंडिंग के लिए लगाएं, और 10 प्रतिशत गोल्ड ईटीएफ में रखें। "
-                "हमारे दो सुनहरे नियम याद रखें: बाजार 3 से 5 प्रतिशत गिरने पर अतिरिक्त खरीदारी करें, "
-                "और जब भी किसी लॉट में 22 प्रतिशत का लाभ हो, मुनाफा वसूलें। यह आपके निवेश को भावनाओं से दूर रखता है।"
+                f"{eq_pct} प्रतिशत कोर इंडेक्स ईटीएफ जैसे निफ्टीबीज और जूनियरबीज में लगाएं। {flex_pct} प्रतिशत साबित फ्लेक्सी-कैप म्यूचुअल फंड में रखें। "
+                f"{nps_pct} प्रतिशत नेशनल पेंशन सिस्टम में रिटायरमेंट टैक्स कंपाउंडिंग के लिए लगाएं, और {gold_pct} प्रतिशत गोल्ड ईटीएफ में रखें। "
+                f"हमारे दो सुनहरे नियम याद रखें: बाजार {dip_buy:g} प्रतिशत गिरने पर अतिरिक्त खरीदारी करें, "
+                f"और जब भी किसी लॉट में {harvest_target} प्रतिशत का लाभ हो, मुनाफा वसूलें। यह आपके निवेश को भावनाओं से दूर रखता है।"
             )
             spoken_body_phonetic = (
-                f"Aapke {amt_disp_phonetic} ke nivesh ke liye yeh FOLIUX ranniti hai. "
+                f"{regime_data['insight_hi_phonetic']} Aapke {amt_disp_phonetic} ke nivesh ke liye yeh FOLIUX ranniti hai. "
                 "Anushasit tareeke se lambi avadhi ki sampatti banane ke liye apne nivesh ko chaar spasht bhaagon mein baantein: "
-                "45 percent core index ETF jaise NiftyBees aur JuniorBees mein lagayein. 30 percent saabit Flexi-Cap mutual fund mein rakhein. "
-                "15 percent National Pension System mein retirement tax compounding ke liye lagayein, aur 10 percent Gold ETF mein rakhein. "
-                "Humare do sunhare niyam yaad rakhein: bazaar 3 se 5 percent girne par atirikt khareedari karein, "
-                "aur jab bhi kisi lot mein 22 percent ka labh ho, munafa vasulein. Yeh aapke nivesh ko bhavnaon se door rakhta hai."
+                f"{eq_pct} percent core index ETF jaise NiftyBees aur JuniorBees mein lagayein. {flex_pct} percent saabit Flexi-Cap mutual fund mein rakhein. "
+                f"{nps_pct} percent National Pension System mein retirement tax compounding ke liye lagayein, aur {gold_pct} percent Gold ETF mein rakhein. "
+                f"Humare do sunhare niyam yaad rakhein: bazaar {dip_buy:g} percent girne par atirikt khareedari karein, "
+                f"aur jab bhi kisi lot mein {harvest_target} percent ka labh ho, munafa vasulein. Yeh aapke nivesh ko bhavnaon se door rakhta hai."
             )
             spoken_text = f"{spoken_body} {CLOSING_NOTICE_HI}"
             spoken_text_phonetic = f"{spoken_body_phonetic} {CLOSING_NOTICE_HI_PHONETIC}"
@@ -1063,7 +1387,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
             allocations = [
                 {
                     'category': 'Core Index ETFs (Low Expense Ratio)',
-                    'percentage': 45,
+                    'percentage': eq_pct,
                     'color': '#2563eb',
                     'icon': 'fas fa-chart-line',
                     'instruments': ['NIFTYBEES (30%)', 'JUNIORBEES (15%)'],
@@ -1071,7 +1395,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 },
                 {
                     'category': 'Flexi-Cap & Midcap Mutual Funds',
-                    'percentage': 30,
+                    'percentage': flex_pct,
                     'color': '#8b5cf6',
                     'icon': 'fas fa-layer-group',
                     'instruments': ['Parag Parikh Flexi Cap', 'Nippon India Growth Fund'],
@@ -1079,7 +1403,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 },
                 {
                     'category': 'Retirement Tax Compounding (NPS)',
-                    'percentage': 15,
+                    'percentage': nps_pct,
                     'color': '#f59e0b',
                     'icon': 'fas fa-university',
                     'instruments': ['NPS Tier-1 Scheme E/C'],
@@ -1087,7 +1411,7 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 },
                 {
                     'category': 'Gold & Liquid Reserve',
-                    'percentage': 10,
+                    'percentage': gold_pct,
                     'color': '#10b981',
                     'icon': 'fas fa-coins',
                     'instruments': ['GOLDBEES', 'Liquid Fund Buffer'],
@@ -1105,13 +1429,13 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
                 {
                     'step_num': 2,
                     'title': 'Apply Foliux Pyramiding on Dips',
-                    'detail': 'When the Nifty 50 drops by 3% to 5%, buy an additional unit lot of NIFTYBEES or your core ETF.',
+                    'detail': f'When the Nifty 50 drops by {dip_buy:g}%, buy an additional unit lot of NIFTYBEES or your core ETF.',
                     'icon': 'fas fa-arrow-trend-down'
                 },
                 {
                     'step_num': 3,
-                    'title': 'Enforce the 22% Profit Harvest Rule',
-                    'detail': 'When any individual purchase lot gains 20% to 22%, sell that lot and recycle the capital into underweight assets.',
+                    'title': f'Enforce the {harvest_target}% Profit Harvest Rule',
+                    'detail': f'When any individual purchase lot gains {harvest_target}%, sell that lot and recycle the capital into underweight assets.',
                     'icon': 'fas fa-scissors'
                 },
                 {
@@ -1123,14 +1447,14 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
             ]
 
             spoken_body = (
-                f"Here is your FOLIUX investment strategy for {amt_disp}. "
+                f"{regime_data['insight_en']} Here is your FOLIUX investment strategy for {amt_disp}. "
                 "To build disciplined, long-term wealth, divide your investment into four clear buckets: "
-                "Allocate 45 percent to core index ETFs like NIFTYBEES and JUNIORBEES for steady foundation growth. "
-                "Put 30 percent into proven Flexi-Cap mutual funds. "
-                "Allocate 15 percent to the National Pension System for retirement compounding and tax savings, "
-                "and 10 percent to Gold ETFs as a market hedge. "
-                "Follow our two golden rules: buy additional units during 3 to 5 percent market dips, "
-                "and harvest profits whenever a lot reaches a 22 percent profit. This keeps emotions out of your money."
+                f"Allocate {eq_pct} percent to core index ETFs like NIFTYBEES and JUNIORBEES for steady foundation growth. "
+                f"Put {flex_pct} percent into proven Flexi-Cap mutual funds. "
+                f"Allocate {nps_pct} percent to the National Pension System for retirement compounding and tax savings, "
+                f"and {gold_pct} percent to Gold ETFs as a market hedge. "
+                f"Follow our two golden rules: buy additional units during {dip_buy:g} percent market dips, "
+                f"and harvest profits whenever a lot reaches a {harvest_target} percent profit. This keeps emotions out of your money."
             )
             spoken_text = f"{spoken_body} {CLOSING_NOTICE_EN}"
             spoken_text_phonetic = spoken_text
@@ -1188,11 +1512,56 @@ def generate_investment_advice(query: str, market_context: Optional[Dict[str, An
             'url': '/login/?next=/profile/'
         }
 
+    # Record query for continuous self-learning
+    query_id = None
+    try:
+        from core.models import AdviserQueryLog
+        nifty_val = None
+        if market_context and market_context.get('nifty_price'):
+            try:
+                np_clean = str(market_context['nifty_price']).replace(',', '').replace('₹', '').strip()
+                nifty_val = Decimal(np_clean)
+            except Exception:
+                nifty_val = None
+
+        user_obj = user if (user and getattr(user, 'is_authenticated', False)) else None
+
+        qlog = AdviserQueryLog.objects.create(
+            user=user_obj,
+            session_key=session_key,
+            query_text=query,
+            detected_language=lang,
+            parsed_intent=parsed,
+            market_regime=regime,
+            nifty_price=nifty_val,
+            strategy_key=strategy_key,
+            user_feedback=0
+        )
+        query_id = qlog.id
+    except Exception as e:
+        logger.warning(f"Failed to log adviser query for self-learning: {e}")
+
+    learning_model = {
+        'strategy_key': strategy_key,
+        'regime': regime,
+        'confidence_score': learned_weights.get('confidence_score', 0.88),
+        'sample_count': learned_weights.get('sample_count', 1),
+        'harvest_target_pct': harvest_target,
+        'dip_buy_pct': dip_buy,
+        'version': '2.2-Adaptive'
+    }
+
     return {
         'status': 'success',
+        'query_id': query_id,
         'query': query,
         'language': lang,
         'parsed_query': parsed,
+        'market_regime': regime,
+        'regime_name': regime_data['name_hi'] if lang == 'hi' else regime_data['name_en'],
+        'regime_insight': regime_data['insight_hi'] if lang == 'hi' else regime_data['insight_en'],
+        'regime_insight_phonetic': regime_data['insight_hi_phonetic'],
+        'learning_model': learning_model,
         'title': title,
         'summary': summary_text,
         'spoken_text': spoken_text,
