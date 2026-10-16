@@ -38,8 +38,16 @@ class Command(BaseCommand):
                 if item.url:
                     content += f"<a href='{item.url}' style='color:#3498db;'>Read Full Story</a>"
                 content += "</div>"
-        else:
-            content += "<p>This is a test email to verify that your SMTP settings are correct.</p>"
+        site_url = getattr(settings, 'SITE_URL', 'https://foliux.com').rstrip('/')
+        content += f"<div style='margin-top: 30px; padding: 25px 20px; text-align: center; font-size: 13px; color: #718096; background-color: #f7fafc; border-top: 1px solid #e2e8f0; border-radius: 6px;'>"
+        content += f"<p style='margin: 0 0 8px 0; font-weight: 600; color: #4a5568;'>&copy; 2026 FOLIUX &ndash; Investment Tracking System</p>"
+        content += f"<p style='margin: 0 0 8px 0;'>Rule-based investing for disciplined wealth creation.</p>"
+        content += f"<p style='margin: 0 0 15px 0;'>This is an automated daily summary. To unsubscribe, please update your <a href='{site_url}/profile/edit/' style='color: #4a5568; text-decoration: underline;'>profile settings</a>.</p>"
+        content += f"<div style='margin-top: 20px; padding-top: 15px; border-top: 1px solid #e2e8f0;'>"
+        content += f"<p style='margin: 0 0 8px 0;'><a href='{site_url}/profile/request-delete/' style='display: inline-block; background-color: #ffffff; color: #dc3545; border: 1px solid #dc3545; padding: 7px 18px; border-radius: 6px; font-weight: 700; font-size: 13px; text-decoration: none;'>Delete My Account</a></p>"
+        content += f"<p style='font-size: 11px; color: #a0aec0; margin: 0 auto; max-width: 460px; line-height: 1.4;'>Permanently delete your Foliux account, profile, portfolios, and all associated data. You will no longer be able to access Foliux or recover any of your data.</p>"
+        content += f"</div>"
+        content += f"</div>"
 
         try:
             send_mail(
