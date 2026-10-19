@@ -72,6 +72,13 @@ class Command(BaseCommand):
             except Exception as e:
                 self.stderr.write(f"Error running stock news: {e}")
 
+        def run_stock_news_fetch_only():
+            self.stdout.write("Running hourly stock & ETF news fetch from Gmail...")
+            try:
+                management.call_command('process_stock_news', fetch_only=True)
+            except Exception as e:
+                self.stderr.write(f"Error running hourly stock news fetch: {e}")
+
         def run_daily_summary():
             self.stdout.write("Running scheduled daily summary...")
             try:
@@ -113,6 +120,7 @@ class Command(BaseCommand):
         scheduler.add_job(scheduled_coin, 'interval', minutes=30, id='auto_update_coin')
         scheduler.add_job(scheduled_nps, 'interval', minutes=30, id='auto_update_nps')
         scheduler.add_job(run_ipo_evaluation, 'interval', minutes=30, id='auto_evaluate_ipo_rules')
+        scheduler.add_job(run_stock_news_fetch_only, 'interval', minutes=60, id='hourly_stock_news_fetch')
         
         # Daily cron jobs (2:00 AM, 9:00 AM, 10:00 AM, & 4:00 PM IST)
         scheduler.add_job(run_management_guidance, CronTrigger(hour=2, minute=0), id='daily_management_guidance_job', misfire_grace_time=3600)

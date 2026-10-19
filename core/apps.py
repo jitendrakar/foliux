@@ -11,7 +11,11 @@ class CoreConfig(AppConfig):
         from django.core.management import call_command
 
         # Avoid starting the scheduler when running management commands (like migrate, check, etc.)
-        if any(cmd in sys.argv for cmd in ['makemigrations', 'migrate', 'collectstatic', 'check', 'shell', 'test']):
+        if sys.argv and any(cmd in sys.argv for cmd in [
+            'makemigrations', 'migrate', 'collectstatic', 'check', 'shell', 'test',
+            'master_scheduler', 'process_stock_news', 'send_daily_summary', 'send_signal_alerts',
+            'dumpdata', 'loaddata'
+        ]):
             return
 
         def run_alerts():
@@ -64,16 +68,22 @@ class CoreConfig(AppConfig):
             _auto_update_nps()
 
         # Ensure scheduler runs in appropriate environments
-        is_manage_py = 'manage.py' in sys.argv[0]
-        is_runserver = 'runserver' in sys.argv
-        is_main_process = os.environ.get('RUN_MAIN') == 'true'
+        is_manage_py = any('manage.py' in arg for arg in sys.argv) if sys.argv else False
+        is_runserver = 'runserver' in sys.argv if sys.argv else False
+        is_main_process = os.environ.get('RUN_MAIN') == 'true' or '--noreload' in sys.argv
         is_gunicorn = os.environ.get('SERVER_SOFTWARE', '').startswith('gunicorn')
-        is_iis = os.environ.get('SERVER_SOFTWARE', '').startswith('Microsoft-IIS') or os.environ.get('WSGI_HANDLER')
+        is_iis = bool(os.environ.get('SERVER_SOFTWARE', '').startswith('Microsoft-IIS') or os.environ.get('WSGI_HANDLER'))
+        force_scheduler = os.environ.get('ENABLE_SCHEDULER', '').lower() in ['true', '1', 'yes']
 
-        # Only run scheduler in local runserver mode (to make local development easy).
-        # In production (Gunicorn, IIS, etc.), the scheduler should run as a separate
-        # background process via 'python manage.py master_scheduler'.
-        if is_runserver and is_main_process:
+        # Activate scheduler in IIS, Gunicorn, WSGI, or runserver
+        should_run_scheduler = (
+            force_scheduler
+            or (is_runserver and is_main_process)
+            or is_iis
+            or is_gunicorn
+            or (not is_manage_py)
+        )
+        if should_run_scheduler:
             from apscheduler.schedulers.background import BackgroundScheduler
             from apscheduler.triggers.cron import CronTrigger
             
