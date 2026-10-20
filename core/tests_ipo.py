@@ -494,3 +494,98 @@ class IPORuleEvaluationTests(TestCase):
         self.assertIn("cmp-badge", content)
         self.assertIn("CMP:", content)
         self.assertIn("advise-apply", content)
+
+    def test_extract_chittorgarh_kpi_and_valuation(self):
+        """Test parsing of Chittorgarh KPI and IPO Valuation HTML tables."""
+        from bs4 import BeautifulSoup
+        from core.chittorgarh import extract_chittorgarh_kpi_and_valuation, format_kpi_and_valuation_notes
+
+        sample_html = """
+        <html>
+        <body>
+            <h3>Key Performance Indicator (KPI)</h3>
+            <table>
+                <tr><th>KPI</th><th>Jun 30, 2026</th><th>Mar 31, 2026</th></tr>
+                <tr><td>RoNW</td><td>2.30%</td><td>9.42%</td></tr>
+                <tr><td>PAT Margin</td><td>19.82%</td><td>20.46%</td></tr>
+                <tr><td>EBITDA Margin</td><td>53.26%</td><td>51.91%</td></tr>
+                <tr><td>NAV</td><td>382.34</td><td>373.66</td></tr>
+                <tr><td>P/B (x)</td><td>2.93</td><td>2.99</td></tr>
+            </table>
+            <h3>IPO Valuation</h3>
+            <table>
+                <tr><th>Valuation Metric</th><th>Pre IPO</th><th>Post IPO</th></tr>
+                <tr><td>EPS (Rs)</td><td>33.62</td><td>33.72</td></tr>
+                <tr><td>P/E (x)</td><td>33.28</td><td>33.19</td></tr>
+                <tr><td>Market Cap at Offer Price</td><td>Rs 10,00,277.55 Cr.</td><td>Rs 10,30,490.55 Cr.</td></tr>
+            </table>
+        </body>
+        </html>
+        """
+        soup = BeautifulSoup(sample_html, 'html.parser')
+        kpi_data, val_data = extract_chittorgarh_kpi_and_valuation(soup)
+
+        self.assertTrue(kpi_data)
+        self.assertEqual(kpi_data['headers'], ['KPI', 'Jun 30, 2026', 'Mar 31, 2026'])
+        self.assertEqual(len(kpi_data['rows']), 5)
+        self.assertEqual(kpi_data['rows'][0], ['RoNW', '2.30%', '9.42%'])
+        self.assertEqual(kpi_data['rows'][1], ['PAT Margin', '19.82%', '20.46%'])
+
+        self.assertTrue(val_data)
+        self.assertEqual(val_data['headers'], ['Valuation Metric', 'Pre IPO', 'Post IPO'])
+        self.assertEqual(len(val_data['rows']), 3)
+        self.assertEqual(val_data['rows'][0][0], 'EPS (₹)')
+        self.assertEqual(val_data['rows'][1], ['P/E (x)', '33.28', '33.19'])
+
+        notes_text = format_kpi_and_valuation_notes(kpi_data, val_data)
+        self.assertIn("KEY PERFORMANCE INDICATORS (KPI)", notes_text)
+        self.assertIn("RoNW: 2.30% | 9.42%", notes_text)
+        self.assertIn("IPO VALUATION", notes_text)
+        self.assertIn("P/E (x): 33.28 | 33.19", notes_text)
+
+    def test_kpi_and_valuation_saved_to_ipo_and_rendered_in_modal(self):
+        """Test IPO model stores kpi_data & valuation_data and renders tables in UI modal."""
+        today = timezone.localdate()
+        kpi_dict = {
+            'headers': ['KPI', 'Jun 30, 2026', 'Mar 31, 2026'],
+            'rows': [
+                ['RoNW', '2.30%', '9.42%'],
+                ['PAT Margin', '19.82%', '20.46%'],
+                ['EBITDA Margin', '53.26%', '51.91%'],
+                ['NAV', '382.34', '373.66'],
+                ['P/B (x)', '2.93', '2.99'],
+            ]
+        }
+        val_dict = {
+            'headers': ['Valuation Metric', 'Pre IPO', 'Post IPO'],
+            'rows': [
+                ['EPS (₹)', '33.62', '33.72'],
+                ['P/E (x)', '33.28', '33.19'],
+                ['Market Cap at Offer Price', '₹10,00,277.55 Cr.', '₹10,30,490.55 Cr.'],
+            ]
+        }
+        ipo = IPO.objects.create(
+            name="Jio Platforms Limited",
+            start_date=today,
+            end_date=today + timezone.timedelta(days=3),
+            kpi_data=kpi_dict,
+            valuation_data=val_dict,
+            is_active=True
+        )
+        ipo.refresh_from_db()
+        self.assertEqual(ipo.kpi_data['rows'][0][0], 'RoNW')
+        self.assertEqual(ipo.valuation_data['rows'][1][0], 'P/E (x)')
+
+        url = reverse('ipo')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode('utf-8')
+
+        # Check rendered modal sections
+        self.assertIn("Key Performance Indicator (KPI)", content)
+        self.assertIn("RoNW", content)
+        self.assertIn("19.82%", content)
+        self.assertIn("IPO Valuation", content)
+        self.assertIn("33.28", content)
+        # Ensure 'Pending Sync' is never shown to user in the modal
+        self.assertNotIn("Pending Sync", content)

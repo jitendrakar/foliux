@@ -292,6 +292,10 @@ class IPOAdmin(admin.ModelAdmin):
         ('Registrar Integration', {
             'fields': ('registrar_slug', 'registrar_company_id', 'is_synced_from_registrar', 'is_active')
         }),
+        ('Financials & Valuation', {
+            'fields': ('kpi_data', 'valuation_data'),
+            'classes': ('collapse',)
+        }),
     )
 
     def get_status(self, obj):

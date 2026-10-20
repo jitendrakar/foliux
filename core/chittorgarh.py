@@ -97,39 +97,46 @@ def fetch_chittorgarh_ipos() -> List[Dict[str, Any]]:
     Checks Upcoming and Ongoing IPOs from Chittorgarh (https://www.chittorgarh.com/).
     Returns a list of dictionary records containing scraped IPO metadata.
     """
-    dashboard_url = "https://www.chittorgarh.com/ipo/ipo_dashboard.asp"
-    soup = fetch_url_soup(dashboard_url)
-    if not soup:
-        logger.error("Failed to load Chittorgarh IPO dashboard")
-        return []
-
-    tables = soup.find_all('table')
-    if not tables:
-        logger.error("No tables found on Chittorgarh IPO dashboard")
-        return []
-
-    main_table = tables[0]
-    rows = main_table.find_all('tr')
+    dashboard_urls = [
+        "https://www.chittorgarh.com/ipo/ipo_dashboard.asp",
+        "https://www.chittorgarh.com/ipo/ipo_dashboard.asp?a=sme"
+    ]
     
     tasks_to_scrape = []
-    
-    for row in rows:
-        cells = row.find_all(['th', 'td'])
-        if not cells:
-            continue
-            
-        a_tag = row.find('a', href=True)
-        if not a_tag:
-            continue
-            
-        link_href = a_tag['href']
-        raw_name = a_tag.get_text(strip=True)
-        if not raw_name or 'Company' in raw_name:
+    seen_urls = set()
+
+    for d_url in dashboard_urls:
+        soup = fetch_url_soup(d_url)
+        if not soup:
+            logger.warning(f"Failed to load Chittorgarh IPO dashboard: {d_url}")
             continue
 
-        row_text = row.get_text(strip=True)
-        ipo_url = link_href if link_href.startswith('http') else f"https://www.chittorgarh.com{link_href}"
-        tasks_to_scrape.append((ipo_url, raw_name, row_text))
+        tables = soup.find_all('table')
+        if not tables:
+            continue
+
+        main_table = tables[0]
+        rows = main_table.find_all('tr')
+        
+        for row in rows:
+            cells = row.find_all(['th', 'td'])
+            if not cells:
+                continue
+                
+            a_tag = row.find('a', href=True)
+            if not a_tag:
+                continue
+                
+            link_href = a_tag['href']
+            raw_name = a_tag.get_text(strip=True)
+            if not raw_name or 'Company' in raw_name:
+                continue
+
+            row_text = row.get_text(strip=True)
+            ipo_url = link_href if link_href.startswith('http') else f"https://www.chittorgarh.com{link_href}"
+            if ipo_url not in seen_urls:
+                seen_urls.add(ipo_url)
+                tasks_to_scrape.append((ipo_url, raw_name, row_text))
 
     scraped_ipos = []
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
@@ -222,6 +229,10 @@ def scrape_chittorgarh_ipo_detail(url: str, default_name: str, row_text: str = "
         if any(k in txt.lower() for k in ['book build issue', 'fresh issue', 'price band', 'opens for subscription', 'allotment for', 'lead manager']):
             issue_paragraphs.append(txt)
 
+    # Extract Key Performance Indicators (KPI) and IPO Valuation tables
+    kpi_data, val_data = extract_chittorgarh_kpi_and_valuation(soup)
+    kpi_val_notes = format_kpi_and_valuation_notes(kpi_data, val_data)
+
     # Construct Rich Detailed Analysis & Notes
     notes_parts = []
     if issue_paragraphs:
@@ -230,6 +241,8 @@ def scrape_chittorgarh_ipo_detail(url: str, default_name: str, row_text: str = "
         notes_parts.append("■ COMPANY PROFILE & BUSINESS OVERVIEW:\n" + "\n".join(about_text_list[:4]))
     if obj_text_list:
         notes_parts.append("■ OBJECTS OF THE ISSUE:\n" + "\n".join(obj_text_list[:3]))
+    if kpi_val_notes:
+        notes_parts.append(kpi_val_notes)
 
     notes_parts.append(f"■ SOURCE & ATTRIBUTION:\nChittorgarh ({url})")
     full_notes = "\n\n".join(notes_parts)
@@ -282,8 +295,93 @@ def scrape_chittorgarh_ipo_detail(url: str, default_name: str, row_text: str = "
         'subscription_times': subscription_times,
         'gmp_percent': gmp_percent,
         'gmp_amount': gmp_amount,
+        'kpi_data': kpi_data,
+        'valuation_data': val_data,
         'url': url,
     }
+
+
+def extract_chittorgarh_kpi_and_valuation(soup: BeautifulSoup) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """
+    Extracts Key Performance Indicators (KPI) and IPO Valuation tables from a Chittorgarh IPO page.
+    Returns:
+        (kpi_dict, valuation_dict)
+    """
+    kpi_data = {}
+    val_data = {}
+
+    for table in soup.find_all('table'):
+        t_text = table.get_text()
+        rows = table.find_all('tr')
+        if not rows:
+            continue
+
+        header_cells = [td.get_text(strip=True) for td in rows[0].find_all(['th', 'td'])]
+        first_hdr = header_cells[0].lower() if header_cells else ''
+
+        # 1. Key Performance Indicator (KPI) Table
+        is_kpi_header = ('kpi' in first_hdr or 'key performance' in first_hdr)
+        has_kpi_metrics = any(k in t_text for k in ['RoNW', 'PAT Margin', 'EBITDA Margin', 'NAV', 'P/B', 'ROE', 'ROCE'])
+        if (is_kpi_header or has_kpi_metrics) and any(k in t_text for k in ['PAT Margin', 'EBITDA Margin', 'RoNW']):
+            headers = [re.sub(r'\s+', ' ', c).strip() for c in header_cells]
+            table_rows = []
+            for tr in rows[1:]:
+                cells = [re.sub(r'\s+', ' ', td.get_text(strip=True)).strip() for td in tr.find_all(['th', 'td'])]
+                if cells and len(cells) >= 2:
+                    table_rows.append(cells)
+            if table_rows:
+                kpi_data = {'headers': headers, 'rows': table_rows}
+
+        # 2. IPO Valuation Table
+        is_val_header = ('valuation' in first_hdr or 'valuation metric' in first_hdr or 'metric' in first_hdr)
+        has_val_metrics = any(k in t_text for k in ['Pre IPO', 'Post IPO']) and any(k in t_text for k in ['EPS', 'P/E', 'Market Cap'])
+        if (is_val_header or has_val_metrics) and any(k in t_text for k in ['EPS', 'P/E', 'Market Cap']):
+            headers = [re.sub(r'\s+', ' ', c).strip() for c in header_cells]
+            table_rows = []
+            for tr in rows[1:]:
+                cells = [re.sub(r'\s+', ' ', td.get_text(strip=True)).strip() for td in tr.find_all(['th', 'td'])]
+                if cells:
+                    cells[0] = re.sub(r'Cap\s*at', 'Cap at', cells[0])
+                    cells[0] = re.sub(r'EPS\s*[\(\?₹Rs\.\)]+', 'EPS (₹)', cells[0])
+                    cells = [re.sub(r'[\?]\s*(\d)', r'₹\1', c) for c in cells]
+                if cells and len(cells) >= 2:
+                    table_rows.append(cells)
+            if table_rows:
+                val_data = {'headers': headers, 'rows': table_rows}
+
+    return kpi_data, val_data
+
+
+def format_kpi_and_valuation_notes(kpi_data: Dict[str, Any], val_data: Dict[str, Any]) -> str:
+    """Formats KPI and Valuation tables into human-readable text blocks for notes."""
+    parts = []
+    if kpi_data and kpi_data.get('rows'):
+        headers = kpi_data.get('headers', [])
+        period_str = " | ".join(headers[1:]) if len(headers) > 1 else ""
+        lines = ["■ KEY PERFORMANCE INDICATORS (KPI):"]
+        if period_str:
+            lines.append(f"Period: {period_str}")
+        for r in kpi_data['rows']:
+            if len(r) >= 2:
+                metric = r[0]
+                vals = " | ".join(r[1:])
+                lines.append(f"• {metric}: {vals}")
+        parts.append("\n".join(lines))
+
+    if val_data and val_data.get('rows'):
+        headers = val_data.get('headers', [])
+        sub_str = " | ".join(headers[1:]) if len(headers) > 1 else ""
+        lines = ["■ IPO VALUATION:"]
+        if sub_str:
+            lines.append(f"Valuation: {sub_str}")
+        for r in val_data['rows']:
+            if len(r) >= 2:
+                metric = r[0]
+                vals = " | ".join(r[1:])
+                lines.append(f"• {metric}: {vals}")
+        parts.append("\n".join(lines))
+
+    return "\n\n".join(parts)
 
 
 def scrape_chittorgarh_subscription(sub_url: str) -> Optional[Decimal]:

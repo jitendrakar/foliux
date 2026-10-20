@@ -142,6 +142,8 @@
         color: var(--primary-color);
     }
 
+    .financials-section,
+    .valuation-section,
     .analysis-section {
         background: #f8fafc;
         border: 1px solid #edf2f7;
@@ -254,6 +256,8 @@
         color: var(--global-dark-muted) !important;
     }
     html[data-theme="dark"] .analysis-preview,
+    html[data-theme="dark"] .financials-section,
+    html[data-theme="dark"] .valuation-section,
     html[data-theme="dark"] .analysis-section {
         background: var(--global-dark-bg) !important;
         border-color: var(--global-dark-border) !important;
@@ -611,11 +615,61 @@
                     <div>
                         {% if ipo.is_synced_from_registrar %}
                             <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i> Dynamically Synced</span>
-                        {% else %}
-                            <span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i> Pending Sync</span>
                         {% endif %}
                     </div>
                 </div>
+
+                {% if ipo.kpi_data and ipo.kpi_data.rows %}
+                <div class="financials-section p-4 rounded-4 mb-4">
+                    <h6 class="fw-bold text-uppercase text-muted mb-3 small"><i class="fas fa-chart-line text-primary me-1"></i> Key Performance Indicator (KPI)</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    {% for h in ipo.kpi_data.headers %}
+                                    <th class="small fw-bold">{{ h }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in ipo.kpi_data.rows %}
+                                <tr>
+                                    {% for cell in row %}
+                                    <td class="small {% if forloop.first %}fw-bold text-secondary{% endif %}">{{ cell }}</td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if ipo.valuation_data and ipo.valuation_data.rows %}
+                <div class="valuation-section p-4 rounded-4 mb-4">
+                    <h6 class="fw-bold text-uppercase text-muted mb-3 small"><i class="fas fa-balance-scale text-success me-1"></i> IPO Valuation</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    {% for h in ipo.valuation_data.headers %}
+                                    <th class="small fw-bold">{{ h }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in ipo.valuation_data.rows %}
+                                <tr>
+                                    {% for cell in row %}
+                                    <td class="small {% if forloop.first %}fw-bold text-secondary{% endif %}">{{ cell }}</td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
 
                 <div class="analysis-section p-4 rounded-4">
                     <h6 class="fw-bold text-uppercase text-muted mb-3 small"><i class="fas fa-file-alt me-1"></i> Detailed Analysis & Notes</h6>

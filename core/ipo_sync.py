@@ -172,13 +172,26 @@ def auto_sync_foliux_ipos(
                     subscription_times=item.get('subscription_times'),
                     gmp_percent=item.get('gmp_percent'),
                     gmp_amount=item.get('gmp_amount'),
+                    kpi_data=item.get('kpi_data') or {},
+                    valuation_data=item.get('valuation_data') or {},
                     is_active=True
                 )
                 stats['added'] += 1
                 logger.info(f"Added new IPO to Foliux Admin: '{new_ipo.name}' (Start: {start_date}, Sub: {new_ipo.subscription_display}, GMP: {new_ipo.gmp_display})")
             else:
-                # Finalized IPO data remains unchanged after the closing date
+                # Finalized IPO advice and subscription/GMP metrics remain unchanged after the closing date
                 if today > existing_ipo.end_date and existing_ipo.advise in ['APPLY', 'NON_APPLY']:
+                    # Enrich KPI and Valuation tables if not yet populated, without altering finalized advice or metrics
+                    extra_updated = False
+                    if item.get('kpi_data') and (not existing_ipo.kpi_data or not existing_ipo.kpi_data.get('rows')):
+                        existing_ipo.kpi_data = item['kpi_data']
+                        extra_updated = True
+                    if item.get('valuation_data') and (not existing_ipo.valuation_data or not existing_ipo.valuation_data.get('rows')):
+                        existing_ipo.valuation_data = item['valuation_data']
+                        extra_updated = True
+                    if extra_updated:
+                        existing_ipo.save(update_fields=['kpi_data', 'valuation_data'])
+                        logger.info(f"Enriched KPI/Valuation for finalized IPO: '{existing_ipo.name}'")
                     logger.debug(f"Preserving finalized closed IPO: '{existing_ipo.name}' (Advise: {existing_ipo.advise})")
                     continue
 
@@ -211,6 +224,14 @@ def auto_sync_foliux_ipos(
 
                 if item.get('company_work') and (not existing_ipo.company_work or existing_ipo.company_work.endswith("Initial Public Offering.")):
                     existing_ipo.company_work = item['company_work']
+                    updated_fields = True
+
+                if item.get('kpi_data') and (not existing_ipo.kpi_data or not existing_ipo.kpi_data.get('rows')):
+                    existing_ipo.kpi_data = item['kpi_data']
+                    updated_fields = True
+
+                if item.get('valuation_data') and (not existing_ipo.valuation_data or not existing_ipo.valuation_data.get('rows')):
+                    existing_ipo.valuation_data = item['valuation_data']
                     updated_fields = True
 
                 if end_date and existing_ipo.end_date != end_date:

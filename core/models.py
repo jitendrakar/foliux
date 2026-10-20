@@ -1122,6 +1122,8 @@ class IPO(models.Model):
     gmp_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="GMP price in INR per share")
     is_synced_from_registrar = models.BooleanField(default=False, help_text="True if dynamically synced from registrar")
     is_active = models.BooleanField(default=True, help_text="True if IPO is active on registrar portal")
+    kpi_data = models.JSONField(default=dict, blank=True, null=True, help_text="Key Performance Indicators (KPI) from Chittorgarh")
+    valuation_data = models.JSONField(default=dict, blank=True, null=True, help_text="IPO Valuation metrics from Chittorgarh")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
