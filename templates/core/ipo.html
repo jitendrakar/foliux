@@ -444,9 +444,9 @@
                         {% else %}status-closed{% endif %}">
                         {{ ipo.status }}
                     </span>
-                    {% if ipo.cmp %}
-                    <span class="cmp-badge" title="Current Market Price ({{ ipo.symbol }})">
-                        CMP: ₹{{ ipo.cmp }}
+                    {% if ipo.status == 'Closed' or ipo.cmp %}
+                    <span class="cmp-badge" title="Current Market Price{% if ipo.symbol %} ({{ ipo.symbol }}){% endif %}">
+                        CMP: {% if ipo.cmp %}₹{{ ipo.cmp }}{% else %}N/A{% endif %}
                     </span>
                     {% endif %}
                     <div class="advise-badge 
@@ -544,9 +544,9 @@
                             {% else %}status-closed{% endif %}">
                             {{ ipo.status }}
                         </span>
-                        {% if ipo.cmp %}
-                        <span class="cmp-badge" title="Current Market Price ({{ ipo.symbol }})">
-                            CMP: ₹{{ ipo.cmp }}
+                        {% if ipo.status == 'Closed' or ipo.cmp %}
+                        <span class="cmp-badge" title="Current Market Price{% if ipo.symbol %} ({{ ipo.symbol }}){% endif %}">
+                            CMP: {% if ipo.cmp %}₹{{ ipo.cmp }}{% else %}N/A{% endif %}
                         </span>
                         {% endif %}
                     </div>

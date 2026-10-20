@@ -88,6 +88,16 @@ def evaluate_closing_day_ipo_advice(ipo=None, force=False):
         # Decide eligibility
         is_final_evaluation = is_past_closed or (is_closing_day and is_after_10am)
 
+        # Finalized IPO data remains unchanged after the closing date
+        if is_past_closed and item.advise in ['APPLY', 'NON_APPLY'] and not force:
+            results.append({
+                'ipo_id': item.id,
+                'name': item.name,
+                'status': 'SKIPPED',
+                'reason': f"Finalized closed IPO (Advise: {item.advise}, Closed: {item.end_date}). Preserving finalized record."
+            })
+            continue
+
         if not is_final_evaluation and not is_active_bidding and not force:
             results.append({
                 'ipo_id': item.id,

@@ -177,6 +177,11 @@ def auto_sync_foliux_ipos(
                 stats['added'] += 1
                 logger.info(f"Added new IPO to Foliux Admin: '{new_ipo.name}' (Start: {start_date}, Sub: {new_ipo.subscription_display}, GMP: {new_ipo.gmp_display})")
             else:
+                # Finalized IPO data remains unchanged after the closing date
+                if today > existing_ipo.end_date and existing_ipo.advise in ['APPLY', 'NON_APPLY']:
+                    logger.debug(f"Preserving finalized closed IPO: '{existing_ipo.name}' (Advise: {existing_ipo.advise})")
+                    continue
+
                 updated_fields = False
 
                 if item.get('subscription_times') is not None and existing_ipo.subscription_times != item['subscription_times']:
@@ -241,6 +246,10 @@ def auto_sync_foliux_ipos(
             active_ipos_qs = active_ipos_qs.filter(name__icontains=clean_company_name(target_ipo_name))
 
         for db_ipo in active_ipos_qs:
+            # Finalized IPO data remains unchanged after the closing date
+            if today > db_ipo.end_date and db_ipo.advise in ['APPLY', 'NON_APPLY']:
+                continue
+
             db_updated = False
             ig_match = match_investorgain_record(db_ipo.name, investorgain_gmp)
 

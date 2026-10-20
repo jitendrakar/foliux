@@ -1147,10 +1147,19 @@ class IPO(models.Model):
 
     @property
     def cmp(self):
-        if not self.symbol:
-            return None
         try:
             from core.models import Instrument
+            if not self.symbol:
+                import re
+                clean_name = re.sub(r'\b(LIMITED|LTD|CORP|CORPORATION|INC|INCORPORATED|PLC|PVT|PRIVATE|IPO|SME)\b', '', self.name.upper()).strip()
+                if clean_name and len(clean_name) >= 3:
+                    inst = Instrument.objects.filter(name__iexact=clean_name).first()
+                    if not inst:
+                        inst = Instrument.objects.filter(name__icontains=clean_name).first()
+                    if inst and inst.last_price > 0:
+                        return inst.last_price
+                return None
+
             symbol_upper = self.symbol.strip().upper()
             # Try raw match first
             inst = Instrument.objects.filter(symbol=symbol_upper).first()

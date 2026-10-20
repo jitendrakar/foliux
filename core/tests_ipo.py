@@ -415,4 +415,82 @@ class IPORuleEvaluationTests(TestCase):
         ipo.refresh_from_db()
         self.assertEqual(ipo.advise, 'NON_APPLY')
 
+    def test_finalized_closed_ipo_remains_unchanged(self):
+        """Test finalized IPO (advise=APPLY, past closing date) remains unchanged on repeated evaluations."""
+        from core.ipo_rules import evaluate_closing_day_ipo_advice
+        today = timezone.localdate()
+        ipo = IPO.objects.create(
+            name="Zeta Finalized Green Limited",
+            start_date=today - timezone.timedelta(days=12),
+            end_date=today - timezone.timedelta(days=8),
+            subscription_times=Decimal('15.00'),
+            gmp_percent=Decimal('42.00'),
+            advise="APPLY",
+            notes="Finalized rating APPLY on closing date."
+        )
+        # Repeated daily update run
+        results = evaluate_closing_day_ipo_advice(ipo=ipo, force=False)
+        self.assertEqual(results[0]['status'], 'SKIPPED')
+        ipo.refresh_from_db()
+        self.assertEqual(ipo.advise, 'APPLY')
+        self.assertEqual(ipo.subscription_times, Decimal('15.00'))
+        self.assertEqual(ipo.gmp_percent, Decimal('42.00'))
 
+    @patch('core.ipo_sync.registrar_registry.get_all_active_ipos')
+    @patch('core.ipo_sync.fetch_chittorgarh_ipos')
+    @patch('core.ipo_sync.fetch_investorgain_gmp')
+    def test_repeated_daily_sync_does_not_overwrite_finalized_record(self, mock_ig, mock_ch, mock_reg):
+        """Test auto_sync_foliux_ipos preserves finalized closed records."""
+        mock_reg.return_value = []
+        today = timezone.localdate()
+        finalized_ipo = IPO.objects.create(
+            name="Solar Tech Precision Limited",
+            start_date=today - timezone.timedelta(days=15),
+            end_date=today - timezone.timedelta(days=10),
+            subscription_times=Decimal('22.50'),
+            gmp_percent=Decimal('55.00'),
+            gmp_amount=Decimal('80.00'),
+            advise="APPLY",
+            notes="Finalized on closing day: Strong QIB and Retail participation.",
+            is_active=True
+        )
+
+        mock_ch.return_value = [{
+            'name': 'Solar Tech Precision Limited',
+            'start_date': today - timezone.timedelta(days=15),
+            'end_date': today - timezone.timedelta(days=10),
+            'subscription_times': Decimal('0.00'),
+            'gmp_percent': Decimal('0.00'),
+            'notes': 'Post listing generic note.'
+        }]
+        mock_ig.return_value = {}
+
+        auto_sync_foliux_ipos()
+        finalized_ipo.refresh_from_db()
+        self.assertEqual(finalized_ipo.advise, 'APPLY')
+        self.assertEqual(finalized_ipo.subscription_times, Decimal('22.50'))
+        self.assertEqual(finalized_ipo.gmp_percent, Decimal('55.00'))
+        self.assertEqual(finalized_ipo.gmp_amount, Decimal('80.00'))
+        self.assertIn("Finalized on closing day", finalized_ipo.notes)
+
+    def test_cmp_displayed_between_closed_and_advise_status(self):
+        """Test closed IPO renders CMP badge between status badge and advise badge."""
+        today = timezone.localdate()
+        closed_ipo = IPO.objects.create(
+            name="Apex Electric Motors Limited",
+            start_date=today - timezone.timedelta(days=10),
+            end_date=today - timezone.timedelta(days=5),
+            subscription_times=Decimal('10.00'),
+            gmp_percent=Decimal('40.00'),
+            advise="APPLY",
+            is_active=True
+        )
+        url = reverse('ipo')
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode('utf-8')
+        self.assertIn("status-closed", content)
+        self.assertIn("Closed", content)
+        self.assertIn("cmp-badge", content)
+        self.assertIn("CMP:", content)
+        self.assertIn("advise-apply", content)
