@@ -376,7 +376,9 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f"Finished sending news alerts. Total emails sent: {sent_count}"))
 
     def send_user_email(self, user, news_items):
-        subject = f"Foliux: Daily Stock News Alert - {datetime.date.today().strftime('%d %b %Y')}"
+        ist = pytz.timezone('Asia/Kolkata')
+        today_formatted = datetime.datetime.now(ist).strftime('%d %b %Y')
+        subject = f"Daily Stock News Alert - {today_formatted}"
         site_url = getattr(settings, 'SITE_URL', 'https://foliux.com').rstrip('/')
 
         content = f"<h2>Portfolio News & Updates</h2>"

@@ -30,6 +30,12 @@ class CoreConfig(AppConfig):
             except Exception as e:
                 print(f"Error running stock news: {e}")
 
+        def run_stock_news_fetch():
+            try:
+                call_command('process_stock_news', fetch_only=True)
+            except Exception as e:
+                print(f"Error running hourly stock news fetch: {e}")
+
         def run_daily_summary():
             try:
                 call_command('send_daily_summary')
@@ -87,13 +93,14 @@ class CoreConfig(AppConfig):
             from apscheduler.schedulers.background import BackgroundScheduler
             from apscheduler.triggers.cron import CronTrigger
             
-            scheduler = BackgroundScheduler()
+            scheduler = BackgroundScheduler(timezone='Asia/Kolkata')
 
             # --- Existing interval jobs ---
             scheduler.add_job(scheduled_sync, 'interval', minutes=5, id='gsheet_sync_job', replace_existing=True)
             scheduler.add_job(scheduled_mf, 'interval', minutes=30, id='auto_update_mf', replace_existing=True)
             scheduler.add_job(scheduled_coin, 'interval', minutes=30, id='auto_update_coin', replace_existing=True)
             scheduler.add_job(scheduled_nps, 'interval', minutes=30, id='auto_update_nps', replace_existing=True)
+            scheduler.add_job(run_stock_news_fetch, 'interval', minutes=60, id='hourly_stock_news_fetch', replace_existing=True)
 
             # --- Daily Email Jobs (previously in master_scheduler) ---
 

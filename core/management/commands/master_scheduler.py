@@ -124,11 +124,11 @@ class Command(BaseCommand):
         
         # Daily cron jobs (2:00 AM, 9:00 AM, 10:00 AM, & 4:00 PM IST)
         scheduler.add_job(run_management_guidance, CronTrigger(hour=2, minute=0), id='daily_management_guidance_job', misfire_grace_time=3600)
-        scheduler.add_job(run_stock_news, CronTrigger(hour=9, minute=0), id='daily_stock_news_job', misfire_grace_time=3600)
-        scheduler.add_job(run_daily_summary, CronTrigger(hour=10, minute=0), id='daily_portfolio_summary_job', misfire_grace_time=3600)
-        scheduler.add_job(run_ipo_sync, CronTrigger(hour=10, minute=0), id='daily_ipo_sync_10am', misfire_grace_time=3600)
-        scheduler.add_job(run_ipo_evaluation, CronTrigger(hour=10, minute=0), id='daily_ipo_evaluation_10am', misfire_grace_time=3600)
-        scheduler.add_job(run_alerts, CronTrigger(hour=16, minute=0), id='send_signal_alerts', misfire_grace_time=3600)
+        scheduler.add_job(run_stock_news, CronTrigger(hour=9, minute=0, timezone='Asia/Kolkata'), id='daily_stock_news_job', misfire_grace_time=3600)
+        scheduler.add_job(run_daily_summary, CronTrigger(hour=10, minute=0, timezone='Asia/Kolkata'), id='daily_portfolio_summary_job', misfire_grace_time=3600)
+        scheduler.add_job(run_ipo_sync, CronTrigger(hour=10, minute=0, timezone='Asia/Kolkata'), id='daily_ipo_sync_10am', misfire_grace_time=3600)
+        scheduler.add_job(run_ipo_evaluation, CronTrigger(hour=10, minute=0, timezone='Asia/Kolkata'), id='daily_ipo_evaluation_10am', misfire_grace_time=3600)
+        scheduler.add_job(run_alerts, CronTrigger(hour=16, minute=0, timezone='Asia/Kolkata'), id='send_signal_alerts', misfire_grace_time=3600)
         
         self.stdout.write("Starting BlockingScheduler (timezone: Asia/Kolkata)...")
         try:
