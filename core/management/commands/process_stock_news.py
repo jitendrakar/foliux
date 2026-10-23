@@ -4,6 +4,7 @@ from email.header import decode_header
 import datetime
 import pytz
 import re
+import os
 from html.parser import HTMLParser
 from urllib.parse import urlparse, parse_qs, unquote
 
@@ -43,6 +44,52 @@ def html_to_text(html_content):
 def normalize_alphanumeric(text):
     """Strips all non-alphanumeric characters and converts to uppercase."""
     return re.sub(r'[^A-Z0-9]', '', str(text).upper())
+
+
+ETF_CONSTITUENTS = {
+    # Broad Market / Nifty 50 ETFs
+    'NIFTYBEES': ['RELIANCE', 'TCS', 'HDFCBANK', 'INFY', 'ICICIBANK', 'LT', 'ITC', 'BHARTIARTL', 'SBIN', 'AXISBANK', 'KOTAKBANK', 'HINDUNILVR', 'M&M', 'BAJFINANCE', 'MARUTI', 'ASIANPAINT', 'HCLTECH', 'SUNPHARMA', 'JSWSTEEL', 'TATAMOTORS', 'POWERGRID', 'NTPC', 'COALINDIA'],
+    'SETFNIF50': ['RELIANCE', 'TCS', 'HDFCBANK', 'INFY', 'ICICIBANK', 'LT', 'ITC', 'BHARTIARTL', 'SBIN'],
+    'LICNETFN50': ['RELIANCE', 'TCS', 'HDFCBANK', 'INFY', 'ICICIBANK', 'LT', 'ITC', 'BHARTIARTL', 'SBIN'],
+    'NIFTYIETF': ['RELIANCE', 'TCS', 'HDFCBANK', 'INFY', 'ICICIBANK', 'LT', 'ITC', 'BHARTIARTL', 'SBIN'],
+    'NIF100BEES': ['RELIANCE', 'TCS', 'HDFCBANK', 'INFY', 'ICICIBANK', 'LT', 'BEL', 'HAL', 'PFC', 'RECLTD'],
+
+    # Banking ETFs
+    'BANKBEES': ['HDFCBANK', 'ICICIBANK', 'AXISBANK', 'KOTAKBANK', 'SBIN', 'INDUSINDBK', 'PNB', 'BANKBARODA', 'IDFCFIRSTB', 'FEDERALBNK'],
+    'BANKBETF': ['HDFCBANK', 'ICICIBANK', 'AXISBANK', 'KOTAKBANK', 'SBIN', 'IDFCFIRSTB'],
+    'PVTBANIETF': ['HDFCBANK', 'ICICIBANK', 'AXISBANK', 'KOTAKBANK', 'IDFCFIRSTB', 'FEDERALBNK'],
+    'PSUBNKBEES': ['SBIN', 'PNB', 'BANKBARODA', 'CANBK', 'UNIONBANK'],
+    'EBANKNIFTY': ['HDFCBANK', 'ICICIBANK', 'AXISBANK', 'KOTAKBANK', 'SBIN'],
+
+    # Sectoral IT ETFs
+    'ITBEES': ['TCS', 'INFY', 'HCLTECH', 'WIPRO', 'TECHM', 'LTIM', 'PERSISTENT', 'COFORGE', 'MPHASIS'],
+    'ITIETF': ['TCS', 'INFY', 'HCLTECH', 'WIPRO', 'TECHM', 'LTIM'],
+    'ITETF': ['TCS', 'INFY', 'HCLTECH', 'WIPRO', 'TECHM', 'LTIM'],
+
+    # Auto ETFs
+    'AUTOBEES': ['M&M', 'BAJAJ-AUTO', 'MARUTI', 'TATAMOTORS', 'EICHERMOT', 'HEROMOTOCO', 'TVSMOTOR', 'BHARATFORG', 'BOSCHLTD', 'ASHOKLEY'],
+    'AUTOIETF': ['M&M', 'BAJAJ-AUTO', 'MARUTI', 'TATAMOTORS', 'EICHERMOT', 'HEROMOTOCO'],
+
+    # Pharma & Healthcare ETFs
+    'PHARMABEES': ['DRREDDY', 'CIPLA', 'SUNPHARMA', 'DIVISLAB', 'APOLLOHOSP', 'MANKIND', 'ZYDUSLIFE', 'LUPIN', 'TORNTPHARM', 'AUROPHARMA'],
+    'HEALTHIETF': ['DRREDDY', 'CIPLA', 'SUNPHARMA', 'APOLLOHOSP', 'DIVISLAB'],
+
+    # Consumption / FMCG ETFs
+    'CONSUMBEES': ['ITC', 'HINDUNILVR', 'NESTLEIND', 'BRITANNIA', 'VBL', 'TATACONSUM', 'GODREJCP', 'DABUR', 'MARICO', 'COLPAL'],
+    'FMCGIETF': ['ITC', 'HINDUNILVR', 'NESTLEIND', 'BRITANNIA', 'VBL', 'TATACONSUM'],
+    'SBIETFCON': ['ITC', 'HINDUNILVR', 'NESTLEIND', 'BRITANNIA', 'VBL'],
+
+    # Infrastructure & CPSE ETFs
+    'CPSEETF': ['NTPC', 'POWERGRID', 'ONGC', 'COALINDIA', 'BEL', 'HAL', 'OIL', 'NHPC', 'SJVN', 'NBCC'],
+    'INFRABEES': ['LT', 'POWERGRID', 'NTPC', 'BHARTIARTL', 'ONGC', 'ADANIPORTS', 'ULTRACEMCO', 'GRASIM', 'COALINDIA'],
+    'METALIETF': ['TATASTEEL', 'JSWSTEEL', 'HINDALCO', 'JINDALSTEL', 'VEDL', 'NMDC', 'NATIONALUM', 'SAIL'],
+    'OILIETF': ['ONGC', 'OIL', 'IOC', 'BPCL', 'PETRONET', 'GAIL'],
+
+    # Midcap & Next 50 ETFs
+    'MID150BEES': ['SUZLON', 'PFC', 'RECLTD', 'BSE', 'DIXON', 'POLYCAB', 'MAXHEALTH', 'FEDERALBNK', 'CUMMINSIND', 'PERSISTENT', 'IDFCFIRSTB', 'ABCAPITAL'],
+    'MIDCAPETF': ['SUZLON', 'PFC', 'RECLTD', 'BSE', 'DIXON', 'POLYCAB', 'FEDERALBNK'],
+    'JUNIORBEES': ['BEL', 'HAL', 'TRENT', 'VEDL', 'SIEMENS', 'ABB', 'DLF', 'ZOMATO', 'JIOFIN', 'CHOLAFIN', 'VBL', 'PFC', 'RECLTD'],
+}
 
 
 class Command(BaseCommand):
@@ -168,7 +215,33 @@ class Command(BaseCommand):
         instruments = list(Instrument.objects.all())
         matcher = InstrumentMatcher(instruments)
 
-        for e_id in email_ids:
+        # Batch filter existing emails by message_id in chunks of 50
+        existing_mids = set(NewsAlert.objects.values_list('message_id', flat=True))
+        candidate_eids = []
+        for i in range(0, len(email_ids), 50):
+            chunk = email_ids[i:i+50]
+            msg_set = b','.join(chunk)
+            status, data = mail.fetch(msg_set, '(BODY.PEEK[HEADER.FIELDS (MESSAGE-ID DATE)])')
+            if status != 'OK' or not data:
+                candidate_eids.extend(chunk)
+                continue
+
+            seen_in_chunk = set()
+            for item in data:
+                if isinstance(item, tuple):
+                    h_msg = email.message_from_bytes(item[1])
+                    mid = (h_msg.get('Message-ID') or '').strip()
+                    seq = item[0].split()[0]
+                    if mid and mid in existing_mids:
+                        seen_in_chunk.add(seq)
+
+            for eid in chunk:
+                if eid not in seen_in_chunk:
+                    candidate_eids.append(eid)
+
+        self.stdout.write(f"Identified {len(candidate_eids)} new emails to process.")
+
+        for e_id in candidate_eids:
             try:
                 status, data = mail.fetch(e_id, '(RFC822)')
                 if status != 'OK' or not data or not data[0]:
@@ -180,7 +253,7 @@ class Command(BaseCommand):
                     # Construct pseudo message id from ID and Date
                     message_id = f"foliux_{e_id.decode()}_{msg.get('Date', '')}"
 
-                if NewsAlert.objects.filter(message_id=message_id).exists():
+                if message_id in existing_mids:
                     continue
 
                 sender = self._decode_header_value(msg.get('From', '')).lower()
@@ -267,7 +340,62 @@ class Command(BaseCommand):
                 self.stderr.write(f"Error processing email {e_id}: {str(e)}")
 
         mail.logout()
+        if new_alerts:
+            self.sync_to_remote_mysql(new_alerts)
         return new_alerts
+
+    def sync_to_remote_mysql(self, alerts):
+        """Mirrors newly fetched NewsAlert records to the remote MySQL database (if reachable)."""
+        if not alerts:
+            return
+
+        remote_host = os.environ.get('REMOTE_DB_HOST', '158.220.101.59')
+        remote_user = os.environ.get('DB_USER', 'foliux')
+        remote_pass = os.environ.get('DB_PASSWORD', 'Test@123')
+        remote_db = os.environ.get('DB_NAME', 'FOLIUX')
+        remote_port = int(os.environ.get('DB_PORT', 3306))
+
+        try:
+            from django.db import connection
+            if 'mysql' in connection.settings_dict.get('ENGINE', '').lower() and connection.settings_dict.get('HOST') == remote_host:
+                return
+
+            import MySQLdb
+            conn = MySQLdb.connect(
+                host=remote_host,
+                user=remote_user,
+                passwd=remote_pass,
+                db=remote_db,
+                port=remote_port,
+                connect_timeout=4
+            )
+            cursor = conn.cursor()
+            to_insert = [
+                (
+                    a.message_id,
+                    a.title,
+                    a.summary,
+                    a.alert_type or '',
+                    a.news_date,
+                    a.created_at,
+                    a.instrument_id,
+                    a.url or ''
+                )
+                for a in alerts
+            ]
+            cursor.executemany(
+                """
+                INSERT IGNORE INTO core_newsalert 
+                (message_id, title, summary, alert_type, news_date, created_at, instrument_id, url)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                to_insert
+            )
+            conn.commit()
+            conn.close()
+            self.stdout.write(self.style.SUCCESS(f"Mirrored {len(to_insert)} news alerts to remote MySQL ({remote_host})."))
+        except Exception as e:
+            self.stderr.write(f"Note: Could not mirror news alerts to remote MySQL ({remote_host}): {e}")
 
     def _extract_news_url(self, content):
         if not content:
@@ -310,6 +438,9 @@ class Command(BaseCommand):
 
         self.stdout.write(f"Mapped news for {len(news_by_instrument)} distinct instruments.")
 
+        # Preload symbol to instrument mapping for ETF constituent lookup
+        all_instruments = {inst.symbol: inst for inst in Instrument.objects.all()}
+
         # Target users
         users = User.objects.filter(is_active=True).distinct()
         if target_email:
@@ -327,15 +458,48 @@ class Command(BaseCommand):
             if not user_email or '@' not in user_email or user_email.endswith('.local') or user_email.endswith('@example.com'):
                 continue
 
-            # Check if user holds any of the instruments with news
-            user_holdings = Portfolio.objects.filter(user=user, quantity__gt=0).values_list('instrument_id', flat=True)
+            # Check user holdings
+            holdings = list(Portfolio.objects.filter(user=user, quantity__gt=0).select_related('instrument'))
+            if not holdings:
+                continue
+
             relevant_news = []
-            for inst_id in user_holdings:
-                if inst_id in news_by_instrument:
-                    relevant_news.extend(news_by_instrument[inst_id])
+            seen_news_ids = set()
+
+            # 1. Direct holding news
+            for p in holdings:
+                if p.instrument_id in news_by_instrument:
+                    for news in news_by_instrument[p.instrument_id]:
+                        if news.id not in seen_news_ids:
+                            seen_news_ids.add(news.id)
+                            relevant_news.append((news, f"Holding: {p.instrument.symbol}"))
+
+            # 2. ETF Constituent stock news for users holding ETF stocks
+            for p in holdings:
+                sym = p.instrument.symbol
+                if sym in ETF_CONSTITUENTS:
+                    for c_sym in ETF_CONSTITUENTS[sym]:
+                        if c_sym in all_instruments:
+                            c_inst = all_instruments[c_sym]
+                            if c_inst.id in news_by_instrument:
+                                for news in news_by_instrument[c_inst.id]:
+                                    if news.id not in seen_news_ids:
+                                        seen_news_ids.add(news.id)
+                                        relevant_news.append((news, f"ETF {sym} Holding ({c_sym})"))
+
+            # 3. Fallback: If no direct holding or ETF constituent news in the window,
+            # provide Top Market Highlights so users with active portfolios always receive the 9:00 AM update!
+            if not relevant_news and recent_news.exists():
+                for news in recent_news[:5]:
+                    if news.id not in seen_news_ids:
+                        seen_news_ids.add(news.id)
+                        relevant_news.append((news, "Market Highlight"))
 
             if not relevant_news:
                 continue
+
+            # Limit to top 15 most relevant news items per email to keep email readable
+            relevant_news = relevant_news[:15]
 
             # Check EmailLog
             if not force and not dry_run:
@@ -353,7 +517,7 @@ class Command(BaseCommand):
                 self.stdout.write(
                     self.style.SUCCESS(
                         f"[DRY-RUN] Would send {len(relevant_news)} news items to {user_email} "
-                        f"({[n.instrument.symbol for n in relevant_news[:5]]})"
+                        f"({[n.instrument.symbol for n, _ in relevant_news[:5]]})"
                     )
                 )
                 sent_count += 1
@@ -378,15 +542,25 @@ class Command(BaseCommand):
     def send_user_email(self, user, news_items):
         ist = pytz.timezone('Asia/Kolkata')
         today_formatted = datetime.datetime.now(ist).strftime('%d %b %Y')
-        subject = f"Daily Stock News Alert - {today_formatted}"
+        subject = f"Daily Stock & ETF News Alert - {today_formatted}"
         site_url = getattr(settings, 'SITE_URL', 'https://foliux.com').rstrip('/')
 
-        content = f"<h2>Portfolio News & Updates</h2>"
-        content += f"<p>Hello {user.first_name if user.first_name else user.username}, here are the latest updates for stocks and ETFs you hold:</p>"
+        has_direct = any("Holding" in note for _, note in news_items)
+        if has_direct:
+            intro = f"Hello {user.first_name if user.first_name else user.username}, here are the latest updates for stocks and ETFs in your portfolio:"
+        else:
+            intro = f"Hello {user.first_name if user.first_name else user.username}, here are today's top market updates for your investment radar:"
 
-        for item in news_items:
+        content = f"<h2>Portfolio & Market News Updates</h2>"
+        content += f"<p>{intro}</p>"
+
+        for item, note in news_items:
+            badge_bg = "#e0f2fe" if "ETF" in note else ("#f0fdf4" if "Direct" in note or "Holding:" in note else "#fef3c7")
+            badge_color = "#0369a1" if "ETF" in note else ("#15803d" if "Direct" in note or "Holding:" in note else "#b45309")
+            
             content += f"<div style='margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 15px;'>"
-            content += f"<h3 style='color: #2c3e50; margin-bottom: 5px;'>{item.instrument.symbol}: {item.title}</h3>"
+            content += f"<span style='display: inline-block; background-color: {badge_bg}; color: {badge_color}; padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: bold; margin-bottom: 6px;'>{note}</span>"
+            content += f"<h3 style='color: #2c3e50; margin-top: 4px; margin-bottom: 5px;'>{item.instrument.symbol}: {item.title}</h3>"
             content += f"<p style='color: #7f8c8d; font-size: 0.9em; line-height: 1.4;'>{item.summary[:450]}...</p>"
             if item.url:
                 content += f"<a href='{item.url}' style='display: inline-block; background-color: #3498db; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-size: 0.85em;'>Read Full Story</a>"
@@ -443,33 +617,52 @@ class InstrumentMatcher:
             'NIFTY BEES': 'NIFTYBEES',
             'NIFTYBEES': 'NIFTYBEES',
             'NIPPON INDIA ETF NIFTY BEES': 'NIFTYBEES',
+            'NIFTY 50': 'NIFTYBEES',
+            'NIFTY50': 'NIFTYBEES',
+            'NIFTY': 'NIFTYBEES',
             'BANK BEES': 'BANKBEES',
             'BANKBEES': 'BANKBEES',
             'NIFTY BANK ETF': 'BANKBEES',
+            'BANK NIFTY': 'BANKBEES',
+            'BANKNIFTY': 'BANKBEES',
+            'NIFTY BANK': 'BANKBEES',
             'GOLD BEES': 'GOLDBEES',
             'GOLDBEES': 'GOLDBEES',
             'NIPPON INDIA ETF GOLD BEES': 'GOLDBEES',
             'GOLD ETF': 'GOLDBEES',
+            'GOLD': 'GOLDBEES',
+            'GOLD PRICE': 'GOLDBEES',
             'SILVER BEES': 'SILVERBEES',
             'SILVERBEES': 'SILVERBEES',
             'SILVER ETF': 'SILVERBEES',
+            'SILVER': 'SILVERBEES',
+            'SILVER PRICE': 'SILVERBEES',
             'IT BEES': 'ITBEES',
             'ITBEES': 'ITBEES',
             'NIFTY IT ETF': 'ITBEES',
+            'NIFTY IT': 'ITBEES',
             'JUNIOR BEES': 'JUNIORBEES',
             'JUNIORBEES': 'JUNIORBEES',
             'NIFTY NEXT 50 ETF': 'JUNIORBEES',
+            'NIFTY NEXT 50': 'JUNIORBEES',
+            'NEXT 50': 'JUNIORBEES',
             'AUTO BEES': 'AUTOBEES',
             'AUTOBEES': 'AUTOBEES',
+            'NIFTY AUTO': 'AUTOBEES',
             'PHARMA BEES': 'PHARMABEES',
             'PHARMABEES': 'PHARMABEES',
+            'NIFTY PHARMA': 'PHARMABEES',
             'MID150 BEES': 'MID150BEES',
             'MID150BEES': 'MID150BEES',
+            'NIFTY MIDCAP 150': 'MID150BEES',
+            'MIDCAP 150': 'MID150BEES',
             'CONSUM BEES': 'CONSUMBEES',
             'CONSUMBEES': 'CONSUMBEES',
             'CPSE ETF': 'CPSEETF',
             'CPSEETF': 'CPSEETF',
+            'CPSE': 'CPSEETF',
             'NASDAQ 100': 'MON100',
+            'NASDAQ': 'MON100',
             'NASDAQ 100 ETF': 'MON100',
             'MOTILAL OSWAL NASDAQ 100': 'MON100',
             'MOTILAL OSWAL NASDAQ 100 ETF': 'MON100',

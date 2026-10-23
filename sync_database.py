@@ -73,7 +73,9 @@ TABLES = [
     'core_financialyeardata',
     'core_mfsip',
     'core_blogcomment',
-    'core_mutualfundscheme'
+    'core_mutualfundscheme',
+    'core_newsalert',
+    'core_emaillog'
 ]
 
 def sync_tables(source_config, dest_config):
