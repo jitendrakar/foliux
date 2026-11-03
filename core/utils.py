@@ -1552,3 +1552,126 @@ def send_blog_notification(post):
 
     threading.Thread(target=_send).start()
 
+
+
+def send_ipo_apply_notification(ipo, force=False, recipient_list=None, async_send=True):
+    """
+    Sends an automated email notification to all active registered users when an IPO meets
+    the APPLY condition (Subscription >= 3x AND GMP > 30%, or Advise = APPLY).
+    Includes mandatory Terms & Conditions, due diligence reminder, and market risk disclaimer.
+    """
+    from django.contrib.auth import get_user_model
+    from django.core.mail import send_mail
+    from django.template.loader import render_to_string
+    from django.conf import settings
+    import threading
+    import logging
+
+    logger = logging.getLogger(__name__)
+    User = get_user_model()
+
+    # Determine recipient users
+    if recipient_list:
+        users_data = [{'email': email.strip(), 'name': 'Valued Investor'} for email in recipient_list if email.strip()]
+    else:
+        users_data = []
+        for user in User.objects.filter(is_active=True):
+            if user.email:
+                profile = getattr(user, 'profile', None)
+                user_name = profile.full_name if profile and profile.full_name else (user.first_name or user.username)
+                users_data.append({
+                    'email': user.email,
+                    'name': user_name
+                })
+
+    if not users_data:
+        logger.info(f"No recipients found for IPO apply alert: {getattr(ipo, 'name', 'IPO')}")
+        return 0
+
+    site_url = getattr(settings, 'SITE_URL', 'https://foliux.com').rstrip('/')
+    subject = f"🔔 IPO Apply Alert: {ipo.name} meets Apply Condition - FOLIUX"
+
+    start_fmt = ipo.start_date.strftime("%d %b %Y") if getattr(ipo, 'start_date', None) else "TBA"
+    end_fmt = ipo.end_date.strftime("%d %b %Y") if getattr(ipo, 'end_date', None) else "TBA"
+    reg_slug = getattr(ipo, 'registrar_slug', 'mufg') or 'mufg'
+    reg_name = "MUFG Intime" if (reg_slug == "mufg") else reg_slug.upper()
+
+    ipo_data = {
+        'id': getattr(ipo, 'id', None),
+        'name': getattr(ipo, 'name', ''),
+        'symbol': getattr(ipo, 'symbol', '') or '',
+        'start_date': start_fmt,
+        'end_date': end_fmt,
+        'subscription_display': getattr(ipo, 'subscription_display', 'N/A'),
+        'gmp_display': getattr(ipo, 'gmp_display', 'N/A'),
+        'advise': getattr(ipo, 'advise', 'APPLY'),
+        'company_work': getattr(ipo, 'company_work', '') or '',
+        'notes': getattr(ipo, 'notes', '') or '',
+        'registrar_slug': reg_slug,
+        'registrar_name': reg_name,
+    }
+
+    def _build_plain_message(user_name):
+        return f"""Dear {user_name},
+
+The Initial Public Offering (IPO) for {ipo_data['name']} has met our automated rule condition to APPLY on FOLIUX.
+
+IPO SUMMARY:
+--------------------------------------------------
+Company: {ipo_data['name']}
+Recommendation: APPLY (Condition Met)
+Total Subscription: {ipo_data['subscription_display']} (Meets >= 3.0x condition)
+Grey Market Premium (GMP): {ipo_data['gmp_display']} (Meets > 30% condition)
+Bidding Window: {ipo_data['start_date']} to {ipo_data['end_date']}
+Official Registrar: {ipo_data['registrar_name']}
+
+About Company:
+{ipo_data['company_work'] or 'Refer to prospectus on FOLIUX.'}
+
+--------------------------------------------------
+TERMS & CONDITIONS & IMPORTANT DISCLAIMER:
+--------------------------------------------------
+1. Just Meets Condition: This alert is triggered solely because the IPO has met our pre-defined quantitative condition (Subscription >= 3x and GMP > 30%). This is an automated technical screen and NOT formal financial advice.
+2. Investor Suitability: If it suits your individual financial plan, risk tolerance, and investment goals, you can consider applying.
+3. Conduct Analysis Mandatory: Before applying, please do your own analysis. Review the Red Herring Prospectus (RHP/DRHP), company valuation, financial statements, and fundamentals.
+4. Market is Risky: Equities and IPO markets are subject to significant market risks and volatility. Grey market premiums and subscription numbers fluctuate rapidly and do not guarantee listing gains. Capital loss is possible.
+--------------------------------------------------
+
+View full IPO details and track allotment:
+{site_url}/ipo/
+
+Warm regards,
+Team FOLIUX
+"""
+
+    def _send():
+        sent_count = 0
+        for user_info in users_data:
+            try:
+                context = {
+                    'user_name': user_info['name'],
+                    'ipo': ipo_data,
+                    'site_url': site_url,
+                }
+                html_message = render_to_string('emails/ipo_apply_alert.html', context)
+                plain_message = _build_plain_message(user_info['name'])
+
+                send_mail(
+                    subject=subject,
+                    message=plain_message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[user_info['email']],
+                    html_message=html_message,
+                    fail_silently=False
+                )
+                sent_count += 1
+            except Exception as e:
+                logger.error(f"Failed to send IPO apply alert to {user_info['email']}: {e}")
+        logger.info(f"IPO Apply notification finished for '{ipo_data['name']}': sent to {sent_count}/{len(users_data)} users.")
+        return sent_count
+
+    if async_send:
+        threading.Thread(target=_send, daemon=True).start()
+        return len(users_data)
+    else:
+        return _send()

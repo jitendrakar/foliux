@@ -1124,6 +1124,8 @@ class IPO(models.Model):
     is_active = models.BooleanField(default=True, help_text="True if IPO is active on registrar portal")
     kpi_data = models.JSONField(default=dict, blank=True, null=True, help_text="Key Performance Indicators (KPI) from Chittorgarh")
     valuation_data = models.JSONField(default=dict, blank=True, null=True, help_text="IPO Valuation metrics from Chittorgarh")
+    apply_email_sent = models.BooleanField(default=False, help_text="True if automated APPLY email notification was sent to registered users")
+    apply_email_sent_at = models.DateTimeField(null=True, blank=True, help_text="Timestamp when automated APPLY email was sent")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -1241,7 +1243,33 @@ class IPO(models.Model):
                     if not ('chittorgarh' in line.lower() or line.strip().startswith('Source:'))
                 ]
                 setattr(self, attr, "\n".join(cleaned_lines).strip())
+
+        should_send_apply_email = False
+        from django.utils import timezone
+        today = timezone.localdate()
+
+        # Check if advise is APPLY and email has not been sent yet
+        if self.advise == 'APPLY' and self.is_active and not self.apply_email_sent:
+            # Only trigger automated emails for active IPOs whose issue is still upcoming or open (not expired past issues)
+            if not self.end_date or self.end_date >= today:
+                self.apply_email_sent = True
+                self.apply_email_sent_at = timezone.now()
+                should_send_apply_email = True
+                if 'update_fields' in kwargs and kwargs['update_fields'] is not None:
+                    uf = set(kwargs['update_fields'])
+                    uf.add('apply_email_sent')
+                    uf.add('apply_email_sent_at')
+                    kwargs['update_fields'] = list(uf)
+
         super().save(*args, **kwargs)
+
+        if should_send_apply_email:
+            try:
+                from core.utils import send_ipo_apply_notification
+                send_ipo_apply_notification(self)
+            except Exception as e:
+                import logging
+                logging.getLogger(__name__).error(f"Error triggering IPO apply email notification: {e}")
 
 
 class ChatbotKnowledge(models.Model):

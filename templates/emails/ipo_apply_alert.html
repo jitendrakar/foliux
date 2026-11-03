@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPO Apply Alert - FOLIUX</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f9;
+            margin: 0;
+            padding: 0;
+            color: #333333;
+            -webkit-font-smoothing: antialiased;
+        }
+        .container {
+            max-width: 620px;
+            margin: 30px auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e2e8f0;
+        }
+        .header {
+            background: linear-gradient(135deg, #003D7C 0%, #002244 100%);
+            color: #ffffff;
+            padding: 28px 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+        .header p {
+            margin: 8px 0 0 0;
+            font-size: 14px;
+            color: #b0c4de;
+        }
+        .content {
+            padding: 30px;
+        }
+        .greeting {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 12px;
+        }
+        .intro-text {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #4a5568;
+            margin-bottom: 24px;
+        }
+        .highlight-card {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 22px;
+            margin-bottom: 24px;
+        }
+        .ipo-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .ipo-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #003D7C;
+            margin: 0;
+        }
+        .badge-apply {
+            display: inline-block;
+            background-color: #008D4C;
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 13px;
+            padding: 5px 14px;
+            border-radius: 20px;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+        .metric-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .metric-table td {
+            padding: 9px 0;
+            font-size: 14px;
+            vertical-align: top;
+        }
+        .metric-table .metric-label {
+            color: #718096;
+            width: 42%;
+            font-weight: 500;
+        }
+        .metric-table .metric-value {
+            color: #1a202c;
+            font-weight: 700;
+        }
+        .condition-tag {
+            display: inline-block;
+            background-color: #e6f4ea;
+            color: #137333;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 7px;
+            border-radius: 4px;
+            margin-left: 6px;
+        }
+        .company-work-box {
+            background-color: #edf2f7;
+            border-left: 4px solid #003D7C;
+            padding: 12px 16px;
+            border-radius: 4px;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #4a5568;
+            margin-top: 14px;
+        }
+        /* Mandatory Terms, Conditions & Risk Disclaimer Box */
+        .disclaimer-card {
+            background-color: #fffaf0;
+            border: 1px solid #feebc8;
+            border-left: 5px solid #dd6b20;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+        }
+        .disclaimer-title {
+            color: #9c4221;
+            font-size: 15px;
+            font-weight: 700;
+            margin: 0 0 10px 0;
+            display: flex;
+            align-items: center;
+        }
+        .disclaimer-list {
+            margin: 0;
+            padding-left: 20px;
+            color: #744210;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .disclaimer-list li {
+            margin-bottom: 8px;
+        }
+        .disclaimer-list li:last-child {
+            margin-bottom: 0;
+        }
+        .cta-container {
+            text-align: center;
+            margin: 28px 0 15px 0;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #008D4C;
+            color: #ffffff !important;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 15px;
+            padding: 13px 32px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 141, 76, 0.3);
+        }
+        .footer {
+            background-color: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            padding: 22px 25px;
+            text-align: center;
+            font-size: 12px;
+            color: #718096;
+        }
+        .footer p {
+            margin: 6px 0;
+        }
+        .footer a {
+            color: #4a5568;
+            text-decoration: underline;
+        }
+        .delete-btn {
+            display: inline-block;
+            background-color: #ffffff;
+            color: #dc3545;
+            border: 1px solid #dc3545;
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 12px;
+            text-decoration: none;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>FOLIUX IPO Alert</h1>
+            <p>Automated Technical Qualification Notification</p>
+        </div>
+
+        <!-- Main Body -->
+        <div class="content">
+            <p class="greeting">Dear {{ user_name }},</p>
+            <p class="intro-text">
+                The Initial Public Offering (IPO) for <strong>{{ ipo.name }}</strong> has met the quantitative rule condition to <strong>APPLY</strong> on the FOLIUX tracking system.
+            </p>
+
+            <!-- IPO Snapshot Card -->
+            <div class="highlight-card">
+                <div class="ipo-header-row">
+                    <div>
+                        <h2 class="ipo-name">{{ ipo.name }}</h2>
+                        {% if ipo.symbol %}
+                            <span style="font-size: 13px; color: #718096; font-weight: 500;">Symbol: {{ ipo.symbol }}</span>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <span class="badge-apply">APPLY</span>
+                    </div>
+                </div>
+
+                <table class="metric-table">
+                    <tr>
+                        <td class="metric-label">Total Subscription:</td>
+                        <td class="metric-value">
+                            {{ ipo.subscription_display }}
+                            <span class="condition-tag">Meets &ge; 3.0x</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="metric-label">Grey Market Premium (GMP):</td>
+                        <td class="metric-value">
+                            {{ ipo.gmp_display }}
+                            <span class="condition-tag">Meets &gt; 30%</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="metric-label">Bidding Window:</td>
+                        <td class="metric-value">{{ ipo.start_date }} &ndash; {{ ipo.end_date }}</td>
+                    </tr>
+                    <tr>
+                        <td class="metric-label">Official Registrar:</td>
+                        <td class="metric-value">{{ ipo.registrar_name }}</td>
+                    </tr>
+                </table>
+
+                {% if ipo.company_work %}
+                <div class="company-work-box">
+                    <strong>Company Profile:</strong> {{ ipo.company_work }}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Mandatory Terms & Conditions / Risk Disclaimer -->
+            <div class="disclaimer-card">
+                <h3 class="disclaimer-title">
+                    ⚠️ Terms &amp; Conditions &amp; Risk Disclaimer
+                </h3>
+                <ul class="disclaimer-list">
+                    <li><strong>Just Meets Condition:</strong> This automated email is triggered solely because the IPO has met our pre-defined quantitative condition (Subscription &ge; 3x and GMP &gt; 30%). It is an algorithmic screen and not a guaranteed buy recommendation.</li>
+                    <li><strong>Investor Discretion:</strong> If it suits your individual financial goals, investment horizon, and risk profile, you can consider applying.</li>
+                    <li><strong>Self-Analysis Mandatory:</strong> Before applying, please perform your own thorough analysis and review the Red Herring Prospectus (RHP/DRHP), company valuations, financial statements, and promoter history.</li>
+                    <li><strong>Market is Risky:</strong> Equity and IPO investments are subject to market risks, and capital loss is possible. Grey market premiums (GMP) and subscription metrics are volatile and can change rapidly prior to listing.</li>
+                </ul>
+            </div>
+
+            <!-- Call to Action -->
+            <div class="cta-container">
+                <a href="{{ site_url|default:'https://foliux.com' }}/ipo/" class="cta-button">View IPO &amp; Allotment Portal</a>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p style="font-weight: 600; color: #4a5568;">&copy; 2026 FOLIUX &ndash; Investment Tracking System</p>
+            <p>Rule-based investing for disciplined wealth creation.</p>
+            <p>This is an automated notification. To update your preferences, visit <a href="{{ site_url|default:'https://foliux.com' }}/profile/edit/">profile settings</a>.</p>
+            
+            <div style="margin-top: 18px; padding-top: 15px; border-top: 1px solid #e2e8f0;">
+                <p><a href="{{ site_url|default:'https://foliux.com' }}/profile/request-delete/" class="delete-btn">Delete My Account</a></p>
+                <p style="font-size: 11px; color: #a0aec0; margin: 6px auto 0 auto; max-width: 440px; line-height: 1.4;">
+                    Permanently delete your Foliux account, profile, portfolios, and all associated data.
+                </p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

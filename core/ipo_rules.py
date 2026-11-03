@@ -154,7 +154,8 @@ def evaluate_closing_day_ipo_advice(ipo=None, force=False):
             'new_advise': new_advise,
             'subscription': sub,
             'gmp_percent': gmp,
-            'rule_passed': rule_passed
+            'rule_passed': rule_passed,
+            'apply_email_sent': getattr(item, 'apply_email_sent', False),
         })
 
     return results

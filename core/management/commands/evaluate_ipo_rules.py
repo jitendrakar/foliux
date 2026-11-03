@@ -21,7 +21,8 @@ class Command(BaseCommand):
                 self.stdout.write(f"SKIPPED {r['name']}: {r['reason']}")
             else:
                 color = self.style.SUCCESS if r['rule_passed'] else self.style.WARNING
+                email_status = " [Apply Email Alert Sent]" if r.get('apply_email_sent') else ""
                 self.stdout.write(color(
                     f"UPDATED {r['name']} -> Advise: {r['new_advise']} "
-                    f"(Sub: {r['subscription']}, GMP: {r['gmp_percent']}%)"
+                    f"(Sub: {r['subscription']}, GMP: {r['gmp_percent']}%){email_status}"
                 ))
