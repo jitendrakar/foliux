@@ -1813,19 +1813,25 @@ def _auto_update_ipos():
     """
     try:
         from django.core.cache import cache
+        from .ipo_sync import clean_company_name
         cache_key = "ipo_registrar_companies_cache"
         companies = cache.get(cache_key)
         if not companies:
             from .models import IPO
-            companies = [
-                {
+            companies = []
+            seen_comp_names = set()
+            for ipo in IPO.objects.filter(is_active=True).order_by('-id'):
+                c_key = clean_company_name(ipo.name)
+                if c_key and c_key in seen_comp_names:
+                    continue
+                if c_key:
+                    seen_comp_names.add(c_key)
+                companies.append({
                     "id": ipo.registrar_company_id or str(ipo.id),
                     "name": ipo.name,
                     "registrar": ipo.registrar_slug or "mufg",
                     "registrar_name": "MUFG Intime" if (ipo.registrar_slug == "mufg") else (ipo.registrar_slug or "mufg").upper()
-                }
-                for ipo in IPO.objects.filter(is_active=True).order_by('-id')
-            ]
+                })
         return companies or []
     except Exception as e:
         logger.error(f"Error loading cached IPO registrar companies: {e}")
@@ -1835,18 +1841,24 @@ def ipo_list(request):
     """IPO list page for users with dynamic header and SEO tags."""
     from .models import IPO
     from django.utils import timezone
+    from .ipo_sync import clean_company_name
 
     allotment_companies = _auto_update_ipos()
     if not allotment_companies:
-        allotment_companies = [
-            {
+        allotment_companies = []
+        seen_comp_names = set()
+        for ipo in IPO.objects.filter(is_active=True).order_by('-id'):
+            c_key = clean_company_name(ipo.name)
+            if c_key and c_key in seen_comp_names:
+                continue
+            if c_key:
+                seen_comp_names.add(c_key)
+            allotment_companies.append({
                 "id": ipo.registrar_company_id or str(ipo.id),
                 "name": ipo.name,
                 "registrar": ipo.registrar_slug or "mufg",
                 "registrar_name": "MUFG Intime" if (ipo.registrar_slug == "mufg") else (ipo.registrar_slug or "mufg").upper()
-            }
-            for ipo in IPO.objects.filter(is_active=True).order_by('-id')
-        ]
+            })
 
     target_user, is_family_view, is_consolidated = (
         get_target_user(request)
@@ -1855,12 +1867,23 @@ def ipo_list(request):
     )
     
     # Only show Admin-created / Admin-managed IPO cards
-    ipos = IPO.objects.all().order_by('-start_date', '-created_at')
+    raw_ipos = IPO.objects.all().order_by('-start_date', '-created_at')
     
     # Optional filtering
     advise_filter = request.GET.get('advise')
     if advise_filter:
-        ipos = ipos.filter(advise=advise_filter)
+        raw_ipos = raw_ipos.filter(advise=advise_filter)
+
+    # Deduplicate in view so multiple cards for the same IPO are never shown
+    seen_companies = set()
+    ipos = []
+    for ipo in raw_ipos:
+        norm_key = clean_company_name(ipo.name)
+        if norm_key and norm_key in seen_companies:
+            continue
+        if norm_key:
+            seen_companies.add(norm_key)
+        ipos.append(ipo)
 
     # Fetch latest active or most recently added IPO for dynamic header & SEO
     today = timezone.localdate()
@@ -2051,6 +2074,14 @@ def dashboard(request):
             r for r in recommendations 
             if r.get('in_portfolio', False) or r.get('action') in ['BUY', 'SELL', 'REDUCE']
         ]
+
+    # Default sort: Reason TgtCap value descending, non-TgtCap rows (e.g. SELL "Pft > ...") at the bottom
+    recommendations.sort(
+        key=lambda r: (
+            0 if 'TgtCap' in (r.get('reason') or '') else 1,
+            -(r.get('target_capital') or 0) if 'TgtCap' in (r.get('reason') or '') else -(r.get('unrealized_pnl') or 0),
+        )
+    )
 
     # Recalculate totals based on the filtered view
     total_invested = sum(r['invested_amount'] for r in recommendations)

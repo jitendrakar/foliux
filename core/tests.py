@@ -607,6 +607,96 @@ class BlogKeepReadingViewsOrderingTestCase(TestCase):
         self.assertEqual(related_posts[0].id, post_high.id)
 
 
+class DashboardDefaultSortTestCase(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='dashuser', password='password')
+        self.client.login(username='dashuser', password='password')
+
+    def test_dashboard_defaults_to_tgtcap_desc_with_non_tgtcap_at_bottom(self):
+        from unittest.mock import patch
+
+        def _rec(symbol, action, reason, target_capital, unrealized_pnl=0):
+            return {
+                'symbol': symbol,
+                'name': symbol,
+                'quantity': 10,
+                'avg_cost': 100,
+                'ltp': 110,
+                'invested_amount': 1000,
+                'current_value': 1100,
+                'unrealized_pnl': unrealized_pnl,
+                'pnl_percent': 10,
+                'day_change': 1,
+                'total_day_change': 10,
+                'day_change_pct': 1,
+                'previous_close': 109,
+                'action': action,
+                'reason': reason,
+                'instrument_id': 1,
+                'buy_gap': target_capital if action == 'BUY' else 0,
+                'reduce_gap': abs(target_capital) if action == 'REDUCE' else 0,
+                'target_capital': target_capital,
+                'target_qty': 0,
+                'target_qty_abs': 0,
+                'realized_profit': 0,
+                'qty_can_sell': 0,
+                'in_portfolio': True,
+                'lot_count': 1,
+                'notes': '',
+            }
+
+        sample_recs = [
+            _rec('SELL1', 'SELL', 'Pft > 22.0%', 15000, unrealized_pnl=5000),
+            _rec('LOW_REDUCE', 'REDUCE', 'TgtCap: -5000', -5000, unrealized_pnl=100),
+            _rec('MID_HOLD', 'HOLD', 'TgtCap: 500', 500, unrealized_pnl=50),
+            _rec('HIGH_BUY', 'BUY', 'TgtCap: 25000', 25000, unrealized_pnl=200),
+            _rec('STABLE1', 'HOLD', 'Stable', 0, unrealized_pnl=1000),
+        ]
+
+        with patch('core.views.get_recommendations', return_value=(sample_recs, {}, {})), \
+             patch('core.views.fetch_strategy_stocks', return_value={}):
+            response = self.client.get('/dashboard/')
+
+        self.assertEqual(response.status_code, 200)
+        ordered_symbols = [r['symbol'] for r in response.context['recommendations']]
+        self.assertEqual(ordered_symbols, ['HIGH_BUY', 'MID_HOLD', 'LOW_REDUCE', 'SELL1', 'STABLE1'])
+        self.assertContains(response, 'data-has-tgt-cap="true"')
+        self.assertContains(response, 'data-tgt-cap="25000"')
+        self.assertContains(response, 'compareReasonRows')
+
+
+class InvestorTypeMultiplierTests(TestCase):
+    def setUp(self):
+        from core.models import Profile
+        self.user = User.objects.create_user(username='test_investor', password='password123')
+        self.profile = Profile.objects.get_or_create(user=self.user)[0]
+        self.profile.initial_investment_limit = Decimal('10000.00')
+        self.profile.save()
+
+    def test_conservative_multipliers(self):
+        self.profile.investor_type = 'conservative'
+        self.profile.save()
+
+        # FlexiMultiInvest (ETFs): 1.0x -> 10000.00
+        self.assertEqual(self.profile.get_max_investment('flexi'), Decimal('10000.00'))
+
+        # Pyramiding (Stocks): 0.75x -> 7500.00
+        self.assertEqual(self.profile.get_max_investment('pyramid'), Decimal('7500.00'))
+
+        # NiftyQuant (Stocks): 0.50x -> 5000.00
+        self.assertEqual(self.profile.get_max_investment('quant'), Decimal('5000.00'))
+
+        # ReinvestX (Growth Stocks): 0.25x -> 2500.00
+        self.assertEqual(self.profile.get_max_investment('growth'), Decimal('2500.00'))
+
+        # Outside from above (others, unknown, None): 0.15x -> 1500.00
+        self.assertEqual(self.profile.get_max_investment('others'), Decimal('1500.00'))
+        self.assertEqual(self.profile.get_max_investment('unmapped_strategy'), Decimal('1500.00'))
+        self.assertEqual(self.profile.get_max_investment(None), Decimal('1500.00'))
+
+
+
+
 
 
 

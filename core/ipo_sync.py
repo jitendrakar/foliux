@@ -22,6 +22,26 @@ def clean_company_name(name: str) -> str:
     return clean.lower()
 
 
+def deduplicate_ipos_in_db() -> int:
+    """Finds and removes any duplicate IPO records in the database, keeping the lowest ID."""
+    from core.models import IPO
+    all_ipos = IPO.objects.all().order_by('id')
+    seen = {}
+    dupes_to_delete = []
+    for ipo in all_ipos:
+        key = clean_company_name(ipo.name)
+        if not key:
+            continue
+        if key in seen:
+            dupes_to_delete.append(ipo.id)
+        else:
+            seen[key] = ipo.id
+    if dupes_to_delete:
+        IPO.objects.filter(id__in=dupes_to_delete).delete()
+        logger.info(f"Cleaned up {len(dupes_to_delete)} duplicate IPO records: {dupes_to_delete}")
+    return len(dupes_to_delete)
+
+
 def sync_single_ipo(
     ipo_obj_or_name: Any,
     chittorgarh_url: Optional[str] = None,
@@ -103,6 +123,13 @@ def auto_sync_foliux_ipos(
     today = timezone.localdate()
     logger.info(f"Starting Foliux IPO Auto-Sync Workflow for date: {today}")
 
+    from django.core.cache import cache
+    # Distributed lock to prevent parallel auto_sync runs across multiple workers / schedulers
+    lock_acquired = cache.add("auto_sync_foliux_ipos_lock", "locked", timeout=600)
+    if not lock_acquired:
+        logger.warning("auto_sync_foliux_ipos is already running in another process/worker. Skipping duplicate run.")
+        return {'status': 'skipped', 'reason': 'already_running'}
+
     stats = {
         'added': 0,
         'updated': 0,
@@ -115,6 +142,9 @@ def auto_sync_foliux_ipos(
     }
 
     try:
+        # Initial cleanup of any duplicates that may exist
+        deduplicate_ipos_in_db()
+
         scraped_ipos = fetch_chittorgarh_ipos()
         logger.info(f"Fetched {len(scraped_ipos)} IPO entries from Chittorgarh.")
 
@@ -156,6 +186,13 @@ def auto_sync_foliux_ipos(
             existing_ipo = IPO.objects.filter(name__icontains=clean_name).first()
             if not existing_ipo and item.get('symbol'):
                 existing_ipo = IPO.objects.filter(symbol__iexact=item['symbol'].strip()).first()
+            if not existing_ipo:
+                s_name = re.sub(r'[^a-z0-9]', '', clean_name)
+                for cand in IPO.objects.all():
+                    cand_clean = re.sub(r'[^a-z0-9]', '', clean_company_name(cand.name))
+                    if s_name and (s_name == cand_clean or s_name in cand_clean or cand_clean in s_name):
+                        existing_ipo = cand
+                        break
 
             if not existing_ipo:
                 calculated_end_date = end_date or (start_date + timedelta(days=3))
@@ -373,8 +410,13 @@ def auto_sync_foliux_ipos(
         except Exception as e:
             logger.error(f"Error during registrar sync: {e}")
 
+        # Deduplicate to guarantee no identical IPO records remain
+        deduplicate_ipos_in_db()
+
     except Exception as e:
         logger.error(f"Error in auto_sync_foliux_ipos workflow: {e}", exc_info=True)
+    finally:
+        cache.delete("auto_sync_foliux_ipos_lock")
 
     logger.info(f"Completed Foliux IPO Auto-Sync: {stats}")
     return stats

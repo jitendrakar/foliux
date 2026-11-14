@@ -2535,3 +2535,58 @@ class IPOApplyEmailNotificationTests(TestCase):
         self.assertEqual(mock_send_mail.call_count, 1)
         _, kwargs = mock_send_mail.call_args
         self.assertEqual(kwargs['recipient_list'], ['admin_test@foliux.com'])
+
+
+class IPODeduplicationTests(TestCase):
+    def setUp(self):
+        self.today = timezone.localdate()
+        self.ipo1 = IPO.objects.create(
+            name="Watrana Rentals",
+            start_date=self.today + timezone.timedelta(days=5),
+            end_date=self.today + timezone.timedelta(days=8),
+            company_work="Rental service",
+            advise="WAITING",
+            is_active=True
+        )
+        self.ipo2 = IPO.objects.create(
+            name="Watrana Rentals Limited",
+            start_date=self.today + timezone.timedelta(days=5),
+            end_date=self.today + timezone.timedelta(days=8),
+            company_work="Rental service duplicate",
+            advise="WAITING",
+            is_active=True
+        )
+        self.ipo3 = IPO.objects.create(
+            name="Crystal Crop Protection",
+            start_date=self.today + timezone.timedelta(days=4),
+            end_date=self.today + timezone.timedelta(days=6),
+            company_work="Agro chemicals",
+            advise="WAITING",
+            is_active=True
+        )
+        self.ipo4 = IPO.objects.create(
+            name="Crystal Crop Protection IPO",
+            start_date=self.today + timezone.timedelta(days=4),
+            end_date=self.today + timezone.timedelta(days=6),
+            company_work="Agro chemicals duplicate",
+            advise="WAITING",
+            is_active=True
+        )
+
+    def test_deduplicate_ipos_in_db(self):
+        from core.ipo_sync import deduplicate_ipos_in_db
+        deleted_count = deduplicate_ipos_in_db()
+        self.assertEqual(deleted_count, 2)
+        remaining = list(IPO.objects.values_list('name', flat=True))
+        self.assertEqual(len(remaining), 2)
+        self.assertIn("Watrana Rentals", remaining)
+        self.assertIn("Crystal Crop Protection", remaining)
+
+    def test_ipo_list_view_deduplicates_cards(self):
+        response = self.client.get('/ipo/')
+        self.assertEqual(response.status_code, 200)
+        ipos_in_context = response.context['ipos']
+        names = [item.name for item in ipos_in_context]
+        # Even with 4 records in DB, only 2 unique companies should be in context
+        self.assertEqual(len(names), 2)
+

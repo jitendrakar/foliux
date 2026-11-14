@@ -389,6 +389,8 @@
                             {% for item in recommendations %}
                             <tr data-action="{{ item.action }}" data-pnl="{{ item.unrealized_pnl }}"
                                 data-buy-gap="{{ item.buy_gap }}" data-reduce-gap="{{ item.reduce_gap }}"
+                                data-has-tgt-cap="{% if 'TgtCap' in item.reason %}true{% else %}false{% endif %}"
+                                data-tgt-cap="{{ item.target_capital|default:0 }}"
                                 data-in-portfolio="{{ item.in_portfolio|yesno:'true,false' }}">
                                 <td>
                                     <div class="d-flex gap-1 justify-content-center">
@@ -724,6 +726,18 @@
         new bootstrap.Modal(document.getElementById('transactionModal')).show();
     }
 
+    function compareReasonRows(a, b, direction = 'desc') {
+        const aHas = a.dataset.hasTgtCap === 'true';
+        const bHas = b.dataset.hasTgtCap === 'true';
+        if (aHas !== bHas) return aHas ? -1 : 1;
+        if (aHas && bHas) {
+            const aVal = parseFloat(a.dataset.tgtCap) || 0;
+            const bVal = parseFloat(b.dataset.tgtCap) || 0;
+            return direction === 'asc' ? aVal - bVal : bVal - aVal;
+        }
+        return (parseFloat(b.dataset.pnl) || 0) - (parseFloat(a.dataset.pnl) || 0);
+    }
+
     function filterPortfolio(action) {
         const table = document.getElementById('portfolioTable');
         const viewTitle = document.getElementById('portfolio-view-title');
@@ -757,8 +771,22 @@
             if (show) visibleCount++;
         });
 
-        // Sort if not ALL
-        if (action !== 'ALL') {
+        // Reset header sort indicators
+        const headers = table.querySelectorAll('th[data-sort]');
+        headers.forEach(h => {
+            h.classList.remove('asc', 'desc');
+            h.querySelector('i').className = 'fas fa-sort ms-1 text-muted opacity-50';
+        });
+
+        // Sort
+        if (action === 'ALL') {
+            dataRows.sort((a, b) => compareReasonRows(a, b, 'desc'));
+            const reasonHeader = table.querySelector('th[data-sort="reason"]');
+            if (reasonHeader) {
+                reasonHeader.classList.add('desc');
+                reasonHeader.querySelector('i').className = 'fas fa-sort-down ms-1 text-primary';
+            }
+        } else {
             dataRows.sort((a, b) => {
                 let valA, valB;
                 if (action === 'SELL') {
@@ -826,6 +854,10 @@
                     const emptyRow = rows.find(row => row.querySelector('td[colspan]'));
 
                     const sortedRows = dataRows.sort((a, b) => {
+                        if (sortType === 'reason') {
+                            return compareReasonRows(a, b, direction);
+                        }
+
                         let aVal = getCellValue(a, sortType, table);
                         let bVal = getCellValue(b, sortType, table);
 

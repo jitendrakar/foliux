@@ -895,7 +895,7 @@ def get_recommendations(user, is_consolidated=False):
         unrealized_pct = (unrealized / invested * 100) if invested else 0
         
         realized_profit = realized_profits.get(symbol, 0)
-        strat_key = symbol_to_strategy.get(symbol, 'moderate')
+        strat_key = symbol_to_strategy.get(symbol, 'others')
         initial_inv = float(profile.get_max_investment(strat_key))
         
         factor_j = get_factor_j(inst.diff_from_lh_pct)
@@ -979,7 +979,7 @@ def get_recommendations(user, is_consolidated=False):
             ltp = float(live_ltps.get(symbol, 0))
             if ltp <= 0: ltp = float(inst.last_price or 0)
 
-            strat_key = symbol_to_strategy.get(symbol, 'moderate')
+            strat_key = symbol_to_strategy.get(symbol, 'others')
             initial_inv = float(profile.get_max_investment(strat_key))
             factor_j = get_factor_j(inst.diff_from_lh_pct)
             factor_i = get_factor_i(inst.pe_ratio)
@@ -1047,7 +1047,7 @@ def get_recommendations(user, is_consolidated=False):
             ltp = float(live_ltps.get(symbol, 0))
             if inst and ltp <= 0: ltp = float(inst.last_price or 0)
             
-            strat_key = symbol_to_strategy.get(symbol, 'moderate')
+            strat_key = symbol_to_strategy.get(symbol, 'others')
             initial_inv = float(profile.get_max_investment(strat_key))
             
             factor_j = 1.0; factor_i = 1.0

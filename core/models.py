@@ -209,12 +209,14 @@ class Profile(models.Model):
         """
         base = float(self.initial_investment_limit)
         multipliers = {
-            'conservative': {'flexi': 2.0, 'pyramid': 1.0, 'quant': 0.67, 'growth': 0.33},
-            'moderate': {'flexi': 1.0, 'pyramid': 1.0, 'quant': 1.0, 'growth': 1.0},
-            'growth': {'flexi': 0.67, 'pyramid': 1.0, 'quant': 1.33, 'growth': 2.0},
-            'aggressive': {'flexi': 0.33, 'pyramid': 1.0, 'quant': 2.0, 'growth': 3.33},
+            'conservative': {'flexi': 1.0, 'pyramid': 0.75, 'quant': 0.50, 'growth': 0.25, 'others': 0.15},
+            'moderate': {'flexi': 1.0, 'pyramid': 1.0, 'quant': 1.0, 'growth': 1.0, 'others': 1.0},
+            'growth': {'flexi': 0.67, 'pyramid': 1.0, 'quant': 1.33, 'growth': 2.0, 'others': 0.67},
+            'aggressive': {'flexi': 0.33, 'pyramid': 1.0, 'quant': 2.0, 'growth': 3.33, 'others': 0.33},
         }
-        strategy_multiplier = multipliers.get(self.investor_type, multipliers['moderate']).get(strategy_key, 1.0)
+        fallback_multiplier = 0.15 if self.investor_type == 'conservative' else 1.0
+        strat_map = multipliers.get(self.investor_type, multipliers['moderate'])
+        strategy_multiplier = strat_map.get(strategy_key, fallback_multiplier)
         return Decimal(str(round(base * strategy_multiplier, 2)))
 
 # Signals to automatically create/save Profile
