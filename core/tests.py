@@ -694,6 +694,51 @@ class InvestorTypeMultiplierTests(TestCase):
         self.assertEqual(self.profile.get_max_investment('unmapped_strategy'), Decimal('1500.00'))
         self.assertEqual(self.profile.get_max_investment(None), Decimal('1500.00'))
 
+    def test_moderate_multipliers(self):
+        self.profile.investor_type = 'moderate'
+        self.profile.save()
+
+        # In-list: 1.0x -> 10000.00
+        self.assertEqual(self.profile.get_max_investment('flexi'), Decimal('10000.00'))
+        self.assertEqual(self.profile.get_max_investment('pyramid'), Decimal('10000.00'))
+        self.assertEqual(self.profile.get_max_investment('quant'), Decimal('10000.00'))
+        self.assertEqual(self.profile.get_max_investment('growth'), Decimal('10000.00'))
+
+        # Outside from above: 0.50x -> 5000.00
+        self.assertEqual(self.profile.get_max_investment('others'), Decimal('5000.00'))
+        self.assertEqual(self.profile.get_max_investment('unmapped_strategy'), Decimal('5000.00'))
+        self.assertEqual(self.profile.get_max_investment(None), Decimal('5000.00'))
+
+    def test_growth_multipliers(self):
+        self.profile.investor_type = 'growth'
+        self.profile.save()
+
+        # In-list
+        self.assertEqual(self.profile.get_max_investment('flexi'), Decimal('6700.00'))
+        self.assertEqual(self.profile.get_max_investment('pyramid'), Decimal('10000.00'))
+        self.assertEqual(self.profile.get_max_investment('quant'), Decimal('13300.00'))
+        self.assertEqual(self.profile.get_max_investment('growth'), Decimal('20000.00'))
+
+        # Outside from above: 0.75x -> 7500.00
+        self.assertEqual(self.profile.get_max_investment('others'), Decimal('7500.00'))
+        self.assertEqual(self.profile.get_max_investment('unmapped_strategy'), Decimal('7500.00'))
+        self.assertEqual(self.profile.get_max_investment(None), Decimal('7500.00'))
+
+    def test_aggressive_multipliers(self):
+        self.profile.investor_type = 'aggressive'
+        self.profile.save()
+
+        # In-list
+        self.assertEqual(self.profile.get_max_investment('flexi'), Decimal('3300.00'))
+        self.assertEqual(self.profile.get_max_investment('pyramid'), Decimal('10000.00'))
+        self.assertEqual(self.profile.get_max_investment('quant'), Decimal('20000.00'))
+        self.assertEqual(self.profile.get_max_investment('growth'), Decimal('33300.00'))
+
+        # Outside from above: 1.00x -> 10000.00
+        self.assertEqual(self.profile.get_max_investment('others'), Decimal('10000.00'))
+        self.assertEqual(self.profile.get_max_investment('unmapped_strategy'), Decimal('10000.00'))
+        self.assertEqual(self.profile.get_max_investment(None), Decimal('10000.00'))
+
 
 
 
