@@ -2123,14 +2123,10 @@ def dashboard(request):
     from .models import Strategy, MarketTicker
     last_strategy_update = Strategy.objects.aggregate(models.Max('updated_at'))['updated_at__max']
     last_ticker_update = MarketTicker.objects.aggregate(models.Max('updated_at'))['updated_at__max']
-    
-    # Get the most recent of the two
-    last_updated = last_strategy_update
-    if last_ticker_update and (not last_updated or last_ticker_update > last_updated):
-        last_updated = last_ticker_update
-    
-    if not last_updated:
-        last_updated = timezone.now()
+    last_instrument_update = Instrument.objects.aggregate(models.Max('last_updated'))['last_updated__max']
+
+    timestamps = [ts for ts in (last_strategy_update, last_ticker_update, last_instrument_update) if ts]
+    last_updated = max(timestamps) if timestamps else timezone.now()
 
     from .models import PortfolioValueHistory
     history = PortfolioValueHistory.objects.filter(user=request.user).order_by('-date')[:30][::-1]
@@ -3539,12 +3535,13 @@ def sync_data_api(request):
     """API endpoint to trigger data synchronization with rate limiting via cache."""
     sync_key = 'last_sync_timestamp'
     lock_key = 'sync_in_progress'
+    force = request.GET.get('force') == '1'
     
-    # Rate limit: 10 minutes (600 seconds)
+    # Rate limit: 10 minutes (600 seconds), bypassed on explicit manual Live Update click
     last_sync = cache.get(sync_key)
     now = timezone.now().timestamp()
     
-    if last_sync is not None and (now - last_sync) < 600:
+    if not force and last_sync is not None and (now - last_sync) < 600:
         return JsonResponse({'status': 'skipped', 'message': 'Recently synced'})
     
     if cache.get(lock_key):

@@ -73,19 +73,31 @@ def resolve_instrument(symbol_or_name):
                 
     return None
 
+def _fetch_sheet_response(url, timeout=10):
+    """Fetch a Google Sheet CSV export with SSL fallback when local certs fail."""
+    try:
+        response = requests.get(url, timeout=timeout)
+        response.raise_for_status()
+        return response
+    except requests.exceptions.SSLError:
+        import urllib3
+        urllib3.disable_warnings()
+        response = requests.get(url, timeout=timeout, verify=False)
+        response.raise_for_status()
+        return response
+
 def perform_sync():
     """Execute the synchronization logic for market tickers and instruments."""
     from core.models import MarketTicker, Instrument, Portfolio
     logger.info("Starting background sync process...")
     
     # 1. Sync Market Ticker Data
+    seen_tickers = set()
+    market_sheet_synced = False
     market_url = f"https://docs.google.com/spreadsheets/d/{settings.MASTER_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=market"
     try:
-        response = requests.get(market_url, timeout=10)
-        response.raise_for_status()
-        df = pd.read_csv(io.StringIO(response.text))
-        
-        seen_tickers = set()
+        response = _fetch_sheet_response(market_url, timeout=10)
+        df = pd.read_csv(io.StringIO(response.text)) if (response.text and response.text.strip()) else pd.DataFrame()
         with transaction.atomic():
             for _, row in df.iterrows():
                 try:
@@ -114,73 +126,67 @@ def perform_sync():
                                 defaults={'price': price, 'change': change_val, 'percent_change': pct_val}
                             )
                             seen_tickers.add(name)
+                            market_sheet_synced = True
                         except (ValueError, TypeError):
                             continue
                 except Exception as e:
                     logger.error(f"Error processing market ticker row: {e}")
+    except Exception as e:
+        logger.error(f"Error fetching market data: {e}")
         
-        # 1a. Explicitly sync major indices via yfinance (more reliable than sheet/info)
-        major_indices = {
-            'NIFTY 50': '^NSEI',
-            'SENSEX': '^BSESN',
-            'NIFTY BANK': '^NSEBANK',
-            'GOLD': 'GC=F',
-            'SILVER': 'SI=F'
-        }
-        
-        for name, sym in major_indices.items():
-            seen_tickers.add(name)
+    # 1a. Explicitly sync major indices via yfinance (independent of market sheet)
+    major_indices = {
+        'NIFTY 50': '^NSEI',
+        'SENSEX': '^BSESN',
+        'NIFTY BANK': '^NSEBANK',
+        'GOLD': 'GC=F',
+        'SILVER': 'SI=F'
+    }
+    
+    for name, sym in major_indices.items():
+        seen_tickers.add(name)
+        try:
+            ticker = yf.Ticker(sym)
+            # Use fast_info for real-time price and previous close, much more reliable than history during market hours
             try:
-                ticker = yf.Ticker(sym)
-                # Use fast_info for real-time price and previous close, much more reliable than history during market hours
-                try:
-                    cp = float(ticker.fast_info['last_price'])
-                    pc = float(ticker.fast_info['previous_close'])
-                    if cp and pc:
-                        change_val = round(cp - pc, 2)
-                        pct = round((change_val / pc) * 100, 2)
-                        MarketTicker.objects.update_or_create(
-                            name=name,
-                            defaults={'price': round(cp, 2), 'change': change_val, 'percent_change': pct}
-                        )
-                        continue # Success with fast_info
-                except Exception:
-                    pass
-
-                # Fallback to history if fast_info fails
-                hist = ticker.history(period='5d')
-                if not hist.empty:
-                    cp = float(hist['Close'].iloc[-1])
-                    pc = float(hist['Close'].iloc[-2]) if len(hist) > 1 else cp
+                cp = float(ticker.fast_info['last_price'])
+                pc = float(ticker.fast_info['previous_close'])
+                if cp and pc:
                     change_val = round(cp - pc, 2)
-                    pct = round((change_val / pc) * 100, 2) if pc else 0
-                    
+                    pct = round((change_val / pc) * 100, 2)
                     MarketTicker.objects.update_or_create(
                         name=name,
                         defaults={'price': round(cp, 2), 'change': change_val, 'percent_change': pct}
                     )
-            except Exception as ex:
-                logger.error(f"Error fetching live index override for {name}: {ex}")
+                    continue # Success with fast_info
+            except Exception:
+                pass
 
-        # Delete tickers not in the current sheet OR major indices
-        if seen_tickers:
-            deleted_count, _ = MarketTicker.objects.exclude(name__in=seen_tickers).delete()
-            if deleted_count > 0:
-                logger.info(f"Deleted {deleted_count} stale market tickers.")
-    except Exception as e:
-        logger.error(f"Error fetching market data: {e}")
+            # Fallback to history if fast_info fails
+            hist = ticker.history(period='5d')
+            if not hist.empty:
+                cp = float(hist['Close'].iloc[-1])
+                pc = float(hist['Close'].iloc[-2]) if len(hist) > 1 else cp
+                change_val = round(cp - pc, 2)
+                pct = round((change_val / pc) * 100, 2) if pc else 0
+                
+                MarketTicker.objects.update_or_create(
+                    name=name,
+                    defaults={'price': round(cp, 2), 'change': change_val, 'percent_change': pct}
+                )
+        except Exception as ex:
+            logger.error(f"Error fetching live index override for {name}: {ex}")
+
+    # Delete stale tickers only when the market sheet itself returned rows
+    if market_sheet_synced and seen_tickers:
+        deleted_count, _ = MarketTicker.objects.exclude(name__in=seen_tickers).delete()
+        if deleted_count > 0:
+            logger.info(f"Deleted {deleted_count} stale market tickers.")
 
     # 2. Sync Instrument LTP Data (from 'n2g' sheet)
     ltp_url = f"https://docs.google.com/spreadsheets/d/{settings.MASTER_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=n2g"
     try:
-        try:
-            response = requests.get(ltp_url, timeout=10)
-            response.raise_for_status()
-        except requests.exceptions.SSLError:
-            import urllib3
-            urllib3.disable_warnings()
-            response = requests.get(ltp_url, timeout=10, verify=False)
-            response.raise_for_status()
+        response = _fetch_sheet_response(ltp_url, timeout=10)
         df = pd.read_csv(io.StringIO(response.text), skiprows=1)
         
         ltp_map = {}
@@ -302,8 +308,6 @@ def perform_sync():
                             p.save(update_fields=['ltp'])
     except Exception as e:
         logger.error(f"Error fetching instrument data: {e}")
-    except Exception as e:
-        logger.error(f"Error fetching instrument data: {e}")
 
     # 3. Sync Strategy Stocks
     STRATEGY_SHEET_TABS = {
@@ -318,8 +322,9 @@ def perform_sync():
     for strategy_key, (tab_name, display_name) in STRATEGY_SHEET_TABS.items():
         url = f"https://docs.google.com/spreadsheets/d/{settings.MASTER_SHEET_ID}/gviz/tq?tqx=out:csv&sheet={tab_name}"
         try:
-            response = requests.get(url, timeout=10)
-            response.raise_for_status()
+            response = _fetch_sheet_response(url, timeout=10)
+            if not response.text or not response.text.strip():
+                continue
             
             strategy, _ = Strategy.objects.get_or_create(
                 name=strategy_key,
@@ -345,6 +350,7 @@ def perform_sync():
             
             if stocks_to_create:
                 StrategyStock.objects.bulk_create(stocks_to_create)
+                strategy.save(update_fields=['updated_at'])
                 logger.info(f"Synced {len(stocks_to_create)} stocks for strategy: {strategy_key}")
                 
         except Exception as e:
