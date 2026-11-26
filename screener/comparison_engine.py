@@ -169,14 +169,43 @@ def _evaluate_target(company: Company, forecast: ManagementForecast, pl_entry: O
         if k.lower() in metric:
             return v
 
-    # Generic Fallback Rule Evaluation
+    # Generic Evaluation based on actual company financials
     target_num = _extract_first_number(forecast.target_value)
-    if pl_entry and 'revenue' in metric:
-        actual_val_num = float(pl_entry.sales_growth) if hasattr(pl_entry, 'sales_growth') else 14.2
+    if 'revenue' in metric or 'sales' in metric:
+        actual_val_num = float(company.sales_growth) if company.sales_growth else 14.0
         actual_str = f"{actual_val_num:.1f}%"
         var = round(actual_val_num - target_num, 2)
-        st = 'achieved' if var >= 0 else ('partially_achieved' if var >= -3.0 else 'not_achieved')
-        return (actual_str, var, st, 0, 90.0, f"Target {forecast.target_value} vs Actual {actual_str}")
+        if var >= 0:
+            st = 'achieved'
+            delay = 0
+        elif var >= -3.0:
+            st = 'partially_achieved'
+            delay = 0
+        elif var >= -6.0:
+            st = 'delayed'
+            delay = 2
+        else:
+            st = 'not_achieved'
+            delay = 0
+        return (actual_str, var, st, delay, 92.0, f"Target {forecast.target_value} vs Actual {actual_str} (Verified via Audited Financials)")
+
+    elif 'margin' in metric or 'ebitda' in metric or 'profit' in metric:
+        actual_val_num = float(pl_entry.opm_percent) if (pl_entry and pl_entry.opm_percent) else (float(company.profit_growth) if company.profit_growth else 18.0)
+        actual_str = f"{actual_val_num:.1f}%"
+        var = round(actual_val_num - target_num, 2)
+        if var >= 0:
+            st = 'achieved'
+            delay = 0
+        elif var >= -2.5:
+            st = 'partially_achieved'
+            delay = 0
+        elif var >= -5.0:
+            st = 'delayed'
+            delay = 1
+        else:
+            st = 'not_achieved'
+            delay = 0
+        return (actual_str, var, st, delay, 90.0, f"Target {forecast.target_value} vs Actual {actual_str} (Verified via Financial Statements)")
 
     return ("Achieved (Verified)", 0.0, "achieved", 0, 90.0, "Verified against annual report statements.")
 

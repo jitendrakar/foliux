@@ -10,10 +10,12 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--symbol', type=str, help='Specific company NSE symbol e.g. TCS')
         parser.add_argument('--years', type=int, default=5, help='Number of financial years to sync (default: 5)')
+        parser.add_argument('--limit', type=int, default=None, help='Limit number of companies to sync')
 
     def handle(self, *args, **options):
         symbol = options.get('symbol')
         years_count = options.get('years', 5)
+        limit = options.get('limit')
 
         if symbol:
             companies = Company.objects.filter(nse_symbol__iexact=symbol)
@@ -28,6 +30,8 @@ class Command(BaseCommand):
                 companies = [company]
         else:
             companies = Company.objects.all()
+            if limit:
+                companies = companies[:limit]
             if not companies.exists():
                 self.stdout.write(self.style.WARNING("No companies found in database. Initializing top companies..."))
                 for s, n in [('TCS', 'Tata Consultancy Services Ltd'), ('INFY', 'Infosys Ltd'), ('RELIANCE', 'Reliance Industries Ltd')]:

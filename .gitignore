@@ -179,3 +179,8 @@ desktop.ini
 node_modules/
 **/node_modules/
 
+# Screener filing document downloads
+screener/result/
+*.djcache
+
+
