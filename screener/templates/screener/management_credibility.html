@@ -261,7 +261,7 @@
   <div class="card border-0 shadow-sm rounded-4 p-4 mb-5 screener-results-card">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h4 class="fw-extrabold mb-0">Company Reliability Rankings</h4>
-      <span class="badge bg-secondary-subtle text-secondary fw-semibold">Local Storage: G:\My Drive\NETPROFIT\FOLIUX\screener\result\</span>
+      <span class="badge bg-secondary-subtle text-secondary fw-semibold"><i class="fas fa-file-contract me-1"></i> Audited Corporate Filings</span>
     </div>
 
     <div class="table-responsive screener-table-responsive">
@@ -375,7 +375,7 @@
               <div class="extra-small text-muted">Page {{ comp.forecast.page_number }}</div>
               {% if comp.forecast.document %}
                 <a href="{% url 'screener:serve_local_document' comp.forecast.document.id %}" target="_blank" class="btn btn-link btn-sm p-0 extra-small text-decoration-none">
-                  <i class="fas fa-external-link-alt me-1"></i> View Local Archive
+                  <i class="fas fa-external-link-alt me-1"></i> View Filing Document
                 </a>
               {% endif %}
             </td>
