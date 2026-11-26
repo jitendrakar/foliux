@@ -111,6 +111,10 @@ cd "$LIVE_DIR"
 
 log "Running database migrations"
 "$VENV_PATH/bin/python" manage.py migrate --noinput
+"$VENV_PATH/bin/python" manage.py migrate --database=screener --noinput
+"$VENV_PATH/bin/python" manage.py migrate --database=salon --noinput
+"$VENV_PATH/bin/python" manage.py migrate --database=tailor --noinput
+"$VENV_PATH/bin/python" manage.py migrate --database=restaurant --noinput
 
 log "Collecting static files"
 "$VENV_PATH/bin/python" manage.py collectstatic --noinput
