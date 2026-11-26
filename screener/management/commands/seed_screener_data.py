@@ -1,12 +1,34 @@
+import os
 import random
 from datetime import datetime, timedelta
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from screener.models import Company, QuarterlyResult, ProfitLoss, BalanceSheet, CashFlow, ShareholdingPattern, CompanyDocument, HistoricalPrice
 
 class Command(BaseCommand):
     help = 'Seeds the screener database with detailed, premium sample company data.'
 
+    def _ensure_mock_media_files(self):
+        mock_files = {
+            'concalls/mock_transcript.pdf': 'Earnings Conference Call Transcript',
+            'investor_presentations/mock_presentation.pdf': 'Investor Presentation & Business Update',
+            'annual_reports/mock_report.pdf': 'Audited Annual Financial Report'
+        }
+        for rel_path, doc_title in mock_files.items():
+            abs_path = os.path.join(settings.MEDIA_ROOT, rel_path)
+            if not os.path.exists(abs_path) or os.path.getsize(abs_path) == 0:
+                os.makedirs(os.path.dirname(abs_path), exist_ok=True)
+                try:
+                    from screener.guidance_downloader import _generate_sample_pdf_archive
+                    class DummyComp:
+                        name = "Corporate Regulatory Filing"
+                        nse_symbol = "FOLIUX"
+                    _generate_sample_pdf_archive(abs_path, DummyComp(), "FY26", doc_title)
+                except Exception:
+                    pass
+
     def handle(self, *args, **options):
+        self._ensure_mock_media_files()
         self.stdout.write("Deleting existing screener data...")
         # Since we use cascade, deleting companies deletes all related metrics
         Company.objects.all().delete()
@@ -462,21 +484,21 @@ class Command(BaseCommand):
                 company=company,
                 title=f"Annual Report FY 2025-26 - {company.nse_symbol}",
                 category="Annual Reports",
-                url="https://foliux.com/media/annual_reports/mock_report.pdf",
+                url="/media/annual_reports/mock_report.pdf",
                 date=datetime.now().date() - timedelta(days=60)
             )
             CompanyDocument.objects.create(
                 company=company,
                 title=f"Investor Presentation Q1 FY27 - {company.nse_symbol}",
                 category="Investor Presentations",
-                url="https://foliux.com/media/investor_presentations/mock_presentation.pdf",
+                url="/media/investor_presentations/mock_presentation.pdf",
                 date=datetime.now().date() - timedelta(days=15)
             )
             CompanyDocument.objects.create(
                 company=company,
                 title=f"Concall Transcript Q1 FY27 - {company.nse_symbol}",
                 category="Concall Transcripts",
-                url="https://foliux.com/media/concalls/mock_transcript.pdf",
+                url="/media/concalls/mock_transcript.pdf",
                 date=datetime.now().date() - timedelta(days=12)
             )
 

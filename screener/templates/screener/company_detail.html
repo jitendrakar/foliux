@@ -775,22 +775,49 @@
                 <!-- DOCUMENTS TAB -->
                 <div class="tab-pane fade" id="documents-pane" role="tabpanel" aria-labelledby="documents-tab">
                     <div class="card border-0 shadow-sm rounded-4 p-4">
-                        <h5 class="fw-bold mb-4"><i class="fas fa-folder-open me-2 text-primary"></i>Filings & Investor Updates</h5>
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="fw-bold mb-0"><i class="fas fa-folder-open me-2 text-primary"></i>Filings & Investor Updates</h5>
+                            <span class="badge bg-secondary-subtle text-secondary fw-semibold"><i class="fas fa-server me-1"></i> Verified Server Archive</span>
+                        </div>
                         <div class="row">
                             <div class="col-12">
-                                {% for doc in documents %}
-                                <a href="{{ doc.url }}" target="_blank" class="document-link-item">
-                                    <div>
-                                        <div class="document-title"><i class="far fa-file-pdf text-danger me-2"></i>{{ doc.title }}</div>
-                                        <small class="text-muted text-uppercase fw-bold">{{ doc.category }}</small>
+                                {% if management_documents %}
+                                    <h6 class="fw-bold text-muted small text-uppercase mb-3"><i class="fas fa-shield-alt text-success me-1"></i> Audited Historical Filings (5 Financial Years)</h6>
+                                    <div class="row g-2 mb-4">
+                                        {% for md in management_documents %}
+                                        <div class="col-md-6">
+                                            <div class="p-3 border rounded-3 d-flex justify-content-between align-items-center bg-light-subtle">
+                                                <div>
+                                                    <div class="fw-bold text-dark small"><i class="far fa-file-pdf text-danger me-2"></i> {{ md.title }}</div>
+                                                    <div class="extra-small text-muted">{{ md.financial_year }} | {{ md.file_size_bytes }} bytes | Checksum: {{ md.checksum|truncatechars:12 }}</div>
+                                                </div>
+                                                <a href="{% url 'screener:serve_local_document' md.id %}" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill ms-2">
+                                                    Open PDF
+                                                </a>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
                                     </div>
-                                    <div class="text-end">
-                                        <span class="badge bg-primary-subtle text-primary rounded-pill px-3">{{ doc.date|date:"F Y" }}</span>
-                                    </div>
-                                </a>
-                                {% empty %}
-                                <p class="text-muted text-center py-4">No recent documents available.</p>
-                                {% endfor %}
+                                {% endif %}
+
+                                {% if documents %}
+                                    {% if management_documents %}
+                                        <h6 class="fw-bold text-muted small text-uppercase mb-3"><i class="fas fa-file-alt text-primary me-1"></i> General Corporate Releases</h6>
+                                    {% endif %}
+                                    {% for doc in documents %}
+                                    <a href="{{ doc.url }}" target="_blank" class="document-link-item mb-2">
+                                        <div>
+                                            <div class="document-title"><i class="far fa-file-pdf text-danger me-2"></i>{{ doc.title }}</div>
+                                            <small class="text-muted text-uppercase fw-bold">{{ doc.category }}</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-primary-subtle text-primary rounded-pill px-3">{{ doc.date|date:"F Y" }}</span>
+                                        </div>
+                                    </a>
+                                    {% endfor %}
+                                {% elif not management_documents %}
+                                    <p class="text-muted text-center py-4">No recent documents available.</p>
+                                {% endif %}
                             </div>
                         </div>
                     </div>

@@ -94,6 +94,12 @@ rsync -av \
     --exclude='deploy.sh' \
     "$GIT_DIR/" "$LIVE_DIR/"
 
+# Synchronize mock/seed media assets without overwriting existing user uploads
+mkdir -p "$LIVE_DIR/media"
+if [ -d "$GIT_DIR/media" ]; then
+    rsync -av --ignore-existing "$GIT_DIR/media/" "$LIVE_DIR/media/"
+fi
+
 test -f "$LIVE_DIR/manage.py" || fail "manage.py missing from live directory"
 test -x "$VENV_PATH/bin/python" || fail "Python virtual environment missing: $VENV_PATH"
 
