@@ -139,6 +139,36 @@
     color: #f1f5f9 !important;
     border-bottom: 2px solid rgba(255, 255, 255, 0.15) !important;
   }
+
+  /* Prevent Modal Scrollbar Layout Shift & Vibration */
+  html {
+    overflow-y: scroll !important;
+  }
+  body.modal-open {
+    padding-right: 0px !important;
+    overflow-y: auto !important;
+  }
+  .modal-open .navbar,
+  .modal-open .sticky-top,
+  .modal-open .screener-credibility-table thead th,
+  .modal-open .screener-comparisons-table thead th {
+    padding-right: inherit !important;
+  }
+  .modal {
+    padding-right: 0px !important;
+    overflow-y: auto !important;
+  }
+  .btn-show-breakdown {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: transparent !important;
+    cursor: pointer;
+  }
+  .btn-show-breakdown:focus {
+    outline: none !important;
+    box-shadow: none !important;
+  }
 </style>
 {% endblock %}
 
@@ -514,8 +544,8 @@
 </div>
 
   <!-- Single Standalone 100-Point Model Breakdown Modal -->
-  <div class="modal fade" id="scoreBreakdownModal" tabindex="-1" aria-labelledby="modalLabelBreakdown" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+  <div class="modal" id="scoreBreakdownModal" tabindex="-1" aria-labelledby="modalLabelBreakdown" aria-hidden="true" style="background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
       <div class="modal-content rounded-4 border-0 shadow text-start">
         <div class="modal-header border-bottom pb-3">
           <div>
@@ -677,11 +707,17 @@
     document.addEventListener('DOMContentLoaded', function() {
       const modalEl = document.getElementById('scoreBreakdownModal');
       if (!modalEl || typeof bootstrap === 'undefined') return;
-      const modal = new bootstrap.Modal(modalEl);
+      const modal = bootstrap.Modal.getOrCreateInstance(modalEl, {
+        backdrop: true,
+        keyboard: true,
+        focus: false
+      });
 
       document.querySelectorAll('.btn-show-breakdown').forEach(btn => {
         btn.addEventListener('click', function(e) {
           e.preventDefault();
+          e.stopPropagation();
+          if (this.blur) this.blur();
           const d = this.dataset;
           document.getElementById('mb-company-name').textContent = d.company || '';
           document.getElementById('mb-symbol').textContent = d.symbol || '';
