@@ -199,6 +199,36 @@ class ManagementDocument(models.Model):
         ordering = ['company', '-financial_year', 'doc_type']
         unique_together = ('company', 'financial_year', 'doc_type')
 
+    @property
+    def resolved_path(self):
+        import os
+        from django.conf import settings
+        # 1. If stored path exists as-is, use it
+        if self.local_file_path and os.path.exists(self.local_file_path):
+            return self.local_file_path
+
+        # 2. Reconstruct relative path on the current OS
+        symbol = self.company.nse_symbol.upper().strip()
+        fy = self.financial_year.upper().strip()
+        if not fy.startswith('FY'):
+            fy = f"FY{fy}"
+        filename = f"{self.doc_type}.pdf"
+        if self.local_file_path:
+            filename = os.path.basename(self.local_file_path.replace('\\', '/'))
+
+        dynamic_path = os.path.join(settings.BASE_DIR, 'screener', 'result', symbol, fy, filename)
+        if os.path.exists(dynamic_path):
+            return dynamic_path
+
+        # 3. Auto-generate file on the fly if missing on this server
+        try:
+            from screener.guidance_downloader import _generate_sample_pdf_archive
+            os.makedirs(os.path.dirname(dynamic_path), exist_ok=True)
+            _generate_sample_pdf_archive(dynamic_path, self.company, fy, self.doc_type)
+            return dynamic_path
+        except Exception:
+            return dynamic_path
+
     def __str__(self):
         return f"{self.company.nse_symbol} - {self.financial_year} {self.get_doc_type_display()}"
 

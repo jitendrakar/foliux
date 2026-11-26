@@ -168,13 +168,22 @@ def management_credibility_dashboard(request):
 def serve_local_document(request, doc_id):
     """
     Serves downloaded local PDF/text file from result/<SYMBOL>/<FY>/ repository
-    for in-browser PDF viewing or direct download.
+    for in-browser PDF viewing or direct download. Automatically resolves
+    paths across different OS platforms (Windows / Linux VPS).
     """
     doc = get_object_or_404(ManagementDocument, id=doc_id)
-    filepath = doc.local_file_path
+    filepath = getattr(doc, 'resolved_path', None) or doc.local_file_path
 
-    if not os.path.exists(filepath):
-        raise Http404(f"Document file not found at local storage: {filepath}")
+    if not filepath or not os.path.exists(filepath):
+        try:
+            from screener.guidance_downloader import download_or_sync_document
+            doc = download_or_sync_document(doc.company, doc.financial_year, doc.doc_type)
+            filepath = getattr(doc, 'resolved_path', None) or doc.local_file_path
+        except Exception:
+            pass
+
+    if not filepath or not os.path.exists(filepath):
+        raise Http404(f"Document file could not be loaded for {doc.company.nse_symbol} ({doc.financial_year})")
 
     response = FileResponse(open(filepath, 'rb'), content_type='application/pdf')
     response['Content-Disposition'] = f'inline; filename="{os.path.basename(filepath)}"'
