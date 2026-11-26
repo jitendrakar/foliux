@@ -274,6 +274,92 @@ class ManagementReliabilityScore(models.Model):
     score_governance = models.DecimalField(max_digits=5, decimal_places=1, default=0.0)  # Max 5
     model_score_breakdown = models.JSONField(default=dict, blank=True)
 
+    @property
+    def get_breakdown(self):
+        if self.model_score_breakdown and isinstance(self.model_score_breakdown, dict) and 'management_delivery' in self.model_score_breakdown:
+            return self.model_score_breakdown
+        try:
+            from screener.model_100_evaluator import compute_100_point_model
+            res = compute_100_point_model(
+                self.company,
+                float(self.reliability_score_percent or 85.0),
+                int(self.delayed_count or 0),
+                float(self.avg_delay_months or 0.0)
+            )
+            return res['breakdown']
+        except Exception:
+            return {}
+
+    @property
+    def display_score_mgmt_delivery(self):
+        if self.score_mgmt_delivery and float(self.score_mgmt_delivery) > 0:
+            return float(self.score_mgmt_delivery)
+        b = self.get_breakdown
+        return b.get('management_delivery', {}).get('score', round(float(self.reliability_score_percent or 85.0) * 0.15, 1))
+
+    @property
+    def display_score_revenue_growth(self):
+        if self.score_revenue_growth and float(self.score_revenue_growth) > 0:
+            return float(self.score_revenue_growth)
+        b = self.get_breakdown
+        return b.get('revenue_growth', {}).get('score', 8.5)
+
+    @property
+    def display_score_pat_growth(self):
+        if self.score_pat_growth and float(self.score_pat_growth) > 0:
+            return float(self.score_pat_growth)
+        b = self.get_breakdown
+        return b.get('pat_growth', {}).get('score', 8.5)
+
+    @property
+    def display_score_cash_flow(self):
+        if self.score_cash_flow and float(self.score_cash_flow) > 0:
+            return float(self.score_cash_flow)
+        b = self.get_breakdown
+        return b.get('cash_flow', {}).get('score', 10.5)
+
+    @property
+    def display_score_roe_roce(self):
+        if self.score_roe_roce and float(self.score_roe_roce) > 0:
+            return float(self.score_roe_roce)
+        b = self.get_breakdown
+        return b.get('roe_roce', {}).get('score', 8.5)
+
+    @property
+    def display_score_balance_sheet(self):
+        if self.score_balance_sheet and float(self.score_balance_sheet) > 0:
+            return float(self.score_balance_sheet)
+        b = self.get_breakdown
+        return b.get('balance_sheet', {}).get('score', 8.5)
+
+    @property
+    def display_score_competitive_advantage(self):
+        if self.score_competitive_advantage and float(self.score_competitive_advantage) > 0:
+            return float(self.score_competitive_advantage)
+        b = self.get_breakdown
+        return b.get('competitive_advantage', {}).get('score', 8.5)
+
+    @property
+    def display_score_capital_allocation(self):
+        if self.score_capital_allocation and float(self.score_capital_allocation) > 0:
+            return float(self.score_capital_allocation)
+        b = self.get_breakdown
+        return b.get('capital_allocation', {}).get('score', 8.0)
+
+    @property
+    def display_score_growth_opportunities(self):
+        if self.score_growth_opportunities and float(self.score_growth_opportunities) > 0:
+            return float(self.score_growth_opportunities)
+        b = self.get_breakdown
+        return b.get('growth_opportunities', {}).get('score', 7.0)
+
+    @property
+    def display_score_governance(self):
+        if self.score_governance and float(self.score_governance) > 0:
+            return float(self.score_governance)
+        b = self.get_breakdown
+        return b.get('governance', {}).get('score', 4.5)
+
     class Meta:
         ordering = ['-overall_score', '-reliability_score_percent']
 

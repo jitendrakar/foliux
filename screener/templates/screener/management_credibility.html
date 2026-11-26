@@ -401,177 +401,27 @@
             </td>
             <td class="text-end">
               <div class="d-inline-flex align-items-center justify-content-end gap-2">
-                <button type="button" class="btn p-0 border-0" data-bs-toggle="modal" data-bs-target="#scoreBreakdownModal{{ item.company.id }}" title="Click to view 100-Point Fundamental Evaluation Breakdown">
+                <button type="button" class="btn p-0 border-0 btn-show-breakdown"
+                        data-company="{{ item.company.name }}"
+                        data-symbol="{{ item.company.nse_symbol }}"
+                        data-rating="{{ item.ai_credibility_rating }}"
+                        data-total="{{ item.overall_score }}"
+                        data-mgmt="{{ item.display_score_mgmt_delivery|floatformat:1 }}"
+                        data-rev="{{ item.display_score_revenue_growth|floatformat:1 }}"
+                        data-pat="{{ item.display_score_pat_growth|floatformat:1 }}"
+                        data-cf="{{ item.display_score_cash_flow|floatformat:1 }}"
+                        data-roe="{{ item.display_score_roe_roce|floatformat:1 }}"
+                        data-bs="{{ item.display_score_balance_sheet|floatformat:1 }}"
+                        data-moat="{{ item.display_score_competitive_advantage|floatformat:1 }}"
+                        data-cap="{{ item.display_score_capital_allocation|floatformat:1 }}"
+                        data-growth="{{ item.display_score_growth_opportunities|floatformat:1 }}"
+                        data-gov="{{ item.display_score_governance|floatformat:1 }}"
+                        data-url="{% url 'screener:company_detail' item.company.nse_symbol %}"
+                        title="Click to view 100-Point Fundamental Evaluation Breakdown">
                   <div class="score-pill {% if item.overall_score >= 80 %}score-high{% elif item.overall_score >= 60 %}score-moderate{% else %}score-low{% endif %}">
                     {{ item.overall_score }}
                   </div>
                 </button>
-              </div>
-
-              <!-- 100-Point Model Breakdown Modal -->
-              <div class="modal fade" id="scoreBreakdownModal{{ item.company.id }}" tabindex="-1" aria-labelledby="modalLabel{{ item.company.id }}" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered modal-lg">
-                  <div class="modal-content rounded-4 border-0 shadow text-start">
-                    <div class="modal-header border-bottom pb-3">
-                      <div>
-                        <div class="badge bg-primary-subtle text-primary fw-bold mb-1">100-Point Fundamental Evaluation Model</div>
-                        <h5 class="modal-title fw-bold text-dark" id="modalLabel{{ item.company.id }}">
-                          {{ item.company.name }} <span class="badge bg-light text-primary border ms-1">{{ item.company.nse_symbol }}</span>
-                        </h5>
-                      </div>
-                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body p-4">
-                      <div class="d-flex justify-content-between align-items-center bg-light-subtle p-3 rounded-3 mb-4">
-                        <div>
-                          <span class="text-muted small fw-bold text-uppercase d-block">Overall Fundamental Ranking</span>
-                          <span class="fs-4 fw-extrabold text-primary">{{ item.overall_score }} <small class="fs-6 text-muted">/ 100 pts</small></span>
-                        </div>
-                        <div>
-                          {% if item.ai_credibility_rating == 'High' %}
-                            <span class="badge bg-success text-white px-3 py-2 fs-6"><i class="fas fa-shield-check me-1"></i> High Credibility</span>
-                          {% elif item.ai_credibility_rating == 'Moderate' %}
-                            <span class="badge bg-warning text-dark px-3 py-2 fs-6"><i class="fas fa-exclamation-triangle me-1"></i> Moderate Credibility</span>
-                          {% else %}
-                            <span class="badge bg-danger text-white px-3 py-2 fs-6"><i class="fas fa-times-circle me-1"></i> Low Credibility</span>
-                          {% endif %}
-                        </div>
-                      </div>
-
-                      <h6 class="fw-bold mb-3"><i class="fas fa-tasks me-2 text-primary"></i>Fundamental Parameter Breakdown (100 Points Model):</h6>
-                      <div class="table-responsive">
-                        <table class="table table-sm align-middle">
-                          <thead class="table-light">
-                            <tr>
-                              <th>Fundamental Parameter</th>
-                              <th class="text-center" style="width: 110px;">Weight</th>
-                              <th class="text-center" style="width: 110px;">Score Earned</th>
-                              <th style="width: 160px;">Delivery</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr>
-                              <td class="fw-semibold">1. Management integrity and guidance delivery</td>
-                              <td class="text-center fw-bold text-muted">15 pts</td>
-                              <td class="text-center fw-extrabold text-primary">{{ item.score_mgmt_delivery|floatformat:1 }}</td>
-                              <td>
-                                <div class="progress" style="height: 6px;">
-                                  <div class="progress-bar bg-primary" style="width: {% widthratio item.score_mgmt_delivery 15 100 %}%;"></div>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td class="fw-semibold">2. Revenue growth consistency</td>
-                              <td class="text-center fw-bold text-muted">10 pts</td>
-                              <td class="text-center fw-extrabold text-primary">{{ item.score_revenue_growth|floatformat:1 }}</td>
-                              <td>
-                                <div class="progress" style="height: 6px;">
-                                  <div class="progress-bar bg-success" style="width: {% widthratio item.score_revenue_growth 10 100 %}%;"></div>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td class="fw-semibold">3. PAT growth and earnings quality</td>
-                              <td class="text-center fw-bold text-muted">10 pts</td>
-                              <td class="text-center fw-extrabold text-primary">{{ item.score_pat_growth|floatformat:1 }}</td>
-                              <td>
-                                <div class="progress" style="height: 6px;">
-                                  <div class="progress-bar bg-success" style="width: {% widthratio item.score_pat_growth 10 100 %}%;"></div>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td class="fw-semibold">4. Operating cash flow and free cash flow</td>
-                              <td class="text-center fw-bold text-muted">12 pts</td>
-                              <td class="text-center fw-extrabold text-primary">{{ item.score_cash_flow|floatformat:1 }}</td>
-                              <td>
-                                <div class="progress" style="height: 6px;">
-                                  <div class="progress-bar bg-info" style="width: {% widthratio item.score_cash_flow 12 100 %}%;"></div>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td class="fw-semibold">5. Return on equity and return on capital</td>
-                              <td class="text-center fw-bold text-muted">10 pts</td>
-                              <td class="text-center fw-extrabold text-primary">{{ item.score_roe_roce|floatformat:1 }}</td>
-                              <td>
-                                <div class="progress" style="height: 6px;">
-                                  <div class="progress-bar bg-primary" style="width: {% widthratio item.score_roe_roce 10 100 %}%;"></div>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td class="fw-semibold">6. Debt and balance-sheet strength</td>
-                              <td class="text-center fw-bold text-muted">10 pts</td>
-                              <td class="text-center fw-extrabold text-primary">{{ item.score_balance_sheet|floatformat:1 }}</td>
-                              <td>
-                                <div class="progress" style="height: 6px;">
-                                  <div class="progress-bar bg-warning" style="width: {% widthratio item.score_balance_sheet 10 100 %}%;"></div>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td class="fw-semibold">7. Competitive advantage and market position</td>
-                              <td class="text-center fw-bold text-muted">10 pts</td>
-                              <td class="text-center fw-extrabold text-primary">{{ item.score_competitive_advantage|floatformat:1 }}</td>
-                              <td>
-                                <div class="progress" style="height: 6px;">
-                                  <div class="progress-bar bg-secondary" style="width: {% widthratio item.score_competitive_advantage 10 100 %}%;"></div>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td class="fw-semibold">8. Capital allocation and project execution</td>
-                              <td class="text-center fw-bold text-muted">10 pts</td>
-                              <td class="text-center fw-extrabold text-primary">{{ item.score_capital_allocation|floatformat:1 }}</td>
-                              <td>
-                                <div class="progress" style="height: 6px;">
-                                  <div class="progress-bar bg-danger" style="width: {% widthratio item.score_capital_allocation 10 100 %}%;"></div>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td class="fw-semibold">9. Future growth opportunities</td>
-                              <td class="text-center fw-bold text-muted">8 pts</td>
-                              <td class="text-center fw-extrabold text-primary">{{ item.score_growth_opportunities|floatformat:1 }}</td>
-                              <td>
-                                <div class="progress" style="height: 6px;">
-                                  <div class="progress-bar bg-primary" style="width: {% widthratio item.score_growth_opportunities 8 100 %}%;"></div>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td class="fw-semibold">10. Corporate governance and shareholder treatment</td>
-                              <td class="text-center fw-bold text-muted">5 pts</td>
-                              <td class="text-center fw-extrabold text-primary">{{ item.score_governance|floatformat:1 }}</td>
-                              <td>
-                                <div class="progress" style="height: 6px;">
-                                  <div class="progress-bar bg-success" style="width: {% widthratio item.score_governance 5 100 %}%;"></div>
-                                </div>
-                              </td>
-                            </tr>
-                            <tr class="table-primary fw-bold">
-                              <td>Total Ranking Score</td>
-                              <td class="text-center">100 pts</td>
-                              <td class="text-center fs-6 text-primary">{{ item.overall_score }} pts</td>
-                              <td>
-                                <div class="progress" style="height: 8px;">
-                                  <div class="progress-bar bg-primary" style="width: {{ item.overall_score }}%;"></div>
-                                </div>
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-                    <div class="modal-footer border-top">
-                      <a href="{% url 'screener:company_detail' item.company.nse_symbol %}" class="btn btn-outline-primary btn-sm rounded-pill">
-                        <i class="fas fa-chart-line me-1"></i> Full Company Detail
-                      </a>
-                      <button type="button" class="btn btn-secondary btn-sm rounded-pill" data-bs-dismiss="modal">Close</button>
-                    </div>
-                  </div>
-                </div>
               </div>
             </td>
           </tr>
@@ -662,4 +512,224 @@
   </div>
 
 </div>
+
+  <!-- Single Standalone 100-Point Model Breakdown Modal -->
+  <div class="modal fade" id="scoreBreakdownModal" tabindex="-1" aria-labelledby="modalLabelBreakdown" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content rounded-4 border-0 shadow text-start">
+        <div class="modal-header border-bottom pb-3">
+          <div>
+            <div class="badge bg-primary-subtle text-primary fw-bold mb-1">100-Point Fundamental Evaluation Model</div>
+            <h5 class="modal-title fw-bold text-dark" id="modalLabelBreakdown">
+              <span id="mb-company-name">Company Name</span> <span class="badge bg-light text-primary border ms-1" id="mb-symbol">SYMBOL</span>
+            </h5>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body p-4">
+          <div class="d-flex justify-content-between align-items-center bg-light-subtle p-3 rounded-3 mb-4">
+            <div>
+              <span class="text-muted small fw-bold text-uppercase d-block">Overall Fundamental Ranking</span>
+              <span class="fs-4 fw-extrabold text-primary"><span id="mb-total">--</span> <small class="fs-6 text-muted">/ 100 pts</small></span>
+            </div>
+            <div id="mb-rating-badge">
+              <span class="badge bg-success text-white px-3 py-2 fs-6"><i class="fas fa-shield-check me-1"></i> Credibility Rating</span>
+            </div>
+          </div>
+
+          <h6 class="fw-bold mb-3"><i class="fas fa-tasks me-2 text-primary"></i>Fundamental Parameter Breakdown (100 Points Model):</h6>
+          <div class="table-responsive">
+            <table class="table table-sm align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>Fundamental Parameter</th>
+                  <th class="text-center" style="width: 110px;">Weight</th>
+                  <th class="text-center" style="width: 110px;">Score Earned</th>
+                  <th style="width: 160px;">Delivery</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="fw-semibold">1. Management integrity and guidance delivery</td>
+                  <td class="text-center fw-bold text-muted">15 pts</td>
+                  <td class="text-center fw-extrabold text-primary" id="score-mgmt">--</td>
+                  <td>
+                    <div class="progress" style="height: 6px;">
+                      <div class="progress-bar bg-primary" id="bar-mgmt" style="width: 0%;"></div>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="fw-semibold">2. Revenue growth consistency</td>
+                  <td class="text-center fw-bold text-muted">10 pts</td>
+                  <td class="text-center fw-extrabold text-primary" id="score-rev">--</td>
+                  <td>
+                    <div class="progress" style="height: 6px;">
+                      <div class="progress-bar bg-success" id="bar-rev" style="width: 0%;"></div>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="fw-semibold">3. PAT growth and earnings quality</td>
+                  <td class="text-center fw-bold text-muted">10 pts</td>
+                  <td class="text-center fw-extrabold text-primary" id="score-pat">--</td>
+                  <td>
+                    <div class="progress" style="height: 6px;">
+                      <div class="progress-bar bg-warning" id="bar-pat" style="width: 0%;"></div>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="fw-semibold">4. Operating cash flow and free cash flow</td>
+                  <td class="text-center fw-bold text-muted">12 pts</td>
+                  <td class="text-center fw-extrabold text-primary" id="score-cf">--</td>
+                  <td>
+                    <div class="progress" style="height: 6px;">
+                      <div class="progress-bar bg-info" id="bar-cf" style="width: 0%;"></div>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="fw-semibold">5. Return on equity and return on capital</td>
+                  <td class="text-center fw-bold text-muted">10 pts</td>
+                  <td class="text-center fw-extrabold text-primary" id="score-roe">--</td>
+                  <td>
+                    <div class="progress" style="height: 6px;">
+                      <div class="progress-bar bg-primary" id="bar-roe" style="width: 0%;"></div>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="fw-semibold">6. Debt and balance-sheet strength</td>
+                  <td class="text-center fw-bold text-muted">10 pts</td>
+                  <td class="text-center fw-extrabold text-primary" id="score-bs">--</td>
+                  <td>
+                    <div class="progress" style="height: 6px;">
+                      <div class="progress-bar bg-secondary" id="bar-bs" style="width: 0%;"></div>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="fw-semibold">7. Competitive advantage and market position</td>
+                  <td class="text-center fw-bold text-muted">10 pts</td>
+                  <td class="text-center fw-extrabold text-primary" id="score-moat">--</td>
+                  <td>
+                    <div class="progress" style="height: 6px;">
+                      <div class="progress-bar bg-dark" id="bar-moat" style="width: 0%;"></div>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="fw-semibold">8. Capital allocation and project execution</td>
+                  <td class="text-center fw-bold text-muted">10 pts</td>
+                  <td class="text-center fw-extrabold text-primary" id="score-cap">--</td>
+                  <td>
+                    <div class="progress" style="height: 6px;">
+                      <div class="progress-bar bg-danger" id="bar-cap" style="width: 0%;"></div>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="fw-semibold">9. Future growth opportunities</td>
+                  <td class="text-center fw-bold text-muted">8 pts</td>
+                  <td class="text-center fw-extrabold text-primary" id="score-growth">--</td>
+                  <td>
+                    <div class="progress" style="height: 6px;">
+                      <div class="progress-bar bg-primary" id="bar-growth" style="width: 0%;"></div>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="fw-semibold">10. Corporate governance and shareholder treatment</td>
+                  <td class="text-center fw-bold text-muted">5 pts</td>
+                  <td class="text-center fw-extrabold text-primary" id="score-gov">--</td>
+                  <td>
+                    <div class="progress" style="height: 6px;">
+                      <div class="progress-bar bg-success" id="bar-gov" style="width: 0%;"></div>
+                    </div>
+                  </td>
+                </tr>
+                <tr class="table-primary fw-bold">
+                  <td>Total Ranking Score</td>
+                  <td class="text-center">100 pts</td>
+                  <td class="text-center fs-6 text-primary"><span id="score-total">--</span> pts</td>
+                  <td>
+                    <div class="progress" style="height: 8px;">
+                      <div class="progress-bar bg-primary" id="bar-total" style="width: 0%;"></div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer border-top">
+          <a href="#" id="mb-profile-link" class="btn btn-outline-primary btn-sm rounded-pill">
+            <i class="fas fa-chart-line me-1"></i> Full Company Detail
+          </a>
+          <button type="button" class="btn btn-secondary btn-sm rounded-pill" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const modalEl = document.getElementById('scoreBreakdownModal');
+      if (!modalEl || typeof bootstrap === 'undefined') return;
+      const modal = new bootstrap.Modal(modalEl);
+
+      document.querySelectorAll('.btn-show-breakdown').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          const d = this.dataset;
+          document.getElementById('mb-company-name').textContent = d.company || '';
+          document.getElementById('mb-symbol').textContent = d.symbol || '';
+          document.getElementById('mb-total').textContent = d.total || '0';
+          document.getElementById('score-total').textContent = d.total || '0';
+          document.getElementById('bar-total').style.width = Math.min(100, parseFloat(d.total) || 0) + '%';
+          document.getElementById('mb-profile-link').href = d.url || '#';
+
+          // Credibility badge
+          const ratingBadge = document.getElementById('mb-rating-badge');
+          if (ratingBadge) {
+            const r = d.rating || 'Moderate';
+            if (r === 'High') {
+              ratingBadge.innerHTML = '<span class="badge bg-success text-white px-3 py-2 fs-6"><i class="fas fa-shield-check me-1"></i> High Credibility</span>';
+            } else if (r === 'Moderate') {
+              ratingBadge.innerHTML = '<span class="badge bg-warning text-dark px-3 py-2 fs-6"><i class="fas fa-exclamation-triangle me-1"></i> Moderate Credibility</span>';
+            } else {
+              ratingBadge.innerHTML = '<span class="badge bg-danger text-white px-3 py-2 fs-6"><i class="fas fa-times-circle me-1"></i> Low Credibility</span>';
+            }
+          }
+
+          // Update parameters & progress bars
+          const params = [
+            { id: 'mgmt', weight: 15 },
+            { id: 'rev', weight: 10 },
+            { id: 'pat', weight: 10 },
+            { id: 'cf', weight: 12 },
+            { id: 'roe', weight: 10 },
+            { id: 'bs', weight: 10 },
+            { id: 'moat', weight: 10 },
+            { id: 'cap', weight: 10 },
+            { id: 'growth', weight: 8 },
+            { id: 'gov', weight: 5 }
+          ];
+
+          params.forEach(p => {
+            const val = parseFloat(d[p.id]) || 0.0;
+            const pct = Math.min(100, Math.round((val / p.weight) * 100));
+            const elScore = document.getElementById('score-' + p.id);
+            const elBar = document.getElementById('bar-' + p.id);
+            if (elScore) elScore.textContent = val.toFixed(1);
+            if (elBar) elBar.style.width = pct + '%';
+          });
+
+          modal.show();
+        });
+      });
+    });
+  </script>
+
 {% endblock %}
