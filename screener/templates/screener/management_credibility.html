@@ -87,57 +87,155 @@
     color: #94a3b8;
   }
 
-  /* Sticky Frozen Table Headers */
-  .screener-results-card,
-  .screener-results-card .screener-table-responsive {
-    overflow: visible !important;
-  }
-
+  /* Sticky Frozen Table Headers - Responsive System */
   .screener-credibility-table,
   .screener-comparisons-table {
     border-collapse: separate;
     border-spacing: 0;
+    width: 100%;
   }
 
-  .screener-credibility-table thead.sticky-thead-light th {
-    position: sticky;
-    top: 0;
-    z-index: 1020;
-    background-color: #f1f5f9 !important;
-    color: #1e293b !important;
-    box-shadow: 0 3px 6px -1px rgba(0, 0, 0, 0.1);
-    border-bottom: 2px solid #cbd5e1 !important;
-    vertical-align: middle;
-    white-space: nowrap;
-    padding-top: 0.85rem;
-    padding-bottom: 0.85rem;
+  /* Desktop Sticky Headers (Screen >= 992px) */
+  @media (min-width: 992px) {
+    .screener-results-card,
+    .screener-results-card .screener-table-responsive {
+      overflow: visible !important;
+    }
+
+    .screener-credibility-table thead.sticky-thead-light th {
+      position: sticky;
+      top: 0;
+      z-index: 1020;
+      background-color: #f1f5f9 !important;
+      color: #1e293b !important;
+      box-shadow: 0 3px 6px -1px rgba(0, 0, 0, 0.1);
+      border-bottom: 2px solid #cbd5e1 !important;
+      vertical-align: middle;
+      white-space: nowrap;
+      padding-top: 0.85rem;
+      padding-bottom: 0.85rem;
+    }
+
+    html[data-theme="dark"] .screener-credibility-table thead.sticky-thead-light th {
+      background-color: #0f172a !important;
+      color: #f1f5f9 !important;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.15) !important;
+      box-shadow: 0 3px 6px -1px rgba(0, 0, 0, 0.4);
+    }
+
+    .screener-comparisons-table thead.sticky-thead-dark th {
+      position: sticky;
+      top: 0;
+      z-index: 1020;
+      background-color: #1e293b !important;
+      color: #f8fafc !important;
+      box-shadow: 0 3px 6px -1px rgba(0, 0, 0, 0.25);
+      border-bottom: 2px solid rgba(255, 255, 255, 0.2) !important;
+      vertical-align: middle;
+      white-space: nowrap;
+      padding-top: 0.85rem;
+      padding-bottom: 0.85rem;
+    }
+
+    html[data-theme="dark"] .screener-comparisons-table thead.sticky-thead-dark th {
+      background-color: #0f172a !important;
+      color: #f1f5f9 !important;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.15) !important;
+    }
   }
 
-  html[data-theme="dark"] .screener-credibility-table thead.sticky-thead-light th {
-    background-color: #0f172a !important;
-    color: #f1f5f9 !important;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.15) !important;
-    box-shadow: 0 3px 6px -1px rgba(0, 0, 0, 0.4);
-  }
+  /* Mobile & Tablet Sticky Headers & Touch Layout (Screen < 992px) */
+  @media (max-width: 991px) {
+    .screener-results-card {
+      padding: 0.85rem !important;
+      overflow: hidden !important;
+    }
 
-  .screener-comparisons-table thead.sticky-thead-dark th {
-    position: sticky;
-    top: 0;
-    z-index: 1020;
-    background-color: #1e293b !important;
-    color: #f8fafc !important;
-    box-shadow: 0 3px 6px -1px rgba(0, 0, 0, 0.25);
-    border-bottom: 2px solid rgba(255, 255, 255, 0.2) !important;
-    vertical-align: middle;
-    white-space: nowrap;
-    padding-top: 0.85rem;
-    padding-bottom: 0.85rem;
-  }
+    .screener-results-card .screener-table-responsive {
+      max-height: 70vh !important;
+      overflow-x: auto !important;
+      overflow-y: auto !important;
+      -webkit-overflow-scrolling: touch;
+      border-radius: 10px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      position: relative;
+    }
 
-  html[data-theme="dark"] .screener-comparisons-table thead.sticky-thead-dark th {
-    background-color: #0f172a !important;
-    color: #f1f5f9 !important;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.15) !important;
+    .screener-credibility-table thead.sticky-thead-light th,
+    .screener-comparisons-table thead.sticky-thead-dark th {
+      position: sticky !important;
+      top: 0 !important;
+      z-index: 1025 !important;
+      box-shadow: 0 3px 6px -1px rgba(0, 0, 0, 0.15) !important;
+      white-space: nowrap;
+    }
+
+    .screener-credibility-table thead.sticky-thead-light th {
+      background-color: #f1f5f9 !important;
+      color: #1e293b !important;
+      border-bottom: 2px solid #cbd5e1 !important;
+    }
+
+    html[data-theme="dark"] .screener-credibility-table thead.sticky-thead-light th {
+      background-color: #0f172a !important;
+      color: #f1f5f9 !important;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.15) !important;
+    }
+
+    .screener-comparisons-table thead.sticky-thead-dark th {
+      background-color: #1e293b !important;
+      color: #f8fafc !important;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.2) !important;
+    }
+
+    html[data-theme="dark"] .screener-comparisons-table thead.sticky-thead-dark th {
+      background-color: #0f172a !important;
+      color: #f1f5f9 !important;
+    }
+
+    /* Freeze the first column (Company Name) on mobile for easy navigation when scrolled right */
+    .screener-credibility-table th:first-child,
+    .screener-credibility-table td:first-child {
+      position: sticky !important;
+      left: 0 !important;
+      z-index: 1020 !important;
+      background-color: #ffffff !important;
+      box-shadow: 3px 0 6px -2px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .screener-credibility-table thead th:first-child {
+      z-index: 1030 !important;
+      background-color: #f1f5f9 !important;
+    }
+
+    html[data-theme="dark"] .screener-credibility-table th:first-child,
+    html[data-theme="dark"] .screener-credibility-table td:first-child {
+      background-color: #1e293b !important;
+      box-shadow: 3px 0 6px -2px rgba(0, 0, 0, 0.35) !important;
+    }
+
+    html[data-theme="dark"] .screener-credibility-table thead th:first-child {
+      background-color: #0f172a !important;
+    }
+
+    /* Mobile modal responsiveness */
+    #scoreBreakdownModal .modal-dialog {
+      margin: 0.5rem auto !important;
+      max-width: calc(100vw - 1rem) !important;
+    }
+
+    #scoreBreakdownModal .modal-body {
+      padding: 1rem !important;
+    }
+
+    #scoreBreakdownModal .table {
+      font-size: 0.85rem !important;
+    }
+
+    #scoreBreakdownModal .table th,
+    #scoreBreakdownModal .table td {
+      padding: 0.35rem 0.25rem !important;
+    }
   }
 
   /* Prevent Modal Scrollbar Layout Shift & Vibration */
@@ -146,17 +244,10 @@
   }
   body.modal-open {
     padding-right: 0px !important;
-    overflow-y: auto !important;
   }
   .modal-open .navbar,
-  .modal-open .sticky-top,
-  .modal-open .screener-credibility-table thead th,
-  .modal-open .screener-comparisons-table thead th {
+  .modal-open .sticky-top {
     padding-right: inherit !important;
-  }
-  .modal {
-    padding-right: 0px !important;
-    overflow-y: auto !important;
   }
   .btn-show-breakdown {
     outline: none !important;
@@ -164,8 +255,10 @@
     border: none !important;
     background: transparent !important;
     cursor: pointer;
+    touch-action: manipulation;
   }
-  .btn-show-breakdown:focus {
+  .btn-show-breakdown:focus,
+  .btn-show-breakdown:active {
     outline: none !important;
     box-shadow: none !important;
   }
@@ -431,7 +524,7 @@
             </td>
             <td class="text-end">
               <div class="d-inline-flex align-items-center justify-content-end gap-2">
-                <button type="button" class="btn p-0 border-0 btn-show-breakdown"
+                <button type="button" class="btn p-0 border-0 btn-show-breakdown" data-bs-toggle="modal" data-bs-target="#scoreBreakdownModal"
                         data-company="{{ item.company.name }}"
                         data-symbol="{{ item.company.nse_symbol }}"
                         data-rating="{{ item.ai_credibility_rating }}"
@@ -544,7 +637,7 @@
 </div>
 
   <!-- Single Standalone 100-Point Model Breakdown Modal -->
-  <div class="modal" id="scoreBreakdownModal" tabindex="-1" aria-labelledby="modalLabelBreakdown" aria-hidden="true" style="background: rgba(0,0,0,0.5);">
+  <div class="modal" id="scoreBreakdownModal" tabindex="-1" aria-labelledby="modalLabelBreakdown" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable modal-lg">
       <div class="modal-content rounded-4 border-0 shadow text-start">
         <div class="modal-header border-bottom pb-3">
@@ -704,68 +797,86 @@
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    function updateScoreModal(d) {
+      if (!d) return;
+      const compEl = document.getElementById('mb-company-name');
+      if (compEl) compEl.textContent = d.company || '';
+      const symEl = document.getElementById('mb-symbol');
+      if (symEl) symEl.textContent = d.symbol || '';
+      const totEl = document.getElementById('mb-total');
+      if (totEl) totEl.textContent = d.total || '0';
+      const scoreTot = document.getElementById('score-total');
+      if (scoreTot) scoreTot.textContent = d.total || '0';
+      const barTot = document.getElementById('bar-total');
+      if (barTot) barTot.style.width = Math.min(100, parseFloat(d.total) || 0) + '%';
+      const linkEl = document.getElementById('mb-profile-link');
+      if (linkEl) linkEl.href = d.url || '#';
+
+      // Credibility badge
+      const ratingBadge = document.getElementById('mb-rating-badge');
+      if (ratingBadge) {
+        const r = d.rating || 'Moderate';
+        if (r === 'High') {
+          ratingBadge.innerHTML = '<span class="badge bg-success text-white px-3 py-2 fs-6"><i class="fas fa-shield-check me-1"></i> High Credibility</span>';
+        } else if (r === 'Moderate') {
+          ratingBadge.innerHTML = '<span class="badge bg-warning text-dark px-3 py-2 fs-6"><i class="fas fa-exclamation-triangle me-1"></i> Moderate Credibility</span>';
+        } else {
+          ratingBadge.innerHTML = '<span class="badge bg-danger text-white px-3 py-2 fs-6"><i class="fas fa-times-circle me-1"></i> Low Credibility</span>';
+        }
+      }
+
+      // Update parameters & progress bars
+      const params = [
+        { id: 'mgmt', weight: 15 },
+        { id: 'rev', weight: 10 },
+        { id: 'pat', weight: 10 },
+        { id: 'cf', weight: 12 },
+        { id: 'roe', weight: 10 },
+        { id: 'bs', weight: 10 },
+        { id: 'moat', weight: 10 },
+        { id: 'cap', weight: 10 },
+        { id: 'growth', weight: 8 },
+        { id: 'gov', weight: 5 }
+      ];
+
+      params.forEach(p => {
+        const val = parseFloat(d[p.id]) || 0.0;
+        const pct = Math.min(100, Math.round((val / p.weight) * 100));
+        const elScore = document.getElementById('score-' + p.id);
+        const elBar = document.getElementById('bar-' + p.id);
+        if (elScore) elScore.textContent = val.toFixed(1);
+        if (elBar) elBar.style.width = pct + '%';
+      });
+    }
+
+    // Event delegation on document: handles clicks/taps on any device seamlessly
+    document.addEventListener('click', function(e) {
+      const btn = e.target.closest('.btn-show-breakdown');
+      if (!btn) return;
+      
+      updateScoreModal(btn.dataset);
+
       const modalEl = document.getElementById('scoreBreakdownModal');
-      if (!modalEl || typeof bootstrap === 'undefined') return;
-      const modal = bootstrap.Modal.getOrCreateInstance(modalEl, {
-        backdrop: true,
-        keyboard: true,
-        focus: false
-      });
-
-      document.querySelectorAll('.btn-show-breakdown').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-          e.preventDefault();
-          e.stopPropagation();
-          if (this.blur) this.blur();
-          const d = this.dataset;
-          document.getElementById('mb-company-name').textContent = d.company || '';
-          document.getElementById('mb-symbol').textContent = d.symbol || '';
-          document.getElementById('mb-total').textContent = d.total || '0';
-          document.getElementById('score-total').textContent = d.total || '0';
-          document.getElementById('bar-total').style.width = Math.min(100, parseFloat(d.total) || 0) + '%';
-          document.getElementById('mb-profile-link').href = d.url || '#';
-
-          // Credibility badge
-          const ratingBadge = document.getElementById('mb-rating-badge');
-          if (ratingBadge) {
-            const r = d.rating || 'Moderate';
-            if (r === 'High') {
-              ratingBadge.innerHTML = '<span class="badge bg-success text-white px-3 py-2 fs-6"><i class="fas fa-shield-check me-1"></i> High Credibility</span>';
-            } else if (r === 'Moderate') {
-              ratingBadge.innerHTML = '<span class="badge bg-warning text-dark px-3 py-2 fs-6"><i class="fas fa-exclamation-triangle me-1"></i> Moderate Credibility</span>';
-            } else {
-              ratingBadge.innerHTML = '<span class="badge bg-danger text-white px-3 py-2 fs-6"><i class="fas fa-times-circle me-1"></i> Low Credibility</span>';
-            }
-          }
-
-          // Update parameters & progress bars
-          const params = [
-            { id: 'mgmt', weight: 15 },
-            { id: 'rev', weight: 10 },
-            { id: 'pat', weight: 10 },
-            { id: 'cf', weight: 12 },
-            { id: 'roe', weight: 10 },
-            { id: 'bs', weight: 10 },
-            { id: 'moat', weight: 10 },
-            { id: 'cap', weight: 10 },
-            { id: 'growth', weight: 8 },
-            { id: 'gov', weight: 5 }
-          ];
-
-          params.forEach(p => {
-            const val = parseFloat(d[p.id]) || 0.0;
-            const pct = Math.min(100, Math.round((val / p.weight) * 100));
-            const elScore = document.getElementById('score-' + p.id);
-            const elBar = document.getElementById('bar-' + p.id);
-            if (elScore) elScore.textContent = val.toFixed(1);
-            if (elBar) elBar.style.width = pct + '%';
-          });
-
-          modal.show();
+      if (modalEl && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl, {
+          backdrop: true,
+          keyboard: true,
+          focus: false
         });
-      });
+        modal.show();
+      }
     });
+
+    // Also populate if opened via Bootstrap native data-bs-toggle
+    const scoreModalEl = document.getElementById('scoreBreakdownModal');
+    if (scoreModalEl) {
+      scoreModalEl.addEventListener('show.bs.modal', function(event) {
+        const btn = event.relatedTarget || (event.detail && event.detail.relatedTarget);
+        if (btn && btn.dataset) {
+          updateScoreModal(btn.dataset);
+        }
+      });
+    }
   </script>
 
 {% endblock %}
