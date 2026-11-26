@@ -89,7 +89,17 @@ def update_company_reliability_score(company: Company) -> ManagementReliabilityS
     else:
         credibility_rating = 'Low'
 
-    overall_score_int = int(round(reliability_pct))
+    from screener.model_100_evaluator import compute_100_point_model
+    model_res = compute_100_point_model(company, reliability_pct, delayed_count, avg_delay)
+    final_score_int = model_res['overall_score_int']
+
+    # Determine Rating based on 100-Point Model
+    if final_score_int >= 80:
+        credibility_rating = 'High'
+    elif final_score_int >= 60:
+        credibility_rating = 'Moderate'
+    else:
+        credibility_rating = 'Low'
 
     reliability_obj, _ = ManagementReliabilityScore.objects.update_or_create(
         company=company,
@@ -103,7 +113,18 @@ def update_company_reliability_score(company: Company) -> ManagementReliabilityS
             'reliability_score_percent': reliability_pct,
             'avg_delay_months': avg_delay,
             'ai_credibility_rating': credibility_rating,
-            'overall_score': overall_score_int,
+            'overall_score': final_score_int,
+            'score_mgmt_delivery': model_res['score_mgmt_delivery'],
+            'score_revenue_growth': model_res['score_revenue_growth'],
+            'score_pat_growth': model_res['score_pat_growth'],
+            'score_cash_flow': model_res['score_cash_flow'],
+            'score_roe_roce': model_res['score_roe_roce'],
+            'score_balance_sheet': model_res['score_balance_sheet'],
+            'score_competitive_advantage': model_res['score_competitive_advantage'],
+            'score_capital_allocation': model_res['score_capital_allocation'],
+            'score_growth_opportunities': model_res['score_growth_opportunities'],
+            'score_governance': model_res['score_governance'],
+            'model_score_breakdown': model_res['breakdown'],
         }
     )
     return reliability_obj

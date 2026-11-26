@@ -261,6 +261,19 @@ class ManagementReliabilityScore(models.Model):
     overall_score = models.IntegerField(default=0, db_index=True)  # 0 to 100
     last_evaluated = models.DateTimeField(auto_now=True)
 
+    # 100-Point Fundamental Evaluation Model Breakdown
+    score_mgmt_delivery = models.DecimalField(max_digits=5, decimal_places=1, default=0.0)  # Max 15
+    score_revenue_growth = models.DecimalField(max_digits=5, decimal_places=1, default=0.0)  # Max 10
+    score_pat_growth = models.DecimalField(max_digits=5, decimal_places=1, default=0.0)  # Max 10
+    score_cash_flow = models.DecimalField(max_digits=5, decimal_places=1, default=0.0)  # Max 12
+    score_roe_roce = models.DecimalField(max_digits=5, decimal_places=1, default=0.0)  # Max 10
+    score_balance_sheet = models.DecimalField(max_digits=5, decimal_places=1, default=0.0)  # Max 10
+    score_competitive_advantage = models.DecimalField(max_digits=5, decimal_places=1, default=0.0)  # Max 10
+    score_capital_allocation = models.DecimalField(max_digits=5, decimal_places=1, default=0.0)  # Max 10
+    score_growth_opportunities = models.DecimalField(max_digits=5, decimal_places=1, default=0.0)  # Max 8
+    score_governance = models.DecimalField(max_digits=5, decimal_places=1, default=0.0)  # Max 5
+    model_score_breakdown = models.JSONField(default=dict, blank=True)
+
     class Meta:
         ordering = ['-overall_score', '-reliability_score_percent']
 

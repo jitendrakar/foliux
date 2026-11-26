@@ -212,6 +212,95 @@
     </div>
   </div>
 
+  <!-- 100-Point Fundamental Evaluation Model Framework Card -->
+  <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+      <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <span class="badge bg-primary text-white fw-bold px-2 py-1 rounded-pill">
+            <i class="fas fa-balance-scale me-1"></i> Ranking Framework
+          </span>
+          <h4 class="fw-extrabold mb-0">Fundamental Parameters: 100-Point Evaluation Model</h4>
+        </div>
+        <p class="text-muted small mb-0">The comprehensive multi-factor framework determining final company rankings after completing historical verification.</p>
+      </div>
+      <button class="btn btn-sm btn-outline-primary rounded-pill fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#frameworkCollapse" aria-expanded="true">
+        <i class="fas fa-sliders-h me-1"></i> View Weights
+      </button>
+    </div>
+
+    <div class="collapse show" id="frameworkCollapse">
+      <div class="row g-2 pt-2">
+        <div class="col-md-6 col-lg-3">
+          <div class="p-2 border rounded-3 bg-light-subtle d-flex justify-content-between align-items-center">
+            <span class="small fw-semibold text-dark"><i class="fas fa-shield-alt text-primary me-1"></i> Management integrity & guidance delivery</span>
+            <span class="badge bg-primary rounded-pill fw-bold">15 pts</span>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="p-2 border rounded-3 bg-light-subtle d-flex justify-content-between align-items-center">
+            <span class="small fw-semibold text-dark"><i class="fas fa-chart-line text-success me-1"></i> Revenue growth consistency</span>
+            <span class="badge bg-success rounded-pill fw-bold">10 pts</span>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="p-2 border rounded-3 bg-light-subtle d-flex justify-content-between align-items-center">
+            <span class="small fw-semibold text-dark"><i class="fas fa-coins text-warning me-1"></i> PAT growth & earnings quality</span>
+            <span class="badge bg-warning text-dark rounded-pill fw-bold">10 pts</span>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="p-2 border rounded-3 bg-light-subtle d-flex justify-content-between align-items-center">
+            <span class="small fw-semibold text-dark"><i class="fas fa-money-bill-wave text-info me-1"></i> Operating cash flow & free cash flow</span>
+            <span class="badge bg-info rounded-pill fw-bold">12 pts</span>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="p-2 border rounded-3 bg-light-subtle d-flex justify-content-between align-items-center">
+            <span class="small fw-semibold text-dark"><i class="fas fa-percentage text-primary me-1"></i> Return on equity & return on capital</span>
+            <span class="badge bg-primary rounded-pill fw-bold">10 pts</span>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="p-2 border rounded-3 bg-light-subtle d-flex justify-content-between align-items-center">
+            <span class="small fw-semibold text-dark"><i class="fas fa-landmark text-secondary me-1"></i> Debt & balance-sheet strength</span>
+            <span class="badge bg-secondary rounded-pill fw-bold">10 pts</span>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="p-2 border rounded-3 bg-light-subtle d-flex justify-content-between align-items-center">
+            <span class="small fw-semibold text-dark"><i class="fas fa-chess-king text-dark me-1"></i> Competitive advantage & market position</span>
+            <span class="badge bg-dark rounded-pill fw-bold">10 pts</span>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="p-2 border rounded-3 bg-light-subtle d-flex justify-content-between align-items-center">
+            <span class="small fw-semibold text-dark"><i class="fas fa-cogs text-danger me-1"></i> Capital allocation & project execution</span>
+            <span class="badge bg-danger rounded-pill fw-bold">10 pts</span>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="p-2 border rounded-3 bg-light-subtle d-flex justify-content-between align-items-center">
+            <span class="small fw-semibold text-dark"><i class="fas fa-rocket text-primary me-1"></i> Future growth opportunities</span>
+            <span class="badge bg-primary rounded-pill fw-bold">8 pts</span>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+          <div class="p-2 border rounded-3 bg-light-subtle d-flex justify-content-between align-items-center">
+            <span class="small fw-semibold text-dark"><i class="fas fa-hand-holding-heart text-success me-1"></i> Corporate governance & shareholder treatment</span>
+            <span class="badge bg-success rounded-pill fw-bold">5 pts</span>
+          </div>
+        </div>
+        <div class="col-md-12 col-lg-6">
+          <div class="p-2 border rounded-3 bg-primary text-white d-flex justify-content-between align-items-center">
+            <span class="small fw-bold"><i class="fas fa-award me-1"></i> Total Ranking Benchmark</span>
+            <span class="badge bg-white text-primary rounded-pill fw-extrabold fs-7">100 Points Model Total</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Search & Filter Controls -->
   <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
     <form method="get" class="row g-3">
@@ -311,9 +400,177 @@
               {% endif %}
             </td>
             <td class="text-end">
-              <div class="d-inline-flex align-items-center gap-2">
-                <div class="score-pill {% if item.overall_score >= 80 %}score-high{% elif item.overall_score >= 60 %}score-moderate{% else %}score-low{% endif %}">
-                  {{ item.overall_score }}
+              <div class="d-inline-flex align-items-center justify-content-end gap-2">
+                <button type="button" class="btn p-0 border-0" data-bs-toggle="modal" data-bs-target="#scoreBreakdownModal{{ item.company.id }}" title="Click to view 100-Point Fundamental Evaluation Breakdown">
+                  <div class="score-pill {% if item.overall_score >= 80 %}score-high{% elif item.overall_score >= 60 %}score-moderate{% else %}score-low{% endif %}">
+                    {{ item.overall_score }}
+                  </div>
+                </button>
+              </div>
+
+              <!-- 100-Point Model Breakdown Modal -->
+              <div class="modal fade" id="scoreBreakdownModal{{ item.company.id }}" tabindex="-1" aria-labelledby="modalLabel{{ item.company.id }}" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                  <div class="modal-content rounded-4 border-0 shadow text-start">
+                    <div class="modal-header border-bottom pb-3">
+                      <div>
+                        <div class="badge bg-primary-subtle text-primary fw-bold mb-1">100-Point Fundamental Evaluation Model</div>
+                        <h5 class="modal-title fw-bold text-dark" id="modalLabel{{ item.company.id }}">
+                          {{ item.company.name }} <span class="badge bg-light text-primary border ms-1">{{ item.company.nse_symbol }}</span>
+                        </h5>
+                      </div>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                      <div class="d-flex justify-content-between align-items-center bg-light-subtle p-3 rounded-3 mb-4">
+                        <div>
+                          <span class="text-muted small fw-bold text-uppercase d-block">Overall Fundamental Ranking</span>
+                          <span class="fs-4 fw-extrabold text-primary">{{ item.overall_score }} <small class="fs-6 text-muted">/ 100 pts</small></span>
+                        </div>
+                        <div>
+                          {% if item.ai_credibility_rating == 'High' %}
+                            <span class="badge bg-success text-white px-3 py-2 fs-6"><i class="fas fa-shield-check me-1"></i> High Credibility</span>
+                          {% elif item.ai_credibility_rating == 'Moderate' %}
+                            <span class="badge bg-warning text-dark px-3 py-2 fs-6"><i class="fas fa-exclamation-triangle me-1"></i> Moderate Credibility</span>
+                          {% else %}
+                            <span class="badge bg-danger text-white px-3 py-2 fs-6"><i class="fas fa-times-circle me-1"></i> Low Credibility</span>
+                          {% endif %}
+                        </div>
+                      </div>
+
+                      <h6 class="fw-bold mb-3"><i class="fas fa-tasks me-2 text-primary"></i>Fundamental Parameter Breakdown (100 Points Model):</h6>
+                      <div class="table-responsive">
+                        <table class="table table-sm align-middle">
+                          <thead class="table-light">
+                            <tr>
+                              <th>Fundamental Parameter</th>
+                              <th class="text-center" style="width: 110px;">Weight</th>
+                              <th class="text-center" style="width: 110px;">Score Earned</th>
+                              <th style="width: 160px;">Delivery</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td class="fw-semibold">1. Management integrity and guidance delivery</td>
+                              <td class="text-center fw-bold text-muted">15 pts</td>
+                              <td class="text-center fw-extrabold text-primary">{{ item.score_mgmt_delivery|floatformat:1 }}</td>
+                              <td>
+                                <div class="progress" style="height: 6px;">
+                                  <div class="progress-bar bg-primary" style="width: {% widthratio item.score_mgmt_delivery 15 100 %}%;"></div>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td class="fw-semibold">2. Revenue growth consistency</td>
+                              <td class="text-center fw-bold text-muted">10 pts</td>
+                              <td class="text-center fw-extrabold text-primary">{{ item.score_revenue_growth|floatformat:1 }}</td>
+                              <td>
+                                <div class="progress" style="height: 6px;">
+                                  <div class="progress-bar bg-success" style="width: {% widthratio item.score_revenue_growth 10 100 %}%;"></div>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td class="fw-semibold">3. PAT growth and earnings quality</td>
+                              <td class="text-center fw-bold text-muted">10 pts</td>
+                              <td class="text-center fw-extrabold text-primary">{{ item.score_pat_growth|floatformat:1 }}</td>
+                              <td>
+                                <div class="progress" style="height: 6px;">
+                                  <div class="progress-bar bg-success" style="width: {% widthratio item.score_pat_growth 10 100 %}%;"></div>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td class="fw-semibold">4. Operating cash flow and free cash flow</td>
+                              <td class="text-center fw-bold text-muted">12 pts</td>
+                              <td class="text-center fw-extrabold text-primary">{{ item.score_cash_flow|floatformat:1 }}</td>
+                              <td>
+                                <div class="progress" style="height: 6px;">
+                                  <div class="progress-bar bg-info" style="width: {% widthratio item.score_cash_flow 12 100 %}%;"></div>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td class="fw-semibold">5. Return on equity and return on capital</td>
+                              <td class="text-center fw-bold text-muted">10 pts</td>
+                              <td class="text-center fw-extrabold text-primary">{{ item.score_roe_roce|floatformat:1 }}</td>
+                              <td>
+                                <div class="progress" style="height: 6px;">
+                                  <div class="progress-bar bg-primary" style="width: {% widthratio item.score_roe_roce 10 100 %}%;"></div>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td class="fw-semibold">6. Debt and balance-sheet strength</td>
+                              <td class="text-center fw-bold text-muted">10 pts</td>
+                              <td class="text-center fw-extrabold text-primary">{{ item.score_balance_sheet|floatformat:1 }}</td>
+                              <td>
+                                <div class="progress" style="height: 6px;">
+                                  <div class="progress-bar bg-warning" style="width: {% widthratio item.score_balance_sheet 10 100 %}%;"></div>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td class="fw-semibold">7. Competitive advantage and market position</td>
+                              <td class="text-center fw-bold text-muted">10 pts</td>
+                              <td class="text-center fw-extrabold text-primary">{{ item.score_competitive_advantage|floatformat:1 }}</td>
+                              <td>
+                                <div class="progress" style="height: 6px;">
+                                  <div class="progress-bar bg-secondary" style="width: {% widthratio item.score_competitive_advantage 10 100 %}%;"></div>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td class="fw-semibold">8. Capital allocation and project execution</td>
+                              <td class="text-center fw-bold text-muted">10 pts</td>
+                              <td class="text-center fw-extrabold text-primary">{{ item.score_capital_allocation|floatformat:1 }}</td>
+                              <td>
+                                <div class="progress" style="height: 6px;">
+                                  <div class="progress-bar bg-danger" style="width: {% widthratio item.score_capital_allocation 10 100 %}%;"></div>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td class="fw-semibold">9. Future growth opportunities</td>
+                              <td class="text-center fw-bold text-muted">8 pts</td>
+                              <td class="text-center fw-extrabold text-primary">{{ item.score_growth_opportunities|floatformat:1 }}</td>
+                              <td>
+                                <div class="progress" style="height: 6px;">
+                                  <div class="progress-bar bg-primary" style="width: {% widthratio item.score_growth_opportunities 8 100 %}%;"></div>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td class="fw-semibold">10. Corporate governance and shareholder treatment</td>
+                              <td class="text-center fw-bold text-muted">5 pts</td>
+                              <td class="text-center fw-extrabold text-primary">{{ item.score_governance|floatformat:1 }}</td>
+                              <td>
+                                <div class="progress" style="height: 6px;">
+                                  <div class="progress-bar bg-success" style="width: {% widthratio item.score_governance 5 100 %}%;"></div>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr class="table-primary fw-bold">
+                              <td>Total Ranking Score</td>
+                              <td class="text-center">100 pts</td>
+                              <td class="text-center fs-6 text-primary">{{ item.overall_score }} pts</td>
+                              <td>
+                                <div class="progress" style="height: 8px;">
+                                  <div class="progress-bar bg-primary" style="width: {{ item.overall_score }}%;"></div>
+                                </div>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                    <div class="modal-footer border-top">
+                      <a href="{% url 'screener:company_detail' item.company.nse_symbol %}" class="btn btn-outline-primary btn-sm rounded-pill">
+                        <i class="fas fa-chart-line me-1"></i> Full Company Detail
+                      </a>
+                      <button type="button" class="btn btn-secondary btn-sm rounded-pill" data-bs-dismiss="modal">Close</button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </td>
