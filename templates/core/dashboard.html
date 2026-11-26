@@ -457,7 +457,7 @@
                                 <td class="text-center">
                                     <span
                                         class="badge px-3 py-2 rounded-pill {% if item.action == 'SELL' %}bg-danger-subtle text-danger border border-danger-subtle{% elif item.action == 'BUY' %}bg-success-subtle text-success border border-success-subtle{% elif item.action == 'REDUCE' %}bg-warning-subtle text-warning border border-warning-subtle{% else %}bg-light text-dark border{% endif %}"
-                                        title="{% if item.action == 'BUY' %}Profit, P/E, and 52-week high gap are favorable, invest up to target capital.{% elif item.action == 'REDUCE' %}Investment high; reduce to target capital when possible.{% elif item.action == 'HOLD' %}No action required.{% elif item.action == 'SELL' %}22% profit target achieved.{% endif %}">
+                                        title="{% if item.action == 'BUY' %}Profit, P/E, and 52-week high gap are favorable, invest up to target capital.{% if item.target_zone %}&#10;Target Zone: {{ item.target_zone }}{% elif item.buy_range_low and item.buy_range_high %}&#10;Target Zone: &#8377;{{ item.buy_range_low|floatformat:2 }} – &#8377;{{ item.buy_range_high|floatformat:2 }}{% endif %}{% elif item.action == 'REDUCE' %}Investment high; reduce to target capital when possible.{% elif item.action == 'HOLD' %}No action required.{% elif item.action == 'SELL' %}22% profit target achieved.{% endif %}">
                                         {% if item.action == 'REDUCE' %}REDU{% else %}{{ item.action }}{% endif %}
                                     </span>
                                 </td>

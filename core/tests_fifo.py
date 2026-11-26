@@ -111,3 +111,33 @@ class FIFOTest(TestCase):
         content = response.content.decode('utf-8')
         self.assertIn("No sales recorded", content)
         self.assertIn("244.00", content)
+
+    def test_dashboard_target_zone_matches_lot_breakdown(self):
+        # 1. Buy 10 units @ 100
+        self.client.post(reverse('buy_stock'), {'symbol': 'TEST', 'quantity': 10, 'price': '100'}, follow=True)
+        # 2. Buy 10 units @ 120
+        self.client.post(reverse('buy_stock'), {'symbol': 'TEST', 'quantity': 10, 'price': '120'}, follow=True)
+
+        # Lot breakdown context
+        resp_lot = self.client.get(reverse('lot_breakdown', args=[self.inst.id]))
+        ha = resp_lot.context['historical_analysis']
+        self.assertEqual(ha['avg_buy_price'], Decimal('110.00'))
+        self.assertEqual(ha['buy_range_high'], Decimal('110.00'))
+        self.assertEqual(ha['buy_range_low'], Decimal('100.00'))
+
+        # Check get_recommendations
+        from core.utils import get_recommendations
+        recs, _, _ = get_recommendations(self.user)
+        test_rec = next(r for r in recs if r['symbol'] == 'TEST')
+        self.assertEqual(test_rec['buy_range_high'], Decimal('110.00'))
+        self.assertEqual(test_rec['buy_range_low'], Decimal('100.00'))
+        self.assertEqual(test_rec['target_zone'], "₹100.00 – ₹110.00")
+
+        # Check dashboard rendered HTML
+        resp_dash = self.client.get(reverse('dashboard'))
+        self.assertEqual(resp_dash.status_code, 200)
+        content = resp_dash.content.decode('utf-8')
+        if test_rec['action'] == 'BUY':
+            self.assertIn("Target Zone: ₹100.00 – ₹110.00", content)
+            self.assertIn("Profit, P/E, and 52-week high gap are favorable, invest up to target capital.", content)
+

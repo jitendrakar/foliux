@@ -77,6 +77,37 @@
   }
   .score-high { background: rgba(16, 185, 129, 0.15); color: #059669; border: 2px solid #10b981; }
   .score-mid { background: rgba(245, 158, 11, 0.15); color: #d97706; border: 2px solid #f59e0b; }
+
+  /* Sticky Frozen Table Header */
+  .screener-results-card,
+  .screener-results-card .screener-table-responsive {
+    overflow: visible !important;
+  }
+
+  .screener-results-table {
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .screener-results-table thead.sticky-thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+    background-color: #1e293b !important;
+    color: #f8fafc !important;
+    box-shadow: 0 3px 6px -1px rgba(0, 0, 0, 0.25);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2) !important;
+    vertical-align: middle;
+    white-space: nowrap;
+    padding-top: 0.85rem;
+    padding-bottom: 0.85rem;
+  }
+
+  html[data-theme="dark"] .screener-results-table thead.sticky-thead th {
+    background-color: #0f172a !important;
+    color: #f1f5f9 !important;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.15) !important;
+  }
 </style>
 {% endblock %}
 
@@ -152,10 +183,10 @@
   </div>
 
   <!-- Results Table Card -->
-  <div class="card border-0 shadow-sm rounded-4 p-4 mb-5">
-    <div class="table-responsive">
-      <table class="table table-hover align-middle">
-        <thead class="table-dark">
+  <div class="card border-0 shadow-sm rounded-4 p-4 mb-5 screener-results-card">
+    <div class="table-responsive screener-table-responsive">
+      <table class="table table-hover align-middle screener-results-table">
+        <thead class="table-dark sticky-thead">
           <tr>
             <th>Company</th>
             <th>Sector</th>

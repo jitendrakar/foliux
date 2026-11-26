@@ -791,6 +791,77 @@ def record_all_portfolio_history():
         count += 1
     return count
 
+def get_historical_buy_target_zones(user_ids, instrument_ids=None):
+    """
+    Computes {instrument_id: {'buy_range_low': Decimal, 'buy_range_high': Decimal, 'target_zone': str}}
+    for given user_ids matching the exact logic in lot_breakdown.
+    """
+    from core.models import Transaction, PnLStatement
+    from collections import defaultdict
+    from decimal import Decimal
+
+    tx_filter = {
+        'user_id__in': user_ids,
+        'transaction_type': 'BUY',
+        'quantity__gt': 0,
+    }
+    pnl_filter = {
+        'user_id__in': user_ids,
+        'quantity__gt': 0,
+        'buy_value__gt': 0,
+    }
+    if instrument_ids is not None:
+        tx_filter['instrument_id__in'] = instrument_ids
+        pnl_filter['instrument_id__in'] = instrument_ids
+
+    tx_lots = Transaction.objects.filter(**tx_filter).values('instrument_id', 'date', 'quantity', 'price')
+    sell_records = PnLStatement.objects.filter(**pnl_filter).values('instrument_id', 'entry_date', 'quantity', 'buy_value')
+
+    tx_by_inst = defaultdict(list)
+    for t in tx_lots:
+        tx_by_inst[t['instrument_id']].append(t)
+
+    pnl_by_inst = defaultdict(list)
+    for p in sell_records:
+        pnl_by_inst[p['instrument_id']].append(p)
+
+    all_inst_ids = set(tx_by_inst.keys()).union(set(pnl_by_inst.keys()))
+    zones = {}
+    for i_id in all_inst_ids:
+        lots = tx_by_inst.get(i_id, [])
+        s_records = pnl_by_inst.get(i_id, [])
+
+        buy_entries = []
+        lot_dates = set()
+        for lot in lots:
+            if lot['quantity'] and lot['quantity'] > 0 and lot['price'] is not None:
+                buy_entries.append((lot['quantity'], Decimal(str(lot['price']))))
+                lot_dates.add(lot['date'])
+
+        for sr in s_records:
+            if sr['quantity'] and sr['quantity'] > 0 and sr['buy_value'] and sr['buy_value'] > 0:
+                if sr['entry_date'] is None or sr['entry_date'] not in lot_dates:
+                    b_price = Decimal(str(sr['buy_value'])) / Decimal(str(sr['quantity']))
+                    buy_entries.append((sr['quantity'], b_price))
+
+        total_qty = sum(q for q, _ in buy_entries)
+        total_val = sum(Decimal(str(q)) * p for q, p in buy_entries)
+        avg_price = (total_val / Decimal(str(total_qty))) if total_qty > 0 else None
+        min_price = min((p for _, p in buy_entries), default=None)
+
+        if avg_price:
+            high = avg_price
+            low = avg_price * Decimal('0.93')
+            if min_price and min_price < low:
+                low = max(min_price, avg_price * Decimal('0.90'))
+            zones[i_id] = {
+                'buy_range_low': low,
+                'buy_range_high': high,
+                'target_zone': f"₹{low:.2f} – ₹{high:.2f}",
+            }
+
+    return zones
+
 def get_recommendations(user, is_consolidated=False):
     """
     Calculate buy/sell recommendations for a given user or consolidated family portfolio.
@@ -807,6 +878,7 @@ def get_recommendations(user, is_consolidated=False):
         portfolio_items_query = Portfolio.objects.filter(user_id__in=user_list).select_related('instrument')
         pnl_items_query = PnLStatement.objects.filter(user_id__in=user_list).select_related('instrument')
     else:
+        user_list = [user.id]
         portfolio_items_query = Portfolio.objects.filter(user=user).select_related('instrument')
         pnl_items_query = PnLStatement.objects.filter(user=user).select_related('instrument')
     
@@ -831,6 +903,9 @@ def get_recommendations(user, is_consolidated=False):
         count=Count('id')
     )
     lot_counts = {item['symbol_upper'].upper(): item['count'] for item in lot_counts_qs}
+
+    # Target Zones from lot breakdown
+    target_zones = get_historical_buy_target_zones(user_list)
 
     # Aggregate Portfolio items across all target users
     # We group by instrument symbol
@@ -946,6 +1021,11 @@ def get_recommendations(user, is_consolidated=False):
         if ltp > 0:
             qty_can_sell = int(abs(quantity - ((realized_profit + unrealized) / ltp)))
 
+        zone = target_zones.get(inst.id) if inst else None
+        buy_range_low = zone['buy_range_low'] if zone else None
+        buy_range_high = zone['buy_range_high'] if zone else None
+        target_zone = zone['target_zone'] if zone else None
+
         recommendations.append({
             'symbol': symbol,
             'name': inst.name,
@@ -973,6 +1053,9 @@ def get_recommendations(user, is_consolidated=False):
             'in_portfolio': True if quantity > 0 else False,
             'lot_count': lot_counts.get(symbol, 0),
             'notes': data.get('notes', ''),
+            'buy_range_low': buy_range_low,
+            'buy_range_high': buy_range_high,
+            'target_zone': target_zone,
         })
     
     # Add P&L-only stocks
@@ -1015,6 +1098,11 @@ def get_recommendations(user, is_consolidated=False):
                 previous_close = ltp - absolute_change
             day_change_pct = (absolute_change / previous_close * 100) if previous_close > 0 else 0
 
+            zone = target_zones.get(inst.id) if inst else None
+            buy_range_low = zone['buy_range_low'] if zone else None
+            buy_range_high = zone['buy_range_high'] if zone else None
+            target_zone = zone['target_zone'] if zone else None
+
             recommendations.append({
                 'symbol': symbol,
                 'name': inst.name,
@@ -1037,6 +1125,9 @@ def get_recommendations(user, is_consolidated=False):
                 'realized_profit': realized_profit,
                 'in_portfolio': False,
                 'instrument_id': inst.id,
+                'buy_range_low': buy_range_low,
+                'buy_range_high': buy_range_high,
+                'target_zone': target_zone,
             })
         
     # Add Strategy symbols not in portfolio or P&L
@@ -1087,6 +1178,11 @@ def get_recommendations(user, is_consolidated=False):
                 previous_close = ltp - absolute_change
             day_change_pct = (absolute_change / previous_close * 100) if previous_close > 0 else 0
 
+            zone = target_zones.get(inst.id) if inst else None
+            buy_range_low = zone['buy_range_low'] if zone else None
+            buy_range_high = zone['buy_range_high'] if zone else None
+            target_zone = zone['target_zone'] if zone else None
+
             recommendations.append({
                 'symbol': symbol,
                 'name': inst.name if inst else symbol,
@@ -1109,6 +1205,9 @@ def get_recommendations(user, is_consolidated=False):
                 'realized_profit': 0,
                 'in_portfolio': False,
                 'instrument_id': inst.id if inst else None,
+                'buy_range_low': buy_range_low,
+                'buy_range_high': buy_range_high,
+                'target_zone': target_zone,
             })
             
     # Filter out Hidden Signals (only for BUY signals where quantity is 0)
