@@ -3424,6 +3424,186 @@ def lot_breakdown(request, instrument_id):
     # Sort unified list by date descending (newest first)
     unified_records.sort(key=lambda r: (r['sort_date'], 0 if r['type'] == 'BUY' else 1), reverse=True)
     
+    # === Comprehensive Historical Buy/Sell Price Analysis & Opportunity Indicators ===
+    # 1. Historical Buy Prices across ALL transactions (not limited to active lots)
+    buy_entries = []
+    for lot in lots:
+        if lot.quantity and lot.quantity > 0:
+            buy_entries.append((lot.quantity, Decimal(str(lot.price))))
+            
+    # Include older historical buys if captured in PnLStatement without a corresponding Transaction BUY
+    lot_dates = {lot.date for lot in lots}
+    for sr in sell_records:
+        if sr.quantity and sr.quantity > 0 and sr.buy_value and sr.buy_value > 0:
+            if sr.entry_date is None or sr.entry_date not in lot_dates:
+                b_price = Decimal(str(sr.buy_value)) / Decimal(str(sr.quantity))
+                buy_entries.append((sr.quantity, b_price))
+
+    total_historical_buy_qty = sum(q for q, _ in buy_entries)
+    total_historical_buy_val = sum(Decimal(str(q)) * p for q, p in buy_entries)
+    historical_avg_buy_price = (total_historical_buy_val / Decimal(str(total_historical_buy_qty))) if total_historical_buy_qty > 0 else None
+    min_buy_price = min((p for _, p in buy_entries), default=None)
+    max_buy_price = max((p for _, p in buy_entries), default=None)
+    historical_buy_tx_count = len(buy_entries)
+
+    # 2. Historical Sell Prices across ALL available transactions
+    sell_entries = []
+    for sr in sell_records:
+        if sr.quantity and sr.quantity > 0 and sr.sell_value is not None:
+            s_price = Decimal(str(sr.sell_value)) / Decimal(str(sr.quantity))
+            sell_entries.append((sr.quantity, s_price))
+
+    # Also capture any SELL Transaction not in PnLStatement
+    pnl_exit_dates = {sr.exit_date for sr in sell_records}
+    extra_sell_txs = Transaction.objects.filter(
+        user_id__in=user_ids if is_consolidated else [target_user.id],
+        instrument=inst,
+        transaction_type='SELL'
+    )
+    for stx in extra_sell_txs:
+        if stx.date not in pnl_exit_dates and stx.quantity > 0:
+            sell_entries.append((stx.quantity, Decimal(str(stx.price))))
+
+    total_historical_sell_qty = sum(q for q, _ in sell_entries)
+    total_historical_sell_val = sum(Decimal(str(q)) * p for q, p in sell_entries)
+    historical_avg_sell_price = (total_historical_sell_val / Decimal(str(total_historical_sell_qty))) if total_historical_sell_qty > 0 else None
+    min_sell_price = min((p for _, p in sell_entries), default=None)
+    max_sell_price = max((p for _, p in sell_entries), default=None)
+    historical_sell_tx_count = len(sell_entries)
+
+    # User profile & target expectations
+    user_profile = getattr(target_user, 'profile', None)
+    if not user_profile:
+        user_profile, _ = Profile.objects.get_or_create(user=target_user)
+    profit_target_pct = user_profile.equity_profit_expectation if user_profile.equity_profit_expectation is not None else Decimal('22.00')
+
+    # 3. Buy Price Indicator: Indicative range to consider purchasing more shares
+    if historical_avg_buy_price:
+        buy_range_high = historical_avg_buy_price
+        buy_range_low = historical_avg_buy_price * Decimal('0.93')
+        if min_buy_price and min_buy_price < buy_range_low:
+            buy_range_low = max(min_buy_price, historical_avg_buy_price * Decimal('0.90'))
+            
+        ltp_vs_buy_pct = ((ltp - historical_avg_buy_price) / historical_avg_buy_price * 100) if historical_avg_buy_price else Decimal('0')
+        
+        if ltp <= buy_range_high:
+            buy_indicator_status = "Attractive Buy Zone"
+            buy_indicator_badge = "success"
+            buy_indicator_icon = "fa-check-circle"
+            buy_indicator_note = f"Current LTP (₹{ltp:.2f}) is {'at' if ltp == historical_avg_buy_price else f'{abs(ltp_vs_buy_pct):.1f}% below'} your historical average buy price of ₹{historical_avg_buy_price:.2f}. Accumulating here lowers or defends your overall cost basis."
+        elif ltp <= buy_range_high * Decimal('1.05'):
+            buy_indicator_status = "Fair / Near Average"
+            buy_indicator_badge = "info"
+            buy_indicator_icon = "fa-info-circle"
+            buy_indicator_note = f"Current LTP (₹{ltp:.2f}) is trading within 5% (+{ltp_vs_buy_pct:.1f}%) of your historical average buy price of ₹{historical_avg_buy_price:.2f}. Fair entry point for gradual accumulation."
+        else:
+            buy_indicator_status = "Above Historical Buy Range"
+            buy_indicator_badge = "warning"
+            buy_indicator_icon = "fa-exclamation-triangle"
+            buy_indicator_note = f"Current LTP (₹{ltp:.2f}) is trading +{ltp_vs_buy_pct:.1f}% above your historical average buy price (₹{buy_range_high:.2f}). Buying now raises your cost basis; consider waiting for pullbacks towards ₹{buy_range_high:.2f}."
+    else:
+        buy_range_high = None
+        buy_range_low = None
+        ltp_vs_buy_pct = Decimal('0')
+        buy_indicator_status = "No Buys Recorded"
+        buy_indicator_badge = "secondary"
+        buy_indicator_icon = "fa-minus-circle"
+        buy_indicator_note = "No purchase records found for this stock."
+
+    # 4. Sell Price Indicator: Indicative range to consider selling holdings
+    if historical_avg_sell_price:
+        sell_range_low = historical_avg_sell_price
+        sell_range_high = max(historical_avg_sell_price * Decimal('1.10'), (max_sell_price or historical_avg_sell_price), ltp * Decimal('1.05'))
+        ltp_vs_sell_pct = ((ltp - historical_avg_sell_price) / historical_avg_sell_price * 100)
+        target_sell_price = sell_range_low
+        
+        if ltp >= sell_range_low:
+            sell_indicator_status = "Profit Booking Zone"
+            sell_indicator_badge = "success"
+            sell_indicator_icon = "fa-bullseye"
+            sell_indicator_note = f"Current LTP (₹{ltp:.2f}) is +{ltp_vs_sell_pct:.1f}% above your historical average selling price of ₹{historical_avg_sell_price:.2f}. Favorable zone to lock in profits at or above past realization levels."
+        elif ltp >= sell_range_low * Decimal('0.95'):
+            sell_indicator_status = "Approaching Target Zone"
+            sell_indicator_badge = "warning"
+            sell_indicator_icon = "fa-clock"
+            sell_indicator_note = f"Current LTP (₹{ltp:.2f}) is within {abs(ltp_vs_sell_pct):.1f}% of your historical average selling price of ₹{historical_avg_sell_price:.2f}. Approaching past exit levels."
+        else:
+            sell_indicator_status = "Below Historical Sell Level"
+            sell_indicator_badge = "secondary"
+            sell_indicator_icon = "fa-arrow-up"
+            sell_indicator_note = f"Current LTP (₹{ltp:.2f}) is {abs(ltp_vs_sell_pct):.1f}% below your historical average selling price of ₹{historical_avg_sell_price:.2f}. Consider holding until price recovers towards your past selling range."
+    elif historical_avg_buy_price:
+        target_sell_price = historical_avg_buy_price * (Decimal('1') + (profit_target_pct / Decimal('100')))
+        sell_range_low = target_sell_price
+        sell_range_high = target_sell_price * Decimal('1.10')
+        ltp_vs_sell_pct = ((ltp - target_sell_price) / target_sell_price * 100)
+        
+        if ltp >= target_sell_price:
+            sell_indicator_status = f"Target Reached (+{profit_target_pct:.0f}%)"
+            sell_indicator_badge = "success"
+            sell_indicator_icon = "fa-check-circle"
+            sell_indicator_note = f"Current LTP (₹{ltp:.2f}) has met or exceeded your configured +{profit_target_pct:.0f}% profit target (₹{target_sell_price:.2f}). Good opportunity to take profits."
+        elif ltp >= target_sell_price * Decimal('0.95'):
+            sell_indicator_status = f"Near Target (+{profit_target_pct:.0f}%)"
+            sell_indicator_badge = "warning"
+            sell_indicator_icon = "fa-clock"
+            sell_indicator_note = f"Current LTP (₹{ltp:.2f}) is within 5% of your +{profit_target_pct:.0f}% target price (₹{target_sell_price:.2f})."
+        else:
+            sell_indicator_status = f"Holding Phase (Target: +{profit_target_pct:.0f}%)"
+            sell_indicator_badge = "info"
+            sell_indicator_icon = "fa-hourglass-half"
+            sell_indicator_note = f"No historical sell records yet. Indicative target is ₹{target_sell_price:.2f} based on your configured {profit_target_pct:.0f}% profit target above average cost."
+    else:
+        target_sell_price = None
+        sell_range_low = None
+        sell_range_high = None
+        ltp_vs_sell_pct = Decimal('0')
+        sell_indicator_status = "No Data"
+        sell_indicator_badge = "secondary"
+        sell_indicator_icon = "fa-minus-circle"
+        sell_indicator_note = "Insufficient transaction records to determine sell target."
+
+    realized_spread = None
+    realized_spread_pct = None
+    if historical_avg_sell_price and historical_avg_buy_price:
+        realized_spread = historical_avg_sell_price - historical_avg_buy_price
+        realized_spread_pct = (realized_spread / historical_avg_buy_price * 100) if historical_avg_buy_price > 0 else Decimal('0')
+
+    historical_analysis = {
+        'avg_buy_price': historical_avg_buy_price,
+        'total_buy_qty': total_historical_buy_qty,
+        'total_buy_val': total_historical_buy_val,
+        'buy_tx_count': historical_buy_tx_count,
+        'min_buy_price': min_buy_price,
+        'max_buy_price': max_buy_price,
+        'buy_range_low': buy_range_low,
+        'buy_range_high': buy_range_high,
+        'buy_indicator_status': buy_indicator_status,
+        'buy_indicator_badge': buy_indicator_badge,
+        'buy_indicator_icon': buy_indicator_icon,
+        'buy_indicator_note': buy_indicator_note,
+        'ltp_vs_buy_pct': ltp_vs_buy_pct,
+        
+        'avg_sell_price': historical_avg_sell_price,
+        'total_sell_qty': total_historical_sell_qty,
+        'total_sell_val': total_historical_sell_val,
+        'sell_tx_count': historical_sell_tx_count,
+        'min_sell_price': min_sell_price,
+        'max_sell_price': max_sell_price,
+        'sell_range_low': sell_range_low,
+        'sell_range_high': sell_range_high,
+        'sell_indicator_status': sell_indicator_status,
+        'sell_indicator_badge': sell_indicator_badge,
+        'sell_indicator_icon': sell_indicator_icon,
+        'sell_indicator_note': sell_indicator_note,
+        'ltp_vs_sell_pct': ltp_vs_sell_pct,
+        'profit_target_pct': profit_target_pct,
+        'target_sell_price': target_sell_price,
+        
+        'realized_spread': realized_spread,
+        'realized_spread_pct': realized_spread_pct,
+    }
+
     context = {
         'instrument': inst,
         'records': unified_records,
@@ -3438,6 +3618,7 @@ def lot_breakdown(request, instrument_id):
         'is_consolidated': is_consolidated,
         'is_family_view': is_family_view,
         'target_user': target_user,
+        'historical_analysis': historical_analysis,
     }
     return render(request, 'core/lot_breakdown.html', context)
 
