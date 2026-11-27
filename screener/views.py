@@ -71,11 +71,56 @@ def company_detail(request, symbol):
             'close': float(p.close_price),
             'volume': int(p.volume)
         })
+
+    # Calculate Year-by-Year Financial Ratios
+    bs_map = {b.year: b for b in balance_sheets}
+    yearly_ratios = []
+    latest_roa = None
+
+    for yf in yearly_financials:
+        bs = bs_map.get(yf.year)
+        net_profit = float(yf.net_profit or 0)
+        sales = float(yf.sales or 0)
+        pbt = float(yf.profit_before_tax or 0)
+        interest = float(yf.interest or 0)
+        ebit = pbt + interest
+        opm = float(yf.opm_percent or 0)
+        if opm == 0 and sales > 0:
+            opm = round((float(yf.operating_profit or 0) / sales) * 100, 2)
+
+        nw = float((bs.share_capital or 0) + (bs.reserves or 0)) if bs else 0
+        borrowings = float(bs.borrowings or 0) if bs else 0
+        assets = float(bs.total_assets or 0) if bs else 0
+        cap_emp = nw + borrowings
+
+        roe = round((net_profit / nw * 100), 2) if nw > 0 else (float(company.roe) if company.roe else None)
+        roce = round((ebit / cap_emp * 100), 2) if cap_emp > 0 else (float(company.roce) if company.roce else None)
+        roa = round((net_profit / assets * 100), 2) if assets > 0 else None
+        if roa is not None:
+            latest_roa = roa
+        npm = round((net_profit / sales * 100), 2) if sales > 0 else None
+        de = round(borrowings / nw, 2) if nw > 0 else 0.0
+        leverage = round(assets / nw, 2) if nw > 0 else None
+        int_cov = round(ebit / interest, 2) if interest > 0 else ("N/A (Debt Free)" if borrowings == 0 else "N/A")
+
+        yearly_ratios.append({
+            'year': yf.year,
+            'roe': roe,
+            'roce': roce,
+            'roa': roa,
+            'npm': npm,
+            'opm': opm,
+            'de': de,
+            'leverage': leverage,
+            'int_cov': int_cov,
+        })
         
     return render(request, 'screener/company_detail.html', {
         'company': company,
         'quarterly_results': quarterly_results,
         'yearly_financials': yearly_financials,
+        'yearly_ratios': yearly_ratios,
+        'latest_roa': latest_roa,
         'balance_sheets': balance_sheets,
         'cash_flows': cash_flows,
         'shareholdings': shareholdings,

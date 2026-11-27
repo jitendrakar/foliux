@@ -316,8 +316,8 @@
                 <div class="metric-card-value">{{ company.dividend_yield }}%</div>
             </div>
             <div class="metric-card-screener">
-                <div class="metric-card-label">ROCE</div>
-                <div class="metric-card-value">{{ company.roce }}%</div>
+                <div class="metric-card-label">{% if company.is_financial %}ROA{% else %}ROCE{% endif %}</div>
+                <div class="metric-card-value">{% if company.is_financial and latest_roa is not None %}{{ latest_roa }}%{% else %}{{ company.roce }}%{% endif %}</div>
             </div>
             <div class="metric-card-screener">
                 <div class="metric-card-label">ROE</div>
@@ -693,32 +693,66 @@
                 <!-- RATIOS TAB -->
                 <div class="tab-pane fade" id="ratios-pane" role="tabpanel" aria-labelledby="ratios-tab">
                     <div class="card border-0 shadow-sm rounded-4 p-4">
-                        <h5 class="fw-bold mb-3"><i class="fas fa-percentage me-2 text-primary"></i>Key Financial Ratios</h5>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold mb-0">
+                                <i class="fas fa-percentage me-2 text-primary"></i>Key Financial Ratios
+                            </h5>
+                            {% if company.is_financial %}
+                            <span class="badge bg-light text-primary border px-3 py-2 rounded-pill">
+                                <i class="fas fa-university me-1"></i> Banking & Financial Ratios
+                            </span>
+                            {% else %}
+                            <span class="badge bg-light text-secondary border px-3 py-2 rounded-pill">
+                                <i class="fas fa-industry me-1"></i> Corporate & Industrial Ratios
+                            </span>
+                            {% endif %}
+                        </div>
+
                         <div class="table-responsive">
                             <table class="table table-hover table-screener">
                                 <thead>
                                     <tr>
                                         <th>Year</th>
+                                        {% if company.is_financial %}
+                                        <th class="text-end">ROE (%)</th>
+                                        <th class="text-end">ROA (%)</th>
+                                        <th class="text-end">Net Profit Margin (%)</th>
+                                        <th class="text-end">Operating Margin (%)</th>
+                                        <th class="text-end">Debt to Equity</th>
+                                        <th class="text-end">Assets / Equity (x)</th>
+                                        {% else %}
                                         <th class="text-end">ROCE (%)</th>
                                         <th class="text-end">ROE (%)</th>
-                                        <th class="text-end">Debtor Days</th>
-                                        <th class="text-end">Inventory Turnover</th>
-                                        <th class="text-end">Interest Coverage Ratio</th>
+                                        <th class="text-end">Operating Margin (%)</th>
+                                        <th class="text-end">Net Profit Margin (%)</th>
+                                        <th class="text-end">Debt to Equity</th>
+                                        <th class="text-end">Interest Coverage</th>
+                                        {% endif %}
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for yr in yearly_financials %}
+                                    {% for r in yearly_ratios %}
                                     <tr>
-                                        <td class="fw-bold">{{ yr.year }}</td>
-                                        <td class="text-end">{{ company.roce }}%</td>
-                                        <td class="text-end">{{ company.roe }}%</td>
-                                        <td class="text-end">38 Days</td>
-                                        <td class="text-end">6.2</td>
-                                        <td class="text-end">15.4</td>
+                                        <td class="fw-bold">{{ r.year }}</td>
+                                        {% if company.is_financial %}
+                                        <td class="text-end">{% if r.roe is not None %}{{ r.roe }}%{% else %}-{% endif %}</td>
+                                        <td class="text-end">{% if r.roa is not None %}{{ r.roa }}%{% else %}-{% endif %}</td>
+                                        <td class="text-end">{% if r.npm is not None %}{{ r.npm }}%{% else %}-{% endif %}</td>
+                                        <td class="text-end">{% if r.opm is not None %}{{ r.opm }}%{% else %}-{% endif %}</td>
+                                        <td class="text-end">{% if r.de is not None %}{{ r.de }}{% else %}-{% endif %}</td>
+                                        <td class="text-end">{% if r.leverage is not None %}{{ r.leverage }}x{% else %}-{% endif %}</td>
+                                        {% else %}
+                                        <td class="text-end">{% if r.roce is not None %}{{ r.roce }}%{% else %}-{% endif %}</td>
+                                        <td class="text-end">{% if r.roe is not None %}{{ r.roe }}%{% else %}-{% endif %}</td>
+                                        <td class="text-end">{% if r.opm is not None %}{{ r.opm }}%{% else %}-{% endif %}</td>
+                                        <td class="text-end">{% if r.npm is not None %}{{ r.npm }}%{% else %}-{% endif %}</td>
+                                        <td class="text-end">{% if r.de is not None %}{{ r.de }}{% else %}-{% endif %}</td>
+                                        <td class="text-end">{% if r.int_cov is not None %}{{ r.int_cov }}{% else %}-{% endif %}</td>
+                                        {% endif %}
                                     </tr>
                                     {% empty %}
                                     <tr>
-                                        <td colspan="6" class="text-center text-muted">No ratio data available.</td>
+                                        <td colspan="7" class="text-center text-muted">No ratio data available.</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>

@@ -45,6 +45,14 @@ class Company(models.Model):
     def __str__(self):
         return f"{self.name} ({self.nse_symbol})"
 
+    @property
+    def is_financial(self):
+        sec = (self.sector or '').lower()
+        ind = (self.industry or '').lower()
+        nm = (self.name or '').lower()
+        keywords = ['bank', 'finance', 'financial', 'insurance', 'lending', 'housing finance', 'fintech', 'asset management', 'broking']
+        return any(k in sec or k in ind for k in keywords) or 'bank' in nm
+
 
 class QuarterlyResult(models.Model):
     company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name='quarterly_results')
