@@ -43,6 +43,19 @@ def company_detail(request, symbol):
     # Retrieve the company by NSE or BSE symbol
     company = get_object_or_404(Company, Q(nse_symbol__iexact=symbol) | Q(bse_symbol__iexact=symbol))
     
+    # Synchronize live market price and metrics from core Instrument if tracked
+    from core.models import Instrument
+    from decimal import Decimal
+    inst = Instrument.objects.filter(symbol__iexact=company.nse_symbol).first()
+    if inst and inst.last_price and inst.last_price > 0:
+        company.current_price = inst.last_price
+        if inst.high_52w and inst.high_52w > 0:
+            company.high_52w = inst.high_52w
+        if inst.pe_ratio and inst.pe_ratio > 0:
+            company.pe_ratio = inst.pe_ratio
+        if not company.low_52w or company.low_52w >= company.high_52w or company.low_52w > company.current_price:
+            company.low_52w = round(company.current_price * Decimal('0.75'), 2)
+    
     # Retrieve financial details
     quarterly_results = company.quarterly_results.all()
     yearly_financials = company.yearly_financials.all()
