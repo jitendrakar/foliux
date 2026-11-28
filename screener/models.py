@@ -166,15 +166,17 @@ class CompanyDocument(models.Model):
         sym = self.company.nse_symbol.upper().strip()
         cat = (self.category or '').lower()
         title = (self.title or '').lower()
-        if 'annual' in cat or 'report' in cat or 'annual' in title:
+        if sym == 'RELIANCE' and ('annual' in cat or 'report' in cat or 'annual' in title):
+            return "https://www.ril.com/investors/financial-reporting"
+        elif 'annual' in cat or 'report' in cat or 'annual' in title:
             return f"https://www.screener.in/company/{sym}/#documents"
         elif 'concall' in cat or 'transcript' in cat or 'concall' in title:
             return f"https://www.screener.in/company/{sym}/#concalls"
         elif 'presentation' in cat or 'results' in cat:
-            return f"https://www.nseindia.com/get-quotes/equity?symbol={sym}"
+            return f"https://www.nseindia.com/companies-listing/corporate-filings-financial-results?symbol={sym}"
         if self.url and not 'mock_transcript' in self.url and not 'foliux.com/media' in self.url:
             return self.url
-        return f"https://www.nseindia.com/get-quotes/equity?symbol={sym}"
+        return f"https://www.nseindia.com/companies-listing/corporate-filings-financial-results?symbol={sym}"
 
     def __str__(self):
         return f"{self.company.nse_symbol} - Doc: {self.title}"
@@ -256,15 +258,17 @@ class ManagementDocument(models.Model):
     def external_filing_url(self):
         sym = self.company.nse_symbol.upper().strip()
         doc_type = (self.doc_type or '').lower()
-        if 'annual' in doc_type:
+        if sym == 'RELIANCE' and 'annual' in doc_type:
+            return "https://www.ril.com/investors/financial-reporting"
+        elif 'annual' in doc_type:
             return f"https://www.screener.in/company/{sym}/#documents"
         elif 'concall' in doc_type:
             return f"https://www.screener.in/company/{sym}/#concalls"
         elif 'presentation' in doc_type or 'quarterly' in doc_type:
-            return f"https://www.nseindia.com/get-quotes/equity?symbol={sym}"
+            return f"https://www.nseindia.com/companies-listing/corporate-filings-financial-results?symbol={sym}"
         if self.source_url and self.source_url.startswith('http') and 'foliux.com' not in self.source_url:
             return self.source_url
-        return f"https://www.nseindia.com/get-quotes/equity?symbol={sym}"
+        return f"https://www.nseindia.com/companies-listing/corporate-filings-financial-results?symbol={sym}"
 
     def __str__(self):
         return f"{self.company.nse_symbol} - {self.financial_year} {self.get_doc_type_display()}"
