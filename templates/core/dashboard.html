@@ -86,6 +86,31 @@
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
     }
+    /* Frozen / Sticky Header for Portfolio Table */
+    .portfolio-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        background-color: #f8f9fa !important;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+    }
+    html[data-theme="dark"] .portfolio-table thead th {
+        background-color: var(--global-dark-bg, #0f172a) !important;
+        color: var(--global-dark-text, #f1f5f9) !important;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
+    }
+    @media (min-width: 992px) {
+        .card, .table-responsive {
+            overflow: visible !important;
+        }
+    }
+    @media (max-width: 991.98px) {
+        .table-responsive {
+            max-height: 75vh;
+            overflow: auto !important;
+            -webkit-overflow-scrolling: touch;
+        }
+    }
     /* Compact Signals Dropdown */
     .signals-dropdown-menu {
         min-width: 150px !important;
