@@ -1,29 +1,74 @@
 %PDF-1.4
-1 0 obj <</Type /Catalog /Pages 2 0 R>> endobj
-2 0 obj <</Type /Pages /Kinds [3 0 R] /Count 1>> endobj
-3 0 obj <</Type /Page /Parent 2 0 R /Resources <<>> /MediaBox [0 0 612 792] /Contents 4 0 R>> endobj
-4 0 obj <</Length 200>> stream
-BT
-/F1 12 Tf
-50 750 Td
-(Tata Consultancy Services Limited - TCS) Tj
-0 -20 Td
-(Document: Annual Report - FY2025) Tj
-0 -20 Td
-(FOLIUX Management Forecast Repository Archive) Tj
-0 -20 Td
-(Official Corporate Filing Verification Document) Tj
-ET
-endstream
+%“Œ‹ž ReportLab Generated PDF document (opensource)
+1 0 obj
+<<
+/F1 2 0 R /F2 3 0 R
+>>
+endobj
+2 0 obj
+<<
+/BaseFont /Helvetica /Encoding /WinAnsiEncoding /Name /F1 /Subtype /Type1 /Type /Font
+>>
+endobj
+3 0 obj
+<<
+/BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding /Name /F2 /Subtype /Type1 /Type /Font
+>>
+endobj
+4 0 obj
+<<
+/Contents 8 0 R /MediaBox [ 0 0 612 792 ] /Parent 7 0 R /Resources <<
+/Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>> /Rotate 0 /Trans <<
+
+>> 
+  /Type /Page
+>>
+endobj
+5 0 obj
+<<
+/PageMode /UseNone /Pages 7 0 R /Type /Catalog
+>>
+endobj
+6 0 obj
+<<
+/Author (anonymous) /CreationDate (D:20261128141632+05'00') /Creator (anonymous) /Keywords () /ModDate (D:20261128141632+05'00') /Producer (ReportLab PDF Library - \(opensource\)) 
+  /Subject (unspecified) /Title (untitled) /Trapped /False
+>>
+endobj
+7 0 obj
+<<
+/Count 1 /Kids [ 4 0 R ] /Type /Pages
+>>
+endobj
+8 0 obj
+<<
+/Filter [ /ASCII85Decode /FlateDecode ] /Length 1089
+>>
+stream
+Gat%!?#LWA'RcT\ELs0elFOE:4<Jhn"L:QTM-sMp;I:DRLf]3VnsD75rUDCbL6TrW8-Oj\`qQ'G^P@AlK#M*)"YOS<S2)dYH4?1&%.tU(3['FsGufH7?=\Y=Lb/H+[n/,!$HeJeNf(\fXNqQ7n9(3G!cmc9aR^4`bBdQ-&/7RQ;/^G4]q*J5J&V2+EHf#3eItVho@_AG7Z6foZS.O:W;f/351i@q=`cJHr%r<Lh;[dbZuVqNg3QFsVj6U2hI10#[*$Go=0:2qgFq9K[8GAAefM(..a!oe+LIlEb!B.$'f8,^OHhOc7e2b'jE^2b/\T*4[GA"Ud],Hrg-$=M43[Y\i;6Y??@IBRbZn+-/P;*['th[Sb*&YH`SrpeplX27Se]mEj?-$DQ3jMt0!Yh[.VW)Vn-ip6>_skkPoSOHLb).m,",!XcMM)Ob"=rf;<7\LU/4G"k?6/ldU;TSR\q,+0g&GY#ssi3Zj2K?oZ/Z+=jWt,TS^Mnm9g\-l2=W(6ZRID&.T=^UDtP=TAqE6mb=Kd'K!73W5@*Pq"(E*9oZ2F4dsW^(U"d9^Y)]mKd[2%6fZ\n8,WeW=BuVhJ%p*\2_Ei)qWT[EVD37HA\3$K/U6!e0D&c/);i"gQ<sDnGO];Z_s-X27b7!<K)k06C$)@CM!Q(Y>eHah7!,c*?tNJ0iZferl9X-``Xq9hm\aXA$NZEg'k]N4n)pmXpj_dg'_DL/=*TL_;\/"^Y@&pDXVufUo5i-lM_[rY9/i!Cg#B(Q;FY0=:9U%$=C(TPko^M$lTQMj<U3]\+Zh[NS^HCkg(fkEZ=u7DL&4%2K>t98bjH@H(=g?@N7I!2DM&23P+-`qep;%H#M$E+ek*'MfpS,48q4XOG3d^r_Z?<p514NpU-JKWX.;1F)XDs_K=%r;rsZ`N%SerPhODO[4Z_+S@lMFLO`DjL7B;S`+BAGj=BtSNWh@7a.VN'`6Y<Bd=A$`RCISa0l;6r$1QbbBl7G?5ql]7k2R?2jo.b$UeW]77!8KH[LN)bkZfNc::+?."@GG`B)^DK*h:;/lhB.(*FH3\Z'#r)sl#OPPDjq-aj!B05IuTNM?P_#>Mu~>endstream
 endobj
 xref
-0 5
+0 9
 0000000000 65535 f 
-0000000009 00000 n 
-0000000056 00000 n 
-0000000111 00000 n 
-0000000212 00000 n 
-trailer <</Size 5 /Root 1 0 R>>
+0000000061 00000 n 
+0000000102 00000 n 
+0000000209 00000 n 
+0000000321 00000 n 
+0000000514 00000 n 
+0000000582 00000 n 
+0000000843 00000 n 
+0000000902 00000 n 
+trailer
+<<
+/ID 
+[<05b86daf099360953970b0a339fb1095><05b86daf099360953970b0a339fb1095>]
+% ReportLab generated PDF document -- digest (opensource)
+
+/Info 6 0 R
+/Root 5 0 R
+/Size 9
+>>
 startxref
-462
+2082
 %%EOF

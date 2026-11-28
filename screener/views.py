@@ -227,17 +227,29 @@ def serve_local_document(request, doc_id):
     """
     Serves downloaded local PDF/text file from result/<SYMBOL>/<FY>/ repository
     for in-browser PDF viewing or direct download. Automatically resolves
-    paths across different OS platforms (Windows / Linux VPS).
+    paths across different OS platforms (Windows / Linux VPS) and ensures
+    standards-compliant, renderable PDF generation on-demand.
     """
     doc = get_object_or_404(ManagementDocument, id=doc_id)
     filepath = getattr(doc, 'resolved_path', None) or doc.local_file_path
 
-    if not filepath or not os.path.exists(filepath):
+    is_corrupted = False
+    if filepath and os.path.exists(filepath):
+        try:
+            if os.path.getsize(filepath) < 1000:
+                with open(filepath, 'rb') as f:
+                    head = f.read(150)
+                    if b'/Kinds' in head:
+                        is_corrupted = True
+        except Exception:
+            is_corrupted = True
+
+    if not filepath or not os.path.exists(filepath) or is_corrupted:
         try:
             from screener.guidance_downloader import download_or_sync_document
-            doc = download_or_sync_document(doc.company, doc.financial_year, doc.doc_type)
+            doc = download_or_sync_document(doc.company, doc.financial_year, doc.doc_type, force=True)
             filepath = getattr(doc, 'resolved_path', None) or doc.local_file_path
-        except Exception:
+        except Exception as e:
             pass
 
     if not filepath or not os.path.exists(filepath):
