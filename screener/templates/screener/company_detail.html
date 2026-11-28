@@ -810,23 +810,23 @@
                 <div class="tab-pane fade" id="documents-pane" role="tabpanel" aria-labelledby="documents-tab">
                     <div class="card border-0 shadow-sm rounded-4 p-4">
                         <div class="d-flex justify-content-between align-items-center mb-4">
-                            <h5 class="fw-bold mb-0"><i class="fas fa-folder-open me-2 text-primary"></i>Filings & Investor Updates</h5>
-                            <span class="badge bg-secondary-subtle text-secondary fw-semibold"><i class="fas fa-server me-1"></i> Verified Server Archive</span>
+                            <h5 class="fw-bold mb-0"><i class="fas fa-folder-open me-2 text-primary"></i>Filings & Original Corporate Documents</h5>
+                            <span class="badge bg-primary-subtle text-primary fw-semibold"><i class="fas fa-external-link-alt me-1"></i> Official Exchange Repository</span>
                         </div>
                         <div class="row">
                             <div class="col-12">
                                 {% if management_documents %}
-                                    <h6 class="fw-bold text-muted small text-uppercase mb-3"><i class="fas fa-shield-alt text-success me-1"></i> Audited Historical Filings (5 Financial Years)</h6>
+                                    <h6 class="fw-bold text-muted small text-uppercase mb-3"><i class="fas fa-file-pdf text-danger me-1"></i> Original Filings & Annual Reports (5 Financial Years)</h6>
                                     <div class="row g-2 mb-4">
                                         {% for md in management_documents %}
                                         <div class="col-md-6">
                                             <div class="p-3 border rounded-3 d-flex justify-content-between align-items-center bg-light-subtle">
                                                 <div>
                                                     <div class="fw-bold text-dark small"><i class="far fa-file-pdf text-danger me-2"></i> {{ md.title }}</div>
-                                                    <div class="extra-small text-muted">{{ md.financial_year }} | {{ md.file_size_bytes }} bytes | Checksum: {{ md.checksum|truncatechars:12 }}</div>
+                                                    <div class="extra-small text-muted">{{ md.financial_year }} | Official Exchange Archive</div>
                                                 </div>
-                                                <a href="{% url 'screener:serve_local_document' md.id %}" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill ms-2">
-                                                    Open PDF
+                                                <a href="{{ md.external_filing_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary rounded-pill ms-2">
+                                                    <i class="fas fa-external-link-alt me-1"></i> Open Original
                                                 </a>
                                             </div>
                                         </div>
@@ -836,16 +836,17 @@
 
                                 {% if documents %}
                                     {% if management_documents %}
-                                        <h6 class="fw-bold text-muted small text-uppercase mb-3"><i class="fas fa-file-alt text-primary me-1"></i> General Corporate Releases</h6>
+                                        <h6 class="fw-bold text-muted small text-uppercase mb-3"><i class="fas fa-file-alt text-primary me-1"></i> General Corporate Releases & Transcripts</h6>
                                     {% endif %}
                                     {% for doc in documents %}
-                                    <a href="{{ doc.url }}" target="_blank" class="document-link-item mb-2">
+                                    <a href="{{ doc.external_url }}" target="_blank" rel="noopener noreferrer" class="document-link-item mb-2">
                                         <div>
                                             <div class="document-title"><i class="far fa-file-pdf text-danger me-2"></i>{{ doc.title }}</div>
                                             <small class="text-muted text-uppercase fw-bold">{{ doc.category }}</small>
                                         </div>
                                         <div class="text-end">
                                             <span class="badge bg-primary-subtle text-primary rounded-pill px-3">{{ doc.date|date:"F Y" }}</span>
+                                            <i class="fas fa-external-link-alt text-primary ms-2"></i>
                                         </div>
                                     </a>
                                     {% endfor %}
@@ -954,11 +955,13 @@
                                             </td>
                                             <td>
                                                 {% if mf.document %}
-                                                    <a href="{% url 'screener:serve_local_document' mf.document.id %}" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill">
-                                                        <i class="fas fa-external-link-alt me-1"></i> View PDF
+                                                    <a href="{{ mf.document.external_filing_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-sm rounded-pill">
+                                                        <i class="fas fa-external-link-alt me-1"></i> Open Original
                                                     </a>
                                                 {% else %}
-                                                    <span class="text-muted extra-small">N/A</span>
+                                                    <a href="https://www.nseindia.com/get-quotes/equity?symbol={{ company.nse_symbol }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-secondary btn-sm rounded-pill">
+                                                        <i class="fas fa-external-link-alt me-1"></i> Exchange
+                                                    </a>
                                                 {% endif %}
                                             </td>
                                         </tr>
@@ -975,8 +978,8 @@
                         <!-- Filing Document Repository -->
                         <div class="mt-4 pt-3 border-top">
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="fw-bold mb-0"><i class="fas fa-file-contract me-2 text-primary"></i>Corporate Filing Document Archive</h5>
-                                <span class="badge bg-secondary-subtle text-secondary fw-semibold"><i class="fas fa-server me-1"></i> Archived on Server</span>
+                                <h5 class="fw-bold mb-0"><i class="fas fa-file-contract me-2 text-primary"></i>Original Corporate Filing Repository</h5>
+                                <span class="badge bg-primary-subtle text-primary fw-semibold"><i class="fas fa-external-link-alt me-1"></i> Official Filings</span>
                             </div>
 
                             <div class="row g-2">
@@ -985,10 +988,10 @@
                                     <div class="p-3 border rounded-3 d-flex justify-content-between align-items-center bg-light-subtle">
                                         <div>
                                             <div class="fw-bold text-dark small"><i class="far fa-file-pdf text-danger me-2"></i> {{ md.title }}</div>
-                                            <div class="extra-small text-muted">{{ md.financial_year }} | {{ md.file_size_bytes }} bytes | Checksum: {{ md.checksum|truncatechars:12 }}</div>
+                                            <div class="extra-small text-muted">{{ md.financial_year }} | Official Exchange Archive</div>
                                         </div>
-                                        <a href="{% url 'screener:serve_local_document' md.id %}" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill ms-2">
-                                            Open
+                                        <a href="{{ md.external_filing_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-secondary rounded-pill ms-2">
+                                            <i class="fas fa-external-link-alt me-1"></i> Open Original
                                         </a>
                                     </div>
                                 </div>

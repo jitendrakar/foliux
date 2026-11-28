@@ -604,8 +604,8 @@
               <div class="fw-semibold text-dark small"><i class="far fa-file-pdf text-danger me-1"></i> {{ comp.forecast.source_doc_type }}</div>
               <div class="extra-small text-muted">Page {{ comp.forecast.page_number }}</div>
               {% if comp.forecast.document %}
-                <a href="{% url 'screener:serve_local_document' comp.forecast.document.id %}" target="_blank" class="btn btn-link btn-sm p-0 extra-small text-decoration-none">
-                  <i class="fas fa-external-link-alt me-1"></i> View Filing Document
+                <a href="{{ comp.forecast.document.external_filing_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-link btn-sm p-0 extra-small text-decoration-none">
+                  <i class="fas fa-external-link-alt me-1"></i> View Original Filing
                 </a>
               {% endif %}
             </td>

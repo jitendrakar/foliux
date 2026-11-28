@@ -1,6 +1,6 @@
 import os
 import json
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse, FileResponse, Http404
 from django.db.models import Q, Avg, Sum, Count
 from .models import (
@@ -225,39 +225,12 @@ def management_credibility_dashboard(request):
 
 def serve_local_document(request, doc_id):
     """
-    Serves downloaded local PDF/text file from result/<SYMBOL>/<FY>/ repository
-    for in-browser PDF viewing or direct download. Automatically resolves
-    paths across different OS platforms (Windows / Linux VPS) and ensures
-    standards-compliant, renderable PDF generation on-demand.
+    Directs the user to the original corporate document / exchange filing.
+    Redirects to the official filing URL (NSE / Exchange repository) so users
+    can read and download the original corporate filings in another tab.
     """
     doc = get_object_or_404(ManagementDocument, id=doc_id)
-    filepath = getattr(doc, 'resolved_path', None) or doc.local_file_path
-
-    is_corrupted = False
-    if filepath and os.path.exists(filepath):
-        try:
-            if os.path.getsize(filepath) < 1000:
-                with open(filepath, 'rb') as f:
-                    head = f.read(150)
-                    if b'/Kinds' in head:
-                        is_corrupted = True
-        except Exception:
-            is_corrupted = True
-
-    if not filepath or not os.path.exists(filepath) or is_corrupted:
-        try:
-            from screener.guidance_downloader import download_or_sync_document
-            doc = download_or_sync_document(doc.company, doc.financial_year, doc.doc_type, force=True)
-            filepath = getattr(doc, 'resolved_path', None) or doc.local_file_path
-        except Exception as e:
-            pass
-
-    if not filepath or not os.path.exists(filepath):
-        raise Http404(f"Document file could not be loaded for {doc.company.nse_symbol} ({doc.financial_year})")
-
-    response = FileResponse(open(filepath, 'rb'), content_type='application/pdf')
-    response['Content-Disposition'] = f'inline; filename="{os.path.basename(filepath)}"'
-    return response
+    return redirect(doc.external_filing_url)
 
 
 # --- Natural Language Query Search Views ---
